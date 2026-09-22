@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="fr">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin QR</title><link rel="stylesheet" href="/style.css"></head>
+<body>
+<main class="page"><section class="card" style="max-width:720px;text-align:left">
+<div class="brand">ADMIN — QR AUTHENTICITY</div>
+<div id="login">
+  <h2>Connexion</h2>
+  <input id="email" type="email" placeholder="Email" style="margin-bottom:10px">
+  <input id="password" type="password" placeholder="Mot de passe">
+  <button id="loginBtn">SE CONNECTER</button>
+</div>
+<div id="panel" class="hidden">
+  <h2>Créer un lot</h2>
+  <p class="muted">Le QR est identique pour tous les autocollants. Chaque autocollant reçoit un code secret différent.</p>
+  <input id="brand" placeholder="Marque">
+  <input id="product_name" placeholder="Nom du produit" style="margin-top:10px">
+  <input id="reference" placeholder="Référence" style="margin-top:10px">
+  <input id="lot" placeholder="Lot" style="margin-top:10px">
+  <input id="manufacture_date" type="date" style="margin-top:10px">
+  <input id="expiry_date" type="date" style="margin-top:10px">
+  <input id="product_image" placeholder="URL image produit" style="margin-top:10px">
+  <input id="description" placeholder="Description" style="margin-top:10px">
+  <input id="quantity" type="number" min="1" max="10000" value="100" placeholder="Quantité" style="margin-top:10px">
+  <button id="createBtn">CRÉER LE LOT</button>
+  <div id="adminResult" class="result hidden"></div>
+  <hr style="margin:25px 0;border:0;border-top:1px solid #eee">
+  <h2>QR commun</h2>
+  <p id="publicUrl" class="muted"></p>
+  <div id="qr" style="display:flex;justify-content:center;margin:15px"></div>
+  <button id="printBtn">IMPRIMER QR + CODES</button>
+  <button id="logoutBtn" style="background:#777">DÉCONNEXION</button>
+</div>
+</section></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="/admin.js"></script>
+</body></html>

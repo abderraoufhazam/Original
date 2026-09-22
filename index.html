@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+  <title>Vérification d'authenticité</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<main class="page">
+  <section class="card">
+    <div class="brand">VOTRE MARQUE</div>
+    <div class="shield">✓</div>
+    <h1>Vérification d'authenticité</h1>
+    <p class="muted">Entrez le code de sécurité caché sous la zone à gratter.</p>
+
+    <form id="verifyForm">
+      <input id="code" autocomplete="off" autocapitalize="characters"
+             maxlength="8" placeholder="CODE DE SÉCURITÉ" required>
+      <button type="submit" id="verifyBtn">VÉRIFIER</button>
+    </form>
+
+    <div id="result" class="result hidden"></div>
+    <p class="small">Le code de sécurité ne peut être vérifié qu'une seule fois.</p>
+  </section>
+</main>
+<script src="/app.js"></script>
+</body>
+</html>
