@@ -4,6 +4,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const $ = id => document.getElementById(id);
 let lastCodes = [];
+let loadedLot = null;
 
 function escapeHtml(v = "") {
   return String(v).replace(/[&<>"']/g, c => ({
@@ -138,6 +139,129 @@ $("searchBtn").onclick = async () => {
       ${r.used_at ? `<div><b>Utilisé le</b><span>${escapeHtml(new Date(r.used_at).toLocaleString())}</span></div>` : ""}
     </div>
   `;
+};
+
+// ============================================================
+// MODIFIER UN LOT ENTIER
+// ============================================================
+$("loadLotBtn").onclick = async () => {
+  const lot = ($("editLotSearch").value || "").trim();
+  const info = $("lotInfo");
+  const form = $("editForm");
+
+  if (!lot) {
+    info.className = "result danger";
+    info.innerHTML = `<p>Entrez un numéro de lot.</p>`;
+    form.classList.add("hidden");
+    return;
+  }
+
+  info.className = "result";
+  info.innerHTML = `<p>Chargement...</p>`;
+  form.classList.add("hidden");
+  loadedLot = null;
+
+  const { data, error } = await sb
+    .from("qr_codes")
+    .select("*")
+    .eq("lot", lot)
+    .limit(10000);
+
+  if (error) {
+    info.className = "result danger";
+    info.innerHTML = `<p>Erreur : ${escapeHtml(error.message)}</p>`;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    info.className = "result danger";
+    info.innerHTML = `<h2>AUCUN RÉSULTAT</h2><p>Aucun code trouvé pour le lot "${escapeHtml(lot)}".</p>`;
+    return;
+  }
+
+  const r = data[0];
+  loadedLot = lot;
+
+  info.className = "result success";
+  info.innerHTML = `
+    <h2>${data.length} code(s) trouvé(s)</h2>
+    <div class="details">
+      ${r.brand ? `<div><b>Marque</b><span>${escapeHtml(r.brand)}</span></div>` : ""}
+      ${r.product_name ? `<div><b>Produit</b><span>${escapeHtml(r.product_name)}</span></div>` : ""}
+      ${r.reference ? `<div><b>Référence</b><span>${escapeHtml(r.reference)}</span></div>` : ""}
+      ${r.lot ? `<div><b>Lot</b><span>${escapeHtml(r.lot)}</span></div>` : ""}
+      ${r.manufacture_date ? `<div><b>Fabrication</b><span>${escapeHtml(r.manufacture_date)}</span></div>` : ""}
+      ${r.expiry_date ? `<div><b>Expiration</b><span>${escapeHtml(r.expiry_date)}</span></div>` : ""}
+    </div>
+  `;
+
+  // Pre-fill form with current values
+  $("editBrand").value = r.brand || "";
+  $("editProductName").value = r.product_name || "";
+  $("editReference").value = r.reference || "";
+  $("editNewLot").value = "";
+  $("editManufactureDate").value = r.manufacture_date || "";
+  $("editExpiryDate").value = r.expiry_date || "";
+  $("editProductImage").value = r.product_image || "";
+  $("editDescription").value = r.description || "";
+
+  form.classList.remove("hidden");
+};
+
+$("updateBatchBtn").onclick = async () => {
+  if (!loadedLot) return alert("Chargez d'abord un lot.");
+
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return alert("Connectez-vous.");
+
+  const info = $("lotInfo");
+
+  // Build update object only with filled fields
+  const updates = {};
+  const v = id => ($(id).value || "").trim();
+
+  if (v("editBrand")) updates.brand = v("editBrand");
+  if (v("editProductName")) updates.product_name = v("editProductName");
+  if (v("editReference")) updates.reference = v("editReference");
+  if (v("editNewLot")) updates.lot = v("editNewLot");
+  if ($("editManufactureDate").value) updates.manufacture_date = $("editManufactureDate").value;
+  if ($("editExpiryDate").value) updates.expiry_date = $("editExpiryDate").value;
+  if (v("editProductImage")) updates.product_image = v("editProductImage");
+  if (v("editDescription")) updates.description = v("editDescription");
+
+  if (Object.keys(updates).length === 0) {
+    return alert("Aucun champ à modifier.");
+  }
+
+  if (!confirm(`Confirmer la mise à jour du lot "${loadedLot}" ?`)) return;
+
+  $("updateBatchBtn").disabled = true;
+  $("updateBatchBtn").textContent = "MISE À JOUR...";
+
+  const { error } = await sb
+    .from("qr_codes")
+    .update(updates)
+    .eq("lot", loadedLot);
+
+  $("updateBatchBtn").disabled = false;
+  $("updateBatchBtn").textContent = "METTRE À JOUR LE LOT";
+
+  if (error) {
+    info.className = "result danger";
+    info.innerHTML = `<p>Erreur : ${escapeHtml(error.message)}</p>`;
+    return;
+  }
+
+  info.className = "result success";
+  info.innerHTML = `<h2>✓ LOT MIS À JOUR</h2><p>Tous les codes du lot "${escapeHtml(loadedLot)}" ont été modifiés.</p>`;
+  loadStats();
+
+  // If new lot name was set, update loadedLot
+  if (updates.lot) {
+    loadedLot = updates.lot;
+    $("editLotSearch").value = updates.lot;
+    $("editNewLot").value = "";
+  }
 };
 
 // ============================================================
