@@ -29,6 +29,7 @@
       <input id="manufacture_date" type="date" style="margin-top:10px">
       <input id="expiry_date" type="date" style="margin-top:10px">
       <input id="product_image" placeholder="URL image produit" style="margin-top:10px">
+      <input id="logo_url" placeholder="URL du logo (optionnel)" style="margin-top:10px">
       <input id="description" placeholder="Description" style="margin-top:10px">
       <input id="quantity" type="number" min="1" max="10000" value="100" placeholder="Quantité" style="margin-top:10px">
 
@@ -38,22 +39,10 @@
       <hr style="margin:25px 0;border:0;border-top:1px solid #eee">
       <h2>Statistiques</h2>
       <div id="stats" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:15px 0">
-        <div class="stat-card">
-          <div class="stat-num" id="statUnused">—</div>
-          <div class="stat-label">UNUSED</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" id="statUsed">—</div>
-          <div class="stat-label">USED</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" id="statDisabled">—</div>
-          <div class="stat-label">DISABLED</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" id="statExpired">—</div>
-          <div class="stat-label">EXPIRED</div>
-        </div>
+        <div class="stat-card"><div class="stat-num" id="statUnused">—</div><div class="stat-label">UNUSED</div></div>
+        <div class="stat-card"><div class="stat-num" id="statUsed">—</div><div class="stat-label">USED</div></div>
+        <div class="stat-card"><div class="stat-num" id="statDisabled">—</div><div class="stat-label">DISABLED</div></div>
+        <div class="stat-card"><div class="stat-num" id="statExpired">—</div><div class="stat-label">EXPIRED</div></div>
       </div>
 
       <hr style="margin:25px 0;border:0;border-top:1px solid #eee">
@@ -74,23 +63,33 @@
 
       <div id="editForm" class="hidden" style="margin-top:15px;padding:15px;background:#f9f9f9;border-radius:10px;border:1px solid #eee">
         <h3 style="margin-top:0">Modifier ce lot</h3>
-        <p class="muted" style="font-size:12px">Seuls les champs remplis seront appliqués. Les champs vides gardent leur valeur actuelle.</p>
+        <p class="muted" style="font-size:12px">Seuls les champs remplis seront appliqués.</p>
         <input id="editBrand" placeholder="Marque" style="margin-top:10px">
         <input id="editProductName" placeholder="Nom du produit" style="margin-top:10px">
         <input id="editReference" placeholder="Référence" style="margin-top:10px">
-        <input id="editNewLot" placeholder="Nouveau lot (optionnel - pour renommer)" style="margin-top:10px">
+        <input id="editNewLot" placeholder="Nouveau lot (optionnel)" style="margin-top:10px">
         <input id="editManufactureDate" type="date" style="margin-top:10px">
         <input id="editExpiryDate" type="date" style="margin-top:10px">
         <input id="editProductImage" placeholder="URL image produit" style="margin-top:10px">
+        <input id="editLogoUrl" placeholder="URL du logo" style="margin-top:10px">
         <input id="editDescription" placeholder="Description" style="margin-top:10px">
         <button id="updateBatchBtn" style="background:#111;margin-top:10px">METTRE À JOUR LE LOT</button>
       </div>
 
       <hr style="margin:25px 0;border:0;border-top:1px solid #eee">
       <h2>Journal des vérifications</h2>
-      <p class="muted">Les 100 dernières tentatives de vérification par les clients.</p>
+      <p class="muted">Les 100 dernières tentatives de vérification.</p>
       <button id="refreshLogBtn" style="background:#444">🔄 ACTUALISER</button>
       <div id="logList" style="margin-top:15px"></div>
+
+      <hr style="margin:25px 0;border:0;border-top:1px solid #eee">
+      <h2>Options d'impression</h2>
+      <p class="muted">Choisissez la taille de l'étiquette avant l'impression.</p>
+      <select id="labelSize" style="margin-top:10px">
+        <option value="60x90">60 × 90 mm — Étiquette longue (pliée)</option>
+        <option value="50x50">50 × 50 mm — Carré compact</option>
+        <option value="70x50">70 × 50 mm — Rectangle horizontal</option>
+      </select>
 
       <hr style="margin:25px 0;border:0;border-top:1px solid #eee">
       <h2>QR commun</h2>
