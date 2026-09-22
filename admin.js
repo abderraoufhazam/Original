@@ -5,6 +5,9 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const $ = id => document.getElementById(id);
 let lastCodes = [];
 let loadedLot = null;
+let loadedLotCodes = [];
+let loadedLotBrand = "";
+let loadedLotLot = "";
 
 function escapeHtml(v = "") {
   return String(v).replace(/[&<>"']/g, c => ({
@@ -61,6 +64,9 @@ $("logoutBtn").onclick = async () => {
   location.reload();
 };
 
+// ============================================================
+// CREATE BATCH
+// ============================================================
 $("createBtn").onclick = async () => {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) return alert("Connectez-vous.");
@@ -96,7 +102,6 @@ $("createBtn").onclick = async () => {
     $("adminResult").className = "result success";
     $("adminResult").innerHTML =
       `<h2>✓ LOT CRÉÉ</h2><p>${qty} codes générés avec succès.</p>`;
-    $("printBtn").disabled = false;
     loadStats();
   } catch (err) {
     $("adminResult").className = "result danger";
@@ -104,6 +109,9 @@ $("createBtn").onclick = async () => {
   }
 };
 
+// ============================================================
+// SEARCH CODE
+// ============================================================
 $("searchBtn").onclick = async () => {
   const code = ($("searchCode").value || "").trim().toUpperCase();
   const res = $("searchResult");
@@ -142,24 +150,28 @@ $("searchBtn").onclick = async () => {
 };
 
 // ============================================================
-// MODIFIER UN LOT ENTIER
+// LOAD EXISTING LOT
 // ============================================================
 $("loadLotBtn").onclick = async () => {
   const lot = ($("editLotSearch").value || "").trim();
   const info = $("lotInfo");
   const form = $("editForm");
+  const printLotBtn = $("printLotBtn");
 
   if (!lot) {
     info.className = "result danger";
     info.innerHTML = `<p>Entrez un numéro de lot.</p>`;
     form.classList.add("hidden");
+    printLotBtn.classList.add("hidden");
     return;
   }
 
   info.className = "result";
   info.innerHTML = `<p>Chargement...</p>`;
   form.classList.add("hidden");
+  printLotBtn.classList.add("hidden");
   loadedLot = null;
+  loadedLotCodes = [];
 
   const { data, error } = await sb
     .from("qr_codes")
@@ -181,6 +193,9 @@ $("loadLotBtn").onclick = async () => {
 
   const r = data[0];
   loadedLot = lot;
+  loadedLotCodes = data.map(row => row.secret_code);
+  loadedLotBrand = r.brand || "MARQUE";
+  loadedLotLot = r.lot || lot;
 
   info.className = "result success";
   info.innerHTML = `
@@ -195,7 +210,10 @@ $("loadLotBtn").onclick = async () => {
     </div>
   `;
 
-  // Pre-fill form with current values
+  // Show print button
+  printLotBtn.classList.remove("hidden");
+
+  // Prefill edit form
   $("editBrand").value = r.brand || "";
   $("editProductName").value = r.product_name || "";
   $("editReference").value = r.reference || "";
@@ -208,6 +226,9 @@ $("loadLotBtn").onclick = async () => {
   form.classList.remove("hidden");
 };
 
+// ============================================================
+// UPDATE ENTIRE LOT
+// ============================================================
 $("updateBatchBtn").onclick = async () => {
   if (!loadedLot) return alert("Chargez d'abord un lot.");
 
@@ -215,8 +236,6 @@ $("updateBatchBtn").onclick = async () => {
   if (!session) return alert("Connectez-vous.");
 
   const info = $("lotInfo");
-
-  // Build update object only with filled fields
   const updates = {};
   const v = id => ($(id).value || "").trim();
 
@@ -256,23 +275,22 @@ $("updateBatchBtn").onclick = async () => {
   info.innerHTML = `<h2>✓ LOT MIS À JOUR</h2><p>Tous les codes du lot "${escapeHtml(loadedLot)}" ont été modifiés.</p>`;
   loadStats();
 
-  // If new lot name was set, update loadedLot
+  if (updates.brand) loadedLotBrand = updates.brand;
   if (updates.lot) {
     loadedLot = updates.lot;
+    loadedLotLot = updates.lot;
     $("editLotSearch").value = updates.lot;
     $("editNewLot").value = "";
   }
 };
 
 // ============================================================
-// PRINT : Labels avec zone à gratter (pliage)
+// PRINT LABELS (shared function)
 // ============================================================
-$("printBtn").onclick = () => {
-  if (!lastCodes.length) return alert("Créez d'abord un lot.");
+function printLabels(codes, brand, lot) {
+  if (!codes || !codes.length) return alert("Aucun code à imprimer.");
 
   const url = location.origin + "/";
-  const brand = $("brand").value.trim() || "MARQUE";
-  const lot = $("lot").value.trim() || "";
   const w = window.open("", "_blank");
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(url)}`;
 
@@ -356,7 +374,7 @@ $("printBtn").onclick = () => {
 
   <div class="sheet">`;
 
-  lastCodes.forEach((code) => {
+  codes.forEach((code) => {
     const formatted = code.match(/.{1,4}/g).join(" ");
     html += `
       <div class="label">
@@ -378,4 +396,17 @@ $("printBtn").onclick = () => {
   html += `</div></body></html>`;
   w.document.write(html);
   w.document.close();
+}
+
+// Print last created batch
+$("printBtn").onclick = () => {
+  const brand = $("brand").value.trim() || "MARQUE";
+  const lot = $("lot").value.trim() || "";
+  printLabels(lastCodes, brand, lot);
+};
+
+// Print loaded existing lot
+$("printLotBtn").onclick = () => {
+  if (!loadedLotCodes.length) return alert("Aucun lot chargé.");
+  printLabels(loadedLotCodes, loadedLotBrand, loadedLotLot);
 };
