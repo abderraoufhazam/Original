@@ -4,10 +4,12 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const $ = id => document.getElementById(id);
 let lastCodes = [];
+let lastLogo = "";
 let loadedLot = null;
 let loadedLotCodes = [];
 let loadedLotBrand = "";
 let loadedLotLot = "";
+let loadedLotLogo = "";
 
 function escapeHtml(v = "") {
   return String(v).replace(/[&<>"']/g, c => ({
@@ -52,7 +54,7 @@ async function loadLog() {
     return;
   }
   if (!data || data.length === 0) {
-    container.innerHTML = `<p class="muted">Aucune vérification enregistrée pour le moment.</p>`;
+    container.innerHTML = `<p class="muted">Aucune vérification enregistrée.</p>`;
     return;
   }
 
@@ -61,9 +63,7 @@ async function loadLog() {
     const statusClass =
       r.result === "ORIGINAL" ? "success" :
       r.result === "USED" ? "warning" : "danger";
-
     const date = r.created_at ? new Date(r.created_at).toLocaleString() : "—";
-
     html += `
       <div class="log-row log-${statusClass}">
         <div class="log-top">
@@ -122,6 +122,7 @@ $("createBtn").onclick = async () => {
   const qty = Math.min(10000, Math.max(1, Number($("quantity").value) || 1));
   const rows = [];
   lastCodes = [];
+  lastLogo = $("logo_url").value.trim() || "";
 
   for (let i = 0; i < qty; i++) {
     const code = randomCode();
@@ -136,6 +137,7 @@ $("createBtn").onclick = async () => {
       manufacture_date: $("manufacture_date").value || null,
       expiry_date: $("expiry_date").value || null,
       product_image: $("product_image").value.trim() || null,
+      logo_url: $("logo_url").value.trim() || null,
       description: $("description").value.trim() || null
     });
   }
@@ -244,6 +246,7 @@ $("loadLotBtn").onclick = async () => {
   loadedLotCodes = data.map(row => row.secret_code);
   loadedLotBrand = r.brand || "MARQUE";
   loadedLotLot = r.lot || lot;
+  loadedLotLogo = r.logo_url || "";
 
   info.className = "result success";
   info.innerHTML = `
@@ -267,6 +270,7 @@ $("loadLotBtn").onclick = async () => {
   $("editManufactureDate").value = r.manufacture_date || "";
   $("editExpiryDate").value = r.expiry_date || "";
   $("editProductImage").value = r.product_image || "";
+  $("editLogoUrl").value = r.logo_url || "";
   $("editDescription").value = r.description || "";
 
   form.classList.remove("hidden");
@@ -292,21 +296,16 @@ $("updateBatchBtn").onclick = async () => {
   if ($("editManufactureDate").value) updates.manufacture_date = $("editManufactureDate").value;
   if ($("editExpiryDate").value) updates.expiry_date = $("editExpiryDate").value;
   if (v("editProductImage")) updates.product_image = v("editProductImage");
+  if (v("editLogoUrl")) updates.logo_url = v("editLogoUrl");
   if (v("editDescription")) updates.description = v("editDescription");
 
-  if (Object.keys(updates).length === 0) {
-    return alert("Aucun champ à modifier.");
-  }
-
+  if (Object.keys(updates).length === 0) return alert("Aucun champ à modifier.");
   if (!confirm(`Confirmer la mise à jour du lot "${loadedLot}" ?`)) return;
 
   $("updateBatchBtn").disabled = true;
   $("updateBatchBtn").textContent = "MISE À JOUR...";
 
-  const { error } = await sb
-    .from("qr_codes")
-    .update(updates)
-    .eq("lot", loadedLot);
+  const { error } = await sb.from("qr_codes").update(updates).eq("lot", loadedLot);
 
   $("updateBatchBtn").disabled = false;
   $("updateBatchBtn").textContent = "METTRE À JOUR LE LOT";
@@ -322,6 +321,7 @@ $("updateBatchBtn").onclick = async () => {
   loadStats();
 
   if (updates.brand) loadedLotBrand = updates.brand;
+  if (updates.logo_url) loadedLotLogo = updates.logo_url;
   if (updates.lot) {
     loadedLot = updates.lot;
     loadedLotLot = updates.lot;
@@ -331,14 +331,28 @@ $("updateBatchBtn").onclick = async () => {
 };
 
 // ============================================================
-// PRINT LABELS
+// PRINT LABELS — MULTI SIZE + LOGO
 // ============================================================
-function printLabels(codes, brand, lot) {
+function printLabels(codes, brand, lot, logoUrl) {
   if (!codes || !codes.length) return alert("Aucun code à imprimer.");
 
+  const size = $("labelSize").value || "60x90";
   const url = location.origin + "/";
   const w = window.open("", "_blank");
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(url)}`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
+
+  // Size-specific CSS variables
+  let labelWidth, labelHeight, qrSize, codeFontSize, brandFontSize;
+  if (size === "50x50") {
+    labelWidth = "50mm"; labelHeight = "50mm"; qrSize = "22mm";
+    codeFontSize = "9px"; brandFontSize = "8px";
+  } else if (size === "70x50") {
+    labelWidth = "70mm"; labelHeight = "50mm"; qrSize = "28mm";
+    codeFontSize = "11px"; brandFontSize = "10px";
+  } else {
+    labelWidth = "60mm"; labelHeight = "90mm"; qrSize = "34mm";
+    codeFontSize = "13px"; brandFontSize = "11px";
+  }
 
   let html = `<!doctype html><html lang="fr"><head><meta charset="utf-8">
   <title>Impression QR + Codes</title>
@@ -352,7 +366,7 @@ function printLabels(codes, brand, lot) {
     .info b { color: #b26a00; }
     .sheet { display: flex; flex-wrap: wrap; gap: 4mm; background: #fff; padding: 10px; border-radius: 8px; }
     .label {
-      width: 60mm; height: 90mm;
+      width: ${labelWidth}; height: ${labelHeight};
       border: 1px dashed #bbb;
       display: flex; flex-direction: column;
       page-break-inside: avoid;
@@ -366,8 +380,9 @@ function printLabels(codes, brand, lot) {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       padding: 3mm; text-align: center;
     }
-    .label-brand { font-size: 11px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; color: #000; margin-bottom: 2mm; }
-    .label-qr { width: 34mm; height: 34mm; display: block; }
+    .label-logo { max-height: 8mm; max-width: 40mm; margin-bottom: 1.5mm; object-fit: contain; }
+    .label-brand { font-size: ${brandFontSize}; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; color: #000; margin-bottom: 2mm; }
+    .label-qr { width: ${qrSize}; height: ${qrSize}; display: block; }
     .label-inst { font-size: 7px; color: #666; margin-top: 2mm; line-height: 1.4; }
     .label-fold {
       height: 6mm;
@@ -388,7 +403,7 @@ function printLabels(codes, brand, lot) {
     .label-code-title { font-size: 6.5px; color: #888; letter-spacing: 1.5px; margin-bottom: 1.5mm; text-transform: uppercase; }
     .label-code {
       font-family: 'Courier New', monospace;
-      font-size: 13px; font-weight: bold; letter-spacing: 1.5px;
+      font-size: ${codeFontSize}; font-weight: bold; letter-spacing: 1.5px;
       color: #000;
       padding: 1.5mm 3mm;
       border: 1px solid #ddd;
@@ -426,6 +441,7 @@ function printLabels(codes, brand, lot) {
       <div class="label">
         ${lot ? `<div class="label-lot">LOT ${escapeHtml(lot)}</div>` : ""}
         <div class="label-top">
+          ${logoUrl ? `<img class="label-logo" src="${escapeHtml(logoUrl)}" alt="Logo">` : ""}
           <div class="label-brand">${escapeHtml(brand)}</div>
           <img class="label-qr" src="${qrUrl}" alt="QR">
           <div class="label-inst">Scannez ce QR code<br>puis entrez le code de sécurité</div>
@@ -447,10 +463,10 @@ function printLabels(codes, brand, lot) {
 $("printBtn").onclick = () => {
   const brand = $("brand").value.trim() || "MARQUE";
   const lot = $("lot").value.trim() || "";
-  printLabels(lastCodes, brand, lot);
+  printLabels(lastCodes, brand, lot, lastLogo);
 };
 
 $("printLotBtn").onclick = () => {
   if (!loadedLotCodes.length) return alert("Aucun lot chargé.");
-  printLabels(loadedLotCodes, loadedLotBrand, loadedLotLot);
+  printLabels(loadedLotCodes, loadedLotBrand, loadedLotLot, loadedLotLogo);
 };
