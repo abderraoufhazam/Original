@@ -140,26 +140,118 @@ $("searchBtn").onclick = async () => {
   `;
 };
 
+// ============================================================
+// PRINT : Labels avec zone à gratter (pliage)
+// ============================================================
 $("printBtn").onclick = () => {
   if (!lastCodes.length) return alert("Créez d'abord un lot.");
+
   const url = location.origin + "/";
+  const brand = $("brand").value.trim() || "MARQUE";
+  const lot = $("lot").value.trim() || "";
   const w = window.open("", "_blank");
-  w.document.write(`<html><head><title>QR Codes</title><style>
-  body{font-family:Arial}.sheet{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-  .sticker{border:1px solid #ccc;border-radius:10px;padding:10px;text-align:center;page-break-inside:avoid}
-  .qr{margin:auto;width:130px;height:130px}.code{font-size:18px;font-weight:bold;letter-spacing:3px;margin:8px}
-  @media print{button{display:none}}
-  </style></head><body><button onclick="print()">PRINT</button><div class="sheet">`);
-  lastCodes.forEach((c, i) => {
-    w.document.write(
-      `<div class="sticker"><div class="qr" id="q${i}"></div><div class="code">${c}</div><small>Scratch & verify</small></div>`
-    );
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(url)}`;
+
+  let html = `<!doctype html><html lang="fr"><head><meta charset="utf-8">
+  <title>Impression QR + Codes</title>
+  <style>
+    @page { margin: 8mm; }
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; padding: 10px; margin: 0; background: #f5f5f5; }
+    .toolbar { background: #111; color: #fff; padding: 12px; text-align: center; margin-bottom: 15px; position: sticky; top: 0; z-index: 100; border-radius: 8px; }
+    .toolbar button { background: #fff; color: #111; border: 0; padding: 10px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
+    .info { font-size: 12px; color: #333; margin: 15px 0; padding: 14px; background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; line-height: 1.6; }
+    .info b { color: #b26a00; }
+    .sheet { display: flex; flex-wrap: wrap; gap: 4mm; background: #fff; padding: 10px; border-radius: 8px; }
+    .label {
+      width: 60mm; height: 90mm;
+      border: 1px dashed #bbb;
+      display: flex; flex-direction: column;
+      page-break-inside: avoid;
+      background: #fff;
+      position: relative;
+      border-radius: 3mm;
+      overflow: hidden;
+    }
+    .label-top {
+      flex: 1;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 3mm; text-align: center;
+    }
+    .label-brand { font-size: 11px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; color: #000; margin-bottom: 2mm; }
+    .label-qr { width: 34mm; height: 34mm; display: block; }
+    .label-inst { font-size: 7px; color: #666; margin-top: 2mm; line-height: 1.4; }
+    .label-fold {
+      height: 6mm;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 6px; color: #888;
+      border-top: 1px dashed #666;
+      border-bottom: 1px dashed #666;
+      background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 3px, #e8e8e8 3px, #e8e8e8 6px);
+      letter-spacing: 0.5px;
+      font-family: monospace;
+    }
+    .label-bottom {
+      height: 28mm;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 2mm; text-align: center;
+      background: #fff;
+    }
+    .label-code-title { font-size: 6.5px; color: #888; letter-spacing: 1.5px; margin-bottom: 1.5mm; text-transform: uppercase; }
+    .label-code {
+      font-family: 'Courier New', monospace;
+      font-size: 13px; font-weight: bold; letter-spacing: 1.5px;
+      color: #000;
+      padding: 1.5mm 3mm;
+      border: 1px solid #ddd;
+      border-radius: 2mm;
+      background: #fafafa;
+    }
+    .label-hint { font-size: 5.5px; color: #999; margin-top: 1.5mm; font-style: italic; }
+    .label-lot { position: absolute; top: 2mm; right: 2mm; font-size: 6px; color: #aaa; font-family: monospace; }
+    @media print {
+      .toolbar, .info { display: none !important; }
+      body { padding: 0; background: #fff; }
+      .sheet { padding: 0; gap: 2mm; background: #fff; }
+    }
+  </style></head><body>
+
+  <div class="toolbar">
+    <button onclick="window.print()">🖨 IMPRIMER</button>
+  </div>
+
+  <div class="info">
+    <b>📋 MODE D'EMPLOI :</b><br>
+    1. Imprimez sur papier autocollant A4.<br>
+    2. Découpez chaque étiquette.<br>
+    3. <b>Pliez le long de la ligne pointillée centrale.</b><br>
+    4. Le <b>code de sécurité se retrouve caché à l'intérieur.</b><br>
+    5. Collez les bords pour sceller.<br>
+    6. Le client scanne le QR (visible) puis <b>déchire ou déplie</b> pour révéler le code.
+  </div>
+
+  <div class="sheet">`;
+
+  lastCodes.forEach((code) => {
+    const formatted = code.match(/.{1,4}/g).join(" ");
+    html += `
+      <div class="label">
+        ${lot ? `<div class="label-lot">LOT ${escapeHtml(lot)}</div>` : ""}
+        <div class="label-top">
+          <div class="label-brand">${escapeHtml(brand)}</div>
+          <img class="label-qr" src="${qrUrl}" alt="QR">
+          <div class="label-inst">Scannez ce QR code<br>puis entrez le code de sécurité</div>
+        </div>
+        <div class="label-fold">✂ - - - - - - PLIEZ ICI - - - - - - ✂</div>
+        <div class="label-bottom">
+          <div class="label-code-title">Code de sécurité</div>
+          <div class="label-code">${formatted}</div>
+          <div class="label-hint">Ne pas révéler avant l'achat</div>
+        </div>
+      </div>`;
   });
-  w.document.write(
-    `</div><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"><\/script><script>
-    const u=${JSON.stringify(url)};
-    ${lastCodes.map((_, i) => `new QRCode(document.getElementById("q${i}"),{text:u,width:130,height:130});`).join("")}
-    <\/script></body></html>`
-  );
+
+  html += `</div></body></html>`;
+  w.document.write(html);
   w.document.close();
 };
