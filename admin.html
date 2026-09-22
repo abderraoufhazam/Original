@@ -63,16 +63,18 @@
       <div id="searchResult" class="result hidden" style="margin-top:15px"></div>
 
       <hr style="margin:25px 0;border:0;border-top:1px solid #eee">
-      <h2>Modifier un lot entier</h2>
-      <p class="muted">Entrez le numéro du lot pour charger toutes les informations, puis modifiez-les en une seule fois.</p>
+      <h2>Gérer un lot existant</h2>
+      <p class="muted">Chargez un lot par son numéro pour le consulter, l'imprimer ou le modifier.</p>
 
       <input id="editLotSearch" placeholder="Numéro de lot (ex: 001)" style="margin-top:10px">
       <button id="loadLotBtn" style="background:#444">CHARGER LE LOT</button>
       <div id="lotInfo" class="result hidden" style="margin-top:15px"></div>
 
+      <button id="printLotBtn" class="hidden" style="background:#0a6;margin-top:10px">🖨 IMPRIMER CE LOT</button>
+
       <div id="editForm" class="hidden" style="margin-top:15px;padding:15px;background:#f9f9f9;border-radius:10px;border:1px solid #eee">
-        <h3 style="margin-top:0">Nouvelles informations</h3>
-        <p class="muted" style="font-size:12px">Seuls les champs modifiés seront appliqués. Les champs vides gardent leur valeur actuelle.</p>
+        <h3 style="margin-top:0">Modifier ce lot</h3>
+        <p class="muted" style="font-size:12px">Seuls les champs remplis seront appliqués. Les champs vides gardent leur valeur actuelle.</p>
         <input id="editBrand" placeholder="Marque" style="margin-top:10px">
         <input id="editProductName" placeholder="Nom du produit" style="margin-top:10px">
         <input id="editReference" placeholder="Référence" style="margin-top:10px">
@@ -89,7 +91,7 @@
       <p id="publicUrl" class="muted"></p>
       <div id="qr" style="display:flex;justify-content:center;margin:15px"></div>
 
-      <button id="printBtn">IMPRIMER QR + CODES</button>
+      <button id="printBtn">IMPRIMER DERNIER LOT CRÉÉ</button>
       <button id="logoutBtn" style="background:#777">DÉCONNEXION</button>
     </div>
   </section>
