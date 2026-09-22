@@ -48,7 +48,7 @@ $("createBtn").onclick = async () => {
       id: "MAIN",
       status: "active",
       secret_code: code,
-      secret_status: "unused",
+      secret_status: "UNUSED",
       brand: $("brand").value.trim(),
       product_name: $("product_name").value.trim(),
       reference: $("reference").value.trim(),
