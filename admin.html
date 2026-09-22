@@ -63,6 +63,28 @@
       <div id="searchResult" class="result hidden" style="margin-top:15px"></div>
 
       <hr style="margin:25px 0;border:0;border-top:1px solid #eee">
+      <h2>Modifier un lot entier</h2>
+      <p class="muted">Entrez le numéro du lot pour charger toutes les informations, puis modifiez-les en une seule fois.</p>
+
+      <input id="editLotSearch" placeholder="Numéro de lot (ex: 001)" style="margin-top:10px">
+      <button id="loadLotBtn" style="background:#444">CHARGER LE LOT</button>
+      <div id="lotInfo" class="result hidden" style="margin-top:15px"></div>
+
+      <div id="editForm" class="hidden" style="margin-top:15px;padding:15px;background:#f9f9f9;border-radius:10px;border:1px solid #eee">
+        <h3 style="margin-top:0">Nouvelles informations</h3>
+        <p class="muted" style="font-size:12px">Seuls les champs modifiés seront appliqués. Les champs vides gardent leur valeur actuelle.</p>
+        <input id="editBrand" placeholder="Marque" style="margin-top:10px">
+        <input id="editProductName" placeholder="Nom du produit" style="margin-top:10px">
+        <input id="editReference" placeholder="Référence" style="margin-top:10px">
+        <input id="editNewLot" placeholder="Nouveau lot (optionnel - pour renommer)" style="margin-top:10px">
+        <input id="editManufactureDate" type="date" style="margin-top:10px">
+        <input id="editExpiryDate" type="date" style="margin-top:10px">
+        <input id="editProductImage" placeholder="URL image produit" style="margin-top:10px">
+        <input id="editDescription" placeholder="Description" style="margin-top:10px">
+        <button id="updateBatchBtn" style="background:#111;margin-top:10px">METTRE À JOUR LE LOT</button>
+      </div>
+
+      <hr style="margin:25px 0;border:0;border-top:1px solid #eee">
       <h2>QR commun</h2>
       <p id="publicUrl" class="muted"></p>
       <div id="qr" style="display:flex;justify-content:center;margin:15px"></div>
