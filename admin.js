@@ -5,6 +5,12 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const $ = id => document.getElementById(id);
 let lastCodes = [];
 
+function escapeHtml(v = "") {
+  return String(v).replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+  }[c]));
+}
+
 function randomCode() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let s = "";
@@ -12,6 +18,18 @@ function randomCode() {
   crypto.getRandomValues(a);
   for (let i = 0; i < 12; i++) s += chars[a[i] % chars.length];
   return s;
+}
+
+async function loadStats() {
+  const statuses = ["UNUSED", "USED", "DISABLED", "EXPIRED"];
+  for (const st of statuses) {
+    const { count, error } = await sb
+      .from("qr_codes")
+      .select("*", { count: "exact", head: true })
+      .eq("secret_status", st);
+    const el = $("stat" + st.charAt(0) + st.slice(1).toLowerCase());
+    if (el) el.textContent = error ? "—" : (count ?? 0);
+  }
 }
 
 async function refresh() {
@@ -23,6 +41,7 @@ async function refresh() {
     $("publicUrl").textContent = url;
     $("qr").innerHTML = "";
     new QRCode($("qr"), { text: url, width: 180, height: 180 });
+    loadStats();
   }
 }
 refresh();
@@ -77,10 +96,48 @@ $("createBtn").onclick = async () => {
     $("adminResult").innerHTML =
       `<h2>✓ LOT CRÉÉ</h2><p>${qty} codes générés avec succès.</p>`;
     $("printBtn").disabled = false;
+    loadStats();
   } catch (err) {
     $("adminResult").className = "result danger";
     $("adminResult").innerHTML = `<p>Erreur : ${err.message}</p>`;
   }
+};
+
+$("searchBtn").onclick = async () => {
+  const code = ($("searchCode").value || "").trim().toUpperCase();
+  const res = $("searchResult");
+  if (!code) { res.className = "result hidden"; return; }
+
+  const { data, error } = await sb
+    .from("qr_codes")
+    .select("*")
+    .eq("secret_code", code)
+    .limit(1);
+
+  if (error || !data || data.length === 0) {
+    res.className = "result danger";
+    res.innerHTML = `<h2>NON TROUVÉ</h2><p>Aucun code ne correspond.</p>`;
+    return;
+  }
+
+  const r = data[0];
+  const statusClass =
+    r.secret_status === "UNUSED" ? "success" :
+    r.secret_status === "USED" ? "warning" : "danger";
+
+  res.className = "result " + statusClass;
+  res.innerHTML = `
+    <h2>${escapeHtml(r.secret_status || "—")}</h2>
+    <div class="details">
+      ${r.brand ? `<div><b>Marque</b><span>${escapeHtml(r.brand)}</span></div>` : ""}
+      ${r.product_name ? `<div><b>Produit</b><span>${escapeHtml(r.product_name)}</span></div>` : ""}
+      ${r.reference ? `<div><b>Référence</b><span>${escapeHtml(r.reference)}</span></div>` : ""}
+      ${r.lot ? `<div><b>Lot</b><span>${escapeHtml(r.lot)}</span></div>` : ""}
+      ${r.manufacture_date ? `<div><b>Fabrication</b><span>${escapeHtml(r.manufacture_date)}</span></div>` : ""}
+      ${r.expiry_date ? `<div><b>Expiration</b><span>${escapeHtml(r.expiry_date)}</span></div>` : ""}
+      ${r.used_at ? `<div><b>Utilisé le</b><span>${escapeHtml(new Date(r.used_at).toLocaleString())}</span></div>` : ""}
+    </div>
+  `;
 };
 
 $("printBtn").onclick = () => {
