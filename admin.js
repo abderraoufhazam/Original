@@ -36,6 +36,51 @@ async function loadStats() {
   }
 }
 
+async function loadLog() {
+  const container = $("logList");
+  if (!container) return;
+  container.innerHTML = `<p class="muted">Chargement...</p>`;
+
+  const { data, error } = await sb
+    .from("qr_verifications")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (error) {
+    container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(error.message)}</p>`;
+    return;
+  }
+  if (!data || data.length === 0) {
+    container.innerHTML = `<p class="muted">Aucune vérification enregistrée pour le moment.</p>`;
+    return;
+  }
+
+  let html = "";
+  data.forEach(r => {
+    const statusClass =
+      r.result === "ORIGINAL" ? "success" :
+      r.result === "USED" ? "warning" : "danger";
+
+    const date = r.created_at ? new Date(r.created_at).toLocaleString() : "—";
+
+    html += `
+      <div class="log-row log-${statusClass}">
+        <div class="log-top">
+          <span class="log-result log-result-${statusClass}">${escapeHtml(r.result || "—")}</span>
+          <span class="log-date">${escapeHtml(date)}</span>
+        </div>
+        <div class="log-code">${escapeHtml(r.secret_code || "")}</div>
+        <div class="log-meta">
+          ${r.brand ? `<span>🏷 ${escapeHtml(r.brand)}</span>` : ""}
+          ${r.lot ? `<span>📦 ${escapeHtml(r.lot)}</span>` : ""}
+          ${r.ip ? `<span>🌐 ${escapeHtml(r.ip)}</span>` : ""}
+        </div>
+      </div>`;
+  });
+  container.innerHTML = html;
+}
+
 async function refresh() {
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
@@ -46,6 +91,7 @@ async function refresh() {
     $("qr").innerHTML = "";
     new QRCode($("qr"), { text: url, width: 180, height: 180 });
     loadStats();
+    loadLog();
   }
 }
 refresh();
@@ -63,6 +109,8 @@ $("logoutBtn").onclick = async () => {
   await sb.auth.signOut();
   location.reload();
 };
+
+$("refreshLogBtn").onclick = () => loadLog();
 
 // ============================================================
 // CREATE BATCH
@@ -210,10 +258,8 @@ $("loadLotBtn").onclick = async () => {
     </div>
   `;
 
-  // Show print button
   printLotBtn.classList.remove("hidden");
 
-  // Prefill edit form
   $("editBrand").value = r.brand || "";
   $("editProductName").value = r.product_name || "";
   $("editReference").value = r.reference || "";
@@ -285,7 +331,7 @@ $("updateBatchBtn").onclick = async () => {
 };
 
 // ============================================================
-// PRINT LABELS (shared function)
+// PRINT LABELS
 // ============================================================
 function printLabels(codes, brand, lot) {
   if (!codes || !codes.length) return alert("Aucun code à imprimer.");
@@ -398,14 +444,12 @@ function printLabels(codes, brand, lot) {
   w.document.close();
 }
 
-// Print last created batch
 $("printBtn").onclick = () => {
   const brand = $("brand").value.trim() || "MARQUE";
   const lot = $("lot").value.trim() || "";
   printLabels(lastCodes, brand, lot);
 };
 
-// Print loaded existing lot
 $("printLotBtn").onclick = () => {
   if (!loadedLotCodes.length) return alert("Aucun lot chargé.");
   printLabels(loadedLotCodes, loadedLotBrand, loadedLotLot);
