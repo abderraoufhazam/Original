@@ -1,5 +1,5 @@
 // api/verify.js
-// التحقق من الكود السري عبر Supabase RPC
+// Vérification du code secret + journalisation
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -31,6 +31,14 @@ export default async function handler(req, res) {
       });
     }
 
+    // Récupérer l'IP et le user-agent
+    const forwarded = req.headers['x-forwarded-for'];
+    const ip = (Array.isArray(forwarded) ? forwarded[0] : (forwarded || '').split(',')[0]).trim()
+      || req.headers['x-real-ip']
+      || 'unknown';
+    const userAgent = req.headers['user-agent'] || 'unknown';
+
+    // Appel de la fonction RPC
     const rpcResponse = await fetch(
       `${SUPABASE_URL}/rest/v1/rpc/verify_secret_code`,
       {
@@ -54,6 +62,30 @@ export default async function handler(req, res) {
     }
 
     const data = await rpcResponse.json();
+
+    // Journaliser la tentative dans qr_verifications
+    const logRow = {
+      secret_code: cleanCode,
+      result: data.status || 'UNKNOWN',
+      brand: data.product?.brand || null,
+      product_name: data.product?.product_name || null,
+      lot: data.product?.lot || null,
+      ip: ip,
+      user_agent: userAgent
+    };
+
+    // Log en arrière-plan (ne bloque pas la réponse si erreur)
+    fetch(`${SUPABASE_URL}/rest/v1/qr_verifications`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_SERVICE_ROLE_KEY,
+        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(logRow)
+    }).catch(err => console.error('Log error:', err));
+
     return res.status(200).json(data);
 
   } catch (error) {
