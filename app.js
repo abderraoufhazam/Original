@@ -23,19 +23,16 @@ form.addEventListener("submit", async (e) => {
   btn.textContent = "VÉRIFICATION...";
   result.className = "result hidden";
 
-  const params = new URLSearchParams(location.search);
-  const qrId = params.get("id") || "MAIN";
-
   try {
     const r = await fetch("/api/verify", {
       method: "POST",
       headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ qr_id: qrId, secret_code: code })
+      body: JSON.stringify({ secret_code: code })
     });
     const data = await r.json();
 
-    if (data.status === "valid") {
-      const p = data.product || {};
+    if (data.status === "ORIGINAL") {
+      const p = (data.product) || {};
       show("success", `
         <div class="icon">✓</div>
         <h2>PRODUIT ORIGINAL</h2>
@@ -45,16 +42,15 @@ form.addEventListener("submit", async (e) => {
           ${p.brand ? `<div><b>Marque</b><span>${escapeHtml(p.brand)}</span></div>` : ""}
           ${p.product_name ? `<div><b>Produit</b><span>${escapeHtml(p.product_name)}</span></div>` : ""}
           ${p.reference ? `<div><b>Référence</b><span>${escapeHtml(p.reference)}</span></div>` : ""}
-          ${p.serial ? `<div><b>N°</b><span>${escapeHtml(p.serial)}</span></div>` : ""}
           ${p.lot ? `<div><b>Lot</b><span>${escapeHtml(p.lot)}</span></div>` : ""}
           ${p.manufacture_date ? `<div><b>Fabrication</b><span>${escapeHtml(p.manufacture_date)}</span></div>` : ""}
           ${p.expiry_date ? `<div><b>Expiration</b><span>${escapeHtml(p.expiry_date)}</span></div>` : ""}
         </div>
         ${p.description ? `<p class="description">${escapeHtml(p.description)}</p>` : ""}
       `);
-    } else if (data.status === "already_used") {
+    } else if (data.status === "USED") {
       show("warning", `<div class="icon">!</div><h2>CODE DÉJÀ UTILISÉ</h2><p>Ce code a déjà été vérifié. Si vous pensez qu'il s'agit d'une erreur, contactez la marque.</p>`);
-    } else if (data.status === "disabled" || data.status === "expired") {
+    } else if (data.status === "DISABLED" || data.status === "EXPIRED") {
       show("warning", `<div class="icon">!</div><h2>CODE INVALIDE</h2><p>Ce code n'est plus actif.</p>`);
     } else {
       show("danger", `<div class="icon">×</div><h2>PRODUIT NON ORIGINAL</h2><p>Le code de sécurité saisi est invalide.</p>`);
