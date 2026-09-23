@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
   <title>Vérification d'authenticité — Produit dz ORG</title>
 
-  <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#111111">
   <link rel="icon" type="image/svg+xml" href="/icon.svg">
@@ -21,7 +20,6 @@
   <section class="card">
     <div class="brand">Produit dz ORG</div>
 
-    <!-- الشعار الجديد -->
     <img src="/icon.svg" alt="Produit dz ORG" class="app-logo">
 
     <h1>Vérification d'authenticité</h1>
@@ -33,10 +31,38 @@
       <button type="submit" id="verifyBtn">VÉRIFIER</button>
     </form>
 
+    <!-- Résultat de vérification -->
     <div id="result" class="result hidden"></div>
+
+    <!-- Section Avis client (apparaît si ORIGINAL) -->
+    <div id="feedbackSection" class="feedback-section hidden">
+      <h3>⭐ Notez ce produit</h3>
+      <p class="muted">Votre avis compte pour nous.</p>
+
+      <div class="stars" id="stars">
+        <button type="button" data-star="1">★</button>
+        <button type="button" data-star="2">★</button>
+        <button type="button" data-star="3">★</button>
+        <button type="button" data-star="4">★</button>
+        <button type="button" data-star="5">★</button>
+      </div>
+
+      <textarea id="feedbackComment" placeholder="Ajoutez un commentaire (optionnel)" rows="3"></textarea>
+
+      <button id="feedbackSubmit" type="button" style="background:linear-gradient(135deg,#16a34a,#22c55e)">ENVOYER MON AVIS</button>
+      <div id="feedbackMsg" class="hidden" style="margin-top:12px;font-size:13px;color:#16a34a;font-weight:600;text-align:center"></div>
+    </div>
+
+    <!-- Section Signalement (apparaît toujours après vérification) -->
+    <div id="reportSection" class="feedback-section hidden">
+      <h3>🚨 Signaler un problème</h3>
+      <p class="muted">Vous pensez que ce produit est une contrefaçon ? Signalez-le-nous.</p>
+      <button id="reportBtn" type="button" style="background:linear-gradient(135deg,#dc2626,#ef4444)">SIGNALER UNE CONTREFAÇON</button>
+      <div id="reportMsg" class="hidden" style="margin-top:12px;font-size:13px;color:#dc2626;font-weight:600;text-align:center"></div>
+    </div>
+
     <p class="small">Le code de sécurité ne peut être vérifié qu'une seule fois.</p>
 
-    <!-- Bouton d'installation PWA (optionnel) -->
     <button id="installBtn" class="hidden" style="margin-top:20px;background:#16a34a;color:#fff;border:0;padding:12px 20px;border-radius:8px;font-weight:bold;cursor:pointer;width:100%">
       📱 INSTALLER L'APPLICATION
     </button>
@@ -48,7 +74,6 @@
 </main>
 <script src="/app.js"></script>
 
-<!-- Enregistrement du service worker -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -58,7 +83,6 @@
     });
   }
 
-  // Installation PWA
   let deferredPrompt = null;
   const installBtn = document.getElementById('installBtn');
 
@@ -71,14 +95,12 @@
   installBtn.addEventListener('click', async () => {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log('Install outcome:', outcome);
+    await deferredPrompt.userChoice;
     deferredPrompt = null;
     installBtn.classList.add('hidden');
   });
 
   window.addEventListener('appinstalled', () => {
-    console.log('PWA installed');
     installBtn.classList.add('hidden');
   });
 </script>
