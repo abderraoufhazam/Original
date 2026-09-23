@@ -1,4 +1,3 @@
-
 // i18n.js — Traductions FR / AR / EN
 
 const TRANSLATIONS = {
@@ -11,8 +10,8 @@ const TRANSLATIONS = {
     verifying: "VÉRIFICATION...",
     footerSmall: "Le code de sécurité ne peut être vérifié qu'une seule fois.",
     footerBy: "Application vérifiée par",
+    followUs: "Suivez-nous sur les réseaux sociaux",
 
-    // Résultats
     originalTitle: "PRODUIT ORIGINAL",
     originalMsg: "Code authentifié avec succès.",
     usedTitle: "CODE DÉJÀ UTILISÉ",
@@ -24,7 +23,6 @@ const TRANSLATIONS = {
     errorTitle: "ERREUR DE CONNEXION",
     errorMsg: "Veuillez réessayer.",
 
-    // Détails produit
     brandLabel: "Marque",
     productLabel: "Produit",
     referenceLabel: "Référence",
@@ -32,7 +30,6 @@ const TRANSLATIONS = {
     fabricationLabel: "Fabrication",
     expirationLabel: "Expiration",
 
-    // Feedback
     feedbackTitle: "⭐ Notez ce produit",
     feedbackSubtitle: "Votre avis compte pour nous.",
     feedbackPlaceholder: "Ajoutez un commentaire (optionnel)",
@@ -40,16 +37,15 @@ const TRANSLATIONS = {
     feedbackSelectRating: "Veuillez sélectionner une note (1 à 5 étoiles).",
     feedbackThanks: "✓ Merci pour votre avis !",
 
-    // Signalement
     reportTitle: "🚨 Signaler un problème",
     reportSubtitle: "Vous pensez que ce produit est une contrefaçon ? Signalez-le-nous.",
     reportBtn: "SIGNALER UNE CONTREFAÇON",
     reportConfirm: "Confirmer le signalement de contrefaçon ?",
     reportThanks: "✓ Signalement enregistré. Merci.",
 
-    // Divers
     errorConn: "Erreur de connexion.",
-    installBtn: "📱 INSTALLER L'APPLICATION"
+    installBtn: "📱 INSTALLER L'APPLICATION",
+    offlineMsg: "Vous êtes hors ligne. Connectez-vous pour vérifier."
   },
 
   ar: {
@@ -61,8 +57,8 @@ const TRANSLATIONS = {
     verifying: "جاري التحقق...",
     footerSmall: "الكود السري يُستعمل مرة واحدة فقط.",
     footerBy: "التطبيق موثّق من",
+    followUs: "تابعونا على وسائل التواصل الاجتماعي",
 
-    // Résultats
     originalTitle: "منتج أصلي",
     originalMsg: "تم التحقق من الكود بنجاح.",
     usedTitle: "كود مستعمل من قبل",
@@ -74,7 +70,6 @@ const TRANSLATIONS = {
     errorTitle: "خطأ في الاتصال",
     errorMsg: "الرجاء المحاولة مجددًا.",
 
-    // Détails produit
     brandLabel: "العلامة",
     productLabel: "المنتج",
     referenceLabel: "المرجع",
@@ -82,7 +77,6 @@ const TRANSLATIONS = {
     fabricationLabel: "الإنتاج",
     expirationLabel: "الانتهاء",
 
-    // Feedback
     feedbackTitle: "⭐ قيّم هذا المنتج",
     feedbackSubtitle: "رأيك يهمنا.",
     feedbackPlaceholder: "أضف تعليقًا (اختياري)",
@@ -90,16 +84,15 @@ const TRANSLATIONS = {
     feedbackSelectRating: "الرجاء اختيار تقييم (من 1 إلى 5 نجوم).",
     feedbackThanks: "✓ شكرًا على رأيك!",
 
-    // Signalement
     reportTitle: "🚨 الإبلاغ عن مشكلة",
     reportSubtitle: "تعتقد أن هذا المنتج مقلّد؟ أبلغنا.",
     reportBtn: "الإبلاغ عن تقليد",
     reportConfirm: "تأكيد الإبلاغ عن التقليد؟",
     reportThanks: "✓ تم تسجيل الإبلاغ. شكرًا.",
 
-    // Divers
     errorConn: "خطأ في الاتصال.",
-    installBtn: "📱 تثبيت التطبيق"
+    installBtn: "📱 تثبيت التطبيق",
+    offlineMsg: "أنت غير متصل بالإنترنت. اتصل للتحقق."
   },
 
   en: {
@@ -111,8 +104,8 @@ const TRANSLATIONS = {
     verifying: "VERIFYING...",
     footerSmall: "The security code can only be verified once.",
     footerBy: "App verified by",
+    followUs: "Follow us on social media",
 
-    // Résultats
     originalTitle: "ORIGINAL PRODUCT",
     originalMsg: "Code successfully authenticated.",
     usedTitle: "CODE ALREADY USED",
@@ -124,7 +117,6 @@ const TRANSLATIONS = {
     errorTitle: "CONNECTION ERROR",
     errorMsg: "Please try again.",
 
-    // Détails produit
     brandLabel: "Brand",
     productLabel: "Product",
     referenceLabel: "Reference",
@@ -132,7 +124,6 @@ const TRANSLATIONS = {
     fabricationLabel: "Manufacturing",
     expirationLabel: "Expiration",
 
-    // Feedback
     feedbackTitle: "⭐ Rate this product",
     feedbackSubtitle: "Your opinion matters to us.",
     feedbackPlaceholder: "Add a comment (optional)",
@@ -140,16 +131,15 @@ const TRANSLATIONS = {
     feedbackSelectRating: "Please select a rating (1 to 5 stars).",
     feedbackThanks: "✓ Thank you for your review!",
 
-    // Signalement
     reportTitle: "🚨 Report a problem",
     reportSubtitle: "Think this product is counterfeit? Report it to us.",
     reportBtn: "REPORT A COUNTERFEIT",
     reportConfirm: "Confirm the counterfeit report?",
     reportThanks: "✓ Report submitted. Thank you.",
 
-    // Divers
     errorConn: "Connection error.",
-    installBtn: "📱 INSTALL THE APP"
+    installBtn: "📱 INSTALL THE APP",
+    offlineMsg: "You are offline. Connect to verify."
   }
 };
 
@@ -179,10 +169,8 @@ function applyTranslations() {
     }
   });
 
-  // Titre de la page
   document.title = t("pageTitle");
 
-  // Direction RTL pour l'arabe
   if (currentLang === "ar") {
     document.documentElement.dir = "rtl";
     document.documentElement.lang = "ar";
@@ -191,7 +179,6 @@ function applyTranslations() {
     document.documentElement.lang = currentLang;
   }
 
-  // Mettre à jour le bouton de langue actif
   document.querySelectorAll(".lang-btn").forEach(b => {
     b.classList.toggle("active", b.dataset.lang === currentLang);
   });
@@ -201,7 +188,6 @@ function setLanguage(lang) {
   currentLang = lang;
   localStorage.setItem("lang", lang);
   applyTranslations();
-  // Ré-appliquer les messages déjà affichés si possible
   if (typeof window.__reapplyMessages === "function") {
     window.__reapplyMessages();
   }
