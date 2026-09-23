@@ -1304,6 +1304,38 @@ html.dark .dark-toggle {
   color: #fbbf24 !important;
   border-color: #334155 !important;
 }
+/* Fix : Dark toggle inside lang-switcher */
+.lang-switcher .dark-toggle {
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
+  left: auto !important;
+  width: 36px !important;
+  height: 32px !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  box-shadow: none !important;
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border: 1px solid #e2e8f0 !important;
+  transform: none !important;
+}
+
+.lang-switcher .dark-toggle:hover {
+  background: #e2e8f0 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+html.dark .lang-switcher .dark-toggle {
+  background: #1e293b !important;
+  color: #fbbf24 !important;
+  border-color: #334155 !important;
+}
+
+html.dark .lang-switcher .dark-toggle:hover {
+  background: #334155 !important;
+}
 
 /* Position pour éviter conflit avec lang-switcher */
 .lang-switcher + .dark-toggle,
