@@ -12,6 +12,10 @@ let loadedLotLot = "";
 let loadedLotLogo = "";
 let currentFeedbackFilter = "all";
 
+let chartDaily = null;
+let chartResults = null;
+let chartTopLots = null;
+
 function escapeHtml(v = "") {
   return String(v).replace(/[&<>"']/g, c => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
@@ -172,8 +176,8 @@ async function loadFeedback() {
           </span>
           <span class="log-date">${escapeHtml(date)}</span>
         </div>
-        ${stars ? `<div style="margin:6px 0">${stars} <span style="font-weight:700;color:#0f172a;margin-left:6px">${r.rating}/5</span></div>` : ""}
-        ${r.comment ? `<div style="font-size:13px;color:#334155;line-height:1.6;margin:8px 0;padding:10px 12px;background:#fff;border-radius:10px;border:1px solid #e2e8f0">${escapeHtml(r.comment)}</div>` : ""}
+        ${stars ? `<div style="margin:6px 0">${stars} <span style="font-weight:700;color:inherit;margin-left:6px">${r.rating}/5</span></div>` : ""}
+        ${r.comment ? `<div style="font-size:13px;color:inherit;line-height:1.6;margin:8px 0;padding:10px 12px;background:rgba(255,255,255,0.5);border-radius:10px;border:1px solid rgba(0,0,0,0.05)">${escapeHtml(r.comment)}</div>` : ""}
         <div class="log-meta">
           ${r.secret_code ? `<span style="font-family:monospace;font-weight:700">🔑 ${escapeHtml(r.secret_code)}</span>` : ""}
           ${r.ip ? `<span>🌐 ${escapeHtml(r.ip)}</span>` : ""}
@@ -183,23 +187,211 @@ async function loadFeedback() {
   container.innerHTML = html;
 }
 
-// Tabs de filtre
-document.querySelectorAll("#feedbackTabs .tab").forEach(t => {
-  t.addEventListener("click", () => {
-    document.querySelectorAll("#feedbackTabs .tab").forEach(x => {
-      x.classList.remove("active");
-      x.style.background = "#fff";
-      x.style.color = "#0f172a";
-      x.style.border = "1px solid #e2e8f0";
+// ============================================================
+// CHARTS
+// ============================================================
+function getChartColors() {
+  const isDark = document.documentElement.classList.contains("dark");
+  return {
+    text: isDark ? "#cbd5e1" : "#334155",
+    grid: isDark ? "rgba(255,255,255,0.08)" : "rgba(15,23,42,0.06)"
+  };
+}
+
+async function loadCharts() {
+  // ---------- 1. Daily ----------
+  try {
+    const since = new Date();
+    since.setDate(since.getDate() - 13);
+    since.setHours(0, 0, 0, 0);
+
+    const { data: verifs } = await sb
+      .from("qr_verifications")
+      .select("created_at, result")
+      .gte("created_at", since.toISOString())
+      .limit(10000);
+
+    const days = [];
+    const counts = { total: [] };
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(since);
+      d.setDate(d.getDate() + i);
+      days.push(d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }));
+      counts.total.push(0);
+    }
+
+    (verifs || []).forEach(v => {
+      const d = new Date(v.created_at);
+      d.setHours(0, 0, 0, 0);
+      const idx = Math.round((d - since) / (1000 * 60 * 60 * 24));
+      if (idx >= 0 && idx < 14) counts.total[idx]++;
     });
-    t.classList.add("active");
-    t.style.background = "#0f172a";
-    t.style.color = "#fff";
-    t.style.border = "0";
-    currentFeedbackFilter = t.dataset.tab;
-    loadFeedback();
-  });
-});
+
+    const colors = getChartColors();
+    const ctx = document.getElementById("chartDaily");
+    if (ctx) {
+      if (chartDaily) chartDaily.destroy();
+      chartDaily = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: days,
+          datasets: [{
+            label: "Vérifications",
+            data: counts.total,
+            borderColor: "#16a34a",
+            backgroundColor: "rgba(22,163,74,0.15)",
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: "#16a34a",
+            pointBorderColor: "#fff",
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { backgroundColor: "#0f172a", titleColor: "#fff", bodyColor: "#e2e8f0", padding: 10, cornerRadius: 8 }
+          },
+          scales: {
+            y: { beginAtZero: true, ticks: { color: colors.text, precision: 0 }, grid: { color: colors.grid } },
+            x: { ticks: { color: colors.text, font: { size: 10 } }, grid: { display: false } }
+          }
+        }
+      });
+    }
+  } catch (e) { console.warn("chartDaily error:", e); }
+
+  // ---------- 2. Distribution ----------
+  try {
+    const { data: allVerifs } = await sb
+      .from("qr_verifications")
+      .select("result")
+      .limit(10000);
+
+    const distribution = { ORIGINAL: 0, USED: 0, NOT_FOUND: 0 };
+    (allVerifs || []).forEach(v => {
+      if (distribution[v.result] !== undefined) distribution[v.result]++;
+      else distribution.NOT_FOUND++;
+    });
+
+    const ctx = document.getElementById("chartResults");
+    if (ctx) {
+      if (chartResults) chartResults.destroy();
+      chartResults = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+          labels: ["✓ Original", "⚠ Déjà utilisé", "✗ Non original"],
+          datasets: [{
+            data: [distribution.ORIGINAL, distribution.USED, distribution.NOT_FOUND],
+            backgroundColor: ["#16a34a", "#eab308", "#dc2626"],
+            borderColor: "#fff",
+            borderWidth: 3,
+            hoverOffset: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: "62%",
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: { color: getChartColors().text, padding: 14, font: { size: 12, weight: "600" }, usePointStyle: true, pointStyle: "circle" }
+            },
+            tooltip: {
+              backgroundColor: "#0f172a", titleColor: "#fff", bodyColor: "#e2e8f0", padding: 10, cornerRadius: 8,
+              callbacks: {
+                label: function(ctx) {
+                  const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                  const pct = total > 0 ? Math.round((ctx.parsed / total) * 100) : 0;
+                  return ` ${ctx.label}: ${ctx.parsed} (${pct}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+  } catch (e) { console.warn("chartResults error:", e); }
+
+  // ---------- 3. Top 5 lots ----------
+  try {
+    const { data: verifs } = await sb
+      .from("qr_verifications")
+      .select("lot, result")
+      .eq("result", "ORIGINAL")
+      .limit(10000);
+
+    const lotCounts = {};
+    (verifs || []).forEach(v => {
+      if (v.lot) lotCounts[v.lot] = (lotCounts[v.lot] || 0) + 1;
+    });
+
+    const top = Object.entries(lotCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const labels = top.map(t => t[0] || "—");
+    const data = top.map(t => t[1]);
+
+    const ctx = document.getElementById("chartTopLots");
+    if (ctx) {
+      if (chartTopLots) chartTopLots.destroy();
+
+      if (labels.length === 0) {
+        const parent = ctx.parentElement;
+        if (parent && !parent.querySelector(".empty-msg")) {
+          parent.innerHTML = `<p class="muted empty-msg" style="text-align:center;padding:40px 0">Aucune donnée pour le moment.</p>`;
+        }
+        return;
+      }
+
+      chartTopLots = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: labels,
+          datasets: [{
+            label: "Vérifications",
+            data: data,
+            backgroundColor: [
+              "rgba(22,163,74,0.85)",
+              "rgba(59,130,246,0.85)",
+              "rgba(234,179,8,0.85)",
+              "rgba(168,85,247,0.85)",
+              "rgba(236,72,153,0.85)"
+            ],
+            borderRadius: 8,
+            borderSkipped: false,
+            barThickness: 40
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: "y",
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: "#0f172a", titleColor: "#fff", bodyColor: "#e2e8f0", padding: 10, cornerRadius: 8,
+              callbacks: {
+                title: (items) => "Lot: " + items[0].label,
+                label: (ctx) => " " + ctx.parsed.x + " vérification(s)"
+              }
+            }
+          },
+          scales: {
+            x: { beginAtZero: true, ticks: { color: getChartColors().text, precision: 0 }, grid: { color: getChartColors().grid } },
+            y: { ticks: { color: getChartColors().text, font: { size: 12, weight: "600" } }, grid: { display: false } }
+          }
+        }
+      });
+    }
+  } catch (e) { console.warn("chartTopLots error:", e); }
+}
+
+window.__reloadCharts = loadCharts;
 
 // ============================================================
 // AUTH
@@ -216,6 +408,7 @@ async function refresh() {
     loadStats();
     loadLog();
     loadFeedback();
+    loadCharts();
   }
 }
 refresh();
@@ -248,6 +441,24 @@ $("logoutBtn").onclick = async () => {
 $("refreshLogBtn").onclick = () => loadLog();
 $("refreshFeedbackBtn").onclick = () => loadFeedback();
 
+// Tabs feedback
+document.querySelectorAll("#feedbackTabs .tab").forEach(t => {
+  t.addEventListener("click", () => {
+    document.querySelectorAll("#feedbackTabs .tab").forEach(x => {
+      x.classList.remove("active");
+      x.style.background = "#fff";
+      x.style.color = "#0f172a";
+      x.style.border = "1px solid #e2e8f0";
+    });
+    t.classList.add("active");
+    t.style.background = "#0f172a";
+    t.style.color = "#fff";
+    t.style.border = "0";
+    currentFeedbackFilter = t.dataset.tab;
+    loadFeedback();
+  });
+});
+
 // ============================================================
 // CREATE BATCH
 // ============================================================
@@ -277,6 +488,9 @@ $("createBtn").onclick = async () => {
       expiry_date: $("expiry_date").value || null,
       product_image: $("product_image").value.trim() || null,
       logo_url: $("logo_url").value.trim() || null,
+      instagram_url: $("instagram_url").value.trim() || null,
+      facebook_url: $("facebook_url").value.trim() || null,
+      tiktok_url: $("tiktok_url").value.trim() || null,
       description: $("description").value.trim() || null
     });
   }
@@ -292,10 +506,10 @@ $("createBtn").onclick = async () => {
       if (error) throw error;
     }
     $("adminResult").className = "result success";
-    $("adminResult").innerHTML =
-      `<h2>✓ LOT CRÉÉ</h2><p>${qty} codes générés avec succès.</p>`;
+    $("adminResult").innerHTML = `<h2>✓ LOT CRÉÉ</h2><p>${qty} codes générés avec succès.</p>`;
     $("printBtn").classList.remove("hidden");
     loadStats();
+    loadCharts();
   } catch (err) {
     $("adminResult").className = "result danger";
     $("adminResult").innerHTML = `<p>Erreur : ${escapeHtml(err.message)}</p>`;
@@ -306,7 +520,7 @@ $("createBtn").onclick = async () => {
 };
 
 // ============================================================
-// SEARCH CODE
+// SEARCH
 // ============================================================
 $("searchBtn").onclick = async () => {
   const code = ($("searchCode").value || "").trim().toUpperCase();
@@ -418,12 +632,15 @@ $("loadLotBtn").onclick = async () => {
   $("editProductImage").value = r.product_image || "";
   $("editLogoUrl").value = r.logo_url || "";
   $("editDescription").value = r.description || "";
+  $("editInstagramUrl").value = r.instagram_url || "";
+  $("editFacebookUrl").value = r.facebook_url || "";
+  $("editTiktokUrl").value = r.tiktok_url || "";
 
   form.classList.remove("hidden");
 };
 
 // ============================================================
-// UPDATE ENTIRE LOT
+// UPDATE LOT
 // ============================================================
 $("updateBatchBtn").onclick = async () => {
   if (!loadedLot) return alert("Chargez d'abord un lot.");
@@ -444,6 +661,9 @@ $("updateBatchBtn").onclick = async () => {
   if (v("editProductImage")) updates.product_image = v("editProductImage");
   if (v("editLogoUrl")) updates.logo_url = v("editLogoUrl");
   if (v("editDescription")) updates.description = v("editDescription");
+  if (v("editInstagramUrl")) updates.instagram_url = v("editInstagramUrl");
+  if (v("editFacebookUrl")) updates.facebook_url = v("editFacebookUrl");
+  if (v("editTiktokUrl")) updates.tiktok_url = v("editTiktokUrl");
 
   if (Object.keys(updates).length === 0) return alert("Aucun champ à modifier.");
   if (!confirm(`Confirmer la mise à jour du lot "${loadedLot}" ?`)) return;
@@ -477,7 +697,7 @@ $("updateBatchBtn").onclick = async () => {
 };
 
 // ============================================================
-// PRINT — 2 modes : labels ou liste
+// PRINT
 // ============================================================
 function printLabels(codes, brand, lot, logoUrl) {
   if (!codes || !codes.length) return alert("Aucun code à imprimer.");
@@ -487,7 +707,6 @@ function printLabels(codes, brand, lot, logoUrl) {
   const w = window.open("", "_blank");
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
 
-  // ---------- MODE LISTE ----------
   if (mode === "list") {
     let html = `<!doctype html><html lang="fr"><head><meta charset="utf-8">
     <title>Liste des codes</title>
@@ -509,16 +728,9 @@ function printLabels(codes, brand, lot, logoUrl) {
       .num { color: #6b7280; width: 45px; font-weight: bold; }
       .code-cell { font-family: 'Courier New', monospace; font-weight: bold; font-size: 15px; letter-spacing: 2px; color: #111; }
       .footer { margin-top: 25px; padding-top: 12px; border-top: 1px solid #ddd; text-align: center; font-size: 11px; color: #888; }
-      @media print {
-        .toolbar { display: none !important; }
-        body { padding: 0; }
-      }
+      @media print { .toolbar { display: none !important; } body { padding: 0; } }
     </style></head><body>
-
-    <div class="toolbar">
-      <button onclick="window.print()">🖨 IMPRIMER</button>
-    </div>
-
+    <div class="toolbar"><button onclick="window.print()">🖨 IMPRIMER</button></div>
     <div class="header">
       ${logoUrl ? `<img src="${escapeHtml(logoUrl)}" style="max-height:50px;margin-bottom:10px">` : ""}
       <h1>${escapeHtml(brand)}</h1>
@@ -527,54 +739,27 @@ function printLabels(codes, brand, lot, logoUrl) {
         ${lot ? `<span><b>Lot :</b> ${escapeHtml(lot)}</span>` : ""}
         <span><b>Total :</b> ${codes.length} code(s)</span>
       </div>
-      <p style="font-size:11px;color:#888;margin-top:10px">Document confidentiel — À conserver en lieu sûr</p>
     </div>
-
-    <table>
-      <thead>
-        <tr>
-          <th class="num">#</th>
-          <th>Code de sécurité</th>
-        </tr>
-      </thead>
-      <tbody>`;
+    <table><thead><tr><th class="num">#</th><th>Code de sécurité</th></tr></thead><tbody>`;
 
     codes.forEach((code, i) => {
-      const formatted = code.match(/.{1,4}/g).join(" ");
-      html += `
-        <tr>
-          <td class="num">${i + 1}</td>
-          <td class="code-cell">${formatted}</td>
-        </tr>`;
+      html += `<tr><td class="num">${i + 1}</td><td class="code-cell">${code.match(/.{1,4}/g).join(" ")}</td></tr>`;
     });
 
-    html += `
-      </tbody>
-    </table>
-
-    <div class="footer">
-      Produit dz ORG — ${new Date().toLocaleString()}
-    </div>
-
-    </body></html>`;
+    html += `</tbody></table><div class="footer">Produit dz ORG — ${new Date().toLocaleString()}</div></body></html>`;
     w.document.write(html);
     w.document.close();
     return;
   }
 
-  // ---------- MODE LABELS ----------
   const size = $("labelSize").value || "60x90";
-
   let labelWidth, labelHeight, qrSize, codeFontSize, brandFontSize;
   if (size === "50x50") {
-    labelWidth = "50mm"; labelHeight = "50mm"; qrSize = "22mm";
-    codeFontSize = "9px"; brandFontSize = "8px";
+    labelWidth = "50mm"; labelHeight = "50mm"; qrSize = "22mm"; codeFontSize = "9px"; brandFontSize = "8px";
   } else if (size === "70x50") {
-    labelWidth = "70mm"; labelHeight = "50mm"; qrSize = "28mm";
-    codeFontSize = "11px"; brandFontSize = "10px";
+    labelWidth = "70mm"; labelHeight = "50mm"; qrSize = "28mm"; codeFontSize = "11px"; brandFontSize = "10px";
   } else {
-    labelWidth = "60mm"; labelHeight = "90mm"; qrSize = "34mm";
-    codeFontSize = "13px"; brandFontSize = "11px";
+    labelWidth = "60mm"; labelHeight = "90mm"; qrSize = "34mm"; codeFontSize = "13px"; brandFontSize = "11px";
   }
 
   let html = `<!doctype html><html lang="fr"><head><meta charset="utf-8">
@@ -583,83 +768,38 @@ function printLabels(codes, brand, lot, logoUrl) {
     @page { margin: 8mm; }
     * { box-sizing: border-box; }
     body { font-family: Arial, sans-serif; padding: 10px; margin: 0; background: #f5f5f5; }
-    .toolbar { background: #111; color: #fff; padding: 12px; text-align: center; margin-bottom: 15px; position: sticky; top: 0; z-index: 100; border-radius: 8px; }
+    .toolbar { background: #111; color: #fff; padding: 12px; text-align: center; margin-bottom: 15px; border-radius: 8px; position: sticky; top: 0; z-index: 100; }
     .toolbar button { background: #fff; color: #111; border: 0; padding: 10px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
     .info { font-size: 12px; color: #333; margin: 15px 0; padding: 14px; background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; line-height: 1.6; }
     .info b { color: #b26a00; }
     .sheet { display: flex; flex-wrap: wrap; gap: 4mm; background: #fff; padding: 10px; border-radius: 8px; }
-    .label {
-      width: ${labelWidth}; height: ${labelHeight};
-      border: 1px dashed #bbb;
-      display: flex; flex-direction: column;
-      page-break-inside: avoid;
-      background: #fff;
-      position: relative;
-      border-radius: 3mm;
-      overflow: hidden;
-    }
-    .label-top {
-      flex: 1;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 3mm; text-align: center;
-    }
+    .label { width: ${labelWidth}; height: ${labelHeight}; border: 1px dashed #bbb; display: flex; flex-direction: column; page-break-inside: avoid; background: #fff; position: relative; border-radius: 3mm; overflow: hidden; }
+    .label-top { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3mm; text-align: center; }
     .label-logo { max-height: 8mm; max-width: 40mm; margin-bottom: 1.5mm; object-fit: contain; }
     .label-brand { font-size: ${brandFontSize}; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; color: #000; margin-bottom: 2mm; }
     .label-qr { width: ${qrSize}; height: ${qrSize}; display: block; }
     .label-inst { font-size: 7px; color: #666; margin-top: 2mm; line-height: 1.4; }
-    .label-fold {
-      height: 6mm;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 6px; color: #888;
-      border-top: 1px dashed #666;
-      border-bottom: 1px dashed #666;
-      background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 3px, #e8e8e8 3px, #e8e8e8 6px);
-      letter-spacing: 0.5px;
-      font-family: monospace;
-    }
-    .label-bottom {
-      height: 28mm;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 2mm; text-align: center;
-      background: #fff;
-    }
+    .label-fold { height: 6mm; display: flex; align-items: center; justify-content: center; font-size: 6px; color: #888; border-top: 1px dashed #666; border-bottom: 1px dashed #666; background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 3px, #e8e8e8 3px, #e8e8e8 6px); letter-spacing: 0.5px; font-family: monospace; }
+    .label-bottom { height: 28mm; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2mm; text-align: center; background: #fff; }
     .label-code-title { font-size: 6.5px; color: #888; letter-spacing: 1.5px; margin-bottom: 1.5mm; text-transform: uppercase; }
-    .label-code {
-      font-family: 'Courier New', monospace;
-      font-size: ${codeFontSize}; font-weight: bold; letter-spacing: 1.5px;
-      color: #000;
-      padding: 1.5mm 3mm;
-      border: 1px solid #ddd;
-      border-radius: 2mm;
-      background: #fafafa;
-    }
+    .label-code { font-family: 'Courier New', monospace; font-size: ${codeFontSize}; font-weight: bold; letter-spacing: 1.5px; color: #000; padding: 1.5mm 3mm; border: 1px solid #ddd; border-radius: 2mm; background: #fafafa; }
     .label-hint { font-size: 5.5px; color: #999; margin-top: 1.5mm; font-style: italic; }
     .label-lot { position: absolute; top: 2mm; right: 2mm; font-size: 6px; color: #aaa; font-family: monospace; }
-    @media print {
-      .toolbar, .info { display: none !important; }
-      body { padding: 0; background: #fff; }
-      .sheet { padding: 0; gap: 2mm; background: #fff; }
-    }
+    @media print { .toolbar, .info { display: none !important; } body { padding: 0; background: #fff; } .sheet { padding: 0; gap: 2mm; background: #fff; } }
   </style></head><body>
 
-  <div class="toolbar">
-    <button onclick="window.print()">🖨 IMPRIMER</button>
-  </div>
-
-  <div class="info">
-    <b>📋 MODE D'EMPLOI :</b><br>
-    1. Imprimez sur papier autocollant A4.<br>
-    2. Découpez chaque étiquette.<br>
-    3. <b>Pliez le long de la ligne pointillée centrale.</b><br>
-    4. Le <b>code de sécurité se retrouve caché à l'intérieur.</b><br>
-    5. Collez les bords pour sceller.<br>
-    6. Le client scanne le QR (visible) puis <b>déchire ou déplie</b> pour révéler le code.
-  </div>
+  <div class="toolbar"><button onclick="window.print()">🖨 IMPRIMER</button></div>
+  <div class="info"><b>📋 MODE D'EMPLOI :</b><br>
+  1. Imprimez sur papier autocollant A4.<br>
+  2. Découpez chaque étiquette.<br>
+  3. <b>Pliez le long de la ligne pointillée centrale.</b><br>
+  4. Le <b>code de sécurité se retrouve caché à l'intérieur.</b><br>
+  5. Collez les bords pour sceller.<br>
+  6. Le client scanne le QR (visible) puis <b>déchire ou déplie</b> pour révéler le code.</div>
 
   <div class="sheet">`;
 
   codes.forEach((code) => {
-    const formatted = code.match(/.{1,4}/g).join(" ");
     html += `
       <div class="label">
         ${lot ? `<div class="label-lot">LOT ${escapeHtml(lot)}</div>` : ""}
@@ -672,7 +812,7 @@ function printLabels(codes, brand, lot, logoUrl) {
         <div class="label-fold">✂ - - - - - - PLIEZ ICI - - - - - - ✂</div>
         <div class="label-bottom">
           <div class="label-code-title">Code de sécurité</div>
-          <div class="label-code">${formatted}</div>
+          <div class="label-code">${code.match(/.{1,4}/g).join(" ")}</div>
           <div class="label-hint">Ne pas révéler avant l'achat</div>
         </div>
       </div>`;
@@ -684,9 +824,7 @@ function printLabels(codes, brand, lot, logoUrl) {
 }
 
 $("printBtn").onclick = () => {
-  const brand = $("brand").value.trim() || "MARQUE";
-  const lot = $("lot").value.trim() || "";
-  printLabels(lastCodes, brand, lot, lastLogo);
+  printLabels(lastCodes, $("brand").value.trim() || "MARQUE", $("lot").value.trim() || "", lastLogo);
 };
 
 $("printLotBtn").onclick = () => {
