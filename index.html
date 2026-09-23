@@ -4,12 +4,22 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
   <title>Vérification d'authenticité</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#111111">
+  <link rel="icon" type="image/svg+xml" href="/icon.svg">
+  <link rel="apple-touch-icon" href="/icon.svg">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="QR Auth">
+
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 <main class="page">
   <section class="card">
-    <div class="brand">VOTRE MARQUE</div>
+    <div class="brand">Produit dz ORG</div>
     <div class="shield">✓</div>
     <h1>Vérification d'authenticité</h1>
     <p class="muted">Entrez le code de sécurité caché sous la zone à gratter.</p>
@@ -22,8 +32,52 @@
 
     <div id="result" class="result hidden"></div>
     <p class="small">Le code de sécurité ne peut être vérifié qu'une seule fois.</p>
+
+    <!-- Bouton d'installation PWA (optionnel) -->
+    <button id="installBtn" class="hidden" style="margin-top:20px;background:#16a34a;color:#fff;border:0;padding:12px 20px;border-radius:8px;font-weight:bold;cursor:pointer;width:100%">
+      📱 INSTALLER L'APPLICATION
+    </button>
+
+    <p class="small" style="margin-top:15px;font-size:11px;color:#999">
+      Application vérifiée par <b>Produit dz ORG</b>
+    </p>
   </section>
 </main>
 <script src="/app.js"></script>
+
+<!-- Enregistrement du service worker -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(reg => console.log('SW registered:', reg.scope))
+        .catch(err => console.warn('SW registration failed:', err));
+    });
+  }
+
+  // Installation PWA
+  let deferredPrompt = null;
+  const installBtn = document.getElementById('installBtn');
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.classList.remove('hidden');
+  });
+
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log('Install outcome:', outcome);
+    deferredPrompt = null;
+    installBtn.classList.add('hidden');
+  });
+
+  window.addEventListener('appinstalled', () => {
+    console.log('PWA installed');
+    installBtn.classList.add('hidden');
+  });
+</script>
 </body>
 </html>
