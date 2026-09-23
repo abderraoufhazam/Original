@@ -41,7 +41,6 @@
       --radius: 14px;
       --radius-lg: 22px;
       --shadow-lg: 0 25px 50px -12px rgba(15, 23, 42, 0.22), 0 10px 20px -10px rgba(15, 23, 42, 0.12);
-      --shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.15);
     }
 
     html.dark {
@@ -55,7 +54,6 @@
       --danger-bg: rgba(220, 38, 38, 0.15);
       --success-bg: rgba(22, 163, 74, 0.15);
       --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-      --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
     }
 
     html, body {
@@ -151,7 +149,7 @@
     }
 
     .welcome-badge {
-      display: inline-flex;
+      display: flex;
       align-items: center;
       gap: 8px;
       padding: 6px 14px;
@@ -162,7 +160,6 @@
       font-size: 12px;
       font-weight: 700;
       margin: 0 auto 16px;
-      display: flex;
       width: fit-content;
     }
 
@@ -183,7 +180,6 @@
       line-height: 1.6;
     }
 
-    /* WhatsApp CTA */
     .whatsapp-cta {
       display: flex;
       align-items: center;
@@ -212,10 +208,7 @@
       padding: 8px;
     }
 
-    .whatsapp-cta-text {
-      flex: 1;
-      min-width: 0;
-    }
+    .whatsapp-cta-text { flex: 1; min-width: 0; }
 
     .whatsapp-cta-title {
       font-size: 15px;
@@ -233,7 +226,6 @@
       flex-shrink: 0;
     }
 
-    /* OR divider */
     .or-divider {
       display: flex;
       align-items: center;
@@ -253,14 +245,9 @@
       background: var(--border);
     }
 
-    /* Form */
     form { display: flex; flex-direction: column; gap: 12px; }
 
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+    .field { display: flex; flex-direction: column; gap: 6px; }
 
     label {
       font-size: 11px;
@@ -462,9 +449,6 @@
 </main>
 
 <script>
-  // ============================================================
-  // SUPABASE
-  // ============================================================
   const SUPABASE_URL = "https://qfpmbbntxyrderjlejql.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m";
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -474,9 +458,6 @@
   let currentUser = null;
   let userMeta = {};
 
-  // ============================================================
-  // i18n
-  // ============================================================
   const TRANSLATIONS = {
     ar: {
       welcomeBadge: "تم إنشاء حسابك بنجاح",
@@ -583,9 +564,6 @@
 
   applyTranslations();
 
-  // ============================================================
-  // MESSAGE UI
-  // ============================================================
   function showMsg(text, type) {
     const el = $("msg");
     el.className = "msg " + type;
@@ -594,17 +572,13 @@
   }
   function hideMsg() { $("msg").classList.add("hidden"); }
 
-  // ============================================================
-  // SESSION
-  // ============================================================
   async function checkSession() {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) {
-      // Pas connecté → rediriger vers signup
       setTimeout(() => {
         window.location.href = "/signup";
       }, 1500);
-      showMsg(t("errNotLogged") + " → " + t("adminLink"), "error");
+      showMsg(t("errNotLogged"), "error");
       return;
     }
     currentUser = session.user;
@@ -613,9 +587,6 @@
 
   checkSession();
 
-  // ============================================================
-  // SUBMIT MESSAGE
-  // ============================================================
   $("contactForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     hideMsg();
@@ -656,6 +627,19 @@
         btn.innerHTML = `<span>📨</span><span>${t("submitBtn")}</span>`;
         return;
       }
+
+      // 🔔 Envoyer notification WhatsApp au propriétaire
+      fetch("/api/send-notification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          brand_name: userMeta.brand_name || "—",
+          email: currentUser.email,
+          phone: userMeta.phone || null,
+          subject: subject,
+          message: message
+        })
+      }).then(r => r.json()).then(d => console.log("Notif:", d)).catch(err => console.warn("Notification error:", err));
 
       showMsg(t("successMsg"), "success");
       $("subject").value = "";
