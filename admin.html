@@ -48,6 +48,7 @@
       <button data-panel="search"><span class="ico">🔍</span> Rechercher un code</button>
       <button data-panel="manage"><span class="ico">📦</span> Gérer un lot</button>
       <button data-panel="log"><span class="ico">📋</span> Journal</button>
+      <button data-panel="feedback"><span class="ico">⭐</span> Avis clients</button>
       <button data-panel="settings"><span class="ico">⚙️</span> Impression</button>
     </nav>
 
@@ -155,6 +156,21 @@
       <p class="muted">Les 100 dernières tentatives de vérification par les clients.</p>
       <button id="refreshLogBtn" style="background:#475569">🔄 ACTUALISER</button>
       <div id="logList" style="margin-top:18px"></div>
+    </section>
+
+    <!-- ===== Feedback ===== -->
+    <section class="panel" id="panel-feedback">
+      <h2>Avis clients</h2>
+      <p class="muted">Tous les avis et signalements des clients.</p>
+
+      <div class="tabs" id="feedbackTabs" style="display:flex;gap:8px;margin-bottom:18px">
+        <button class="tab active" data-tab="all" style="flex:1;background:#0f172a;color:#fff;padding:10px;border-radius:10px;border:0;font-weight:700;font-size:12px;cursor:pointer">TOUT</button>
+        <button class="tab" data-tab="rating" style="flex:1;background:#fff;color:#0f172a;padding:10px;border-radius:10px;border:1px solid #e2e8f0;font-weight:700;font-size:12px;cursor:pointer">⭐ AVIS</button>
+        <button class="tab" data-tab="report" style="flex:1;background:#fff;color:#0f172a;padding:10px;border-radius:10px;border:1px solid #e2e8f0;font-weight:700;font-size:12px;cursor:pointer">🚨 SIGNALEMENTS</button>
+      </div>
+
+      <button id="refreshFeedbackBtn" style="background:#475569">🔄 ACTUALISER</button>
+      <div id="feedbackList" style="margin-top:18px"></div>
     </section>
 
     <!-- ===== Settings ===== -->
