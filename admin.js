@@ -199,7 +199,7 @@ function getChartColors() {
 }
 
 async function loadCharts() {
-  // ---------- 1. Daily ----------
+  // 1. Daily
   try {
     const since = new Date();
     since.setDate(since.getDate() - 13);
@@ -266,7 +266,7 @@ async function loadCharts() {
     }
   } catch (e) { console.warn("chartDaily error:", e); }
 
-  // ---------- 2. Distribution ----------
+  // 2. Distribution
   try {
     const { data: allVerifs } = await sb
       .from("qr_verifications")
@@ -319,7 +319,7 @@ async function loadCharts() {
     }
   } catch (e) { console.warn("chartResults error:", e); }
 
-  // ---------- 3. Top 5 lots ----------
+  // 3. Top 5 lots
   try {
     const { data: verifs } = await sb
       .from("qr_verifications")
@@ -460,7 +460,7 @@ document.querySelectorAll("#feedbackTabs .tab").forEach(t => {
 });
 
 // ============================================================
-// CREATE BATCH
+// CREATE BATCH — via /api/create-batch (encryption)
 // ============================================================
 $("createBtn").onclick = async () => {
   const { data: { session } } = await sb.auth.getSession();
@@ -470,46 +470,57 @@ $("createBtn").onclick = async () => {
   if (!brand) return alert("La marque est obligatoire.");
 
   const qty = Math.min(10000, Math.max(1, Number($("quantity").value) || 1));
-  const rows = [];
-  lastCodes = [];
-  lastLogo = $("logo_url").value.trim() || "";
-
-  for (let i = 0; i < qty; i++) {
-    const code = randomCode();
-    lastCodes.push(code);
-    rows.push({
-      secret_code: code,
-      secret_status: "UNUSED",
-      brand: brand,
-      product_name: $("product_name").value.trim() || null,
-      reference: $("reference").value.trim() || null,
-      lot: $("lot").value.trim() || null,
-      manufacture_date: $("manufacture_date").value || null,
-      expiry_date: $("expiry_date").value || null,
-      product_image: $("product_image").value.trim() || null,
-      logo_url: $("logo_url").value.trim() || null,
-      instagram_url: $("instagram_url").value.trim() || null,
-      facebook_url: $("facebook_url").value.trim() || null,
-      tiktok_url: $("tiktok_url").value.trim() || null,
-      description: $("description").value.trim() || null
-    });
-  }
 
   $("createBtn").disabled = true;
   $("createBtn").textContent = "CRÉATION...";
+  $("adminResult").className = "result hidden";
 
-  const chunkSize = 500;
   try {
-    for (let i = 0; i < rows.length; i += chunkSize) {
-      const chunk = rows.slice(i, i + chunkSize);
-      const { error } = await sb.from("qr_codes").insert(chunk);
-      if (error) throw error;
+    const res = await fetch("/api/create-batch", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + session.access_token
+      },
+      body: JSON.stringify({
+        brand: brand,
+        product_name: $("product_name").value.trim() || null,
+        reference: $("reference").value.trim() || null,
+        lot: $("lot").value.trim() || null,
+        manufacture_date: $("manufacture_date").value || null,
+        expiry_date: $("expiry_date").value || null,
+        product_image: $("product_image").value.trim() || null,
+        logo_url: $("logo_url").value.trim() || null,
+        instagram_url: $("instagram_url").value.trim() || null,
+        facebook_url: $("facebook_url").value.trim() || null,
+        tiktok_url: $("tiktok_url").value.trim() || null,
+        description: $("description").value.trim() || null,
+        quantity: qty,
+        access_token: session.access_token
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.status === "OK") {
+      lastCodes = data.codes || [];
+      lastLogo = $("logo_url").value.trim() || "";
+      $("adminResult").className = "result success";
+      $("adminResult").innerHTML = `
+        <h2>✓ LOT CRÉÉ</h2>
+        <p>${data.inserted} codes générés avec succès.</p>
+        <p style="font-size:12px;margin-top:8px;color:#64748b">🔒 Les codes sont chiffrés en base de données (AES-256).</p>
+      `;
+      $("printBtn").classList.remove("hidden");
+      loadStats();
+      loadCharts();
+    } else {
+      $("adminResult").className = "result danger";
+      $("adminResult").innerHTML = `
+        <p>Erreur : ${escapeHtml(data.message || "")}</p>
+        ${data.detail ? `<p style="font-size:11px;color:#dc2626;word-break:break-all">${escapeHtml(data.detail)}</p>` : ""}
+      `;
     }
-    $("adminResult").className = "result success";
-    $("adminResult").innerHTML = `<h2>✓ LOT CRÉÉ</h2><p>${qty} codes générés avec succès.</p>`;
-    $("printBtn").classList.remove("hidden");
-    loadStats();
-    loadCharts();
   } catch (err) {
     $("adminResult").className = "result danger";
     $("adminResult").innerHTML = `<p>Erreur : ${escapeHtml(err.message)}</p>`;
@@ -535,7 +546,7 @@ $("searchBtn").onclick = async () => {
 
   if (error || !data || data.length === 0) {
     res.className = "result danger";
-    res.innerHTML = `<h2>NON TROUVÉ</h2><p>Aucun code ne correspond.</p>`;
+    res.innerHTML = `<h2>NON TROUVÉ</h2><p>Aucun code ne correspond.</p><p style="font-size:11px;color:#64748b;margin-top:8px">Note : les codes chiffrés ne sont pas recherchables ici. Utilisez le journal des vérifications.</p>`;
     return;
   }
 
@@ -603,14 +614,17 @@ $("loadLotBtn").onclick = async () => {
 
   const r = data[0];
   loadedLot = lot;
-  loadedLotCodes = data.map(row => row.secret_code);
+  loadedLotCodes = data.map(row => row.secret_code).filter(Boolean);
   loadedLotBrand = r.brand || "MARQUE";
   loadedLotLot = r.lot || lot;
   loadedLotLogo = r.logo_url || "";
 
+  const hasEncrypted = data.some(row => row.secret_code_encrypted);
+
   info.className = "result success";
   info.innerHTML = `
     <h2>${data.length} code(s) trouvé(s)</h2>
+    ${hasEncrypted ? `<p style="font-size:11px;color:#16a34a;margin:6px 0">🔒 Lot chiffré — utilisez IMPRIMER pour déchiffrer</p>` : ""}
     <div class="details">
       ${r.brand ? `<div><b>Marque</b><span>${escapeHtml(r.brand)}</span></div>` : ""}
       ${r.product_name ? `<div><b>Produit</b><span>${escapeHtml(r.product_name)}</span></div>` : ""}
@@ -697,7 +711,7 @@ $("updateBatchBtn").onclick = async () => {
 };
 
 // ============================================================
-// PRINT
+// PRINT LABELS
 // ============================================================
 function printLabels(codes, brand, lot, logoUrl) {
   if (!codes || !codes.length) return alert("Aucun code à imprimer.");
@@ -827,7 +841,61 @@ $("printBtn").onclick = () => {
   printLabels(lastCodes, $("brand").value.trim() || "MARQUE", $("lot").value.trim() || "", lastLogo);
 };
 
-$("printLotBtn").onclick = () => {
-  if (!loadedLotCodes.length) return alert("Aucun lot chargé.");
-  printLabels(loadedLotCodes, loadedLotBrand, loadedLotLot, loadedLotLogo);
+// ============================================================
+// PRINT EXISTING LOT — via /api/print-batch (decryption)
+// ============================================================
+$("printLotBtn").onclick = async () => {
+  if (!loadedLot) return alert("Aucun lot chargé.");
+
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return alert("Connectez-vous.");
+
+  // Désactiver le bouton pendant le chargement
+  const btn = $("printLotBtn");
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "🔓 Déchiffrement...";
+
+  try {
+    const res = await fetch("/api/print-batch", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + session.access_token
+      },
+      body: JSON.stringify({
+        lot: loadedLot,
+        access_token: session.access_token
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.status !== "OK") {
+      alert("Erreur : " + (data.message || "Impossible de déchiffrer le lot"));
+      return;
+    }
+
+    // Extraire les codes
+    const codes = (data.codes || []).map(c => c.code).filter(Boolean);
+
+    if (codes.length === 0) {
+      alert("Aucun code à imprimer.");
+      return;
+    }
+
+    // Utiliser la marque et logo du serveur
+    printLabels(
+      codes,
+      data.brand || loadedLotBrand || "MARQUE",
+      data.lot || loadedLotLot,
+      data.logo_url || loadedLotLogo
+    );
+
+  } catch (err) {
+    alert("Erreur réseau : " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
 };
