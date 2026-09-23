@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>تواصل معنا — Produit dz ORG</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="icon" type="image/svg+xml" href="/icon.svg">
+  <link rel="apple-touch-icon" href="/icon.svg">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    (function() {
+      const isDark = localStorage.getItem("theme") === "dark" ||
+        (!localStorage.getItem("theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
+      if (isDark) document.documentElement.classList.add("dark");
+    })();
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f4f6fb;
+      --bg-gradient: linear-gradient(135deg, #eef2f9 0%, #f7f9fc 50%, #e8edf5 100%);
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --text-light: #94a3b8;
+      --border: #e2e8f0;
+      --primary: #16a34a;
+      --primary-light: #22c55e;
+      --whatsapp: #25D366;
+      --whatsapp-dark: #128C7E;
+      --danger: #dc2626;
+      --danger-bg: #fef2f2;
+      --success: #16a34a;
+      --success-bg: #f0fdf4;
+      --radius: 14px;
+      --radius-lg: 22px;
+      --shadow-lg: 0 25px 50px -12px rgba(15, 23, 42, 0.22), 0 10px 20px -10px rgba(15, 23, 42, 0.12);
+      --shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.15);
+    }
+
+    html.dark {
+      --bg: #0a0f1c;
+      --bg-gradient: linear-gradient(135deg, #0a0f1c 0%, #131a2c 50%, #0f1729 100%);
+      --card-bg: #131a2c;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-light: #64748b;
+      --border: #1e293b;
+      --danger-bg: rgba(220, 38, 38, 0.15);
+      --success-bg: rgba(22, 163, 74, 0.15);
+      --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+    }
+
+    html, body {
+      margin: 0; padding: 0; min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Noto Kufi Arabic", Tahoma, Arial, sans-serif;
+      font-size: 15px; line-height: 1.55;
+      color: var(--text); background: var(--bg);
+      background-image: var(--bg-gradient);
+      background-attachment: fixed;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 40px 32px 34px;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      position: relative;
+      overflow: hidden;
+      animation: cardIn 500ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    html.dark .card { border-color: rgba(255, 255, 255, 0.05); }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #16a34a, #eab308, #dc2626);
+      background-size: 200% 100%;
+      animation: gradientShift 6s ease infinite;
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .lang-switcher {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .lang-btn {
+      padding: 5px 10px;
+      border-radius: 8px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 160ms;
+      color: var(--text-muted);
+      font-family: inherit;
+    }
+
+    .lang-btn.active {
+      background: var(--text);
+      color: var(--card-bg);
+      border-color: var(--text);
+    }
+
+    .logo-wrap {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .logo-wrap img {
+      width: 70px;
+      height: 70px;
+      border-radius: 18px;
+      box-shadow: 0 12px 28px -8px rgba(15, 23, 42, 0.25);
+    }
+
+    .welcome-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: var(--success-bg);
+      border: 1px solid rgba(22, 163, 74, 0.3);
+      color: var(--success);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 700;
+      margin: 0 auto 16px;
+      display: flex;
+      width: fit-content;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.6px;
+      text-align: center;
+      margin: 0 0 8px;
+      color: var(--text);
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-bottom: 26px;
+      line-height: 1.6;
+    }
+
+    /* WhatsApp CTA */
+    .whatsapp-cta {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 18px;
+      background: linear-gradient(135deg, var(--whatsapp), var(--whatsapp-dark));
+      color: #fff;
+      border-radius: var(--radius);
+      box-shadow: 0 8px 24px -6px rgba(37, 211, 102, 0.5);
+      margin-bottom: 24px;
+      transition: all 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+      cursor: pointer;
+    }
+
+    .whatsapp-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 32px -8px rgba(37, 211, 102, 0.65);
+    }
+
+    .whatsapp-cta svg {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      padding: 8px;
+    }
+
+    .whatsapp-cta-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .whatsapp-cta-title {
+      font-size: 15px;
+      font-weight: 800;
+      margin-bottom: 2px;
+    }
+
+    .whatsapp-cta-sub {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .whatsapp-cta-arrow {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    /* OR divider */
+    .or-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0;
+      color: var(--text-light);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 2px;
+    }
+
+    .or-divider::before,
+    .or-divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Form */
+    form { display: flex; flex-direction: column; gap: 12px; }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    label .req { color: var(--danger); }
+
+    input, textarea {
+      width: 100%;
+      padding: 13px 15px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--card-bg);
+      transition: all 200ms;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      resize: vertical;
+    }
+
+    textarea { min-height: 100px; }
+
+    input::placeholder, textarea::placeholder { color: var(--text-light); }
+
+    input:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.12);
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      padding: 14px 22px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: #fff;
+      border: 0;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+      margin-top: 8px;
+      box-shadow: 0 8px 24px -6px rgba(22, 163, 74, 0.5);
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    button[type="submit"]:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 32px -8px rgba(22, 163, 74, 0.65);
+    }
+
+    button[type="submit"]:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .msg {
+      padding: 12px 14px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+
+    .msg.error {
+      background: var(--danger-bg);
+      border: 1px solid rgba(220, 38, 38, 0.3);
+      color: var(--danger);
+    }
+
+    .msg.success {
+      background: var(--success-bg);
+      border: 1px solid rgba(22, 163, 74, 0.3);
+      color: var(--success);
+    }
+
+    .msg.hidden { display: none; }
+
+    .info-box {
+      margin-top: 22px;
+      padding: 14px 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      text-align: center;
+    }
+
+    html.dark .info-box { background: rgba(255, 255, 255, 0.03); }
+
+    .info-box b { color: var(--text); }
+
+    .admin-link {
+      display: block;
+      text-align: center;
+      margin-top: 18px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .admin-link a {
+      color: var(--primary);
+      font-weight: 800;
+    }
+
+    @media (max-width: 480px) {
+      .card { padding: 30px 22px 26px; }
+      h1 { font-size: 21px; }
+      .whatsapp-cta { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<main class="page">
+  <section class="card">
+
+    <div class="lang-switcher">
+      <button class="lang-btn active" data-lang="ar">ع</button>
+      <button class="lang-btn" data-lang="fr">FR</button>
+      <button class="lang-btn" data-lang="en">EN</button>
+    </div>
+
+    <div class="logo-wrap">
+      <img src="/icon.svg" alt="Produit dz ORG">
+    </div>
+
+    <div class="welcome-badge">
+      <span>✓</span>
+      <span data-i18n="welcomeBadge">تم إنشاء حسابك بنجاح</span>
+    </div>
+
+    <h1 data-i18n="title">تواصل معنا</h1>
+    <p class="subtitle" data-i18n="subtitle">
+      اختر الطريقة المناسبة للتواصل. سنرد عليك في أسرع وقت.
+    </p>
+
+    <!-- WhatsApp CTA -->
+    <a href="https://wa.me/213556339415?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D8%8C%20%D8%A3%D9%86%D8%A7%20%D8%B9%D9%84%D8%A7%D9%85%D8%A9%20%D8%AA%D8%AC%D8%A7%D8%B1%D9%8A%D8%A9%20%D9%88%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D8%A7%D9%84%D8%AE%D8%AF%D9%85%D8%A9"
+       target="_blank" rel="noopener" class="whatsapp-cta">
+      <svg viewBox="0 0 24 24" fill="#fff">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+      <div class="whatsapp-cta-text">
+        <div class="whatsapp-cta-title" data-i18n="whatsappTitle">واتساب الأعمال</div>
+        <div class="whatsapp-cta-sub" data-i18n="whatsappSub">+213 556 339 415</div>
+      </div>
+      <div class="whatsapp-cta-arrow">→</div>
+    </a>
+
+    <div class="or-divider" data-i18n="orDivider">أو</div>
+
+    <!-- Message Form -->
+    <form id="contactForm">
+      <div class="field">
+        <label for="subject" data-i18n="subjectLabel">الموضوع <span class="req">*</span></label>
+        <input id="subject" type="text" placeholder="مثال: استفسار عن الأسعار" required maxlength="150">
+      </div>
+
+      <div class="field">
+        <label for="message" data-i18n="messageLabel">رسالتك <span class="req">*</span></label>
+        <textarea id="message" placeholder="اكتب رسالتك هنا..." required maxlength="2000"></textarea>
+      </div>
+
+      <button type="submit" id="submitBtn">
+        <span>📨</span>
+        <span data-i18n="submitBtn">إرسال الرسالة</span>
+      </button>
+    </form>
+
+    <div id="msg" class="msg hidden"></div>
+
+    <div class="info-box">
+      <b data-i18n="infoTitle">📬 كيف تصلك رسالتك؟</b><br>
+      <span data-i18n="infoText">ستصل رسالتك مباشرة إلى فريقنا. سنرد عليك في أقرب وقت عبر البريد الإلكتروني أو واتساب.</span>
+    </div>
+
+    <div class="admin-link">
+      <span data-i18n="adminText">هل أنت الأدمن؟</span>
+      <a href="/admin.html" data-i18n="adminLink">لوحة التحكم</a>
+    </div>
+
+  </section>
+</main>
+
+<script>
+  // ============================================================
+  // SUPABASE
+  // ============================================================
+  const SUPABASE_URL = "https://qfpmbbntxyrderjlejql.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m";
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const $ = id => document.getElementById(id);
+
+  let currentUser = null;
+  let userMeta = {};
+
+  // ============================================================
+  // i18n
+  // ============================================================
+  const TRANSLATIONS = {
+    ar: {
+      welcomeBadge: "تم إنشاء حسابك بنجاح",
+      title: "تواصل معنا",
+      subtitle: "اختر الطريقة المناسبة للتواصل. سنرد عليك في أسرع وقت.",
+      whatsappTitle: "واتساب الأعمال",
+      whatsappSub: "+213 556 339 415",
+      orDivider: "أو",
+      subjectLabel: "الموضوع",
+      messageLabel: "رسالتك",
+      submitBtn: "إرسال الرسالة",
+      sending: "جارٍ الإرسال...",
+      errSubject: "الرجاء إدخال موضوع الرسالة.",
+      errMessage: "الرجاء إدخال الرسالة (10 أحرف على الأقل).",
+      errNotLogged: "يجب تسجيل الدخول أولًا.",
+      errGeneric: "حدث خطأ. الرجاء المحاولة مجددًا.",
+      successMsg: "✓ تم إرسال رسالتك بنجاح! سنرد عليك قريبًا.",
+      infoTitle: "📬 كيف تصلك رسالتك؟",
+      infoText: "ستصل رسالتك مباشرة إلى فريقنا. سنرد عليك في أقرب وقت عبر البريد الإلكتروني أو واتساب.",
+      adminText: "هل أنت الأدمن؟",
+      adminLink: "لوحة التحكم"
+    },
+    fr: {
+      welcomeBadge: "Compte créé avec succès",
+      title: "Contactez-nous",
+      subtitle: "Choisissez le moyen de contact. Nous vous répondrons rapidement.",
+      whatsappTitle: "WhatsApp Business",
+      whatsappSub: "+213 556 339 415",
+      orDivider: "OU",
+      subjectLabel: "Sujet",
+      messageLabel: "Votre message",
+      submitBtn: "Envoyer le message",
+      sending: "Envoi...",
+      errSubject: "Veuillez saisir un sujet.",
+      errMessage: "Veuillez saisir un message (10 caractères min).",
+      errNotLogged: "Vous devez vous connecter d'abord.",
+      errGeneric: "Une erreur est survenue. Réessayez.",
+      successMsg: "✓ Message envoyé avec succès !",
+      infoTitle: "📬 Comment ça marche ?",
+      infoText: "Votre message arrive directement à notre équipe. Nous vous répondrons rapidement.",
+      adminText: "Vous êtes admin ?",
+      adminLink: "Tableau de bord"
+    },
+    en: {
+      welcomeBadge: "Account created successfully",
+      title: "Contact us",
+      subtitle: "Choose how to reach us. We'll respond quickly.",
+      whatsappTitle: "WhatsApp Business",
+      whatsappSub: "+213 556 339 415",
+      orDivider: "OR",
+      subjectLabel: "Subject",
+      messageLabel: "Your message",
+      submitBtn: "Send message",
+      sending: "Sending...",
+      errSubject: "Please enter a subject.",
+      errMessage: "Please enter a message (min 10 characters).",
+      errNotLogged: "You must be logged in first.",
+      errGeneric: "An error occurred. Please try again.",
+      successMsg: "✓ Message sent successfully!",
+      infoTitle: "📬 How it works",
+      infoText: "Your message goes directly to our team. We'll respond soon.",
+      adminText: "Are you admin?",
+      adminLink: "Dashboard"
+    }
+  };
+
+  let currentLang = localStorage.getItem("lang") || "ar";
+  if (!localStorage.getItem("lang")) {
+    const bl = (navigator.language || "ar").toLowerCase().slice(0, 2);
+    currentLang = bl === "fr" ? "fr" : bl === "en" ? "en" : "ar";
+  }
+
+  function t(key) {
+    return (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) ||
+           (TRANSLATIONS.ar[key]) || key;
+  }
+
+  function applyTranslations() {
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+      el.textContent = t(el.dataset.i18n);
+    });
+
+    document.documentElement.lang = currentLang;
+    document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
+
+    document.querySelectorAll(".lang-btn").forEach(b => {
+      b.classList.toggle("active", b.dataset.lang === currentLang);
+    });
+
+    document.title = currentLang === "ar"
+      ? "تواصل معنا — Produit dz ORG"
+      : currentLang === "fr"
+        ? "Contactez-nous — Produit dz ORG"
+        : "Contact us — Produit dz ORG";
+  }
+
+  document.querySelectorAll(".lang-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      currentLang = btn.dataset.lang;
+      localStorage.setItem("lang", currentLang);
+      applyTranslations();
+    });
+  });
+
+  applyTranslations();
+
+  // ============================================================
+  // MESSAGE UI
+  // ============================================================
+  function showMsg(text, type) {
+    const el = $("msg");
+    el.className = "msg " + type;
+    el.textContent = text;
+    el.classList.remove("hidden");
+  }
+  function hideMsg() { $("msg").classList.add("hidden"); }
+
+  // ============================================================
+  // SESSION
+  // ============================================================
+  async function checkSession() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      // Pas connecté → rediriger vers signup
+      setTimeout(() => {
+        window.location.href = "/signup";
+      }, 1500);
+      showMsg(t("errNotLogged") + " → " + t("adminLink"), "error");
+      return;
+    }
+    currentUser = session.user;
+    userMeta = session.user.user_metadata || {};
+  }
+
+  checkSession();
+
+  // ============================================================
+  // SUBMIT MESSAGE
+  // ============================================================
+  $("contactForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    hideMsg();
+
+    if (!currentUser) {
+      showMsg(t("errNotLogged"), "error");
+      return;
+    }
+
+    const subject = $("subject").value.trim();
+    const message = $("message").value.trim();
+
+    if (!subject || subject.length < 3) {
+      return showMsg(t("errSubject"), "error");
+    }
+    if (!message || message.length < 10) {
+      return showMsg(t("errMessage"), "error");
+    }
+
+    const btn = $("submitBtn");
+    btn.disabled = true;
+    btn.innerHTML = `<span>⏳</span><span>${t("sending")}</span>`;
+
+    try {
+      const { error } = await sb.from("brand_messages").insert({
+        user_id: currentUser.id,
+        brand_name: userMeta.brand_name || "—",
+        email: currentUser.email,
+        phone: userMeta.phone || null,
+        subject: subject,
+        message: message
+      });
+
+      if (error) {
+        console.error(error);
+        showMsg(error.message || t("errGeneric"), "error");
+        btn.disabled = false;
+        btn.innerHTML = `<span>📨</span><span>${t("submitBtn")}</span>`;
+        return;
+      }
+
+      showMsg(t("successMsg"), "success");
+      $("subject").value = "";
+      $("message").value = "";
+      btn.innerHTML = `<span>✓</span><span>${t("submitBtn")}</span>`;
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.innerHTML = `<span>📨</span><span>${t("submitBtn")}</span>`;
+      }, 2500);
+
+    } catch (err) {
+      console.error(err);
+      showMsg(t("errGeneric"), "error");
+      btn.disabled = false;
+      btn.innerHTML = `<span>📨</span><span>${t("submitBtn")}</span>`;
+    }
+  });
+</script>
+
+</body>
+</html>
