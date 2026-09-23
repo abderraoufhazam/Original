@@ -12,12 +12,23 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Admin dz">
   <link rel="stylesheet" href="/style.css">
+
+  <!-- Appliquer le thème AVANT le rendu (évite le flash) -->
+  <script>
+    (function() {
+      const isDark = localStorage.getItem("theme") === "dark" ||
+        (!localStorage.getItem("theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
+      if (isDark) document.documentElement.classList.add("dark");
+    })();
+  </script>
 </head>
 <body>
 
 <!-- ===== Login Screen ===== -->
 <main class="page" id="loginPage">
   <section class="card">
+    <button class="dark-toggle" id="darkToggleLogin" aria-label="Mode sombre">🌙</button>
+
     <div class="brand">ADMIN — Produit dz ORG</div>
     <img src="/admin-icon.svg" alt="" class="app-logo">
     <h1>Connexion</h1>
@@ -71,6 +82,7 @@
     <header class="mobile-header">
       <button class="menu-toggle" id="menuToggle" aria-label="Menu">☰</button>
       <div class="mobile-title" id="mobileTitle">Tableau de bord</div>
+      <button class="dark-toggle" id="darkToggle" aria-label="Mode sombre" style="position:static;margin-left:auto;width:40px;height:40px;flex-shrink:0">🌙</button>
     </header>
 
     <!-- ===== Dashboard ===== -->
@@ -85,7 +97,7 @@
         <div class="stat-card"><div class="stat-num" id="statExpired">—</div><div class="stat-label">EXPIRED</div></div>
       </div>
 
-      <h3 style="margin-top:32px;font-size:15px;font-weight:800;color:#0f172a">QR commun</h3>
+      <h3 style="margin-top:32px;font-size:15px;font-weight:800;color:inherit">QR commun</h3>
       <p class="muted">Ce QR est identique pour tous les autocollants.</p>
       <p id="publicUrl" class="muted" style="font-family:monospace;font-size:12px;word-break:break-all"></p>
       <div id="qr" class="qr-box"></div>
@@ -138,7 +150,7 @@
       <button id="printLotBtn" class="hidden" style="background:linear-gradient(135deg,#16a34a,#22c55e)">🖨 IMPRIMER CE LOT</button>
 
       <div id="editForm" class="hidden" style="margin-top:20px;padding:20px;background:linear-gradient(160deg,#f8fafc,#eef2f7);border-radius:16px;border:1px solid #e2e8f0">
-        <h3 style="margin:0 0 6px;font-size:15px;font-weight:800;color:#0f172a">Modifier ce lot</h3>
+        <h3 style="margin:0 0 6px;font-size:15px;font-weight:800;color:inherit">Modifier ce lot</h3>
         <p class="muted" style="font-size:12px;margin-bottom:14px">Les champs vides ne sont pas modifiés.</p>
         <div class="form-grid">
           <input id="editBrand" placeholder="Marque">
@@ -212,14 +224,18 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="/admin.js"></script>
 <script>
-  // Service Worker
+  // ============================================================
+  // SERVICE WORKER
+  // ============================================================
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/service-worker.js').catch(err => console.warn('SW:', err));
     });
   }
 
-  // Installation PWA Admin
+  // ============================================================
+  // INSTALLATION PWA ADMIN
+  // ============================================================
   let deferredPrompt = null;
   const installAdminBtn = document.getElementById('installAdminBtn');
 
@@ -244,6 +260,30 @@
   window.addEventListener('appinstalled', () => {
     if (installAdminBtn) installAdminBtn.style.display = 'none';
   });
+
+  // ============================================================
+  // DARK MODE
+  // ============================================================
+  const darkToggleLogin = document.getElementById("darkToggleLogin");
+  const darkToggleMain = document.getElementById("darkToggle");
+
+  function updateDarkIcons() {
+    const isDark = document.documentElement.classList.contains("dark");
+    const icon = isDark ? "☀️" : "🌙";
+    if (darkToggleLogin) darkToggleLogin.textContent = icon;
+    if (darkToggleMain) darkToggleMain.textContent = icon;
+  }
+
+  function toggleDark() {
+    const isDark = document.documentElement.classList.toggle("dark");
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+    updateDarkIcons();
+  }
+
+  if (darkToggleLogin) darkToggleLogin.addEventListener("click", toggleDark);
+  if (darkToggleMain) darkToggleMain.addEventListener("click", toggleDark);
+
+  updateDarkIcons();
 </script>
 </body>
 </html>
