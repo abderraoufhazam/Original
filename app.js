@@ -1,4 +1,4 @@
-// app.js — Vérification + Avis + Signalement
+// app.js — Vérification + Avis + Signalement + i18n
 
 const form = document.getElementById("verifyForm");
 const codeInput = document.getElementById("code");
@@ -15,6 +15,7 @@ const reportMsg = document.getElementById("reportMsg");
 
 let currentCode = "";
 let currentRating = 0;
+let lastResultData = null; // Pour ré-appliquer les traductions
 
 function escapeHtml(v = "") {
   return String(v).replace(/[&<>"']/g, c => ({
@@ -28,13 +29,70 @@ function show(type, html) {
 }
 
 // ============================================================
+// RENDU DES RÉSULTATS (utilise t())
+// ============================================================
+function renderResult(data) {
+  if (!data) { result.className = "result hidden"; return; }
+
+  if (data.status === "ORIGINAL") {
+    const p = data.product || {};
+    show("success", `
+      <div class="icon">✓</div>
+      <h2>${escapeHtml(t("originalTitle"))}</h2>
+      <p>${escapeHtml(t("originalMsg"))}</p>
+      ${p.product_image ? `<img class="product-image" src="${escapeHtml(p.product_image)}" alt="">` : ""}
+      <div class="details">
+        ${p.brand ? `<div><b>${escapeHtml(t("brandLabel"))}</b><span>${escapeHtml(p.brand)}</span></div>` : ""}
+        ${p.product_name ? `<div><b>${escapeHtml(t("productLabel"))}</b><span>${escapeHtml(p.product_name)}</span></div>` : ""}
+        ${p.reference ? `<div><b>${escapeHtml(t("referenceLabel"))}</b><span>${escapeHtml(p.reference)}</span></div>` : ""}
+        ${p.lot ? `<div><b>${escapeHtml(t("lotLabel"))}</b><span>${escapeHtml(p.lot)}</span></div>` : ""}
+        ${p.manufacture_date ? `<div><b>${escapeHtml(t("fabricationLabel"))}</b><span>${escapeHtml(p.manufacture_date)}</span></div>` : ""}
+        ${p.expiry_date ? `<div><b>${escapeHtml(t("expirationLabel"))}</b><span>${escapeHtml(p.expiry_date)}</span></div>` : ""}
+      </div>
+      ${p.description ? `<p class="description">${escapeHtml(p.description)}</p>` : ""}
+    `);
+    feedbackSection.classList.remove("hidden");
+    reportSection.classList.remove("hidden");
+
+  } else if (data.status === "USED") {
+    show("warning", `<div class="icon">!</div><h2>${escapeHtml(t("usedTitle"))}</h2><p>${escapeHtml(t("usedMsg"))}</p>`);
+    reportSection.classList.remove("hidden");
+
+  } else if (data.status === "DISABLED" || data.status === "EXPIRED") {
+    show("warning", `<div class="icon">!</div><h2>${escapeHtml(t("invalidTitle"))}</h2><p>${escapeHtml(t("invalidMsg"))}</p>`);
+    reportSection.classList.remove("hidden");
+
+  } else {
+    show("danger", `<div class="icon">×</div><h2>${escapeHtml(t("notOriginalTitle"))}</h2><p>${escapeHtml(t("notOriginalMsg"))}</p>`);
+    reportSection.classList.remove("hidden");
+  }
+}
+
+// Ré-appliquer les traductions quand la langue change
+window.__reapplyMessages = function () {
+  if (lastResultData) {
+    renderResult(lastResultData);
+  }
+  // Mettre à jour le bouton de vérification
+  if (!btn.disabled) btn.textContent = t("verifyBtn");
+  else btn.textContent = t("verifying");
+  // Mettre à jour les messages de feedback/report s'ils sont visibles
+  if (!feedbackMsg.classList.contains("hidden") && feedbackMsg.textContent.includes("✓")) {
+    feedbackMsg.textContent = t("feedbackThanks");
+  }
+  if (!reportMsg.classList.contains("hidden") && reportMsg.textContent.includes("✓")) {
+    reportMsg.textContent = t("reportThanks");
+  }
+};
+
+// ============================================================
 // ÉTOILES
 // ============================================================
-starsContainer.querySelectorAll("button").forEach(btn => {
-  btn.addEventListener("click", () => {
-    currentRating = parseInt(btn.dataset.star, 10);
-    starsContainer.querySelectorAll("button").forEach(b => {
-      b.classList.toggle("active", parseInt(b.dataset.star, 10) <= currentRating);
+starsContainer.querySelectorAll("button").forEach(b => {
+  b.addEventListener("click", () => {
+    currentRating = parseInt(b.dataset.star, 10);
+    starsContainer.querySelectorAll("button").forEach(x => {
+      x.classList.toggle("active", parseInt(x.dataset.star, 10) <= currentRating);
     });
   });
 });
@@ -44,14 +102,15 @@ starsContainer.querySelectorAll("button").forEach(btn => {
 // ============================================================
 feedbackSubmit.addEventListener("click", async () => {
   if (!currentRating) {
-    feedbackMsg.textContent = "Veuillez sélectionner une note (1 à 5 étoiles).";
+    feedbackMsg.textContent = t("feedbackSelectRating");
     feedbackMsg.style.color = "#dc2626";
     feedbackMsg.classList.remove("hidden");
     return;
   }
 
   feedbackSubmit.disabled = true;
-  feedbackSubmit.textContent = "ENVOI...";
+  const oldText = feedbackSubmit.textContent;
+  feedbackSubmit.textContent = "...";
 
   try {
     const res = await fetch("/api/feedback", {
@@ -67,23 +126,24 @@ feedbackSubmit.addEventListener("click", async () => {
     const data = await res.json();
 
     if (data.status === "OK") {
-      feedbackMsg.textContent = "✓ Merci pour votre avis !";
+      feedbackMsg.textContent = t("feedbackThanks");
       feedbackMsg.style.color = "#16a34a";
       feedbackMsg.classList.remove("hidden");
       feedbackSection.style.opacity = "0.6";
       feedbackSection.style.pointerEvents = "none";
     } else {
-      feedbackMsg.textContent = "Erreur : " + (data.message || "Veuillez réessayer.");
+      feedbackMsg.textContent = "Erreur : " + (data.message || "");
       feedbackMsg.style.color = "#dc2626";
       feedbackMsg.classList.remove("hidden");
     }
   } catch (e) {
-    feedbackMsg.textContent = "Erreur de connexion.";
+    feedbackMsg.textContent = t("errorConn");
     feedbackMsg.style.color = "#dc2626";
     feedbackMsg.classList.remove("hidden");
   } finally {
     feedbackSubmit.disabled = false;
-    feedbackSubmit.textContent = "ENVOYER MON AVIS";
+    feedbackSubmit.textContent = oldText || t("feedbackSubmit");
+    feedbackSubmit.textContent = t("feedbackSubmit");
   }
 });
 
@@ -91,10 +151,10 @@ feedbackSubmit.addEventListener("click", async () => {
 // ENVOI SIGNALEMENT
 // ============================================================
 reportBtn.addEventListener("click", async () => {
-  if (!confirm("Confirmer le signalement de contrefaçon ?")) return;
+  if (!confirm(t("reportConfirm"))) return;
 
   reportBtn.disabled = true;
-  reportBtn.textContent = "ENVOI...";
+  reportBtn.textContent = "...";
 
   try {
     const res = await fetch("/api/feedback", {
@@ -109,28 +169,28 @@ reportBtn.addEventListener("click", async () => {
     const data = await res.json();
 
     if (data.status === "OK") {
-      reportMsg.textContent = "✓ Signalement enregistré. Merci.";
+      reportMsg.textContent = t("reportThanks");
       reportMsg.style.color = "#16a34a";
       reportMsg.classList.remove("hidden");
       reportSection.style.opacity = "0.6";
       reportSection.style.pointerEvents = "none";
     } else {
-      reportMsg.textContent = "Erreur : " + (data.message || "Veuillez réessayer.");
+      reportMsg.textContent = "Erreur : " + (data.message || "");
       reportMsg.style.color = "#dc2626";
       reportMsg.classList.remove("hidden");
     }
   } catch (e) {
-    reportMsg.textContent = "Erreur de connexion.";
+    reportMsg.textContent = t("errorConn");
     reportMsg.style.color = "#dc2626";
     reportMsg.classList.remove("hidden");
   } finally {
     reportBtn.disabled = false;
-    reportBtn.textContent = "SIGNALER UNE CONTREFAÇON";
+    reportBtn.textContent = t("reportBtn");
   }
 });
 
 // ============================================================
-// RESET DES SECTIONS AVANT CHAQUE VÉRIFICATION
+// RESET
 // ============================================================
 function resetFeedbackSections() {
   feedbackSection.classList.add("hidden");
@@ -155,10 +215,11 @@ form.addEventListener("submit", async (e) => {
   if (!code) return;
 
   currentCode = code;
+  lastResultData = null;
   resetFeedbackSections();
 
   btn.disabled = true;
-  btn.textContent = "VÉRIFICATION...";
+  btn.textContent = t("verifying");
   result.className = "result hidden";
 
   try {
@@ -168,44 +229,18 @@ form.addEventListener("submit", async (e) => {
       body: JSON.stringify({ secret_code: code })
     });
     const data = await r.json();
+    lastResultData = data;
+    renderResult(data);
 
-    if (data.status === "ORIGINAL") {
-      const p = (data.product) || {};
-      show("success", `
-        <div class="icon">✓</div>
-        <h2>PRODUIT ORIGINAL</h2>
-        <p>Code authentifié avec succès.</p>
-        ${p.product_image ? `<img class="product-image" src="${escapeHtml(p.product_image)}" alt="">` : ""}
-        <div class="details">
-          ${p.brand ? `<div><b>Marque</b><span>${escapeHtml(p.brand)}</span></div>` : ""}
-          ${p.product_name ? `<div><b>Produit</b><span>${escapeHtml(p.product_name)}</span></div>` : ""}
-          ${p.reference ? `<div><b>Référence</b><span>${escapeHtml(p.reference)}</span></div>` : ""}
-          ${p.lot ? `<div><b>Lot</b><span>${escapeHtml(p.lot)}</span></div>` : ""}
-          ${p.manufacture_date ? `<div><b>Fabrication</b><span>${escapeHtml(p.manufacture_date)}</span></div>` : ""}
-          ${p.expiry_date ? `<div><b>Expiration</b><span>${escapeHtml(p.expiry_date)}</span></div>` : ""}
-        </div>
-        ${p.description ? `<p class="description">${escapeHtml(p.description)}</p>` : ""}
-      `);
-      // Afficher les sections avis + signalement
-      feedbackSection.classList.remove("hidden");
-      reportSection.classList.remove("hidden");
-
-    } else if (data.status === "USED") {
-      show("warning", `<div class="icon">!</div><h2>CODE DÉJÀ UTILISÉ</h2><p>Ce code a déjà été vérifié. Si vous pensez qu'il s'agit d'une erreur, contactez la marque.</p>`);
-      reportSection.classList.remove("hidden");
-
-    } else if (data.status === "DISABLED" || data.status === "EXPIRED") {
-      show("warning", `<div class="icon">!</div><h2>CODE INVALIDE</h2><p>Ce code n'est plus actif.</p>`);
-      reportSection.classList.remove("hidden");
-
-    } else {
-      show("danger", `<div class="icon">×</div><h2>PRODUIT NON ORIGINAL</h2><p>Le code de sécurité saisi est invalide.</p>`);
-      reportSection.classList.remove("hidden");
-    }
   } catch {
-    show("danger", `<h2>ERREUR DE CONNEXION</h2><p>Veuillez réessayer.</p>`);
+    show("danger", `<h2>${escapeHtml(t("errorTitle"))}</h2><p>${escapeHtml(t("errorMsg"))}</p>`);
   } finally {
     btn.disabled = false;
-    btn.textContent = "VÉRIFIER";
+    btn.textContent = t("verifyBtn");
   }
 });
+
+// ============================================================
+// INITIALISATION i18n
+// ============================================================
+applyTranslations();
