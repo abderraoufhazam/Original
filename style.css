@@ -907,3 +907,103 @@ hr {
   .menu-toggle { display: none; }
   .mobile-header { padding: 0 0 24px; }
 }
+/* ============================================================
+   Avis client & signalement
+   ============================================================ */
+.feedback-section {
+  margin-top: 22px;
+  padding: 20px;
+  background: linear-gradient(160deg, #f8fafc 0%, #eef2f7 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  text-align: center;
+  animation: fadeIn 400ms ease;
+}
+
+.feedback-section h3 {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 6px;
+  letter-spacing: -0.2px;
+}
+
+.feedback-section .muted {
+  font-size: 12px;
+  margin-bottom: 14px;
+}
+
+/* Étoiles */
+.stars {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: 12px 0 14px;
+}
+
+.stars button {
+  background: transparent !important;
+  border: 0 !important;
+  font-size: 34px;
+  color: #cbd5e1;
+  cursor: pointer;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: auto !important;
+  box-shadow: none !important;
+  transition: all 150ms ease;
+  line-height: 1;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.stars button:hover,
+.stars button.active {
+  color: #fbbf24;
+  transform: scale(1.15);
+  text-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+}
+
+.stars button:active {
+  transform: scale(1.05);
+}
+
+/* Textarea */
+.feedback-section textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 13px;
+  resize: vertical;
+  min-height: 70px;
+  margin-bottom: 12px;
+  outline: none;
+  transition: 180ms;
+  background: #fff;
+}
+
+.feedback-section textarea:focus {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.12);
+}
+
+.feedback-section button {
+  width: 100%;
+  padding: 12px 18px;
+  font-size: 13px;
+  border-radius: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin: 0;
+  border: 0;
+  cursor: pointer;
+  color: #fff;
+  transition: 180ms;
+  font-family: inherit;
+}
+
+.feedback-section button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -6px rgba(0,0,0,0.25);
+}
