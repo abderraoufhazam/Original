@@ -13,7 +13,6 @@
   <meta name="apple-mobile-web-app-title" content="Admin dz">
   <link rel="stylesheet" href="/style.css">
 
-  <!-- Appliquer le thème AVANT le rendu (évite le flash) -->
   <script>
     (function() {
       const isDark = localStorage.getItem("theme") === "dark" ||
@@ -47,7 +46,6 @@
 <!-- ===== Admin Layout ===== -->
 <div class="admin-layout hidden" id="adminApp">
 
-  <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <img src="/admin-icon.svg" alt="" class="sidebar-logo">
@@ -73,19 +71,16 @@
     </div>
   </aside>
 
-  <!-- Overlay (mobile) -->
   <div class="overlay" id="overlay"></div>
 
-  <!-- Main content -->
   <main class="admin-main">
-
     <header class="mobile-header">
       <button class="menu-toggle" id="menuToggle" aria-label="Menu">☰</button>
       <div class="mobile-title" id="mobileTitle">Tableau de bord</div>
       <button class="dark-toggle" id="darkToggle" aria-label="Mode sombre" style="position:static;margin-left:auto;width:40px;height:40px;flex-shrink:0">🌙</button>
     </header>
 
-    <!-- ===== Dashboard ===== -->
+    <!-- Dashboard -->
     <section class="panel active" id="panel-dashboard">
       <h2>Tableau de bord</h2>
       <p class="muted">Vue d'ensemble de vos codes d'authenticité.</p>
@@ -97,13 +92,22 @@
         <div class="stat-card"><div class="stat-num" id="statExpired">—</div><div class="stat-label">EXPIRED</div></div>
       </div>
 
+      <h3 style="margin-top:32px;font-size:15px;font-weight:800;color:inherit">📈 Vérifications (14 derniers jours)</h3>
+      <div class="chart-box"><canvas id="chartDaily"></canvas></div>
+
+      <h3 style="margin-top:32px;font-size:15px;font-weight:800;color:inherit">🥧 Répartition des résultats</h3>
+      <div class="chart-box"><canvas id="chartResults"></canvas></div>
+
+      <h3 style="margin-top:32px;font-size:15px;font-weight:800;color:inherit">📊 Top 5 lots les plus vérifiés</h3>
+      <div class="chart-box"><canvas id="chartTopLots"></canvas></div>
+
       <h3 style="margin-top:32px;font-size:15px;font-weight:800;color:inherit">QR commun</h3>
       <p class="muted">Ce QR est identique pour tous les autocollants.</p>
       <p id="publicUrl" class="muted" style="font-family:monospace;font-size:12px;word-break:break-all"></p>
       <div id="qr" class="qr-box"></div>
     </section>
 
-    <!-- ===== Create ===== -->
+    <!-- Create -->
     <section class="panel" id="panel-create">
       <h2>Créer un lot</h2>
       <p class="muted">Générez un nouveau lot de codes secrets. Chaque code est unique et ne peut être utilisé qu'une seule fois.</p>
@@ -121,13 +125,22 @@
         <input id="quantity" type="number" min="1" max="10000" value="100" placeholder="Quantité *">
       </div>
 
+      <h3 style="margin:22px 0 6px;font-size:14px;font-weight:800;color:inherit">📱 Réseaux sociaux (optionnel)</h3>
+      <p class="muted" style="font-size:12px;margin:0 0 12px">Ces champs sont facultatifs. Ils n'apparaîtront pour le client que s'ils sont remplis.</p>
+
+      <div class="form-grid">
+        <input id="instagram_url" placeholder="📷 Instagram (optionnel)">
+        <input id="facebook_url" placeholder="📘 Facebook (optionnel)">
+        <input id="tiktok_url" placeholder="🎵 TikTok (optionnel)">
+      </div>
+
       <button id="createBtn" style="margin-top:18px">CRÉER LE LOT</button>
       <div id="adminResult" class="result hidden"></div>
 
       <button id="printBtn" class="hidden" style="background:linear-gradient(135deg,#16a34a,#22c55e);margin-top:15px">🖨 IMPRIMER CE LOT</button>
     </section>
 
-    <!-- ===== Search ===== -->
+    <!-- Search -->
     <section class="panel" id="panel-search">
       <h2>Rechercher un code</h2>
       <p class="muted">Entrez un code secret pour voir son statut et les informations du produit.</p>
@@ -137,7 +150,7 @@
       <div id="searchResult" class="result hidden"></div>
     </section>
 
-    <!-- ===== Manage lot ===== -->
+    <!-- Manage lot -->
     <section class="panel" id="panel-manage">
       <h2>Gérer un lot</h2>
       <p class="muted">Chargez un lot existant par son numéro pour le visualiser, l'imprimer ou modifier ses informations.</p>
@@ -162,12 +175,15 @@
           <input id="editProductImage" placeholder="URL image produit">
           <input id="editLogoUrl" placeholder="URL du logo">
           <input id="editDescription" placeholder="Description" class="full">
+          <input id="editInstagramUrl" placeholder="📷 Instagram" class="full">
+          <input id="editFacebookUrl" placeholder="📘 Facebook" class="full">
+          <input id="editTiktokUrl" placeholder="🎵 TikTok" class="full">
         </div>
         <button id="updateBatchBtn" style="background:#0f172a;margin-top:16px">METTRE À JOUR LE LOT</button>
       </div>
     </section>
 
-    <!-- ===== Log ===== -->
+    <!-- Log -->
     <section class="panel" id="panel-log">
       <h2>Journal des vérifications</h2>
       <p class="muted">Les 100 dernières tentatives de vérification par les clients.</p>
@@ -175,7 +191,7 @@
       <div id="logList" style="margin-top:18px"></div>
     </section>
 
-    <!-- ===== Feedback ===== -->
+    <!-- Feedback -->
     <section class="panel" id="panel-feedback">
       <h2>Avis clients</h2>
       <p class="muted">Tous les avis et signalements des clients.</p>
@@ -190,7 +206,7 @@
       <div id="feedbackList" style="margin-top:18px"></div>
     </section>
 
-    <!-- ===== Settings ===== -->
+    <!-- Settings -->
     <section class="panel" id="panel-settings">
       <h2>Options d'impression</h2>
       <p class="muted">Choisissez le mode et la taille d'impression.</p>
@@ -216,26 +232,20 @@
         • Le client scanne le QR puis déplie pour lire le code.
       </div>
     </section>
-
   </main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="/admin.js"></script>
 <script>
-  // ============================================================
-  // SERVICE WORKER
-  // ============================================================
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/service-worker.js').catch(err => console.warn('SW:', err));
     });
   }
 
-  // ============================================================
-  // INSTALLATION PWA ADMIN
-  // ============================================================
   let deferredPrompt = null;
   const installAdminBtn = document.getElementById('installAdminBtn');
 
@@ -261,9 +271,6 @@
     if (installAdminBtn) installAdminBtn.style.display = 'none';
   });
 
-  // ============================================================
-  // DARK MODE
-  // ============================================================
   const darkToggleLogin = document.getElementById("darkToggleLogin");
   const darkToggleMain = document.getElementById("darkToggle");
 
@@ -278,6 +285,9 @@
     const isDark = document.documentElement.classList.toggle("dark");
     localStorage.setItem("theme", isDark ? "dark" : "light");
     updateDarkIcons();
+    if (typeof window.__reloadCharts === "function") {
+      setTimeout(window.__reloadCharts, 100);
+    }
   }
 
   if (darkToggleLogin) darkToggleLogin.addEventListener("click", toggleDark);
