@@ -22,7 +22,6 @@
   </script>
 
   <style>
-    /* ============ Reset & Base ============ */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -90,9 +89,7 @@
       border-bottom: 1px solid var(--border);
     }
 
-    html.dark .header {
-      background: rgba(10, 15, 28, 0.85);
-    }
+    html.dark .header { background: rgba(10, 15, 28, 0.85); }
 
     .header-inner {
       display: flex;
@@ -174,7 +171,6 @@
 
     .dark-btn:hover { transform: scale(1.06); }
 
-    /* Bouton "Vérifier maintenant" (prominent) */
     .btn-verify-now {
       display: inline-flex;
       align-items: center;
@@ -198,8 +194,6 @@
       transform: translateY(-2px) scale(1.02);
       box-shadow: 0 12px 28px -6px rgba(22, 163, 74, 0.65);
     }
-
-    .btn-verify-now:active { transform: translateY(0); }
 
     /* ============ Hero ============ */
     .hero {
@@ -454,10 +448,7 @@
     }
 
     /* ============ Sections ============ */
-    .section {
-      padding: 80px 0;
-    }
-
+    .section { padding: 80px 0; }
     .section-alt { background: var(--bg-alt); }
 
     .section-head {
@@ -466,7 +457,7 @@
       margin: 0 auto 56px;
     }
 
-    .section-head .eyebrow {
+    .eyebrow {
       font-size: 12px;
       font-weight: 800;
       letter-spacing: 2.5px;
@@ -505,29 +496,17 @@
       padding: 32px 24px;
       text-align: center;
       transition: all 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
-      position: relative;
-      overflow: hidden;
     }
 
     .step:hover {
       transform: translateY(-6px);
       box-shadow: var(--shadow-lg);
-      border-color: transparent;
     }
 
-    .step-num {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 48px;
-      height: 48px;
-      background: linear-gradient(135deg, var(--primary), var(--primary-light));
-      color: #fff;
-      font-size: 20px;
-      font-weight: 900;
-      border-radius: 14px;
-      margin-bottom: 20px;
-      box-shadow: 0 6px 16px -4px rgba(22, 163, 74, 0.4);
+    .step-emoji {
+      font-size: 42px;
+      margin-bottom: 12px;
+      line-height: 1;
     }
 
     .step h3 {
@@ -543,12 +522,6 @@
       color: var(--text-muted);
       line-height: 1.6;
       margin: 0;
-    }
-
-    .step .step-emoji {
-      font-size: 42px;
-      margin-bottom: 12px;
-      line-height: 1;
     }
 
     /* Features */
@@ -718,16 +691,8 @@
     }
 
     .brand-card-row:last-child { border-bottom: 0; }
-
-    .brand-card-row b {
-      color: var(--text);
-      font-weight: 700;
-    }
-
-    .brand-card-row span {
-      color: var(--text-muted);
-      font-family: monospace;
-    }
+    .brand-card-row b { color: var(--text); font-weight: 700; }
+    .brand-card-row span { color: var(--text-muted); font-family: monospace; }
 
     .badge-green {
       background: rgba(22, 163, 74, 0.12);
@@ -770,9 +735,7 @@
     }
 
     /* Final CTA */
-    .cta-section {
-      padding: 80px 0;
-    }
+    .cta-section { padding: 80px 0; }
 
     .cta-box {
       background: linear-gradient(135deg, #0f172a, #1e293b);
@@ -841,7 +804,6 @@
       line-height: 1.6;
     }
 
-    /* Animations */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(30px); }
       to { opacity: 1; transform: translateY(0); }
@@ -852,12 +814,8 @@
       animation: fadeUp 700ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    /* Responsive */
     @media (max-width: 900px) {
-      .for-brands {
-        grid-template-columns: 1fr;
-        gap: 40px;
-      }
+      .for-brands { grid-template-columns: 1fr; gap: 40px; }
       .for-brands-visual { height: 340px; }
       .stats { grid-template-columns: repeat(2, 1fr); gap: 32px 20px; }
     }
@@ -869,12 +827,10 @@
       .header-inner { padding: 12px 0; gap: 8px; }
       .logo-text { display: none; }
       .btn-verify-now { padding: 9px 14px; font-size: 12px; }
-      .btn-verify-now .label-full { display: none; }
       .lang-btn { padding: 5px 8px; font-size: 10px; }
       .dark-btn { width: 32px; height: 32px; font-size: 14px; }
       .cta-box { padding: 44px 24px; border-radius: 24px; }
-      .phone { transform: rotate(0); }
-      .phone { animation: phoneFloatMobile 6s ease-in-out infinite; }
+      .phone { transform: rotate(0); animation: phoneFloatMobile 6s ease-in-out infinite; }
       @keyframes phoneFloatMobile {
         0%, 100% { transform: translateY(0); }
         50% { transform: translateY(-10px); }
@@ -892,7 +848,7 @@
 <!-- ============ Header ============ -->
 <header class="header">
   <div class="container header-inner">
-    <a href="/landing.html" class="logo">
+    <a href="/" class="logo">
       <img src="/icon.svg" alt="Produit dz ORG">
       <div class="logo-text">
         <span>Produit dz ORG</span>
@@ -906,7 +862,7 @@
       <button class="lang-btn" data-lang="en">EN</button>
       <button class="dark-btn" id="darkBtn" aria-label="Mode sombre">🌙</button>
 
-      <a href="/" class="btn-verify-now">
+      <a href="/verify" class="btn-verify-now">
         <span>🔍</span>
         <span data-i18n="verifyNow">تحقق الآن</span>
       </a>
@@ -931,7 +887,7 @@
       </p>
 
       <div class="hero-cta fade-up" style="animation-delay: 300ms">
-        <a href="/" class="btn btn-primary">
+        <a href="/verify" class="btn btn-primary">
           <span>🔍</span>
           <span data-i18n="ctaVerify">تحقق من منتج</span>
         </a>
@@ -1067,7 +1023,7 @@
   <div class="container">
     <div class="for-brands">
       <div class="for-brands-content">
-        <div class="eyebrow" style="font-size:12px;font-weight:800;letter-spacing:2.5px;color:var(--primary);text-transform:uppercase;margin-bottom:14px" data-i18n="brandsEyebrow">للعلامات التجارية</div>
+        <div class="eyebrow" data-i18n="brandsEyebrow">للعلامات التجارية</div>
         <h2 data-i18n="brandsTitle">احمِ علامتك التجارية باحترافية</h2>
         <p data-i18n="brandsText">
           انضم إلى العلامات التجارية التي تثق بنا لحماية منتجاتها من التقليد. احصل على لوحة تحكم كاملة لإدارة كل أكوادك.
@@ -1138,7 +1094,7 @@
             <span>🚀</span>
             <span data-i18n="ctaStart2">ابدأ مجانًا</span>
           </a>
-          <a href="/" class="btn" style="background:rgba(255,255,255,0.1);color:#fff;border:1.5px solid rgba(255,255,255,0.2)">
+          <a href="/verify" class="btn" style="background:rgba(255,255,255,0.1);color:#fff;border:1.5px solid rgba(255,255,255,0.2)">
             <span>🔍</span>
             <span data-i18n="ctaVerify2">جرّب التحقق</span>
           </a>
@@ -1152,7 +1108,7 @@
 <footer class="footer">
   <div class="container">
     <div class="footer-links">
-      <a href="/" data-i18n="footVerify">التحقق</a>
+      <a href="/verify" data-i18n="footVerify">التحقق</a>
       <a href="#for-brands" data-i18n="footBrands">للعلامات</a>
       <a href="/admin.html" data-i18n="footAdmin">دخول الأدمن</a>
     </div>
@@ -1162,16 +1118,9 @@
   </div>
 </footer>
 
-<!-- ============ i18n + Dark Mode ============ -->
 <script>
-  // ============================================================
-  // YEAR
-  // ============================================================
   document.getElementById("year").textContent = new Date().getFullYear();
 
-  // ============================================================
-  // TRANSLATIONS
-  // ============================================================
   const TRANSLATIONS = {
     ar: {
       verifyNow: "تحقق الآن",
@@ -1404,9 +1353,6 @@
 
   applyTranslations();
 
-  // ============================================================
-  // DARK MODE
-  // ============================================================
   const darkBtn = document.getElementById("darkBtn");
 
   function updateDarkIcon() {
