@@ -10,6 +10,7 @@
   <link rel="apple-touch-icon" href="/icon.svg">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
   <script>
     (function() {
@@ -449,15 +450,32 @@
 </main>
 
 <script>
+  // ============================================================
+  // SUPABASE
+  // ============================================================
   const SUPABASE_URL = "https://qfpmbbntxyrderjlejql.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m";
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // ============================================================
+  // EMAILJS
+  // ============================================================
+  const EMAILJS_PUBLIC_KEY = "juoh_rOKaec16kxrH";
+  const EMAILJS_SERVICE_ID = "service_42s5mbn";
+  const EMAILJS_TEMPLATE_ID = "template_4kdo3so";
+
+  if (typeof emailjs !== "undefined") {
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+  }
 
   const $ = id => document.getElementById(id);
 
   let currentUser = null;
   let userMeta = {};
 
+  // ============================================================
+  // TRANSLATIONS
+  // ============================================================
   const TRANSLATIONS = {
     ar: {
       welcomeBadge: "تم إنشاء حسابك بنجاح",
@@ -564,6 +582,9 @@
 
   applyTranslations();
 
+  // ============================================================
+  // MESSAGE UI
+  // ============================================================
   function showMsg(text, type) {
     const el = $("msg");
     el.className = "msg " + type;
@@ -572,6 +593,9 @@
   }
   function hideMsg() { $("msg").classList.add("hidden"); }
 
+  // ============================================================
+  // SESSION
+  // ============================================================
   async function checkSession() {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) {
@@ -587,6 +611,9 @@
 
   checkSession();
 
+  // ============================================================
+  // SUBMIT + EMAIL NOTIFICATION
+  // ============================================================
   $("contactForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     hideMsg();
@@ -611,6 +638,7 @@
     btn.innerHTML = `<span>⏳</span><span>${t("sending")}</span>`;
 
     try {
+      // 1. Enregistrer dans Supabase
       const { error } = await sb.from("brand_messages").insert({
         user_id: currentUser.id,
         brand_name: userMeta.brand_name || "—",
@@ -628,18 +656,23 @@
         return;
       }
 
-      // 🔔 Envoyer notification WhatsApp au propriétaire
-      fetch("/api/send-notification", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      // 2. Envoyer notification par email (EmailJS)
+      try {
+        const emailParams = {
           brand_name: userMeta.brand_name || "—",
           email: currentUser.email,
-          phone: userMeta.phone || null,
+          phone: userMeta.phone || "—",
           subject: subject,
-          message: message
-        })
-      }).then(r => r.json()).then(d => console.log("Notif:", d)).catch(err => console.warn("Notification error:", err));
+          message: message,
+          to_email: "mepirf@gmail.com"
+        };
+
+        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, emailParams);
+        console.log("✅ Email notification sent");
+      } catch (emailErr) {
+        console.warn("⚠️ Email notification failed:", emailErr);
+        // Ne pas bloquer l'utilisateur si l'email échoue
+      }
 
       showMsg(t("successMsg"), "success");
       $("subject").value = "";
