@@ -3,104 +3,183 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Admin QR</title>
+  <title>Admin — Produit dz ORG</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="icon" type="image/svg+xml" href="/icon.svg">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<main class="page">
-  <section class="card" style="max-width:720px;text-align:left">
-    <div class="brand">ADMIN — QR AUTHENTICITY</div>
 
-    <div id="login">
-      <h2>Connexion</h2>
-      <input id="email" type="email" placeholder="Email" style="margin-bottom:10px">
-      <input id="password" type="password" placeholder="Mot de passe">
-      <button id="loginBtn">SE CONNECTER</button>
+<!-- ===== Login Screen ===== -->
+<main class="page" id="loginPage">
+  <section class="card">
+    <div class="brand">ADMIN — Produit dz ORG</div>
+    <img src="/icon.svg" alt="" class="app-logo">
+    <h1>Connexion</h1>
+    <p class="muted">Accédez au panneau d'administration.</p>
+
+    <form id="loginForm">
+      <input id="email" type="email" placeholder="Email" autocomplete="email" required>
+      <input id="password" type="password" placeholder="Mot de passe" autocomplete="current-password" style="margin-top:10px" required>
+      <button id="loginBtn" type="submit">SE CONNECTER</button>
+    </form>
+
+    <div id="loginError" class="result danger hidden" style="margin-top:15px"></div>
+  </section>
+</main>
+
+<!-- ===== Admin Layout ===== -->
+<div class="admin-layout hidden" id="adminApp">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="/icon.svg" alt="" class="sidebar-logo">
+      <div>
+        <div class="sidebar-title">Produit dz ORG</div>
+        <div class="sidebar-sub">ADMIN PANEL</div>
+      </div>
     </div>
 
-    <div id="panel" class="hidden">
-      <h2>Créer un lot</h2>
-      <p class="muted">Le QR est identique pour tous les autocollants. Chaque autocollant reçoit un code secret différent.</p>
+    <nav class="sidebar-nav">
+      <button data-panel="dashboard" class="active"><span class="ico">📊</span> Tableau de bord</button>
+      <button data-panel="create"><span class="ico">➕</span> Créer un lot</button>
+      <button data-panel="search"><span class="ico">🔍</span> Rechercher un code</button>
+      <button data-panel="manage"><span class="ico">📦</span> Gérer un lot</button>
+      <button data-panel="log"><span class="ico">📋</span> Journal</button>
+      <button data-panel="settings"><span class="ico">⚙️</span> Impression</button>
+    </nav>
 
-      <input id="brand" placeholder="Marque">
-      <input id="product_name" placeholder="Nom du produit" style="margin-top:10px">
-      <input id="reference" placeholder="Référence" style="margin-top:10px">
-      <input id="lot" placeholder="Lot" style="margin-top:10px">
-      <input id="manufacture_date" type="date" style="margin-top:10px">
-      <input id="expiry_date" type="date" style="margin-top:10px">
-      <input id="product_image" placeholder="URL image produit" style="margin-top:10px">
-      <input id="logo_url" placeholder="URL du logo (optionnel)" style="margin-top:10px">
-      <input id="description" placeholder="Description" style="margin-top:10px">
-      <input id="quantity" type="number" min="1" max="10000" value="100" placeholder="Quantité" style="margin-top:10px">
+    <div class="sidebar-footer">
+      <button id="logoutBtn">Déconnexion</button>
+    </div>
+  </aside>
 
-      <button id="createBtn">CRÉER LE LOT</button>
-      <div id="adminResult" class="result hidden"></div>
+  <!-- Overlay (mobile) -->
+  <div class="overlay" id="overlay"></div>
 
-      <hr style="margin:25px 0;border:0;border-top:1px solid #eee">
-      <h2>Statistiques</h2>
-      <div id="stats" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:15px 0">
+  <!-- Main content -->
+  <main class="admin-main">
+
+    <header class="mobile-header">
+      <button class="menu-toggle" id="menuToggle" aria-label="Menu">☰</button>
+      <div class="mobile-title" id="mobileTitle">Tableau de bord</div>
+    </header>
+
+    <!-- ===== Dashboard ===== -->
+    <section class="panel active" id="panel-dashboard">
+      <h2>Tableau de bord</h2>
+      <p class="muted">Vue d'ensemble de vos codes d'authenticité.</p>
+
+      <div id="stats" class="stats-grid">
         <div class="stat-card"><div class="stat-num" id="statUnused">—</div><div class="stat-label">UNUSED</div></div>
         <div class="stat-card"><div class="stat-num" id="statUsed">—</div><div class="stat-label">USED</div></div>
         <div class="stat-card"><div class="stat-num" id="statDisabled">—</div><div class="stat-label">DISABLED</div></div>
         <div class="stat-card"><div class="stat-num" id="statExpired">—</div><div class="stat-label">EXPIRED</div></div>
       </div>
 
-      <hr style="margin:25px 0;border:0;border-top:1px solid #eee">
-      <h2>Rechercher un code</h2>
-      <input id="searchCode" placeholder="CODE SECRET" style="margin-top:10px;text-transform:uppercase">
-      <button id="searchBtn">RECHERCHER</button>
-      <div id="searchResult" class="result hidden" style="margin-top:15px"></div>
+      <h3 style="margin-top:32px;font-size:15px;font-weight:800;color:#0f172a">QR commun</h3>
+      <p class="muted">Ce QR est identique pour tous les autocollants.</p>
+      <p id="publicUrl" class="muted" style="font-family:monospace;font-size:12px;word-break:break-all"></p>
+      <div id="qr" class="qr-box"></div>
+    </section>
 
-      <hr style="margin:25px 0;border:0;border-top:1px solid #eee">
-      <h2>Gérer un lot existant</h2>
-      <p class="muted">Chargez un lot par son numéro pour le consulter, l'imprimer ou le modifier.</p>
+    <!-- ===== Create ===== -->
+    <section class="panel" id="panel-create">
+      <h2>Créer un lot</h2>
+      <p class="muted">Générez un nouveau lot de codes secrets. Chaque code est unique et ne peut être utilisé qu'une seule fois.</p>
 
-      <input id="editLotSearch" placeholder="Numéro de lot (ex: 001)" style="margin-top:10px">
-      <button id="loadLotBtn" style="background:#444">CHARGER LE LOT</button>
-      <div id="lotInfo" class="result hidden" style="margin-top:15px"></div>
-
-      <button id="printLotBtn" class="hidden" style="background:#0a6;margin-top:10px">🖨 IMPRIMER CE LOT</button>
-
-      <div id="editForm" class="hidden" style="margin-top:15px;padding:15px;background:#f9f9f9;border-radius:10px;border:1px solid #eee">
-        <h3 style="margin-top:0">Modifier ce lot</h3>
-        <p class="muted" style="font-size:12px">Seuls les champs remplis seront appliqués.</p>
-        <input id="editBrand" placeholder="Marque" style="margin-top:10px">
-        <input id="editProductName" placeholder="Nom du produit" style="margin-top:10px">
-        <input id="editReference" placeholder="Référence" style="margin-top:10px">
-        <input id="editNewLot" placeholder="Nouveau lot (optionnel)" style="margin-top:10px">
-        <input id="editManufactureDate" type="date" style="margin-top:10px">
-        <input id="editExpiryDate" type="date" style="margin-top:10px">
-        <input id="editProductImage" placeholder="URL image produit" style="margin-top:10px">
-        <input id="editLogoUrl" placeholder="URL du logo" style="margin-top:10px">
-        <input id="editDescription" placeholder="Description" style="margin-top:10px">
-        <button id="updateBatchBtn" style="background:#111;margin-top:10px">METTRE À JOUR LE LOT</button>
+      <div class="form-grid">
+        <input id="brand" placeholder="Marque *">
+        <input id="product_name" placeholder="Nom du produit">
+        <input id="reference" placeholder="Référence">
+        <input id="lot" placeholder="Lot">
+        <input id="manufacture_date" type="date">
+        <input id="expiry_date" type="date">
+        <input id="product_image" placeholder="URL image produit">
+        <input id="logo_url" placeholder="URL du logo (optionnel)">
+        <input id="description" placeholder="Description" class="full">
+        <input id="quantity" type="number" min="1" max="10000" value="100" placeholder="Quantité *">
       </div>
 
-      <hr style="margin:25px 0;border:0;border-top:1px solid #eee">
-      <h2>Journal des vérifications</h2>
-      <p class="muted">Les 100 dernières tentatives de vérification.</p>
-      <button id="refreshLogBtn" style="background:#444">🔄 ACTUALISER</button>
-      <div id="logList" style="margin-top:15px"></div>
+      <button id="createBtn" style="margin-top:18px">CRÉER LE LOT</button>
+      <div id="adminResult" class="result hidden"></div>
 
-      <hr style="margin:25px 0;border:0;border-top:1px solid #eee">
+      <button id="printBtn" class="hidden" style="background:linear-gradient(135deg,#16a34a,#22c55e);margin-top:15px">🖨 IMPRIMER CE LOT</button>
+    </section>
+
+    <!-- ===== Search ===== -->
+    <section class="panel" id="panel-search">
+      <h2>Rechercher un code</h2>
+      <p class="muted">Entrez un code secret pour voir son statut et les informations du produit.</p>
+
+      <input id="searchCode" placeholder="CODE SECRET" style="text-transform:uppercase;font-family:monospace;letter-spacing:3px;text-align:center;font-size:17px;font-weight:700">
+      <button id="searchBtn" style="margin-top:12px">RECHERCHER</button>
+      <div id="searchResult" class="result hidden"></div>
+    </section>
+
+    <!-- ===== Manage lot ===== -->
+    <section class="panel" id="panel-manage">
+      <h2>Gérer un lot</h2>
+      <p class="muted">Chargez un lot existant par son numéro pour le visualiser, l'imprimer ou modifier ses informations.</p>
+
+      <input id="editLotSearch" placeholder="Numéro de lot (ex: 001)">
+      <button id="loadLotBtn" style="background:#475569;margin-top:12px">CHARGER LE LOT</button>
+
+      <div id="lotInfo" class="result hidden"></div>
+
+      <button id="printLotBtn" class="hidden" style="background:linear-gradient(135deg,#16a34a,#22c55e)">🖨 IMPRIMER CE LOT</button>
+
+      <div id="editForm" class="hidden" style="margin-top:20px;padding:20px;background:linear-gradient(160deg,#f8fafc,#eef2f7);border-radius:16px;border:1px solid #e2e8f0">
+        <h3 style="margin:0 0 6px;font-size:15px;font-weight:800;color:#0f172a">Modifier ce lot</h3>
+        <p class="muted" style="font-size:12px;margin-bottom:14px">Les champs vides ne sont pas modifiés.</p>
+        <div class="form-grid">
+          <input id="editBrand" placeholder="Marque">
+          <input id="editProductName" placeholder="Nom du produit">
+          <input id="editReference" placeholder="Référence">
+          <input id="editNewLot" placeholder="Nouveau lot (optionnel)">
+          <input id="editManufactureDate" type="date">
+          <input id="editExpiryDate" type="date">
+          <input id="editProductImage" placeholder="URL image produit">
+          <input id="editLogoUrl" placeholder="URL du logo">
+          <input id="editDescription" placeholder="Description" class="full">
+        </div>
+        <button id="updateBatchBtn" style="background:#0f172a;margin-top:16px">METTRE À JOUR LE LOT</button>
+      </div>
+    </section>
+
+    <!-- ===== Log ===== -->
+    <section class="panel" id="panel-log">
+      <h2>Journal des vérifications</h2>
+      <p class="muted">Les 100 dernières tentatives de vérification par les clients.</p>
+      <button id="refreshLogBtn" style="background:#475569">🔄 ACTUALISER</button>
+      <div id="logList" style="margin-top:18px"></div>
+    </section>
+
+    <!-- ===== Settings ===== -->
+    <section class="panel" id="panel-settings">
       <h2>Options d'impression</h2>
-      <p class="muted">Choisissez la taille de l'étiquette avant l'impression.</p>
-      <select id="labelSize" style="margin-top:10px">
+      <p class="muted">Choisissez la taille de l'étiquette avant d'imprimer.</p>
+
+      <label style="display:block;font-size:11px;color:#64748b;font-weight:800;letter-spacing:1.5px;margin-bottom:8px">TAILLE DE L'ÉTIQUETTE</label>
+      <select id="labelSize">
         <option value="60x90">60 × 90 mm — Étiquette longue (pliée)</option>
         <option value="50x50">50 × 50 mm — Carré compact</option>
         <option value="70x50">70 × 50 mm — Rectangle horizontal</option>
       </select>
 
-      <hr style="margin:25px 0;border:0;border-top:1px solid #eee">
-      <h2>QR commun</h2>
-      <p id="publicUrl" class="muted"></p>
-      <div id="qr" style="display:flex;justify-content:center;margin:15px"></div>
+      <div style="margin-top:24px;padding:18px;background:#fff8e1;border:1px solid #ffe082;border-radius:14px;font-size:13px;line-height:1.7;color:#333">
+        <b style="color:#b26a00">📋 RAPPEL :</b><br>
+        • Le QR est identique pour toutes les étiquettes.<br>
+        • Le code de sécurité est unique par étiquette.<br>
+        • Pliez l'étiquette le long de la ligne pointillée.<br>
+        • Le client scanne le QR puis déplie pour lire le code.
+      </div>
+    </section>
 
-      <button id="printBtn">IMPRIMER DERNIER LOT CRÉÉ</button>
-      <button id="logoutBtn" style="background:#777">DÉCONNEXION</button>
-    </div>
-  </section>
-</main>
+  </main>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
