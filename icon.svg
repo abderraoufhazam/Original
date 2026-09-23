@@ -1,1 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="#111111"/>
 
+  <!-- Shield outline -->
+  <path d="M256 60 L420 120 L420 260 C420 360 340 430 256 460 C172 430 92 360 92 260 L92 120 Z"
+        fill="none" stroke="#ffffff" stroke-width="16" stroke-linejoin="round"/>
+
+  <!-- QR pattern inside shield -->
+  <g fill="#ffffff">
+    <!-- Top-left finder pattern -->
+    <rect x="150" y="160" width="70" height="70" rx="8" fill="none" stroke="#ffffff" stroke-width="12"/>
+    <rect x="172" y="182" width="26" height="26"/>
+
+    <!-- Top-right finder pattern -->
+    <rect x="292" y="160" width="70" height="70" rx="8" fill="none" stroke="#ffffff" stroke-width="12"/>
+    <rect x="314" y="182" width="26" height="26"/>
+
+    <!-- Data dots -->
+    <rect x="150" y="252" width="18" height="18"/>
+    <rect x="186" y="252" width="18" height="18"/>
+    <rect x="222" y="252" width="18" height="18"/>
+    <rect x="258" y="252" width="18" height="18"/>
+    <rect x="294" y="252" width="18" height="18"/>
+    <rect x="330" y="252" width="18" height="18"/>
+
+    <rect x="168" y="288" width="18" height="18"/>
+    <rect x="204" y="288" width="18" height="18"/>
+    <rect x="240" y="288" width="18" height="18"/>
+    <rect x="276" y="288" width="18" height="18"/>
+    <rect x="312" y="288" width="18" height="18"/>
+
+    <rect x="150" y="324" width="18" height="18"/>
+    <rect x="186" y="324" width="18" height="18"/>
+    <rect x="330" y="324" width="18" height="18"/>
+  </g>
+
+  <!-- Checkmark -->
+  <g>
+    <circle cx="360" cy="360" r="70" fill="#16a34a" stroke="#ffffff" stroke-width="12"/>
+    <path d="M325 360 L352 388 L398 335"
+          fill="none" stroke="#ffffff" stroke-width="20"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
