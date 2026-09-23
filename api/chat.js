@@ -27,10 +27,21 @@ export default async function handler(req, res) {
 
     let systemPrompt = `Tu es l'assistant virtuel officiel de "Produit dz ORG", un service algérien de vérification d'authenticité de produits par QR code.
 Aide les clients avec la vérification d'authenticité, le scan du QR, la zone à gratter, et les résultats (PRODUIT ORIGINAL, CODE DÉJÀ UTILISÉ, PRODUIT NON ORIGINAL).
-Réponds brièvement (2-3 phrases), clairement, et adapte-toi à la langue du client (français, arabe, anglais).`;
+
+RÈGLES STRICTES :
+- Réponds UNIQUEMENT avec la réponse finale pour le client.
+- N'affiche JAMAIS ton raisonnement, tes brouillons, tes notes, ton "thinking" ou des préfixes comme "* User question:", "* Intent:", "* Draft:", "* Language:" etc.
+- Pas de listes numérotées internes ni de meta-commentaires.
+- Réponds en 2-3 phrases maximum, directement et clairement.
+- Adapte-toi à la langue du client (français, arabe ou anglais).
+- Sois chaleureux et professionnel.`;
 
     if (context && context.brand) {
-      systemPrompt += `\n\nProduit vérifié : Marque=${context.brand}, Nom=${context.product_name || '—'}, Lot=${context.lot || '—'}`;
+      systemPrompt += `\n\nProduit actuellement vérifié par le client :
+- Marque : ${context.brand}
+- Nom : ${context.product_name || '—'}
+- Référence : ${context.reference || '—'}
+- Lot : ${context.lot || '—'}`;
     }
 
     const contents = [];
@@ -44,7 +55,7 @@ Réponds brièvement (2-3 phrases), clairement, et adapte-toi à la langue du cl
     contents.push({ role: 'user', parts: [{ text: message.trim().slice(0, 1000) }] });
 
     // ============================================================
-    // ÉTAPE 1 : Demander la liste des modèles disponibles
+    // ÉTAPE 1 : Récupérer la liste des modèles disponibles
     // ============================================================
     let availableModels = [];
     try {
@@ -57,25 +68,21 @@ Réponds brièvement (2-3 phrases), clairement, et adapte-toi à la langue du cl
           .filter(m => (m.supportedGenerationMethods || []).includes('generateContent'))
           .map(m => m.name.replace('models/', ''));
       }
-    } catch (e) {
-      // ignore
-    }
+    } catch (e) { /* ignore */ }
 
-    // Si ListModels échoue, utiliser une liste de secours
     if (availableModels.length === 0) {
       availableModels = [
-        'gemini-2.5-flash',
         'gemini-2.0-flash',
         'gemini-2.0-flash-001',
+        'gemini-2.5-flash',
         'gemini-1.5-flash',
         'gemini-1.5-flash-latest',
-        'gemini-1.5-pro',
-        'gemini-pro'
+        'gemini-1.5-pro'
       ];
     }
 
-    // Préférer les modèles récents si disponibles
-    const preferred = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+    // Priorité : 2.0-flash d'abord (pas de thinking), puis 1.5, puis 2.5
+    const preferred = ['gemini-2.0-flash', 'gemini-2.0-flash-001', 'gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-2.5-flash'];
     availableModels.sort((a, b) => {
       const ai = preferred.indexOf(a);
       const bi = preferred.indexOf(b);
@@ -86,7 +93,7 @@ Réponds brièvement (2-3 phrases), clairement, et adapte-toi à la langue du cl
     });
 
     // ============================================================
-    // ÉTAPE 2 : Essayer chaque modèle jusqu'à succès
+    // ÉTAPE 2 : Essayer chaque modèle
     // ============================================================
     let lastError = null;
     let geminiData = null;
@@ -102,7 +109,11 @@ Réponds brièvement (2-3 phrases), clairement, et adapte-toi à la langue du cl
             body: JSON.stringify({
               systemInstruction: { parts: [{ text: systemPrompt }] },
               contents: contents,
-              generationConfig: { temperature: 0.7, maxOutputTokens: 300 }
+              generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 500,
+                thinkingConfig: { thinkingBudget: 0 }
+              }
             })
           }
         );
@@ -128,16 +139,41 @@ Réponds brièvement (2-3 phrases), clairement, et adapte-toi à la langue du cl
       });
     }
 
+    // ============================================================
+    // ÉTAPE 3 : Extraire la réponse (nettoyage anti-thinking)
+    // ============================================================
     let reply = '';
     try {
-      reply = geminiData.candidates[0].content.parts[0].text;
+      const candidate = geminiData.candidates[0];
+      const parts = candidate.content.parts || [];
+
+      // Concaténer tous les parts textuels
+      const fullText = parts
+        .map(p => p.text || '')
+        .join('')
+        .trim();
+
+      // Nettoyer les artefacts de "thinking" si présents
+      reply = fullText
+        .replace(/^\*\s*(User question|Language|Intent|Draft\s*\d*|Brief|Refining|Acknowledge|Explain|Mention)[^\n]*\n?/gim, '')
+        .replace(/\*\s*Draft\s*\d*\s*\([^)]*\):?\*?\s*/gi, '')
+        .replace(/^\*+\s*/gm, '')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+
+      // Si après nettoyage c'est vide, utiliser le texte brut
+      if (!reply) reply = fullText;
+
+      // Si vraiment vide, message par défaut
+      if (!reply) reply = "Désolé, je n'ai pas compris. Pouvez-vous reformuler ?";
+
     } catch (e) {
-      reply = "Désolé, je n'ai pas compris.";
+      reply = "Désolé, je n'ai pas compris. Pouvez-vous reformuler ?";
     }
 
     return res.status(200).json({
       status: 'OK',
-      reply: reply.trim(),
+      reply: reply,
       model: usedModel
     });
 
