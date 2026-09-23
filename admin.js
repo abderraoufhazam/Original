@@ -27,7 +27,7 @@ function randomCode() {
 }
 
 // ============================================================
-// NAVIGATION (Sidebar)
+// NAVIGATION
 // ============================================================
 const PANEL_TITLES = {
   dashboard: "Tableau de bord",
@@ -397,15 +397,93 @@ $("updateBatchBtn").onclick = async () => {
 };
 
 // ============================================================
-// PRINT LABELS
+// PRINT — 2 modes : labels ou liste
 // ============================================================
 function printLabels(codes, brand, lot, logoUrl) {
   if (!codes || !codes.length) return alert("Aucun code à imprimer.");
 
-  const size = $("labelSize").value || "60x90";
+  const mode = ($("printMode") && $("printMode").value) || "labels";
   const url = location.origin + "/";
   const w = window.open("", "_blank");
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
+
+  // ---------- MODE LISTE ----------
+  if (mode === "list") {
+    let html = `<!doctype html><html lang="fr"><head><meta charset="utf-8">
+    <title>Liste des codes</title>
+    <style>
+      @page { margin: 12mm; }
+      * { box-sizing: border-box; }
+      body { font-family: Arial, sans-serif; padding: 15px; margin: 0; color: #111; }
+      .toolbar { background: #111; color: #fff; padding: 12px; text-align: center; margin-bottom: 20px; border-radius: 8px; position: sticky; top: 0; z-index: 100; }
+      .toolbar button { background: #fff; color: #111; border: 0; padding: 10px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
+      .header { text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 3px solid #111; }
+      .header h1 { margin: 0 0 6px; font-size: 22px; }
+      .header p { margin: 4px 0; font-size: 13px; color: #555; }
+      .meta { display: flex; justify-content: center; gap: 20px; font-size: 13px; margin-top: 10px; }
+      .meta b { color: #111; }
+      table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+      th { background: #111; color: #fff; padding: 10px 8px; text-align: left; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+      td { padding: 9px 8px; border-bottom: 1px solid #e5e7eb; }
+      tr:nth-child(even) td { background: #f9fafb; }
+      .num { color: #6b7280; width: 45px; font-weight: bold; }
+      .code-cell { font-family: 'Courier New', monospace; font-weight: bold; font-size: 15px; letter-spacing: 2px; color: #111; }
+      .footer { margin-top: 25px; padding-top: 12px; border-top: 1px solid #ddd; text-align: center; font-size: 11px; color: #888; }
+      @media print {
+        .toolbar { display: none !important; }
+        body { padding: 0; }
+      }
+    </style></head><body>
+
+    <div class="toolbar">
+      <button onclick="window.print()">🖨 IMPRIMER</button>
+    </div>
+
+    <div class="header">
+      ${logoUrl ? `<img src="${escapeHtml(logoUrl)}" style="max-height:50px;margin-bottom:10px">` : ""}
+      <h1>${escapeHtml(brand)}</h1>
+      <p><b>Liste des codes de sécurité</b></p>
+      <div class="meta">
+        ${lot ? `<span><b>Lot :</b> ${escapeHtml(lot)}</span>` : ""}
+        <span><b>Total :</b> ${codes.length} code(s)</span>
+      </div>
+      <p style="font-size:11px;color:#888;margin-top:10px">Document confidentiel — À conserver en lieu sûr</p>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th class="num">#</th>
+          <th>Code de sécurité</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    codes.forEach((code, i) => {
+      const formatted = code.match(/.{1,4}/g).join(" ");
+      html += `
+        <tr>
+          <td class="num">${i + 1}</td>
+          <td class="code-cell">${formatted}</td>
+        </tr>`;
+    });
+
+    html += `
+      </tbody>
+    </table>
+
+    <div class="footer">
+      Produit dz ORG — ${new Date().toLocaleString()}
+    </div>
+
+    </body></html>`;
+    w.document.write(html);
+    w.document.close();
+    return;
+  }
+
+  // ---------- MODE LABELS ----------
+  const size = $("labelSize").value || "60x90";
 
   let labelWidth, labelHeight, qrSize, codeFontSize, brandFontSize;
   if (size === "50x50") {
