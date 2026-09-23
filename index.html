@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" dir="ltr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
@@ -18,26 +18,34 @@
 <body>
 <main class="page">
   <section class="card">
+
+    <!-- Sélecteur de langue -->
+    <div class="lang-switcher">
+      <button class="lang-btn" data-lang="fr">FR</button>
+      <button class="lang-btn" data-lang="ar">ع</button>
+      <button class="lang-btn" data-lang="en">EN</button>
+    </div>
+
     <div class="brand">Produit dz ORG</div>
 
     <img src="/icon.svg" alt="Produit dz ORG" class="app-logo">
 
-    <h1>Vérification d'authenticité</h1>
-    <p class="muted">Entrez le code de sécurité caché sous la zone à gratter.</p>
+    <h1 data-i18n="title">Vérification d'authenticité</h1>
+    <p class="muted" data-i18n="subtitle">Entrez le code de sécurité caché sous la zone à gratter.</p>
 
     <form id="verifyForm">
       <input id="code" autocomplete="off" autocapitalize="characters"
-             maxlength="12" placeholder="CODE DE SÉCURITÉ" required>
-      <button type="submit" id="verifyBtn">VÉRIFIER</button>
+             maxlength="12" data-i18n="placeholder" placeholder="CODE DE SÉCURITÉ" required>
+      <button type="submit" id="verifyBtn" data-i18n="verifyBtn">VÉRIFIER</button>
     </form>
 
     <!-- Résultat de vérification -->
     <div id="result" class="result hidden"></div>
 
-    <!-- Section Avis client (apparaît si ORIGINAL) -->
+    <!-- Section Avis client -->
     <div id="feedbackSection" class="feedback-section hidden">
-      <h3>⭐ Notez ce produit</h3>
-      <p class="muted">Votre avis compte pour nous.</p>
+      <h3 data-i18n="feedbackTitle">⭐ Notez ce produit</h3>
+      <p class="muted" data-i18n="feedbackSubtitle">Votre avis compte pour nous.</p>
 
       <div class="stars" id="stars">
         <button type="button" data-star="1">★</button>
@@ -47,31 +55,34 @@
         <button type="button" data-star="5">★</button>
       </div>
 
-      <textarea id="feedbackComment" placeholder="Ajoutez un commentaire (optionnel)" rows="3"></textarea>
+      <textarea id="feedbackComment" data-i18n="feedbackPlaceholder" placeholder="Ajoutez un commentaire (optionnel)" rows="3"></textarea>
 
-      <button id="feedbackSubmit" type="button" style="background:linear-gradient(135deg,#16a34a,#22c55e)">ENVOYER MON AVIS</button>
+      <button id="feedbackSubmit" type="button" data-i18n="feedbackSubmit" style="background:linear-gradient(135deg,#16a34a,#22c55e)">ENVOYER MON AVIS</button>
       <div id="feedbackMsg" class="hidden" style="margin-top:12px;font-size:13px;color:#16a34a;font-weight:600;text-align:center"></div>
     </div>
 
-    <!-- Section Signalement (apparaît toujours après vérification) -->
+    <!-- Section Signalement -->
     <div id="reportSection" class="feedback-section hidden">
-      <h3>🚨 Signaler un problème</h3>
-      <p class="muted">Vous pensez que ce produit est une contrefaçon ? Signalez-le-nous.</p>
-      <button id="reportBtn" type="button" style="background:linear-gradient(135deg,#dc2626,#ef4444)">SIGNALER UNE CONTREFAÇON</button>
+      <h3 data-i18n="reportTitle">🚨 Signaler un problème</h3>
+      <p class="muted" data-i18n="reportSubtitle">Vous pensez que ce produit est une contrefaçon ? Signalez-le-nous.</p>
+      <button id="reportBtn" type="button" data-i18n="reportBtn" style="background:linear-gradient(135deg,#dc2626,#ef4444)">SIGNALER UNE CONTREFAÇON</button>
       <div id="reportMsg" class="hidden" style="margin-top:12px;font-size:13px;color:#dc2626;font-weight:600;text-align:center"></div>
     </div>
 
-    <p class="small">Le code de sécurité ne peut être vérifié qu'une seule fois.</p>
+    <p class="small" data-i18n="footerSmall">Le code de sécurité ne peut être vérifié qu'une seule fois.</p>
 
-    <button id="installBtn" class="hidden" style="margin-top:20px;background:#16a34a;color:#fff;border:0;padding:12px 20px;border-radius:8px;font-weight:bold;cursor:pointer;width:100%">
+    <button id="installBtn" class="hidden" data-i18n="installBtn" style="margin-top:20px;background:#16a34a;color:#fff;border:0;padding:12px 20px;border-radius:8px;font-weight:bold;cursor:pointer;width:100%">
       📱 INSTALLER L'APPLICATION
     </button>
 
     <p class="small" style="margin-top:15px;font-size:11px;color:#999">
-      Application vérifiée par <b>Produit dz ORG</b>
+      <span data-i18n="footerBy">Application vérifiée par</span>
+      <b>Produit dz ORG</b>
     </p>
   </section>
 </main>
+
+<script src="/i18n.js"></script>
 <script src="/app.js"></script>
 
 <script>
@@ -102,6 +113,13 @@
 
   window.addEventListener('appinstalled', () => {
     installBtn.classList.add('hidden');
+  });
+
+  // Sélecteur de langue
+  document.querySelectorAll(".lang-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      setLanguage(btn.dataset.lang);
+    });
   });
 </script>
 </body>
