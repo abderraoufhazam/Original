@@ -11,12 +11,13 @@ let loadedLotBrand = "";
 let loadedLotLot = "";
 let loadedLotLogo = "";
 let currentFeedbackFilter = "all";
+let currentMessagesFilter = "all";
+let unreadMessagesCount = 0;
 
 let chartDaily = null;
 let chartResults = null;
 let chartTopLots = null;
 
-// Bulk delete
 let pendingDeleteLot = null;
 let pendingDeleteCount = 0;
 
@@ -36,6 +37,8 @@ const PANEL_TITLES = {
   manage: "Gérer un lot",
   log: "Journal",
   feedback: "Avis clients",
+  messages: "Messages",
+  brands: "Marques",
   delete: "Suppression",
   settings: "Impression"
 };
@@ -54,6 +57,8 @@ function showPanel(name) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 
   if (name === "delete") loadDeleteLog();
+  if (name === "messages") loadMessages();
+  if (name === "brands") loadBrands();
 }
 
 document.querySelectorAll(".sidebar-nav button").forEach(btn => {
@@ -184,6 +189,247 @@ async function loadFeedback() {
   });
   container.innerHTML = html;
 }
+
+// ============================================================
+// MESSAGES DES MARQUES
+// ============================================================
+async function loadMessagesBadge() {
+  try {
+    const { count } = await sb
+      .from("brand_messages")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "NEW");
+
+    unreadMessagesCount = count || 0;
+    const badge = $("messagesBadge");
+    if (badge) {
+      if (unreadMessagesCount > 0) {
+        badge.textContent = unreadMessagesCount;
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+    }
+  } catch (e) {
+    console.warn("loadMessagesBadge:", e);
+  }
+}
+
+async function loadMessages() {
+  const container = $("messagesList");
+  if (!container) return;
+  container.innerHTML = `<p class="muted">Chargement...</p>`;
+
+  let query = sb
+    .from("brand_messages")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (currentMessagesFilter !== "all") {
+    query = query.eq("status", currentMessagesFilter);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(error.message)}</p>`;
+    return;
+  }
+  if (!data || data.length === 0) {
+    container.innerHTML = `<p class="muted">Aucun message pour le moment.</p>`;
+    return;
+  }
+
+  let html = "";
+  data.forEach(m => {
+    const isNew = m.status === "NEW";
+    const statusClass = isNew ? "danger" : "success";
+    const date = m.created_at ? new Date(m.created_at).toLocaleString() : "—";
+
+    html += `
+      <div class="log-row log-${statusClass}" style="padding:18px">
+        <div class="log-top">
+          <span class="log-result log-result-${statusClass}">
+            ${isNew ? "🔴 NOUVEAU" : "✓ LU"}
+          </span>
+          <span class="log-date">${escapeHtml(date)}</span>
+        </div>
+
+        <div style="font-weight:800;font-size:14px;color:inherit;margin:8px 0 4px">
+          ${escapeHtml(m.brand_name || "—")}
+        </div>
+
+        <div style="font-size:11px;color:#64748b;margin-bottom:10px">
+          📧 ${escapeHtml(m.email || "—")}
+          ${m.phone ? ` &nbsp;|&nbsp; 📱 ${escapeHtml(m.phone)}` : ""}
+        </div>
+
+        <div style="font-size:13px;font-weight:700;color:inherit;margin-bottom:6px">
+          📌 ${escapeHtml(m.subject || "(sans sujet)")}
+        </div>
+
+        <div style="font-size:13px;color:inherit;line-height:1.6;padding:10px 12px;background:rgba(255,255,255,0.5);border-radius:10px;border:1px solid rgba(0,0,0,0.05);margin-bottom:12px">
+          ${escapeHtml(m.message || "")}
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${isNew ? `<button onclick="markMessageRead(${m.id})" style="flex:1;padding:8px 12px;background:#16a34a;color:#fff;border:0;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;margin:0;min-width:120px">✓ Marquer lu</button>` : ""}
+          ${m.phone ? `<a href="https://wa.me/${encodeURIComponent(m.phone.replace(/[^0-9]/g,''))}?text=${encodeURIComponent('Bonjour ' + (m.brand_name || '') + ', merci pour votre message. ')}" target="_blank" rel="noopener" style="flex:1;padding:8px 12px;background:#25D366;color:#fff;border:0;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none;text-align:center;margin:0;min-width:120px;display:inline-flex;align-items:center;justify-content:center;gap:4px">💬 WhatsApp</a>` : ""}
+          <a href="mailto:${escapeHtml(m.email)}?subject=${encodeURIComponent('Re: ' + (m.subject || ''))}" style="flex:1;padding:8px 12px;background:#0f172a;color:#fff;border:0;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none;text-align:center;margin:0;min-width:120px;display:inline-flex;align-items:center;justify-content:center;gap:4px">📧 Email</a>
+        </div>
+      </div>`;
+  });
+  container.innerHTML = html;
+}
+
+window.markMessageRead = async function(id) {
+  const { error } = await sb
+    .from("brand_messages")
+    .update({ status: "READ" })
+    .eq("id", id);
+
+  if (error) {
+    alert("Erreur : " + error.message);
+    return;
+  }
+
+  loadMessages();
+  loadMessagesBadge();
+};
+
+$("refreshMessagesBtn").onclick = () => {
+  loadMessages();
+  loadMessagesBadge();
+};
+
+document.querySelectorAll("#messagesTabs .tab").forEach(t => {
+  t.addEventListener("click", () => {
+    document.querySelectorAll("#messagesTabs .tab").forEach(x => {
+      x.classList.remove("active");
+      x.style.background = "#fff";
+      x.style.color = "#0f172a";
+      x.style.border = "1px solid #e2e8f0";
+    });
+    t.classList.add("active");
+    t.style.background = "#0f172a";
+    t.style.color = "#fff";
+    t.style.border = "0";
+    currentMessagesFilter = t.dataset.tab;
+    loadMessages();
+  });
+});
+
+// ============================================================
+// MARQUES INSCRITES
+// ============================================================
+async function loadBrands() {
+  const container = $("brandsList");
+  const statsBox = $("brandsStats");
+  if (!container) return;
+
+  container.innerHTML = `<p class="muted">Chargement...</p>`;
+  if (statsBox) statsBox.innerHTML = "";
+
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    container.innerHTML = `<p class="muted">Non connecté.</p>`;
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/list-brands", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + session.access_token
+      },
+      body: JSON.stringify({ access_token: session.access_token })
+    });
+
+    const data = await res.json();
+
+    if (data.status !== "OK") {
+      container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(data.message || "")}</p>`;
+      return;
+    }
+
+    const brands = data.brands || [];
+    const now = new Date();
+    const last7days = brands.filter(b => {
+      const d = new Date(b.created_at);
+      return (now - d) < 7 * 24 * 60 * 60 * 1000;
+    }).length;
+    const active = brands.filter(b => b.last_sign_in_at).length;
+
+    if (statsBox) {
+      statsBox.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-num">${brands.length}</div>
+          <div class="stat-label">TOTAL</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color:#16a34a">${last7days}</div>
+          <div class="stat-label">7 DERNIERS JOURS</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color:#2563eb">${active}</div>
+          <div class="stat-label">ACTIVES</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color:#dc2626">${brands.length - active}</div>
+          <div class="stat-label">INACTIVES</div>
+        </div>
+      `;
+    }
+
+    if (brands.length === 0) {
+      container.innerHTML = `<p class="muted">Aucune marque inscrite pour le moment.</p>`;
+      return;
+    }
+
+    let html = "";
+    brands.forEach(b => {
+      const created = b.created_at ? new Date(b.created_at).toLocaleString() : "—";
+      const lastSeen = b.last_sign_in_at ? new Date(b.last_sign_in_at).toLocaleString() : "Jamais connecté";
+      const isRecent = (now - new Date(b.created_at)) < 24 * 60 * 60 * 1000;
+
+      html += `
+        <div class="log-row log-${isRecent ? "success" : "warning"}" style="padding:16px">
+          <div class="log-top">
+            <span class="log-result log-result-${isRecent ? "success" : "warning"}">
+              ${isRecent ? "🆕 NOUVELLE" : "🏢 MARQUE"}
+            </span>
+            <span class="log-date">${escapeHtml(created)}</span>
+          </div>
+
+          <div style="font-weight:800;font-size:15px;color:inherit;margin:8px 0 6px">
+            ${escapeHtml(b.brand_name || "(sans nom)")}
+          </div>
+
+          <div class="log-meta" style="margin-bottom:10px">
+            <span>📧 ${escapeHtml(b.email)}</span>
+            ${b.phone ? `<span>📱 ${escapeHtml(b.phone)}</span>` : ""}
+          </div>
+
+          <div style="font-size:11px;color:#64748b;margin-bottom:10px">
+            Dernière connexion : ${escapeHtml(lastSeen)}
+          </div>
+
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            ${b.phone ? `<a href="https://wa.me/${encodeURIComponent(b.phone.replace(/[^0-9]/g,''))}?text=${encodeURIComponent('Bonjour ' + (b.brand_name || '') + ', bienvenue sur Produit dz ORG !')}" target="_blank" rel="noopener" style="flex:1;padding:8px 12px;background:#25D366;color:#fff;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none;text-align:center;min-width:110px;display:inline-flex;align-items:center;justify-content:center;gap:4px">💬 WhatsApp</a>` : ""}
+            <a href="mailto:${escapeHtml(b.email)}" style="flex:1;padding:8px 12px;background:#0f172a;color:#fff;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none;text-align:center;min-width:110px;display:inline-flex;align-items:center;justify-content:center;gap:4px">📧 Email</a>
+          </div>
+        </div>`;
+    });
+    container.innerHTML = html;
+
+  } catch (err) {
+    container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(err.message)}</p>`;
+  }
+}
+
+$("refreshBrandsBtn").onclick = () => loadBrands();
 
 // ============================================================
 // DELETE LOG
@@ -437,7 +683,7 @@ async function refresh() {
   if (session) {
     $("loginPage").classList.add("hidden");
     $("adminApp").classList.remove("hidden");
-    const url = location.origin + "/";
+    const url = location.origin + "/verify";
     $("publicUrl").textContent = url;
     $("qr").innerHTML = "";
     new QRCode($("qr"), { text: url, width: 180, height: 180 });
@@ -445,6 +691,7 @@ async function refresh() {
     loadLog();
     loadFeedback();
     loadCharts();
+    loadMessagesBadge();
   }
 }
 refresh();
@@ -478,7 +725,6 @@ $("refreshLogBtn").onclick = () => loadLog();
 $("refreshFeedbackBtn").onclick = () => loadFeedback();
 $("refreshDeleteLogBtn").onclick = () => loadDeleteLog();
 
-// Tabs feedback
 document.querySelectorAll("#feedbackTabs .tab").forEach(t => {
   t.addEventListener("click", () => {
     document.querySelectorAll("#feedbackTabs .tab").forEach(x => {
@@ -752,7 +998,7 @@ function printLabels(codes, brand, lot, logoUrl) {
   if (!codes || !codes.length) return alert("Aucun code à imprimer.");
 
   const mode = ($("printMode") && $("printMode").value) || "labels";
-  const url = location.origin + "/";
+  const url = location.origin + "/verify";
   const w = window.open("", "_blank");
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
 
@@ -859,7 +1105,7 @@ $("printBtn").onclick = () => {
 };
 
 // ============================================================
-// PRINT EXISTING LOT (with decryption)
+// PRINT EXISTING LOT
 // ============================================================
 $("printLotBtn").onclick = async () => {
   if (!loadedLot) return alert("Aucun lot chargé.");
