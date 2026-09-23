@@ -191,7 +191,7 @@ async function loadFeedback() {
 }
 
 // ============================================================
-// MESSAGES DES MARQUES
+// MESSAGES
 // ============================================================
 async function loadMessagesBadge() {
   try {
@@ -321,7 +321,7 @@ document.querySelectorAll("#messagesTabs .tab").forEach(t => {
 });
 
 // ============================================================
-// MARQUES INSCRITES
+// BRANDS
 // ============================================================
 async function loadBrands() {
   const container = $("brandsList");
@@ -446,7 +446,7 @@ async function loadDeleteLog() {
     .limit(20);
 
   if (error) {
-    container.innerHTML = `<p class="muted">Aucune donnée (table non initialisée).</p>`;
+    container.innerHTML = `<p class="muted">Aucune donnée.</p>`;
     return;
   }
   if (!data || data.length === 0) {
@@ -795,6 +795,7 @@ $("createBtn").onclick = async () => {
         <p style="font-size:12px;margin-top:8px;color:#64748b">🔒 Les codes sont chiffrés en base de données (AES-256).</p>
       `;
       $("printBtn").classList.remove("hidden");
+      $("exportNewLotBtn").classList.remove("hidden");
       loadStats();
       loadCharts();
     } else {
@@ -852,19 +853,21 @@ $("searchBtn").onclick = async () => {
 };
 
 // ============================================================
-// LOAD EXISTING LOT
+// LOAD LOT
 // ============================================================
 $("loadLotBtn").onclick = async () => {
   const lot = ($("editLotSearch").value || "").trim();
   const info = $("lotInfo");
   const form = $("editForm");
   const printLotBtn = $("printLotBtn");
+  const exportBtn = $("exportLotCodesBtn");
 
   if (!lot) {
     info.className = "result danger";
     info.innerHTML = `<p>Entrez un numéro de lot.</p>`;
     form.classList.add("hidden");
     printLotBtn.classList.add("hidden");
+    if (exportBtn) exportBtn.classList.add("hidden");
     return;
   }
 
@@ -872,6 +875,7 @@ $("loadLotBtn").onclick = async () => {
   info.innerHTML = `<p>Chargement...</p>`;
   form.classList.add("hidden");
   printLotBtn.classList.add("hidden");
+  if (exportBtn) exportBtn.classList.add("hidden");
   loadedLot = null;
   loadedLotCodes = [];
 
@@ -905,7 +909,7 @@ $("loadLotBtn").onclick = async () => {
   info.className = "result success";
   info.innerHTML = `
     <h2>${data.length} code(s) trouvé(s)</h2>
-    ${hasEncrypted ? `<p style="font-size:11px;color:#16a34a;margin:6px 0">🔒 Lot chiffré — utilisez IMPRIMER pour déchiffrer</p>` : ""}
+    ${hasEncrypted ? `<p style="font-size:11px;color:#16a34a;margin:6px 0">🔒 Lot chiffré — utilisez IMPRIMER ou EXPORTER</p>` : ""}
     <div class="details">
       ${r.brand ? `<div><b>Marque</b><span>${escapeHtml(r.brand)}</span></div>` : ""}
       ${r.product_name ? `<div><b>Produit</b><span>${escapeHtml(r.product_name)}</span></div>` : ""}
@@ -917,6 +921,7 @@ $("loadLotBtn").onclick = async () => {
   `;
 
   printLotBtn.classList.remove("hidden");
+  if (exportBtn) exportBtn.classList.remove("hidden");
 
   $("editBrand").value = r.brand || "";
   $("editProductName").value = r.product_name || "";
@@ -1008,16 +1013,16 @@ function printLabels(codes, brand, lot, logoUrl) {
     <style>
       @page { margin: 12mm; }
       body { font-family: Arial, sans-serif; padding: 15px; margin: 0; color: #111; }
-      .toolbar { background: #111; color: #fff; padding: 12px; text-align: center; margin-bottom: 20px; border-radius: 8px; position: sticky; top: 0; z-index: 100; }
-      .toolbar button { background: #fff; color: #111; border: 0; padding: 10px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
+      .toolbar { background: #111; color: #fff; padding: 12px; text-align: center; margin-bottom: 20px; border-radius: 8px; }
+      .toolbar button { background: #fff; color: #111; border: 0; padding: 10px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; }
       .header { text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 3px solid #111; }
       .header h1 { margin: 0 0 6px; font-size: 22px; }
       table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-      th { background: #111; color: #fff; padding: 10px 8px; text-align: left; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+      th { background: #111; color: #fff; padding: 10px 8px; text-align: left; font-size: 11px; text-transform: uppercase; }
       td { padding: 9px 8px; border-bottom: 1px solid #e5e7eb; }
       tr:nth-child(even) td { background: #f9fafb; }
       .num { color: #6b7280; width: 45px; font-weight: bold; }
-      .code-cell { font-family: 'Courier New', monospace; font-weight: bold; font-size: 15px; letter-spacing: 2px; color: #111; }
+      .code-cell { font-family: 'Courier New', monospace; font-weight: bold; font-size: 15px; letter-spacing: 2px; }
       @media print { .toolbar { display: none !important; } body { padding: 0; } }
     </style></head><body>
     <div class="toolbar"><button onclick="window.print()">🖨 IMPRIMER</button></div>
@@ -1056,11 +1061,11 @@ function printLabels(codes, brand, lot, logoUrl) {
     body { font-family: Arial, sans-serif; padding: 10px; margin: 0; background: #f5f5f5; }
     .toolbar { background: #111; color: #fff; padding: 12px; text-align: center; margin-bottom: 15px; border-radius: 8px; }
     .toolbar button { background: #fff; color: #111; border: 0; padding: 10px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-    .info { font-size: 12px; color: #333; margin: 15px 0; padding: 14px; background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; line-height: 1.6; }
+    .info { font-size: 12px; color: #333; margin: 15px 0; padding: 14px; background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; }
     .sheet { display: flex; flex-wrap: wrap; gap: 4mm; background: #fff; padding: 10px; border-radius: 8px; }
     .label { width: ${labelWidth}; height: ${labelHeight}; border: 1px dashed #bbb; display: flex; flex-direction: column; page-break-inside: avoid; background: #fff; position: relative; border-radius: 3mm; overflow: hidden; }
     .label-top { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3mm; text-align: center; }
-    .label-logo { max-height: 8mm; max-width: 40mm; margin-bottom: 1.5mm; object-fit: contain; }
+    .label-logo { max-height: 8mm; max-width: 40mm; margin-bottom: 1.5mm; }
     .label-brand { font-size: ${brandFontSize}; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 2mm; }
     .label-qr { width: ${qrSize}; height: ${qrSize}; display: block; }
     .label-inst { font-size: 7px; color: #666; margin-top: 2mm; }
@@ -1073,7 +1078,7 @@ function printLabels(codes, brand, lot, logoUrl) {
     @media print { .toolbar, .info { display: none !important; } body { padding: 0; } .sheet { padding: 0; gap: 2mm; } }
   </style></head><body>
   <div class="toolbar"><button onclick="window.print()">🖨 IMPRIMER</button></div>
-  <div class="info"><b>📋 MODE D'EMPLOI :</b> Pliez le long de la ligne pointillée. Le code reste caché.</div>
+  <div class="info"><b>📋 MODE D'EMPLOI :</b> Pliez le long de la ligne pointillée.</div>
   <div class="sheet">`;
 
   codes.forEach((code) => {
@@ -1104,9 +1109,6 @@ $("printBtn").onclick = () => {
   printLabels(lastCodes, $("brand").value.trim() || "MARQUE", $("lot").value.trim() || "", lastLogo);
 };
 
-// ============================================================
-// PRINT EXISTING LOT
-// ============================================================
 $("printLotBtn").onclick = async () => {
   if (!loadedLot) return alert("Aucun lot chargé.");
 
@@ -1125,16 +1127,13 @@ $("printLotBtn").onclick = async () => {
         "Content-Type": "application/json",
         "Authorization": "Bearer " + session.access_token
       },
-      body: JSON.stringify({
-        lot: loadedLot,
-        access_token: session.access_token
-      })
+      body: JSON.stringify({ lot: loadedLot, access_token: session.access_token })
     });
 
     const data = await res.json();
 
     if (data.status !== "OK") {
-      alert("Erreur : " + (data.message || "Impossible de déchiffrer le lot"));
+      alert("Erreur : " + (data.message || ""));
       return;
     }
 
@@ -1145,15 +1144,253 @@ $("printLotBtn").onclick = async () => {
       return;
     }
 
-    printLabels(
-      codes,
-      data.brand || loadedLotBrand || "MARQUE",
-      data.lot || loadedLotLot,
-      data.logo_url || loadedLotLogo
-    );
+    printLabels(codes, data.brand || loadedLotBrand || "MARQUE", data.lot || loadedLotLot, data.logo_url || loadedLotLogo);
 
   } catch (err) {
     alert("Erreur réseau : " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+};
+
+// ============================================================
+// EXCEL EXPORT
+// ============================================================
+function downloadExcel(data, filename, sheetName) {
+  if (!data || data.length === 0) {
+    alert("Aucune donnée à exporter.");
+    return;
+  }
+  if (typeof XLSX === "undefined") {
+    alert("Bibliothèque Excel non chargée. Rechargez la page.");
+    return;
+  }
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, sheetName || "Sheet1");
+
+  const keys = Object.keys(data[0]);
+  ws["!cols"] = keys.map(k => {
+    let maxLen = k.length;
+    data.forEach(row => {
+      const v = String(row[k] || "");
+      if (v.length > maxLen) maxLen = v.length;
+    });
+    return { wch: Math.min(maxLen + 2, 50) };
+  });
+
+  XLSX.writeFile(wb, filename + "_" + new Date().toISOString().slice(0, 10) + ".xlsx");
+}
+
+// ============================================================
+// EXPORT : NEW LOT (après création)
+// ============================================================
+$("exportNewLotBtn").onclick = () => {
+  if (!lastCodes || lastCodes.length === 0) return alert("Aucun code à exporter.");
+
+  const brand = $("brand").value.trim() || "MARQUE";
+  const lot = $("lot").value.trim() || "—";
+  const productName = $("product_name").value.trim() || "";
+  const reference = $("reference").value.trim() || "";
+
+  const rows = lastCodes.map((code, i) => ({
+    "#": i + 1,
+    "Code de sécurité": code,
+    "Statut": "UNUSED",
+    "Lot": lot,
+    "Marque": brand,
+    "Produit": productName,
+    "Référence": reference
+  }));
+
+  downloadExcel(rows, "Codes_" + lot, "Codes");
+};
+
+// ============================================================
+// EXPORT : EXISTING LOT
+// ============================================================
+$("exportLotCodesBtn").onclick = async () => {
+  if (!loadedLot) return alert("Chargez d'abord un lot.");
+
+  const btn = $("exportLotCodesBtn");
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "⏳ Export...";
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      alert("Session expirée.");
+      return;
+    }
+
+    const res = await fetch("/api/print-batch", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + session.access_token
+      },
+      body: JSON.stringify({ lot: loadedLot, access_token: session.access_token })
+    });
+
+    const data = await res.json();
+
+    if (data.status !== "OK") {
+      alert("Erreur : " + (data.message || ""));
+      return;
+    }
+
+    const rows = (data.codes || []).map((c, i) => ({
+      "#": i + 1,
+      "Code de sécurité": c.code,
+      "Statut": c.status || "UNUSED",
+      "Lot": data.lot || loadedLot,
+      "Marque": data.brand || loadedLotBrand,
+      "Produit": data.product_name || "",
+      "Référence": data.reference || ""
+    }));
+
+    downloadExcel(rows, "Codes_" + loadedLot, "Codes");
+  } catch (err) {
+    alert("Erreur : " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+};
+
+// ============================================================
+// EXPORT : MESSAGES
+// ============================================================
+$("exportMessagesBtn").onclick = async () => {
+  const btn = $("exportMessagesBtn");
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "⏳ Export...";
+
+  try {
+    const { data, error } = await sb
+      .from("brand_messages")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(5000);
+
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      alert("Aucun message à exporter.");
+      return;
+    }
+
+    const rows = data.map(m => ({
+      "Date": m.created_at ? new Date(m.created_at).toLocaleString() : "",
+      "Marque": m.brand_name || "",
+      "Email": m.email || "",
+      "Téléphone": m.phone || "",
+      "Sujet": m.subject || "",
+      "Message": m.message || "",
+      "Statut": m.status === "NEW" ? "Nouveau" : "Lu"
+    }));
+
+    downloadExcel(rows, "Messages", "Messages");
+  } catch (err) {
+    alert("Erreur : " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+};
+
+// ============================================================
+// EXPORT : BRANDS
+// ============================================================
+$("exportBrandsBtn").onclick = async () => {
+  const btn = $("exportBrandsBtn");
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "⏳ Export...";
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      alert("Session expirée.");
+      return;
+    }
+
+    const res = await fetch("/api/list-brands", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + session.access_token
+      },
+      body: JSON.stringify({ access_token: session.access_token })
+    });
+
+    const data = await res.json();
+
+    if (data.status !== "OK") {
+      alert("Erreur : " + (data.message || ""));
+      return;
+    }
+
+    if (!data.brands || data.brands.length === 0) {
+      alert("Aucune marque à exporter.");
+      return;
+    }
+
+    const rows = data.brands.map(b => ({
+      "Marque": b.brand_name || "",
+      "Email": b.email || "",
+      "Téléphone": b.phone || "",
+      "Inscrit le": b.created_at ? new Date(b.created_at).toLocaleString() : "",
+      "Dernière connexion": b.last_sign_in_at ? new Date(b.last_sign_in_at).toLocaleString() : "Jamais",
+      "Statut": b.last_sign_in_at ? "Active" : "Inactive"
+    }));
+
+    downloadExcel(rows, "Marques", "Marques");
+  } catch (err) {
+    alert("Erreur : " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+};
+
+// ============================================================
+// EXPORT : FEEDBACK
+// ============================================================
+$("exportFeedbackBtn").onclick = async () => {
+  const btn = $("exportFeedbackBtn");
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "⏳ Export...";
+
+  try {
+    const { data, error } = await sb
+      .from("qr_feedback")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(5000);
+
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      alert("Aucun avis à exporter.");
+      return;
+    }
+
+    const rows = data.map(f => ({
+      "Date": f.created_at ? new Date(f.created_at).toLocaleString() : "",
+      "Type": f.type === "rating" ? "Avis" : "Signalement",
+      "Note": f.rating || "",
+      "Commentaire": f.comment || "",
+      "Code": f.secret_code || "",
+      "IP": f.ip || ""
+    }));
+
+    downloadExcel(rows, "Avis_Clients", "Avis");
+  } catch (err) {
+    alert("Erreur : " + err.message);
   } finally {
     btn.disabled = false;
     btn.textContent = originalText;
@@ -1254,10 +1491,7 @@ $("confirmDeleteBtn").onclick = async () => {
     if (deleteError) throw deleteError;
 
     try {
-      await sb.from("qr_delete_logs").insert({
-        lot: lot,
-        count: count
-      });
+      await sb.from("qr_delete_logs").insert({ lot: lot, count: count });
     } catch (logErr) {
       console.warn("Log insert failed:", logErr);
     }
