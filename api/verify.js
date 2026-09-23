@@ -1,22 +1,18 @@
 // api/verify.js
-// Vérification du code secret + journalisation
+// Vérification via hash (nouveau) + plaintext (fallback)
+
+import { hashCode } from './_crypto.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({
-      status: 'ERROR',
-      message: 'Method not allowed'
-    });
+    return res.status(405).json({ status: 'ERROR', message: 'Method not allowed' });
   }
 
   try {
     const { secret_code } = req.body || {};
 
     if (!secret_code || typeof secret_code !== 'string' || secret_code.trim() === '') {
-      return res.status(400).json({
-        status: 'ERROR',
-        message: 'Code secret manquant'
-      });
+      return res.status(400).json({ status: 'ERROR', message: 'Code secret manquant' });
     }
 
     const cleanCode = secret_code.trim().toUpperCase();
@@ -25,22 +21,22 @@ export default async function handler(req, res) {
     const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      return res.status(500).json({
-        status: 'ERROR',
-        message: 'Configuration serveur manquante'
-      });
+      return res.status(500).json({ status: 'ERROR', message: 'Configuration manquante' });
     }
 
-    // Récupérer l'IP et le user-agent
+    // IP + user-agent
     const forwarded = req.headers['x-forwarded-for'];
     const ip = (Array.isArray(forwarded) ? forwarded[0] : (forwarded || '').split(',')[0]).trim()
       || req.headers['x-real-ip']
       || 'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
 
-    // Appel de la fonction RPC
+    // Calculer le hash SHA-256
+    const codeHash = hashCode(cleanCode);
+
+    // Appeler verify_code_v2 (hash + fallback plaintext)
     const rpcResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/rpc/verify_secret_code`,
+      `${SUPABASE_URL}/rest/v1/rpc/verify_code_v2`,
       {
         method: 'POST',
         headers: {
@@ -48,7 +44,10 @@ export default async function handler(req, res) {
           'apikey': SUPABASE_SERVICE_ROLE_KEY,
           'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
         },
-        body: JSON.stringify({ p_secret_code: cleanCode })
+        body: JSON.stringify({
+          p_code_hash: codeHash,
+          p_plaintext_code: cleanCode
+        })
       }
     );
 
@@ -63,7 +62,7 @@ export default async function handler(req, res) {
 
     const data = await rpcResponse.json();
 
-    // Journaliser la tentative dans qr_verifications
+    // Journaliser la tentative
     const logRow = {
       secret_code: cleanCode,
       result: data.status || 'UNKNOWN',
@@ -74,7 +73,6 @@ export default async function handler(req, res) {
       user_agent: userAgent
     };
 
-    // Log en arrière-plan (ne bloque pas la réponse si erreur)
     fetch(`${SUPABASE_URL}/rest/v1/qr_verifications`, {
       method: 'POST',
       headers: {
