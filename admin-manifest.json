@@ -1,0 +1,21 @@
+{
+  "name": "Admin — Produit dz ORG",
+  "short_name": "Admin dz",
+  "description": "Panneau d'administration Produit dz ORG",
+  "start_url": "/admin.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "lang": "fr",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/admin-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
