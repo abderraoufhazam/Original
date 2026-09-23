@@ -1,4 +1,4 @@
-// app.js — Vérification + Avis + Signalement + i18n + Chatbot context
+// app.js — Vérification + Avis + Signalement + i18n + Chatbot context + Social media
 
 const form = document.getElementById("verifyForm");
 const codeInput = document.getElementById("code");
@@ -28,16 +28,12 @@ function show(type, html) {
   result.innerHTML = html;
 }
 
-// ============================================================
-// RENDU DES RÉSULTATS
-// ============================================================
 function renderResult(data) {
   if (!data) { result.className = "result hidden"; return; }
 
   if (data.status === "ORIGINAL") {
     const p = data.product || {};
 
-    // 🔗 Partager le contexte avec le chatbot
     window.__lastVerifiedProduct = {
       brand: p.brand || null,
       product_name: p.product_name || null,
@@ -61,36 +57,39 @@ function renderResult(data) {
         ${p.expiry_date ? `<div><b>${escapeHtml(t("expirationLabel"))}</b><span>${escapeHtml(p.expiry_date)}</span></div>` : ""}
       </div>
       ${p.description ? `<p class="description">${escapeHtml(p.description)}</p>` : ""}
+      ${(p.instagram_url || p.facebook_url || p.tiktok_url) ? `
+        <div class="social-links">
+          <p class="social-title">${escapeHtml(t("followUs"))}</p>
+          <div class="social-buttons">
+            ${p.instagram_url ? `<a href="${escapeHtml(p.instagram_url)}" target="_blank" rel="noopener" class="social-btn social-instagram">📷 Instagram</a>` : ""}
+            ${p.facebook_url ? `<a href="${escapeHtml(p.facebook_url)}" target="_blank" rel="noopener" class="social-btn social-facebook">📘 Facebook</a>` : ""}
+            ${p.tiktok_url ? `<a href="${escapeHtml(p.tiktok_url)}" target="_blank" rel="noopener" class="social-btn social-tiktok">🎵 TikTok</a>` : ""}
+          </div>
+        </div>
+      ` : ""}
     `);
     feedbackSection.classList.remove("hidden");
     reportSection.classList.remove("hidden");
 
   } else if (data.status === "USED") {
-    // Effacer le contexte (produit déjà utilisé, pas de partage)
     window.__lastVerifiedProduct = null;
-
     show("warning", `<div class="icon">!</div><h2>${escapeHtml(t("usedTitle"))}</h2><p>${escapeHtml(t("usedMsg"))}</p>`);
     reportSection.classList.remove("hidden");
 
   } else if (data.status === "DISABLED" || data.status === "EXPIRED") {
     window.__lastVerifiedProduct = null;
-
     show("warning", `<div class="icon">!</div><h2>${escapeHtml(t("invalidTitle"))}</h2><p>${escapeHtml(t("invalidMsg"))}</p>`);
     reportSection.classList.remove("hidden");
 
   } else {
     window.__lastVerifiedProduct = null;
-
     show("danger", `<div class="icon">×</div><h2>${escapeHtml(t("notOriginalTitle"))}</h2><p>${escapeHtml(t("notOriginalMsg"))}</p>`);
     reportSection.classList.remove("hidden");
   }
 }
 
-// Ré-appliquer les traductions quand la langue change
 window.__reapplyMessages = function () {
-  if (lastResultData) {
-    renderResult(lastResultData);
-  }
+  if (lastResultData) renderResult(lastResultData);
   if (!btn.disabled) btn.textContent = t("verifyBtn");
   else btn.textContent = t("verifying");
   if (!feedbackMsg.classList.contains("hidden") && feedbackMsg.textContent.includes("✓")) {
@@ -101,9 +100,6 @@ window.__reapplyMessages = function () {
   }
 };
 
-// ============================================================
-// ÉTOILES
-// ============================================================
 if (starsContainer) {
   starsContainer.querySelectorAll("button").forEach(b => {
     b.addEventListener("click", () => {
@@ -115,9 +111,6 @@ if (starsContainer) {
   });
 }
 
-// ============================================================
-// ENVOI AVIS
-// ============================================================
 if (feedbackSubmit) {
   feedbackSubmit.addEventListener("click", async () => {
     if (!currentRating) {
@@ -126,10 +119,8 @@ if (feedbackSubmit) {
       feedbackMsg.classList.remove("hidden");
       return;
     }
-
     feedbackSubmit.disabled = true;
     feedbackSubmit.textContent = "...";
-
     try {
       const res = await fetch("/api/feedback", {
         method: "POST",
@@ -142,7 +133,6 @@ if (feedbackSubmit) {
         })
       });
       const data = await res.json();
-
       if (data.status === "OK") {
         feedbackMsg.textContent = t("feedbackThanks");
         feedbackMsg.style.color = "#16a34a";
@@ -165,16 +155,11 @@ if (feedbackSubmit) {
   });
 }
 
-// ============================================================
-// ENVOI SIGNALEMENT
-// ============================================================
 if (reportBtn) {
   reportBtn.addEventListener("click", async () => {
     if (!confirm(t("reportConfirm"))) return;
-
     reportBtn.disabled = true;
     reportBtn.textContent = "...";
-
     try {
       const res = await fetch("/api/feedback", {
         method: "POST",
@@ -186,7 +171,6 @@ if (reportBtn) {
         })
       });
       const data = await res.json();
-
       if (data.status === "OK") {
         reportMsg.textContent = t("reportThanks");
         reportMsg.style.color = "#16a34a";
@@ -209,9 +193,6 @@ if (reportBtn) {
   });
 }
 
-// ============================================================
-// RESET
-// ============================================================
 function resetFeedbackSections() {
   feedbackSection.classList.add("hidden");
   reportSection.classList.add("hidden");
@@ -226,23 +207,17 @@ function resetFeedbackSections() {
   reportMsg.classList.add("hidden");
 }
 
-// ============================================================
-// VÉRIFICATION
-// ============================================================
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const code = codeInput.value.trim().toUpperCase();
   if (!code) return;
-
   currentCode = code;
   lastResultData = null;
   window.__lastVerifiedProduct = null;
   resetFeedbackSections();
-
   btn.disabled = true;
   btn.textContent = t("verifying");
   result.className = "result hidden";
-
   try {
     const r = await fetch("/api/verify", {
       method: "POST",
@@ -252,7 +227,6 @@ form.addEventListener("submit", async (e) => {
     const data = await r.json();
     lastResultData = data;
     renderResult(data);
-
   } catch {
     show("danger", `<h2>${escapeHtml(t("errorTitle"))}</h2><p>${escapeHtml(t("errorMsg"))}</p>`);
   } finally {
@@ -261,9 +235,6 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-// ============================================================
-// INITIALISATION i18n
-// ============================================================
 if (typeof applyTranslations === "function") {
   applyTranslations();
 }
