@@ -14,19 +14,27 @@
   <meta name="apple-mobile-web-app-title" content="Produit dz ORG">
 
   <link rel="stylesheet" href="/style.css">
+
+  <script>
+    (function() {
+      const isDark = localStorage.getItem("theme") === "dark" ||
+        (!localStorage.getItem("theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
+      if (isDark) document.documentElement.classList.add("dark");
+    })();
+  </script>
 </head>
 <body>
 <main class="page">
   <section class="card">
 
-    <!-- Sélecteur de langue -->
+    <!-- Sélecteur de langue + Dark Mode -->
     <div class="lang-switcher">
       <button class="lang-btn" data-lang="fr">FR</button>
       <button class="lang-btn" data-lang="ar">ع</button>
       <button class="lang-btn" data-lang="en">EN</button>
+      <button class="dark-toggle" id="darkToggle" aria-label="Mode sombre">🌙</button>
     </div>
-    <!-- Bouton Dark Mode -->
-<button class="dark-toggle" id="darkToggle" aria-label="Mode sombre">🌙</button
+
     <div class="brand">Produit dz ORG</div>
 
     <img src="/icon.svg" alt="Produit dz ORG" class="app-logo">
@@ -40,14 +48,11 @@
       <button type="submit" id="verifyBtn" data-i18n="verifyBtn">VÉRIFIER</button>
     </form>
 
-    <!-- Résultat de vérification -->
     <div id="result" class="result hidden"></div>
 
-    <!-- Section Avis client -->
     <div id="feedbackSection" class="feedback-section hidden">
       <h3 data-i18n="feedbackTitle">⭐ Notez ce produit</h3>
       <p class="muted" data-i18n="feedbackSubtitle">Votre avis compte pour nous.</p>
-
       <div class="stars" id="stars">
         <button type="button" data-star="1">★</button>
         <button type="button" data-star="2">★</button>
@@ -55,14 +60,11 @@
         <button type="button" data-star="4">★</button>
         <button type="button" data-star="5">★</button>
       </div>
-
       <textarea id="feedbackComment" data-i18n="feedbackPlaceholder" placeholder="Ajoutez un commentaire (optionnel)" rows="3"></textarea>
-
       <button id="feedbackSubmit" type="button" data-i18n="feedbackSubmit" style="background:linear-gradient(135deg,#16a34a,#22c55e)">ENVOYER MON AVIS</button>
       <div id="feedbackMsg" class="hidden" style="margin-top:12px;font-size:13px;color:#16a34a;font-weight:600;text-align:center"></div>
     </div>
 
-    <!-- Section Signalement -->
     <div id="reportSection" class="feedback-section hidden">
       <h3 data-i18n="reportTitle">🚨 Signaler un problème</h3>
       <p class="muted" data-i18n="reportSubtitle">Vous pensez que ce produit est une contrefaçon ? Signalez-le-nous.</p>
@@ -83,8 +85,40 @@
   </section>
 </main>
 
+<!-- ============================================================
+     CHATBOT FLOTTANT
+     ============================================================ -->
+<button id="chatFab" class="chat-fab" aria-label="Assistant">
+  💬
+</button>
+
+<div id="chatWindow" class="chat-window hidden">
+  <div class="chat-header">
+    <div class="chat-header-info">
+      <div class="chat-avatar">🤖</div>
+      <div>
+        <div class="chat-title">Assistant Produit dz ORG</div>
+        <div class="chat-status">En ligne • Propulsé par Gemini</div>
+      </div>
+    </div>
+    <button id="chatClose" class="chat-close" aria-label="Fermer">✕</button>
+  </div>
+
+  <div id="chatMessages" class="chat-messages">
+    <div class="chat-msg chat-msg-bot">
+      <div class="chat-bubble">Bonjour 👋 Je suis l'assistant virtuel. Comment puis-je vous aider ?</div>
+    </div>
+  </div>
+
+  <form id="chatForm" class="chat-form">
+    <input id="chatInput" class="chat-input" placeholder="Écrivez votre message..." autocomplete="off" maxlength="500">
+    <button type="submit" id="chatSend" class="chat-send" aria-label="Envoyer">➤</button>
+  </form>
+</div>
+
 <script src="/i18n.js"></script>
 <script src="/app.js"></script>
+<script src="/chat.js"></script>
 
 <script>
   if ('serviceWorker' in navigator) {
@@ -116,35 +150,42 @@
     installBtn.classList.add('hidden');
   });
 
-  // Sélecteur de langue
   document.querySelectorAll(".lang-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       setLanguage(btn.dataset.lang);
     });
   });
-  
-// ============================================================
-// DARK MODE
-// ============================================================
-const darkToggle = document.getElementById("darkToggle");
 
-function applyDarkMode() {
-  const isDark = localStorage.getItem("theme") === "dark" ||
-    (!localStorage.getItem("theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
-  document.documentElement.classList.toggle("dark", isDark);
-  if (darkToggle) darkToggle.textContent = isDark ? "☀️" : "🌙";
-}
+  const darkToggle = document.getElementById("darkToggle");
+  function applyDarkMode() {
+    const isDark = localStorage.getItem("theme") === "dark" ||
+      (!localStorage.getItem("theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.classList.toggle("dark", isDark);
+    if (darkToggle) darkToggle.textContent = isDark ? "☀️" : "🌙";
+  }
+  if (darkToggle) {
+    darkToggle.addEventListener("click", () => {
+      const isDark = document.documentElement.classList.toggle("dark");
+      localStorage.setItem("theme", isDark ? "dark" : "light");
+      darkToggle.textContent = isDark ? "☀️" : "🌙";
+    });
+  }
+  applyDarkMode();
 
-if (darkToggle) {
-  darkToggle.addEventListener("click", () => {
-    const isDark = document.documentElement.classList.toggle("dark");
-    localStorage.setItem("theme", isDark ? "dark" : "light");
-    darkToggle.textContent = isDark ? "☀️" : "🌙";
-  });
-}
-
-// Appliquer au chargement
-applyDarkMode();
+  // ============================================================
+  // DÉTECTION ONLINE / OFFLINE
+  // ============================================================
+  function updateOnlineStatus() {
+    const verifyBtn = document.getElementById("verifyBtn");
+    if (navigator.onLine) {
+      if (verifyBtn) verifyBtn.disabled = false;
+    } else {
+      if (verifyBtn) verifyBtn.disabled = true;
+    }
+  }
+  window.addEventListener("online", updateOnlineStatus);
+  window.addEventListener("offline", updateOnlineStatus);
+  setTimeout(updateOnlineStatus, 300);
 </script>
 </body>
 </html>
