@@ -26,6 +26,48 @@ function randomCode() {
   return s;
 }
 
+// ============================================================
+// NAVIGATION (Sidebar)
+// ============================================================
+const PANEL_TITLES = {
+  dashboard: "Tableau de bord",
+  create: "Créer un lot",
+  search: "Rechercher un code",
+  manage: "Gérer un lot",
+  log: "Journal",
+  settings: "Impression"
+};
+
+function showPanel(name) {
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".sidebar-nav button").forEach(b => b.classList.remove("active"));
+  const p = $("panel-" + name);
+  const b = document.querySelector('.sidebar-nav button[data-panel="' + name + '"]');
+  if (p) p.classList.add("active");
+  if (b) b.classList.add("active");
+  const mt = $("mobileTitle");
+  if (mt) mt.textContent = PANEL_TITLES[name] || "Admin";
+  $("sidebar").classList.remove("open");
+  $("overlay").classList.remove("show");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+document.querySelectorAll(".sidebar-nav button").forEach(btn => {
+  btn.addEventListener("click", () => showPanel(btn.dataset.panel));
+});
+
+$("menuToggle").addEventListener("click", () => {
+  $("sidebar").classList.toggle("open");
+  $("overlay").classList.toggle("show");
+});
+$("overlay").addEventListener("click", () => {
+  $("sidebar").classList.remove("open");
+  $("overlay").classList.remove("show");
+});
+
+// ============================================================
+// LOADERS
+// ============================================================
 async function loadStats() {
   const statuses = ["UNUSED", "USED", "DISABLED", "EXPIRED"];
   for (const st of statuses) {
@@ -81,11 +123,14 @@ async function loadLog() {
   container.innerHTML = html;
 }
 
+// ============================================================
+// AUTH
+// ============================================================
 async function refresh() {
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
-    $("login").classList.add("hidden");
-    $("panel").classList.remove("hidden");
+    $("loginPage").classList.add("hidden");
+    $("adminApp").classList.remove("hidden");
     const url = location.origin + "/";
     $("publicUrl").textContent = url;
     $("qr").innerHTML = "";
@@ -96,14 +141,25 @@ async function refresh() {
 }
 refresh();
 
-$("loginBtn").onclick = async () => {
+$("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  $("loginBtn").disabled = true;
+  $("loginBtn").textContent = "CONNEXION...";
   const { error } = await sb.auth.signInWithPassword({
-    email: $("email").value,
+    email: $("email").value.trim(),
     password: $("password").value
   });
-  if (error) return alert(error.message);
+  $("loginBtn").disabled = false;
+  $("loginBtn").textContent = "SE CONNECTER";
+  if (error) {
+    const el = $("loginError");
+    el.className = "result danger";
+    el.innerHTML = `<p style="margin:0">${escapeHtml(error.message)}</p>`;
+    return;
+  }
+  $("loginError").classList.add("hidden");
   refresh();
-};
+});
 
 $("logoutBtn").onclick = async () => {
   await sb.auth.signOut();
@@ -119,6 +175,9 @@ $("createBtn").onclick = async () => {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) return alert("Connectez-vous.");
 
+  const brand = $("brand").value.trim();
+  if (!brand) return alert("La marque est obligatoire.");
+
   const qty = Math.min(10000, Math.max(1, Number($("quantity").value) || 1));
   const rows = [];
   lastCodes = [];
@@ -130,8 +189,8 @@ $("createBtn").onclick = async () => {
     rows.push({
       secret_code: code,
       secret_status: "UNUSED",
-      brand: $("brand").value.trim(),
-      product_name: $("product_name").value.trim(),
+      brand: brand,
+      product_name: $("product_name").value.trim() || null,
       reference: $("reference").value.trim() || null,
       lot: $("lot").value.trim() || null,
       manufacture_date: $("manufacture_date").value || null,
@@ -141,6 +200,9 @@ $("createBtn").onclick = async () => {
       description: $("description").value.trim() || null
     });
   }
+
+  $("createBtn").disabled = true;
+  $("createBtn").textContent = "CRÉATION...";
 
   const chunkSize = 500;
   try {
@@ -152,10 +214,14 @@ $("createBtn").onclick = async () => {
     $("adminResult").className = "result success";
     $("adminResult").innerHTML =
       `<h2>✓ LOT CRÉÉ</h2><p>${qty} codes générés avec succès.</p>`;
+    $("printBtn").classList.remove("hidden");
     loadStats();
   } catch (err) {
     $("adminResult").className = "result danger";
-    $("adminResult").innerHTML = `<p>Erreur : ${err.message}</p>`;
+    $("adminResult").innerHTML = `<p>Erreur : ${escapeHtml(err.message)}</p>`;
+  } finally {
+    $("createBtn").disabled = false;
+    $("createBtn").textContent = "CRÉER LE LOT";
   }
 };
 
@@ -331,7 +397,7 @@ $("updateBatchBtn").onclick = async () => {
 };
 
 // ============================================================
-// PRINT LABELS — MULTI SIZE + LOGO
+// PRINT LABELS
 // ============================================================
 function printLabels(codes, brand, lot, logoUrl) {
   if (!codes || !codes.length) return alert("Aucun code à imprimer.");
@@ -341,7 +407,6 @@ function printLabels(codes, brand, lot, logoUrl) {
   const w = window.open("", "_blank");
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
 
-  // Size-specific CSS variables
   let labelWidth, labelHeight, qrSize, codeFontSize, brandFontSize;
   if (size === "50x50") {
     labelWidth = "50mm"; labelHeight = "50mm"; qrSize = "22mm";
