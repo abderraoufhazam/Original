@@ -1097,3 +1097,223 @@ html[dir="rtl"] .log-row {
 html[dir="rtl"] .log-row.log-success { border-right-color: #16a34a; border-left-color: #e2e8f0; }
 html[dir="rtl"] .log-row.log-warning { border-right-color: #eab308; border-left-color: #e2e8f0; }
 html[dir="rtl"] .log-row.log-danger  { border-right-color: #dc2626; border-left-color: #e2e8f0; }
+
+
+/* ============================================================
+   DARK MODE
+   ============================================================ */
+html.dark {
+  --bg: #0a0f1c;
+  --bg-gradient: linear-gradient(135deg, #0a0f1c 0%, #131a2c 50%, #0f1729 100%);
+  --card-bg: #131a2c;
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --text-light: #64748b;
+  --border: #1e293b;
+  --border-soft: #1e293b;
+  --primary: #f1f5f9;
+  --primary-hover: #e2e8f0;
+  --success-bg: rgba(22, 163, 74, 0.15);
+  --success-border: rgba(22, 163, 74, 0.4);
+  --warning-bg: rgba(234, 179, 8, 0.15);
+  --warning-border: rgba(234, 179, 8, 0.4);
+  --danger-bg: rgba(220, 38, 38, 0.15);
+  --danger-border: rgba(220, 38, 38, 0.4);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6), 0 4px 12px -4px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 10px 20px -10px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 0 4px rgba(241, 245, 249, 0.1);
+}
+
+html.dark body {
+  background: var(--bg);
+  background-image: var(--bg-gradient);
+}
+
+html.dark .card {
+  background: var(--card-bg);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background: #0a0f1c;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748b;
+}
+
+html.dark .brand {
+  color: var(--text);
+}
+
+html.dark button:not(.lang-btn):not(.menu-toggle):not(.tab) {
+  background: #f1f5f9;
+  color: #0a0f1c;
+}
+
+html.dark button:not(.lang-btn):not(.menu-toggle):not(.tab):hover:not(:disabled) {
+  background: #e2e8f0;
+}
+
+html.dark .details > div {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+html.dark .details b {
+  color: #94a3b8;
+}
+
+html.dark .description,
+html.dark .feedback-section textarea {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+html.dark .feedback-section {
+  background: linear-gradient(160deg, #1e293b 0%, #131a2c 100%);
+  border-color: #1e293b;
+}
+
+html.dark .feedback-section h3 {
+  color: var(--text);
+}
+
+html.dark .stat-card {
+  background: linear-gradient(160deg, #1e293b 0%, #131a2c 100%);
+  border-color: #1e293b;
+}
+
+html.dark .stat-num {
+  color: var(--text);
+}
+
+html.dark .log-row {
+  background: #131a2c;
+  border-color: #1e293b;
+}
+
+html.dark .log-code {
+  color: var(--text);
+}
+
+html.dark .log-row > div[style*="background:#fff"] {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: var(--text) !important;
+}
+
+html.dark .panel > h2 {
+  color: var(--text);
+  border-color: #1e293b;
+}
+
+html.dark .panel > .muted,
+html.dark .muted {
+  color: var(--text-muted);
+}
+
+html.dark .qr-box {
+  background: linear-gradient(160deg, #1e293b, #131a2c);
+  border-color: #1e293b;
+}
+
+html.dark #editForm {
+  background: linear-gradient(160deg, #1e293b, #131a2c) !important;
+  border-color: #1e293b !important;
+}
+
+html.dark #editForm h3 {
+  color: var(--text);
+}
+
+html.dark .sidebar {
+  background: linear-gradient(180deg, #0a0f1c 0%, #131a2c 100%);
+}
+
+html.dark .mobile-title {
+  color: var(--text);
+}
+
+html.dark .menu-toggle {
+  background: #131a2c !important;
+  color: #f1f5f9 !important;
+  border-color: #1e293b !important;
+}
+
+html.dark .overlay {
+  background: rgba(0, 0, 0, 0.75);
+}
+
+html.dark #panel-settings > div[style*="background:#fff8e1"] {
+  background: rgba(251, 191, 36, 0.08) !important;
+  border-color: rgba(251, 191, 36, 0.3) !important;
+  color: var(--text) !important;
+}
+
+html.dark .log-result-success { background: rgba(22, 163, 74, 0.2); color: #86efac; }
+html.dark .log-result-warning { background: rgba(234, 179, 8, 0.2); color: #fde047; }
+html.dark .log-result-danger { background: rgba(220, 38, 38, 0.2); color: #fca5a5; }
+
+html.dark ::selection {
+  background: rgba(241, 245, 249, 0.2);
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Dark mode toggle button */
+.dark-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 50% !important;
+  font-size: 18px !important;
+  cursor: pointer;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  transition: all 200ms ease !important;
+  font-family: inherit;
+}
+
+.dark-toggle:hover {
+  transform: scale(1.08) !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15) !important;
+}
+
+html.dark .dark-toggle {
+  background: #1e293b !important;
+  color: #fbbf24 !important;
+  border-color: #334155 !important;
+}
+
+/* Position pour éviter conflit avec lang-switcher */
+.lang-switcher + .dark-toggle,
+.card > .dark-toggle {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+html[dir="rtl"] .dark-toggle {
+  right: auto;
+  left: 16px;
+}
