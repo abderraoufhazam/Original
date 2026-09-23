@@ -1,4 +1,4 @@
-// app.js — Vérification + Avis + Signalement + i18n
+// app.js — Vérification + Avis + Signalement + i18n + Chatbot context
 
 const form = document.getElementById("verifyForm");
 const codeInput = document.getElementById("code");
@@ -15,7 +15,7 @@ const reportMsg = document.getElementById("reportMsg");
 
 let currentCode = "";
 let currentRating = 0;
-let lastResultData = null; // Pour ré-appliquer les traductions
+let lastResultData = null;
 
 function escapeHtml(v = "") {
   return String(v).replace(/[&<>"']/g, c => ({
@@ -29,13 +29,24 @@ function show(type, html) {
 }
 
 // ============================================================
-// RENDU DES RÉSULTATS (utilise t())
+// RENDU DES RÉSULTATS
 // ============================================================
 function renderResult(data) {
   if (!data) { result.className = "result hidden"; return; }
 
   if (data.status === "ORIGINAL") {
     const p = data.product || {};
+
+    // 🔗 Partager le contexte avec le chatbot
+    window.__lastVerifiedProduct = {
+      brand: p.brand || null,
+      product_name: p.product_name || null,
+      reference: p.reference || null,
+      lot: p.lot || null,
+      manufacture_date: p.manufacture_date || null,
+      expiry_date: p.expiry_date || null
+    };
+
     show("success", `
       <div class="icon">✓</div>
       <h2>${escapeHtml(t("originalTitle"))}</h2>
@@ -55,14 +66,21 @@ function renderResult(data) {
     reportSection.classList.remove("hidden");
 
   } else if (data.status === "USED") {
+    // Effacer le contexte (produit déjà utilisé, pas de partage)
+    window.__lastVerifiedProduct = null;
+
     show("warning", `<div class="icon">!</div><h2>${escapeHtml(t("usedTitle"))}</h2><p>${escapeHtml(t("usedMsg"))}</p>`);
     reportSection.classList.remove("hidden");
 
   } else if (data.status === "DISABLED" || data.status === "EXPIRED") {
+    window.__lastVerifiedProduct = null;
+
     show("warning", `<div class="icon">!</div><h2>${escapeHtml(t("invalidTitle"))}</h2><p>${escapeHtml(t("invalidMsg"))}</p>`);
     reportSection.classList.remove("hidden");
 
   } else {
+    window.__lastVerifiedProduct = null;
+
     show("danger", `<div class="icon">×</div><h2>${escapeHtml(t("notOriginalTitle"))}</h2><p>${escapeHtml(t("notOriginalMsg"))}</p>`);
     reportSection.classList.remove("hidden");
   }
@@ -73,10 +91,8 @@ window.__reapplyMessages = function () {
   if (lastResultData) {
     renderResult(lastResultData);
   }
-  // Mettre à jour le bouton de vérification
   if (!btn.disabled) btn.textContent = t("verifyBtn");
   else btn.textContent = t("verifying");
-  // Mettre à jour les messages de feedback/report s'ils sont visibles
   if (!feedbackMsg.classList.contains("hidden") && feedbackMsg.textContent.includes("✓")) {
     feedbackMsg.textContent = t("feedbackThanks");
   }
@@ -88,106 +104,110 @@ window.__reapplyMessages = function () {
 // ============================================================
 // ÉTOILES
 // ============================================================
-starsContainer.querySelectorAll("button").forEach(b => {
-  b.addEventListener("click", () => {
-    currentRating = parseInt(b.dataset.star, 10);
-    starsContainer.querySelectorAll("button").forEach(x => {
-      x.classList.toggle("active", parseInt(x.dataset.star, 10) <= currentRating);
+if (starsContainer) {
+  starsContainer.querySelectorAll("button").forEach(b => {
+    b.addEventListener("click", () => {
+      currentRating = parseInt(b.dataset.star, 10);
+      starsContainer.querySelectorAll("button").forEach(x => {
+        x.classList.toggle("active", parseInt(x.dataset.star, 10) <= currentRating);
+      });
     });
   });
-});
+}
 
 // ============================================================
 // ENVOI AVIS
 // ============================================================
-feedbackSubmit.addEventListener("click", async () => {
-  if (!currentRating) {
-    feedbackMsg.textContent = t("feedbackSelectRating");
-    feedbackMsg.style.color = "#dc2626";
-    feedbackMsg.classList.remove("hidden");
-    return;
-  }
-
-  feedbackSubmit.disabled = true;
-  const oldText = feedbackSubmit.textContent;
-  feedbackSubmit.textContent = "...";
-
-  try {
-    const res = await fetch("/api/feedback", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        secret_code: currentCode,
-        type: "rating",
-        rating: currentRating,
-        comment: feedbackComment.value.trim()
-      })
-    });
-    const data = await res.json();
-
-    if (data.status === "OK") {
-      feedbackMsg.textContent = t("feedbackThanks");
-      feedbackMsg.style.color = "#16a34a";
-      feedbackMsg.classList.remove("hidden");
-      feedbackSection.style.opacity = "0.6";
-      feedbackSection.style.pointerEvents = "none";
-    } else {
-      feedbackMsg.textContent = "Erreur : " + (data.message || "");
+if (feedbackSubmit) {
+  feedbackSubmit.addEventListener("click", async () => {
+    if (!currentRating) {
+      feedbackMsg.textContent = t("feedbackSelectRating");
       feedbackMsg.style.color = "#dc2626";
       feedbackMsg.classList.remove("hidden");
+      return;
     }
-  } catch (e) {
-    feedbackMsg.textContent = t("errorConn");
-    feedbackMsg.style.color = "#dc2626";
-    feedbackMsg.classList.remove("hidden");
-  } finally {
-    feedbackSubmit.disabled = false;
-    feedbackSubmit.textContent = oldText || t("feedbackSubmit");
-    feedbackSubmit.textContent = t("feedbackSubmit");
-  }
-});
+
+    feedbackSubmit.disabled = true;
+    feedbackSubmit.textContent = "...";
+
+    try {
+      const res = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          secret_code: currentCode,
+          type: "rating",
+          rating: currentRating,
+          comment: feedbackComment.value.trim()
+        })
+      });
+      const data = await res.json();
+
+      if (data.status === "OK") {
+        feedbackMsg.textContent = t("feedbackThanks");
+        feedbackMsg.style.color = "#16a34a";
+        feedbackMsg.classList.remove("hidden");
+        feedbackSection.style.opacity = "0.6";
+        feedbackSection.style.pointerEvents = "none";
+      } else {
+        feedbackMsg.textContent = "Erreur : " + (data.message || "");
+        feedbackMsg.style.color = "#dc2626";
+        feedbackMsg.classList.remove("hidden");
+      }
+    } catch (e) {
+      feedbackMsg.textContent = t("errorConn");
+      feedbackMsg.style.color = "#dc2626";
+      feedbackMsg.classList.remove("hidden");
+    } finally {
+      feedbackSubmit.disabled = false;
+      feedbackSubmit.textContent = t("feedbackSubmit");
+    }
+  });
+}
 
 // ============================================================
 // ENVOI SIGNALEMENT
 // ============================================================
-reportBtn.addEventListener("click", async () => {
-  if (!confirm(t("reportConfirm"))) return;
+if (reportBtn) {
+  reportBtn.addEventListener("click", async () => {
+    if (!confirm(t("reportConfirm"))) return;
 
-  reportBtn.disabled = true;
-  reportBtn.textContent = "...";
+    reportBtn.disabled = true;
+    reportBtn.textContent = "...";
 
-  try {
-    const res = await fetch("/api/feedback", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        secret_code: currentCode || null,
-        type: "report",
-        comment: "Signalement de contrefaçon"
-      })
-    });
-    const data = await res.json();
+    try {
+      const res = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          secret_code: currentCode || null,
+          type: "report",
+          comment: "Signalement de contrefaçon"
+        })
+      });
+      const data = await res.json();
 
-    if (data.status === "OK") {
-      reportMsg.textContent = t("reportThanks");
-      reportMsg.style.color = "#16a34a";
-      reportMsg.classList.remove("hidden");
-      reportSection.style.opacity = "0.6";
-      reportSection.style.pointerEvents = "none";
-    } else {
-      reportMsg.textContent = "Erreur : " + (data.message || "");
+      if (data.status === "OK") {
+        reportMsg.textContent = t("reportThanks");
+        reportMsg.style.color = "#16a34a";
+        reportMsg.classList.remove("hidden");
+        reportSection.style.opacity = "0.6";
+        reportSection.style.pointerEvents = "none";
+      } else {
+        reportMsg.textContent = "Erreur : " + (data.message || "");
+        reportMsg.style.color = "#dc2626";
+        reportMsg.classList.remove("hidden");
+      }
+    } catch (e) {
+      reportMsg.textContent = t("errorConn");
       reportMsg.style.color = "#dc2626";
       reportMsg.classList.remove("hidden");
+    } finally {
+      reportBtn.disabled = false;
+      reportBtn.textContent = t("reportBtn");
     }
-  } catch (e) {
-    reportMsg.textContent = t("errorConn");
-    reportMsg.style.color = "#dc2626";
-    reportMsg.classList.remove("hidden");
-  } finally {
-    reportBtn.disabled = false;
-    reportBtn.textContent = t("reportBtn");
-  }
-});
+  });
+}
 
 // ============================================================
 // RESET
@@ -216,6 +236,7 @@ form.addEventListener("submit", async (e) => {
 
   currentCode = code;
   lastResultData = null;
+  window.__lastVerifiedProduct = null;
   resetFeedbackSections();
 
   btn.disabled = true;
@@ -243,4 +264,6 @@ form.addEventListener("submit", async (e) => {
 // ============================================================
 // INITIALISATION i18n
 // ============================================================
-applyTranslations();
+if (typeof applyTranslations === "function") {
+  applyTranslations();
+}
