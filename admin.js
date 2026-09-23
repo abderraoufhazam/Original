@@ -52,8 +52,8 @@ function showPanel(name) {
   if (b) b.classList.add("active");
   const mt = $("mobileTitle");
   if (mt) mt.textContent = PANEL_TITLES[name] || "Admin";
-  $("sidebar").classList.remove("open");
-  $("overlay").classList.remove("show");
+  const sb1 = $("sidebar"); if (sb1) sb1.classList.remove("open");
+  const ov = $("overlay"); if (ov) ov.classList.remove("show");
   window.scrollTo({ top: 0, behavior: "smooth" });
 
   if (name === "delete") loadDeleteLog();
@@ -65,13 +65,18 @@ document.querySelectorAll(".sidebar-nav button").forEach(btn => {
   btn.addEventListener("click", () => showPanel(btn.dataset.panel));
 });
 
-$("menuToggle").addEventListener("click", () => {
-  $("sidebar").classList.toggle("open");
-  $("overlay").classList.toggle("show");
+const _mt = $("menuToggle");
+if (_mt) _mt.addEventListener("click", () => {
+  const s = $("sidebar"); const o = $("overlay");
+  if (s) s.classList.toggle("open");
+  if (o) o.classList.toggle("show");
 });
-$("overlay").addEventListener("click", () => {
-  $("sidebar").classList.remove("open");
-  $("overlay").classList.remove("show");
+
+const _ov = $("overlay");
+if (_ov) _ov.addEventListener("click", () => {
+  const s = $("sidebar"); const o = $("overlay");
+  if (s) s.classList.remove("open");
+  if (o) o.classList.remove("show");
 });
 
 // ============================================================
@@ -298,10 +303,13 @@ window.markMessageRead = async function(id) {
   loadMessagesBadge();
 };
 
-$("refreshMessagesBtn").onclick = () => {
-  loadMessages();
-  loadMessagesBadge();
-};
+const _rmb = $("refreshMessagesBtn");
+if (_rmb) {
+  _rmb.onclick = () => {
+    loadMessages();
+    loadMessagesBadge();
+  };
+}
 
 document.querySelectorAll("#messagesTabs .tab").forEach(t => {
   t.addEventListener("click", () => {
@@ -429,7 +437,8 @@ async function loadBrands() {
   }
 }
 
-$("refreshBrandsBtn").onclick = () => loadBrands();
+const _rbb = $("refreshBrandsBtn");
+if (_rbb) _rbb.onclick = () => loadBrands();
 
 // ============================================================
 // DELETE LOG
@@ -471,6 +480,9 @@ async function loadDeleteLog() {
   });
   container.innerHTML = html;
 }
+
+const _rdlb = $("refreshDeleteLogBtn");
+if (_rdlb) _rdlb.onclick = () => loadDeleteLog();
 
 // ============================================================
 // CHARTS
@@ -681,12 +693,14 @@ window.__reloadCharts = loadCharts;
 async function refresh() {
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
-    $("loginPage").classList.add("hidden");
-    $("adminApp").classList.remove("hidden");
+    const lp = $("loginPage"); if (lp) lp.classList.add("hidden");
+    const aa = $("adminApp"); if (aa) aa.classList.remove("hidden");
     const url = location.origin + "/verify";
-    $("publicUrl").textContent = url;
-    $("qr").innerHTML = "";
-    new QRCode($("qr"), { text: url, width: 180, height: 180 });
+    const pu = $("publicUrl"); if (pu) pu.textContent = url;
+    const qr = $("qr"); if (qr) {
+      qr.innerHTML = "";
+      new QRCode(qr, { text: url, width: 180, height: 180 });
+    }
     loadStats();
     loadLog();
     loadFeedback();
@@ -696,34 +710,39 @@ async function refresh() {
 }
 refresh();
 
-$("loginForm").addEventListener("submit", async (e) => {
+const _lf = $("loginForm");
+if (_lf) _lf.addEventListener("submit", async (e) => {
   e.preventDefault();
-  $("loginBtn").disabled = true;
-  $("loginBtn").textContent = "CONNEXION...";
+  const lb = $("loginBtn");
+  if (lb) { lb.disabled = true; lb.textContent = "CONNEXION..."; }
   const { error } = await sb.auth.signInWithPassword({
     email: $("email").value.trim(),
     password: $("password").value
   });
-  $("loginBtn").disabled = false;
-  $("loginBtn").textContent = "SE CONNECTER";
+  if (lb) { lb.disabled = false; lb.textContent = "SE CONNECTER"; }
   if (error) {
     const el = $("loginError");
-    el.className = "result danger";
-    el.innerHTML = `<p style="margin:0">${escapeHtml(error.message)}</p>`;
+    if (el) {
+      el.className = "result danger";
+      el.innerHTML = `<p style="margin:0">${escapeHtml(error.message)}</p>`;
+    }
     return;
   }
-  $("loginError").classList.add("hidden");
+  const el = $("loginError"); if (el) el.classList.add("hidden");
   refresh();
 });
 
-$("logoutBtn").onclick = async () => {
+const _lb = $("logoutBtn");
+if (_lb) _lb.onclick = async () => {
   await sb.auth.signOut();
   location.reload();
 };
 
-$("refreshLogBtn").onclick = () => loadLog();
-$("refreshFeedbackBtn").onclick = () => loadFeedback();
-$("refreshDeleteLogBtn").onclick = () => loadDeleteLog();
+const _rlb = $("refreshLogBtn");
+if (_rlb) _rlb.onclick = () => loadLog();
+
+const _rfb = $("refreshFeedbackBtn");
+if (_rfb) _rfb.onclick = () => loadFeedback();
 
 document.querySelectorAll("#feedbackTabs .tab").forEach(t => {
   t.addEventListener("click", () => {
@@ -745,7 +764,8 @@ document.querySelectorAll("#feedbackTabs .tab").forEach(t => {
 // ============================================================
 // CREATE BATCH
 // ============================================================
-$("createBtn").onclick = async () => {
+const _cb = $("createBtn");
+if (_cb) _cb.onclick = async () => {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) return alert("Connectez-vous.");
 
@@ -754,9 +774,9 @@ $("createBtn").onclick = async () => {
 
   const qty = Math.min(10000, Math.max(1, Number($("quantity").value) || 1));
 
-  $("createBtn").disabled = true;
-  $("createBtn").textContent = "CRÉATION...";
-  $("adminResult").className = "result hidden";
+  _cb.disabled = true;
+  _cb.textContent = "CRÉATION...";
+  const ar = $("adminResult"); if (ar) ar.className = "result hidden";
 
   try {
     const res = await fetch("/api/create-batch", {
@@ -788,38 +808,46 @@ $("createBtn").onclick = async () => {
     if (data.status === "OK") {
       lastCodes = data.codes || [];
       lastLogo = $("logo_url").value.trim() || "";
-      $("adminResult").className = "result success";
-      $("adminResult").innerHTML = `
-        <h2>✓ LOT CRÉÉ</h2>
-        <p>${data.inserted} codes générés avec succès.</p>
-        <p style="font-size:12px;margin-top:8px;color:#64748b">🔒 Les codes sont chiffrés en base de données (AES-256).</p>
-      `;
-      $("printBtn").classList.remove("hidden");
-      $("exportNewLotBtn").classList.remove("hidden");
+      if (ar) {
+        ar.className = "result success";
+        ar.innerHTML = `
+          <h2>✓ LOT CRÉÉ</h2>
+          <p>${data.inserted} codes générés avec succès.</p>
+          <p style="font-size:12px;margin-top:8px;color:#64748b">🔒 Les codes sont chiffrés en base de données (AES-256).</p>
+        `;
+      }
+      const pb = $("printBtn"); if (pb) pb.classList.remove("hidden");
+      const ebt = $("exportNewLotBtn"); if (ebt) ebt.classList.remove("hidden");
       loadStats();
       loadCharts();
     } else {
-      $("adminResult").className = "result danger";
-      $("adminResult").innerHTML = `
-        <p>Erreur : ${escapeHtml(data.message || "")}</p>
-        ${data.detail ? `<p style="font-size:11px;color:#dc2626;word-break:break-all">${escapeHtml(data.detail)}</p>` : ""}
-      `;
+      if (ar) {
+        ar.className = "result danger";
+        ar.innerHTML = `
+          <p>Erreur : ${escapeHtml(data.message || "")}</p>
+          ${data.detail ? `<p style="font-size:11px;color:#dc2626;word-break:break-all">${escapeHtml(data.detail)}</p>` : ""}
+        `;
+      }
     }
   } catch (err) {
-    $("adminResult").className = "result danger";
-    $("adminResult").innerHTML = `<p>Erreur : ${escapeHtml(err.message)}</p>`;
+    if (ar) {
+      ar.className = "result danger";
+      ar.innerHTML = `<p>Erreur : ${escapeHtml(err.message)}</p>`;
+    }
   } finally {
-    $("createBtn").disabled = false;
-    $("createBtn").textContent = "CRÉER LE LOT";
+    _cb.disabled = false;
+    _cb.textContent = "CRÉER LE LOT";
   }
 };
 
 // ============================================================
 // SEARCH
 // ============================================================
-$("searchBtn").onclick = async () => {
+const _sb = $("searchBtn");
+if (_sb) _sb.onclick = async () => {
   const code = ($("searchCode").value || "").trim().toUpperCase();
   const res = $("searchResult");
+  if (!res) return;
   if (!code) { res.className = "result hidden"; return; }
 
   const { data, error } = await sb
@@ -855,26 +883,29 @@ $("searchBtn").onclick = async () => {
 // ============================================================
 // LOAD LOT
 // ============================================================
-$("loadLotBtn").onclick = async () => {
+const _llb = $("loadLotBtn");
+if (_llb) _llb.onclick = async () => {
   const lot = ($("editLotSearch").value || "").trim();
   const info = $("lotInfo");
   const form = $("editForm");
   const printLotBtn = $("printLotBtn");
   const exportBtn = $("exportLotCodesBtn");
 
+  if (!info) return;
+
   if (!lot) {
     info.className = "result danger";
     info.innerHTML = `<p>Entrez un numéro de lot.</p>`;
-    form.classList.add("hidden");
-    printLotBtn.classList.add("hidden");
+    if (form) form.classList.add("hidden");
+    if (printLotBtn) printLotBtn.classList.add("hidden");
     if (exportBtn) exportBtn.classList.add("hidden");
     return;
   }
 
   info.className = "result";
   info.innerHTML = `<p>Chargement...</p>`;
-  form.classList.add("hidden");
-  printLotBtn.classList.add("hidden");
+  if (form) form.classList.add("hidden");
+  if (printLotBtn) printLotBtn.classList.add("hidden");
   if (exportBtn) exportBtn.classList.add("hidden");
   loadedLot = null;
   loadedLotCodes = [];
@@ -920,29 +951,30 @@ $("loadLotBtn").onclick = async () => {
     </div>
   `;
 
-  printLotBtn.classList.remove("hidden");
+  if (printLotBtn) printLotBtn.classList.remove("hidden");
   if (exportBtn) exportBtn.classList.remove("hidden");
 
-  $("editBrand").value = r.brand || "";
-  $("editProductName").value = r.product_name || "";
-  $("editReference").value = r.reference || "";
-  $("editNewLot").value = "";
-  $("editManufactureDate").value = r.manufacture_date || "";
-  $("editExpiryDate").value = r.expiry_date || "";
-  $("editProductImage").value = r.product_image || "";
-  $("editLogoUrl").value = r.logo_url || "";
-  $("editDescription").value = r.description || "";
-  $("editInstagramUrl").value = r.instagram_url || "";
-  $("editFacebookUrl").value = r.facebook_url || "";
-  $("editTiktokUrl").value = r.tiktok_url || "";
+  if ($("editBrand")) $("editBrand").value = r.brand || "";
+  if ($("editProductName")) $("editProductName").value = r.product_name || "";
+  if ($("editReference")) $("editReference").value = r.reference || "";
+  if ($("editNewLot")) $("editNewLot").value = "";
+  if ($("editManufactureDate")) $("editManufactureDate").value = r.manufacture_date || "";
+  if ($("editExpiryDate")) $("editExpiryDate").value = r.expiry_date || "";
+  if ($("editProductImage")) $("editProductImage").value = r.product_image || "";
+  if ($("editLogoUrl")) $("editLogoUrl").value = r.logo_url || "";
+  if ($("editDescription")) $("editDescription").value = r.description || "";
+  if ($("editInstagramUrl")) $("editInstagramUrl").value = r.instagram_url || "";
+  if ($("editFacebookUrl")) $("editFacebookUrl").value = r.facebook_url || "";
+  if ($("editTiktokUrl")) $("editTiktokUrl").value = r.tiktok_url || "";
 
-  form.classList.remove("hidden");
+  if (form) form.classList.remove("hidden");
 };
 
 // ============================================================
 // UPDATE LOT
 // ============================================================
-$("updateBatchBtn").onclick = async () => {
+const _ub = $("updateBatchBtn");
+if (_ub) _ub.onclick = async () => {
   if (!loadedLot) return alert("Chargez d'abord un lot.");
 
   const { data: { session } } = await sb.auth.getSession();
@@ -950,14 +982,17 @@ $("updateBatchBtn").onclick = async () => {
 
   const info = $("lotInfo");
   const updates = {};
-  const v = id => ($(id).value || "").trim();
+  const v = id => {
+    const el = $(id);
+    return el ? (el.value || "").trim() : "";
+  };
 
   if (v("editBrand")) updates.brand = v("editBrand");
   if (v("editProductName")) updates.product_name = v("editProductName");
   if (v("editReference")) updates.reference = v("editReference");
   if (v("editNewLot")) updates.lot = v("editNewLot");
-  if ($("editManufactureDate").value) updates.manufacture_date = $("editManufactureDate").value;
-  if ($("editExpiryDate").value) updates.expiry_date = $("editExpiryDate").value;
+  if ($("editManufactureDate") && $("editManufactureDate").value) updates.manufacture_date = $("editManufactureDate").value;
+  if ($("editExpiryDate") && $("editExpiryDate").value) updates.expiry_date = $("editExpiryDate").value;
   if (v("editProductImage")) updates.product_image = v("editProductImage");
   if (v("editLogoUrl")) updates.logo_url = v("editLogoUrl");
   if (v("editDescription")) updates.description = v("editDescription");
@@ -968,22 +1003,26 @@ $("updateBatchBtn").onclick = async () => {
   if (Object.keys(updates).length === 0) return alert("Aucun champ à modifier.");
   if (!confirm(`Confirmer la mise à jour du lot "${loadedLot}" ?`)) return;
 
-  $("updateBatchBtn").disabled = true;
-  $("updateBatchBtn").textContent = "MISE À JOUR...";
+  _ub.disabled = true;
+  _ub.textContent = "MISE À JOUR...";
 
   const { error } = await sb.from("qr_codes").update(updates).eq("lot", loadedLot);
 
-  $("updateBatchBtn").disabled = false;
-  $("updateBatchBtn").textContent = "METTRE À JOUR LE LOT";
+  _ub.disabled = false;
+  _ub.textContent = "METTRE À JOUR LE LOT";
 
   if (error) {
-    info.className = "result danger";
-    info.innerHTML = `<p>Erreur : ${escapeHtml(error.message)}</p>`;
+    if (info) {
+      info.className = "result danger";
+      info.innerHTML = `<p>Erreur : ${escapeHtml(error.message)}</p>`;
+    }
     return;
   }
 
-  info.className = "result success";
-  info.innerHTML = `<h2>✓ LOT MIS À JOUR</h2><p>Tous les codes du lot "${escapeHtml(loadedLot)}" ont été modifiés.</p>`;
+  if (info) {
+    info.className = "result success";
+    info.innerHTML = `<h2>✓ LOT MIS À JOUR</h2><p>Tous les codes du lot "${escapeHtml(loadedLot)}" ont été modifiés.</p>`;
+  }
   loadStats();
 
   if (updates.brand) loadedLotBrand = updates.brand;
@@ -991,8 +1030,8 @@ $("updateBatchBtn").onclick = async () => {
   if (updates.lot) {
     loadedLot = updates.lot;
     loadedLotLot = updates.lot;
-    $("editLotSearch").value = updates.lot;
-    $("editNewLot").value = "";
+    if ($("editLotSearch")) $("editLotSearch").value = updates.lot;
+    if ($("editNewLot")) $("editNewLot").value = "";
   }
 };
 
@@ -1044,7 +1083,7 @@ function printLabels(codes, brand, lot, logoUrl) {
     return;
   }
 
-  const size = $("labelSize").value || "60x90";
+  const size = ($("labelSize") && $("labelSize").value) || "60x90";
   let labelWidth, labelHeight, qrSize, codeFontSize, brandFontSize;
   if (size === "50x50") {
     labelWidth = "50mm"; labelHeight = "50mm"; qrSize = "22mm"; codeFontSize = "9px"; brandFontSize = "8px";
@@ -1105,17 +1144,19 @@ function printLabels(codes, brand, lot, logoUrl) {
   w.document.close();
 }
 
-$("printBtn").onclick = () => {
+const _pb = $("printBtn");
+if (_pb) _pb.onclick = () => {
   printLabels(lastCodes, $("brand").value.trim() || "MARQUE", $("lot").value.trim() || "", lastLogo);
 };
 
-$("printLotBtn").onclick = async () => {
+const _plb = $("printLotBtn");
+if (_plb) _plb.onclick = async () => {
   if (!loadedLot) return alert("Aucun lot chargé.");
 
   const { data: { session } } = await sb.auth.getSession();
   if (!session) return alert("Connectez-vous.");
 
-  const btn = $("printLotBtn");
+  const btn = _plb;
   const originalText = btn.textContent;
   btn.disabled = true;
   btn.textContent = "🔓 Déchiffrement...";
@@ -1184,10 +1225,8 @@ function downloadExcel(data, filename, sheetName) {
   XLSX.writeFile(wb, filename + "_" + new Date().toISOString().slice(0, 10) + ".xlsx");
 }
 
-// ============================================================
-// EXPORT : NEW LOT (après création)
-// ============================================================
-$("exportNewLotBtn").onclick = () => {
+const _enlb = $("exportNewLotBtn");
+if (_enlb) _enlb.onclick = () => {
   if (!lastCodes || lastCodes.length === 0) return alert("Aucun code à exporter.");
 
   const brand = $("brand").value.trim() || "MARQUE";
@@ -1208,13 +1247,11 @@ $("exportNewLotBtn").onclick = () => {
   downloadExcel(rows, "Codes_" + lot, "Codes");
 };
 
-// ============================================================
-// EXPORT : EXISTING LOT
-// ============================================================
-$("exportLotCodesBtn").onclick = async () => {
+const _elcb = $("exportLotCodesBtn");
+if (_elcb) _elcb.onclick = async () => {
   if (!loadedLot) return alert("Chargez d'abord un lot.");
 
-  const btn = $("exportLotCodesBtn");
+  const btn = _elcb;
   const originalText = btn.textContent;
   btn.disabled = true;
   btn.textContent = "⏳ Export...";
@@ -1261,11 +1298,9 @@ $("exportLotCodesBtn").onclick = async () => {
   }
 };
 
-// ============================================================
-// EXPORT : MESSAGES
-// ============================================================
-$("exportMessagesBtn").onclick = async () => {
-  const btn = $("exportMessagesBtn");
+const _emb = $("exportMessagesBtn");
+if (_emb) _emb.onclick = async () => {
+  const btn = _emb;
   const originalText = btn.textContent;
   btn.disabled = true;
   btn.textContent = "⏳ Export...";
@@ -1302,11 +1337,9 @@ $("exportMessagesBtn").onclick = async () => {
   }
 };
 
-// ============================================================
-// EXPORT : BRANDS
-// ============================================================
-$("exportBrandsBtn").onclick = async () => {
-  const btn = $("exportBrandsBtn");
+const _ebb = $("exportBrandsBtn");
+if (_ebb) _ebb.onclick = async () => {
+  const btn = _ebb;
   const originalText = btn.textContent;
   btn.disabled = true;
   btn.textContent = "⏳ Export...";
@@ -1357,11 +1390,9 @@ $("exportBrandsBtn").onclick = async () => {
   }
 };
 
-// ============================================================
-// EXPORT : FEEDBACK
-// ============================================================
-$("exportFeedbackBtn").onclick = async () => {
-  const btn = $("exportFeedbackBtn");
+const _efb = $("exportFeedbackBtn");
+if (_efb) _efb.onclick = async () => {
+  const btn = _efb;
   const originalText = btn.textContent;
   btn.disabled = true;
   btn.textContent = "⏳ Export...";
@@ -1400,24 +1431,29 @@ $("exportFeedbackBtn").onclick = async () => {
 // ============================================================
 // BULK DELETE
 // ============================================================
-$("previewDeleteBtn").onclick = async () => {
+const _pdb = $("previewDeleteBtn");
+if (_pdb) _pdb.onclick = async () => {
   const lot = ($("deleteLotSearch").value || "").trim();
   const preview = $("deletePreview");
   const confirmBox = $("deleteConfirmBox");
   const result = $("deleteResult");
 
-  result.classList.add("hidden");
-  confirmBox.classList.add("hidden");
+  if (result) result.classList.add("hidden");
+  if (confirmBox) confirmBox.classList.add("hidden");
   pendingDeleteLot = null;
 
   if (!lot) {
-    preview.className = "result danger";
-    preview.innerHTML = `<p>Entrez un numéro de lot.</p>`;
+    if (preview) {
+      preview.className = "result danger";
+      preview.innerHTML = `<p>Entrez un numéro de lot.</p>`;
+    }
     return;
   }
 
-  preview.className = "result";
-  preview.innerHTML = `<p>Recherche...</p>`;
+  if (preview) {
+    preview.className = "result";
+    preview.innerHTML = `<p>Recherche...</p>`;
+  }
 
   const { data, error } = await sb
     .from("qr_codes")
@@ -1425,14 +1461,18 @@ $("previewDeleteBtn").onclick = async () => {
     .eq("lot", lot);
 
   if (error) {
-    preview.className = "result danger";
-    preview.innerHTML = `<p>Erreur : ${escapeHtml(error.message)}</p>`;
+    if (preview) {
+      preview.className = "result danger";
+      preview.innerHTML = `<p>Erreur : ${escapeHtml(error.message)}</p>`;
+    }
     return;
   }
 
   if (!data || data.length === 0) {
-    preview.className = "result danger";
-    preview.innerHTML = `<h2>AUCUN RÉSULTAT</h2><p>Aucun code trouvé pour le lot "<b>${escapeHtml(lot)}</b>".</p>`;
+    if (preview) {
+      preview.className = "result danger";
+      preview.innerHTML = `<h2>AUCUN RÉSULTAT</h2><p>Aucun code trouvé pour le lot "<b>${escapeHtml(lot)}</b>".</p>`;
+    }
     return;
   }
 
@@ -1444,38 +1484,45 @@ $("previewDeleteBtn").onclick = async () => {
   pendingDeleteLot = lot;
   pendingDeleteCount = data.length;
 
-  preview.className = "result danger";
-  preview.innerHTML = `
-    <h2>⚠️ PRÊT À SUPPRIMER</h2>
-    <p>Lot : <b>${escapeHtml(lot)}</b></p>
-    <p>Total : <b>${data.length}</b> code(s)</p>
-    <div class="details" style="margin-top:12px">
-      <div><b>UNUSED</b><span>${statuses.UNUSED}</span></div>
-      <div><b>USED</b><span>${statuses.USED}</span></div>
-      <div><b>DISABLED</b><span>${statuses.DISABLED}</span></div>
-      <div><b>EXPIRED</b><span>${statuses.EXPIRED}</span></div>
-    </div>
-  `;
+  if (preview) {
+    preview.className = "result danger";
+    preview.innerHTML = `
+      <h2>⚠️ PRÊT À SUPPRIMER</h2>
+      <p>Lot : <b>${escapeHtml(lot)}</b></p>
+      <p>Total : <b>${data.length}</b> code(s)</p>
+      <div class="details" style="margin-top:12px">
+        <div><b>UNUSED</b><span>${statuses.UNUSED}</span></div>
+        <div><b>USED</b><span>${statuses.USED}</span></div>
+        <div><b>DISABLED</b><span>${statuses.DISABLED}</span></div>
+        <div><b>EXPIRED</b><span>${statuses.EXPIRED}</span></div>
+      </div>
+    `;
+  }
 
-  $("deleteConfirmInput").value = "";
-  $("confirmDeleteBtn").disabled = true;
-  confirmBox.classList.remove("hidden");
-  confirmBox.scrollIntoView({ behavior: "smooth", block: "center" });
+  if ($("deleteConfirmInput")) $("deleteConfirmInput").value = "";
+  if ($("confirmDeleteBtn")) $("confirmDeleteBtn").disabled = true;
+  if (confirmBox) {
+    confirmBox.classList.remove("hidden");
+    confirmBox.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
 };
 
-$("deleteConfirmInput").addEventListener("input", (e) => {
+const _dci = $("deleteConfirmInput");
+if (_dci) _dci.addEventListener("input", (e) => {
   const v = e.target.value.trim().toUpperCase();
-  $("confirmDeleteBtn").disabled = (v !== "DELETE");
+  const cdb = $("confirmDeleteBtn");
+  if (cdb) cdb.disabled = (v !== "DELETE");
 });
 
-$("confirmDeleteBtn").onclick = async () => {
+const _cdb = $("confirmDeleteBtn");
+if (_cdb) _cdb.onclick = async () => {
   if (!pendingDeleteLot) return;
   if ($("deleteConfirmInput").value.trim().toUpperCase() !== "DELETE") return;
 
   const { data: { session } } = await sb.auth.getSession();
   if (!session) return alert("Connectez-vous.");
 
-  const btn = $("confirmDeleteBtn");
+  const btn = _cdb;
   btn.disabled = true;
   btn.textContent = "SUPPRESSION EN COURS...";
 
@@ -1497,15 +1544,17 @@ $("confirmDeleteBtn").onclick = async () => {
     }
 
     const result = $("deleteResult");
-    result.className = "result success";
-    result.innerHTML = `
-      <h2>✓ SUPPRESSION RÉUSSIE</h2>
-      <p><b>${count}</b> code(s) du lot "<b>${escapeHtml(lot)}</b>" ont été supprimés définitivement.</p>
-    `;
+    if (result) {
+      result.className = "result success";
+      result.innerHTML = `
+        <h2>✓ SUPPRESSION RÉUSSIE</h2>
+        <p><b>${count}</b> code(s) du lot "<b>${escapeHtml(lot)}</b>" ont été supprimés définitivement.</p>
+      `;
+    }
 
-    $("deletePreview").classList.add("hidden");
-    $("deleteConfirmBox").classList.add("hidden");
-    $("deleteLotSearch").value = "";
+    if ($("deletePreview")) $("deletePreview").classList.add("hidden");
+    if ($("deleteConfirmBox")) $("deleteConfirmBox").classList.add("hidden");
+    if ($("deleteLotSearch")) $("deleteLotSearch").value = "";
     pendingDeleteLot = null;
     pendingDeleteCount = 0;
 
@@ -1515,8 +1564,10 @@ $("confirmDeleteBtn").onclick = async () => {
 
   } catch (err) {
     const result = $("deleteResult");
-    result.className = "result danger";
-    result.innerHTML = `<p>Erreur : ${escapeHtml(err.message)}</p>`;
+    if (result) {
+      result.className = "result danger";
+      result.innerHTML = `<p>Erreur : ${escapeHtml(err.message)}</p>`;
+    }
   } finally {
     btn.disabled = false;
     btn.textContent = "🗑️ SUPPRIMER DÉFINITIVEMENT";
