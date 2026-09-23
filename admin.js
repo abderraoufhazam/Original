@@ -10,6 +10,7 @@ let loadedLotCodes = [];
 let loadedLotBrand = "";
 let loadedLotLot = "";
 let loadedLotLogo = "";
+let currentFeedbackFilter = "all";
 
 function escapeHtml(v = "") {
   return String(v).replace(/[&<>"']/g, c => ({
@@ -35,6 +36,7 @@ const PANEL_TITLES = {
   search: "Rechercher un code",
   manage: "Gérer un lot",
   log: "Journal",
+  feedback: "Avis clients",
   settings: "Impression"
 };
 
@@ -123,6 +125,82 @@ async function loadLog() {
   container.innerHTML = html;
 }
 
+async function loadFeedback() {
+  const container = $("feedbackList");
+  if (!container) return;
+  container.innerHTML = `<p class="muted">Chargement...</p>`;
+
+  let query = sb
+    .from("qr_feedback")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(200);
+
+  if (currentFeedbackFilter !== "all") {
+    query = query.eq("type", currentFeedbackFilter);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(error.message)}</p>`;
+    return;
+  }
+  if (!data || data.length === 0) {
+    container.innerHTML = `<p class="muted">Aucun avis pour le moment.</p>`;
+    return;
+  }
+
+  let html = "";
+  data.forEach(r => {
+    const isRating = r.type === "rating";
+    const typeClass = isRating ? "success" : "danger";
+    const date = r.created_at ? new Date(r.created_at).toLocaleString() : "—";
+
+    let stars = "";
+    if (isRating && r.rating) {
+      for (let i = 1; i <= 5; i++) {
+        stars += `<span style="color:${i <= r.rating ? "#fbbf24" : "#cbd5e1"};font-size:18px">★</span>`;
+      }
+    }
+
+    html += `
+      <div class="log-row log-${typeClass}">
+        <div class="log-top">
+          <span class="log-result log-result-${typeClass}">
+            ${isRating ? "⭐ AVIS" : "🚨 SIGNALEMENT"}
+          </span>
+          <span class="log-date">${escapeHtml(date)}</span>
+        </div>
+        ${stars ? `<div style="margin:6px 0">${stars} <span style="font-weight:700;color:#0f172a;margin-left:6px">${r.rating}/5</span></div>` : ""}
+        ${r.comment ? `<div style="font-size:13px;color:#334155;line-height:1.6;margin:8px 0;padding:10px 12px;background:#fff;border-radius:10px;border:1px solid #e2e8f0">${escapeHtml(r.comment)}</div>` : ""}
+        <div class="log-meta">
+          ${r.secret_code ? `<span style="font-family:monospace;font-weight:700">🔑 ${escapeHtml(r.secret_code)}</span>` : ""}
+          ${r.ip ? `<span>🌐 ${escapeHtml(r.ip)}</span>` : ""}
+        </div>
+      </div>`;
+  });
+  container.innerHTML = html;
+}
+
+// Tabs de filtre
+document.querySelectorAll("#feedbackTabs .tab").forEach(t => {
+  t.addEventListener("click", () => {
+    document.querySelectorAll("#feedbackTabs .tab").forEach(x => {
+      x.classList.remove("active");
+      x.style.background = "#fff";
+      x.style.color = "#0f172a";
+      x.style.border = "1px solid #e2e8f0";
+    });
+    t.classList.add("active");
+    t.style.background = "#0f172a";
+    t.style.color = "#fff";
+    t.style.border = "0";
+    currentFeedbackFilter = t.dataset.tab;
+    loadFeedback();
+  });
+});
+
 // ============================================================
 // AUTH
 // ============================================================
@@ -137,6 +215,7 @@ async function refresh() {
     new QRCode($("qr"), { text: url, width: 180, height: 180 });
     loadStats();
     loadLog();
+    loadFeedback();
   }
 }
 refresh();
@@ -167,6 +246,7 @@ $("logoutBtn").onclick = async () => {
 };
 
 $("refreshLogBtn").onclick = () => loadLog();
+$("refreshFeedbackBtn").onclick = () => loadFeedback();
 
 // ============================================================
 // CREATE BATCH
