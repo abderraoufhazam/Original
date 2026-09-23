@@ -1,34 +1,33 @@
-
 {
-  "name": "QR Authenticity — Vérification de produit",
+  "name": "Produit dz ORG — Vérification de produit",
   "short_name": "QR Auth",
   "description": "Vérifiez l'authenticité d'un produit en scannant le QR code et en saisissant le code de sécurité.",
-  "start_url": "/",
+  "start_url": "/verify",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
-  "theme_color": "#111111",
+  "theme_color": "#0f172a",
   "lang": "fr",
   "dir": "ltr",
   "icons": [
     {
       "src": "/icon.svg",
-      "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon.svg",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
