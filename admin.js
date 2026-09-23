@@ -16,19 +16,14 @@ let chartDaily = null;
 let chartResults = null;
 let chartTopLots = null;
 
+// Bulk delete
+let pendingDeleteLot = null;
+let pendingDeleteCount = 0;
+
 function escapeHtml(v = "") {
   return String(v).replace(/[&<>"']/g, c => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
   }[c]));
-}
-
-function randomCode() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let s = "";
-  const a = new Uint32Array(12);
-  crypto.getRandomValues(a);
-  for (let i = 0; i < 12; i++) s += chars[a[i] % chars.length];
-  return s;
 }
 
 // ============================================================
@@ -41,6 +36,7 @@ const PANEL_TITLES = {
   manage: "Gérer un lot",
   log: "Journal",
   feedback: "Avis clients",
+  delete: "Suppression",
   settings: "Impression"
 };
 
@@ -56,6 +52,8 @@ function showPanel(name) {
   $("sidebar").classList.remove("open");
   $("overlay").classList.remove("show");
   window.scrollTo({ top: 0, behavior: "smooth" });
+
+  if (name === "delete") loadDeleteLog();
 }
 
 document.querySelectorAll(".sidebar-nav button").forEach(btn => {
@@ -188,6 +186,47 @@ async function loadFeedback() {
 }
 
 // ============================================================
+// DELETE LOG
+// ============================================================
+async function loadDeleteLog() {
+  const container = $("deleteLogList");
+  if (!container) return;
+  container.innerHTML = `<p class="muted">Chargement...</p>`;
+
+  const { data, error } = await sb
+    .from("qr_delete_logs")
+    .select("*")
+    .order("deleted_at", { ascending: false })
+    .limit(20);
+
+  if (error) {
+    container.innerHTML = `<p class="muted">Aucune donnée (table non initialisée).</p>`;
+    return;
+  }
+  if (!data || data.length === 0) {
+    container.innerHTML = `<p class="muted">Aucune suppression enregistrée.</p>`;
+    return;
+  }
+
+  let html = "";
+  data.forEach(r => {
+    const date = r.deleted_at ? new Date(r.deleted_at).toLocaleString() : "—";
+    html += `
+      <div class="log-row log-danger">
+        <div class="log-top">
+          <span class="log-result log-result-danger">🗑️ SUPPRESSION</span>
+          <span class="log-date">${escapeHtml(date)}</span>
+        </div>
+        <div class="log-meta">
+          ${r.lot ? `<span>📦 Lot: <b>${escapeHtml(r.lot)}</b></span>` : ""}
+          <span>🔢 ${r.count || 0} code(s)</span>
+        </div>
+      </div>`;
+  });
+  container.innerHTML = html;
+}
+
+// ============================================================
 // CHARTS
 // ============================================================
 function getChartColors() {
@@ -199,7 +238,6 @@ function getChartColors() {
 }
 
 async function loadCharts() {
-  // 1. Daily
   try {
     const since = new Date();
     since.setDate(since.getDate() - 13);
@@ -266,7 +304,6 @@ async function loadCharts() {
     }
   } catch (e) { console.warn("chartDaily error:", e); }
 
-  // 2. Distribution
   try {
     const { data: allVerifs } = await sb
       .from("qr_verifications")
@@ -319,7 +356,6 @@ async function loadCharts() {
     }
   } catch (e) { console.warn("chartResults error:", e); }
 
-  // 3. Top 5 lots
   try {
     const { data: verifs } = await sb
       .from("qr_verifications")
@@ -440,6 +476,7 @@ $("logoutBtn").onclick = async () => {
 
 $("refreshLogBtn").onclick = () => loadLog();
 $("refreshFeedbackBtn").onclick = () => loadFeedback();
+$("refreshDeleteLogBtn").onclick = () => loadDeleteLog();
 
 // Tabs feedback
 document.querySelectorAll("#feedbackTabs .tab").forEach(t => {
@@ -460,7 +497,7 @@ document.querySelectorAll("#feedbackTabs .tab").forEach(t => {
 });
 
 // ============================================================
-// CREATE BATCH — via /api/create-batch (encryption)
+// CREATE BATCH
 // ============================================================
 $("createBtn").onclick = async () => {
   const { data: { session } } = await sb.auth.getSession();
@@ -546,7 +583,7 @@ $("searchBtn").onclick = async () => {
 
   if (error || !data || data.length === 0) {
     res.className = "result danger";
-    res.innerHTML = `<h2>NON TROUVÉ</h2><p>Aucun code ne correspond.</p><p style="font-size:11px;color:#64748b;margin-top:8px">Note : les codes chiffrés ne sont pas recherchables ici. Utilisez le journal des vérifications.</p>`;
+    res.innerHTML = `<h2>NON TROUVÉ</h2><p>Aucun code ne correspond.</p><p style="font-size:11px;color:#64748b;margin-top:8px">Note : les codes chiffrés ne sont pas recherchables ici.</p>`;
     return;
   }
 
@@ -563,8 +600,6 @@ $("searchBtn").onclick = async () => {
       ${r.product_name ? `<div><b>Produit</b><span>${escapeHtml(r.product_name)}</span></div>` : ""}
       ${r.reference ? `<div><b>Référence</b><span>${escapeHtml(r.reference)}</span></div>` : ""}
       ${r.lot ? `<div><b>Lot</b><span>${escapeHtml(r.lot)}</span></div>` : ""}
-      ${r.manufacture_date ? `<div><b>Fabrication</b><span>${escapeHtml(r.manufacture_date)}</span></div>` : ""}
-      ${r.expiry_date ? `<div><b>Expiration</b><span>${escapeHtml(r.expiry_date)}</span></div>` : ""}
       ${r.used_at ? `<div><b>Utilisé le</b><span>${escapeHtml(new Date(r.used_at).toLocaleString())}</span></div>` : ""}
     </div>
   `;
@@ -711,7 +746,7 @@ $("updateBatchBtn").onclick = async () => {
 };
 
 // ============================================================
-// PRINT LABELS
+// PRINT
 // ============================================================
 function printLabels(codes, brand, lot, logoUrl) {
   if (!codes || !codes.length) return alert("Aucun code à imprimer.");
@@ -726,22 +761,17 @@ function printLabels(codes, brand, lot, logoUrl) {
     <title>Liste des codes</title>
     <style>
       @page { margin: 12mm; }
-      * { box-sizing: border-box; }
       body { font-family: Arial, sans-serif; padding: 15px; margin: 0; color: #111; }
       .toolbar { background: #111; color: #fff; padding: 12px; text-align: center; margin-bottom: 20px; border-radius: 8px; position: sticky; top: 0; z-index: 100; }
       .toolbar button { background: #fff; color: #111; border: 0; padding: 10px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
       .header { text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 3px solid #111; }
       .header h1 { margin: 0 0 6px; font-size: 22px; }
-      .header p { margin: 4px 0; font-size: 13px; color: #555; }
-      .meta { display: flex; justify-content: center; gap: 20px; font-size: 13px; margin-top: 10px; }
-      .meta b { color: #111; }
       table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
       th { background: #111; color: #fff; padding: 10px 8px; text-align: left; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
       td { padding: 9px 8px; border-bottom: 1px solid #e5e7eb; }
       tr:nth-child(even) td { background: #f9fafb; }
       .num { color: #6b7280; width: 45px; font-weight: bold; }
       .code-cell { font-family: 'Courier New', monospace; font-weight: bold; font-size: 15px; letter-spacing: 2px; color: #111; }
-      .footer { margin-top: 25px; padding-top: 12px; border-top: 1px solid #ddd; text-align: center; font-size: 11px; color: #888; }
       @media print { .toolbar { display: none !important; } body { padding: 0; } }
     </style></head><body>
     <div class="toolbar"><button onclick="window.print()">🖨 IMPRIMER</button></div>
@@ -749,10 +779,7 @@ function printLabels(codes, brand, lot, logoUrl) {
       ${logoUrl ? `<img src="${escapeHtml(logoUrl)}" style="max-height:50px;margin-bottom:10px">` : ""}
       <h1>${escapeHtml(brand)}</h1>
       <p><b>Liste des codes de sécurité</b></p>
-      <div class="meta">
-        ${lot ? `<span><b>Lot :</b> ${escapeHtml(lot)}</span>` : ""}
-        <span><b>Total :</b> ${codes.length} code(s)</span>
-      </div>
+      <p>${lot ? "Lot: " + escapeHtml(lot) + " — " : ""}Total: ${codes.length}</p>
     </div>
     <table><thead><tr><th class="num">#</th><th>Code de sécurité</th></tr></thead><tbody>`;
 
@@ -760,7 +787,7 @@ function printLabels(codes, brand, lot, logoUrl) {
       html += `<tr><td class="num">${i + 1}</td><td class="code-cell">${code.match(/.{1,4}/g).join(" ")}</td></tr>`;
     });
 
-    html += `</tbody></table><div class="footer">Produit dz ORG — ${new Date().toLocaleString()}</div></body></html>`;
+    html += `</tbody></table></body></html>`;
     w.document.write(html);
     w.document.close();
     return;
@@ -777,40 +804,30 @@ function printLabels(codes, brand, lot, logoUrl) {
   }
 
   let html = `<!doctype html><html lang="fr"><head><meta charset="utf-8">
-  <title>Impression QR + Codes</title>
+  <title>Impression</title>
   <style>
     @page { margin: 8mm; }
-    * { box-sizing: border-box; }
     body { font-family: Arial, sans-serif; padding: 10px; margin: 0; background: #f5f5f5; }
-    .toolbar { background: #111; color: #fff; padding: 12px; text-align: center; margin-bottom: 15px; border-radius: 8px; position: sticky; top: 0; z-index: 100; }
-    .toolbar button { background: #fff; color: #111; border: 0; padding: 10px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
+    .toolbar { background: #111; color: #fff; padding: 12px; text-align: center; margin-bottom: 15px; border-radius: 8px; }
+    .toolbar button { background: #fff; color: #111; border: 0; padding: 10px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; }
     .info { font-size: 12px; color: #333; margin: 15px 0; padding: 14px; background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; line-height: 1.6; }
-    .info b { color: #b26a00; }
     .sheet { display: flex; flex-wrap: wrap; gap: 4mm; background: #fff; padding: 10px; border-radius: 8px; }
     .label { width: ${labelWidth}; height: ${labelHeight}; border: 1px dashed #bbb; display: flex; flex-direction: column; page-break-inside: avoid; background: #fff; position: relative; border-radius: 3mm; overflow: hidden; }
     .label-top { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3mm; text-align: center; }
     .label-logo { max-height: 8mm; max-width: 40mm; margin-bottom: 1.5mm; object-fit: contain; }
-    .label-brand { font-size: ${brandFontSize}; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; color: #000; margin-bottom: 2mm; }
+    .label-brand { font-size: ${brandFontSize}; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 2mm; }
     .label-qr { width: ${qrSize}; height: ${qrSize}; display: block; }
-    .label-inst { font-size: 7px; color: #666; margin-top: 2mm; line-height: 1.4; }
-    .label-fold { height: 6mm; display: flex; align-items: center; justify-content: center; font-size: 6px; color: #888; border-top: 1px dashed #666; border-bottom: 1px dashed #666; background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 3px, #e8e8e8 3px, #e8e8e8 6px); letter-spacing: 0.5px; font-family: monospace; }
-    .label-bottom { height: 28mm; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2mm; text-align: center; background: #fff; }
+    .label-inst { font-size: 7px; color: #666; margin-top: 2mm; }
+    .label-fold { height: 6mm; display: flex; align-items: center; justify-content: center; font-size: 6px; color: #888; border-top: 1px dashed #666; border-bottom: 1px dashed #666; background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 3px, #e8e8e8 3px, #e8e8e8 6px); }
+    .label-bottom { height: 28mm; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2mm; text-align: center; }
     .label-code-title { font-size: 6.5px; color: #888; letter-spacing: 1.5px; margin-bottom: 1.5mm; text-transform: uppercase; }
-    .label-code { font-family: 'Courier New', monospace; font-size: ${codeFontSize}; font-weight: bold; letter-spacing: 1.5px; color: #000; padding: 1.5mm 3mm; border: 1px solid #ddd; border-radius: 2mm; background: #fafafa; }
+    .label-code { font-family: 'Courier New', monospace; font-size: ${codeFontSize}; font-weight: bold; letter-spacing: 1.5px; padding: 1.5mm 3mm; border: 1px solid #ddd; border-radius: 2mm; background: #fafafa; }
     .label-hint { font-size: 5.5px; color: #999; margin-top: 1.5mm; font-style: italic; }
     .label-lot { position: absolute; top: 2mm; right: 2mm; font-size: 6px; color: #aaa; font-family: monospace; }
-    @media print { .toolbar, .info { display: none !important; } body { padding: 0; background: #fff; } .sheet { padding: 0; gap: 2mm; background: #fff; } }
+    @media print { .toolbar, .info { display: none !important; } body { padding: 0; } .sheet { padding: 0; gap: 2mm; } }
   </style></head><body>
-
   <div class="toolbar"><button onclick="window.print()">🖨 IMPRIMER</button></div>
-  <div class="info"><b>📋 MODE D'EMPLOI :</b><br>
-  1. Imprimez sur papier autocollant A4.<br>
-  2. Découpez chaque étiquette.<br>
-  3. <b>Pliez le long de la ligne pointillée centrale.</b><br>
-  4. Le <b>code de sécurité se retrouve caché à l'intérieur.</b><br>
-  5. Collez les bords pour sceller.<br>
-  6. Le client scanne le QR (visible) puis <b>déchire ou déplie</b> pour révéler le code.</div>
-
+  <div class="info"><b>📋 MODE D'EMPLOI :</b> Pliez le long de la ligne pointillée. Le code reste caché.</div>
   <div class="sheet">`;
 
   codes.forEach((code) => {
@@ -818,12 +835,12 @@ function printLabels(codes, brand, lot, logoUrl) {
       <div class="label">
         ${lot ? `<div class="label-lot">LOT ${escapeHtml(lot)}</div>` : ""}
         <div class="label-top">
-          ${logoUrl ? `<img class="label-logo" src="${escapeHtml(logoUrl)}" alt="Logo">` : ""}
+          ${logoUrl ? `<img class="label-logo" src="${escapeHtml(logoUrl)}">` : ""}
           <div class="label-brand">${escapeHtml(brand)}</div>
-          <img class="label-qr" src="${qrUrl}" alt="QR">
-          <div class="label-inst">Scannez ce QR code<br>puis entrez le code de sécurité</div>
+          <img class="label-qr" src="${qrUrl}">
+          <div class="label-inst">Scannez puis entrez le code</div>
         </div>
-        <div class="label-fold">✂ - - - - - - PLIEZ ICI - - - - - - ✂</div>
+        <div class="label-fold">✂ - - - PLIEZ ICI - - - ✂</div>
         <div class="label-bottom">
           <div class="label-code-title">Code de sécurité</div>
           <div class="label-code">${code.match(/.{1,4}/g).join(" ")}</div>
@@ -842,7 +859,7 @@ $("printBtn").onclick = () => {
 };
 
 // ============================================================
-// PRINT EXISTING LOT — via /api/print-batch (decryption)
+// PRINT EXISTING LOT (with decryption)
 // ============================================================
 $("printLotBtn").onclick = async () => {
   if (!loadedLot) return alert("Aucun lot chargé.");
@@ -850,7 +867,6 @@ $("printLotBtn").onclick = async () => {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) return alert("Connectez-vous.");
 
-  // Désactiver le bouton pendant le chargement
   const btn = $("printLotBtn");
   const originalText = btn.textContent;
   btn.disabled = true;
@@ -876,7 +892,6 @@ $("printLotBtn").onclick = async () => {
       return;
     }
 
-    // Extraire les codes
     const codes = (data.codes || []).map(c => c.code).filter(Boolean);
 
     if (codes.length === 0) {
@@ -884,7 +899,6 @@ $("printLotBtn").onclick = async () => {
       return;
     }
 
-    // Utiliser la marque et logo du serveur
     printLabels(
       codes,
       data.brand || loadedLotBrand || "MARQUE",
@@ -897,5 +911,134 @@ $("printLotBtn").onclick = async () => {
   } finally {
     btn.disabled = false;
     btn.textContent = originalText;
+  }
+};
+
+// ============================================================
+// BULK DELETE
+// ============================================================
+$("previewDeleteBtn").onclick = async () => {
+  const lot = ($("deleteLotSearch").value || "").trim();
+  const preview = $("deletePreview");
+  const confirmBox = $("deleteConfirmBox");
+  const result = $("deleteResult");
+
+  result.classList.add("hidden");
+  confirmBox.classList.add("hidden");
+  pendingDeleteLot = null;
+
+  if (!lot) {
+    preview.className = "result danger";
+    preview.innerHTML = `<p>Entrez un numéro de lot.</p>`;
+    return;
+  }
+
+  preview.className = "result";
+  preview.innerHTML = `<p>Recherche...</p>`;
+
+  const { data, error } = await sb
+    .from("qr_codes")
+    .select("secret_status")
+    .eq("lot", lot);
+
+  if (error) {
+    preview.className = "result danger";
+    preview.innerHTML = `<p>Erreur : ${escapeHtml(error.message)}</p>`;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    preview.className = "result danger";
+    preview.innerHTML = `<h2>AUCUN RÉSULTAT</h2><p>Aucun code trouvé pour le lot "<b>${escapeHtml(lot)}</b>".</p>`;
+    return;
+  }
+
+  const statuses = { UNUSED: 0, USED: 0, DISABLED: 0, EXPIRED: 0 };
+  data.forEach(r => {
+    if (statuses[r.secret_status] !== undefined) statuses[r.secret_status]++;
+  });
+
+  pendingDeleteLot = lot;
+  pendingDeleteCount = data.length;
+
+  preview.className = "result danger";
+  preview.innerHTML = `
+    <h2>⚠️ PRÊT À SUPPRIMER</h2>
+    <p>Lot : <b>${escapeHtml(lot)}</b></p>
+    <p>Total : <b>${data.length}</b> code(s)</p>
+    <div class="details" style="margin-top:12px">
+      <div><b>UNUSED</b><span>${statuses.UNUSED}</span></div>
+      <div><b>USED</b><span>${statuses.USED}</span></div>
+      <div><b>DISABLED</b><span>${statuses.DISABLED}</span></div>
+      <div><b>EXPIRED</b><span>${statuses.EXPIRED}</span></div>
+    </div>
+  `;
+
+  $("deleteConfirmInput").value = "";
+  $("confirmDeleteBtn").disabled = true;
+  confirmBox.classList.remove("hidden");
+  confirmBox.scrollIntoView({ behavior: "smooth", block: "center" });
+};
+
+$("deleteConfirmInput").addEventListener("input", (e) => {
+  const v = e.target.value.trim().toUpperCase();
+  $("confirmDeleteBtn").disabled = (v !== "DELETE");
+});
+
+$("confirmDeleteBtn").onclick = async () => {
+  if (!pendingDeleteLot) return;
+  if ($("deleteConfirmInput").value.trim().toUpperCase() !== "DELETE") return;
+
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return alert("Connectez-vous.");
+
+  const btn = $("confirmDeleteBtn");
+  btn.disabled = true;
+  btn.textContent = "SUPPRESSION EN COURS...";
+
+  const lot = pendingDeleteLot;
+  const count = pendingDeleteCount;
+
+  try {
+    const { error: deleteError } = await sb
+      .from("qr_codes")
+      .delete()
+      .eq("lot", lot);
+
+    if (deleteError) throw deleteError;
+
+    try {
+      await sb.from("qr_delete_logs").insert({
+        lot: lot,
+        count: count
+      });
+    } catch (logErr) {
+      console.warn("Log insert failed:", logErr);
+    }
+
+    const result = $("deleteResult");
+    result.className = "result success";
+    result.innerHTML = `
+      <h2>✓ SUPPRESSION RÉUSSIE</h2>
+      <p><b>${count}</b> code(s) du lot "<b>${escapeHtml(lot)}</b>" ont été supprimés définitivement.</p>
+    `;
+
+    $("deletePreview").classList.add("hidden");
+    $("deleteConfirmBox").classList.add("hidden");
+    $("deleteLotSearch").value = "";
+    pendingDeleteLot = null;
+    pendingDeleteCount = 0;
+
+    loadStats();
+    loadCharts();
+    loadDeleteLog();
+
+  } catch (err) {
+    const result = $("deleteResult");
+    result.className = "result danger";
+    result.innerHTML = `<p>Erreur : ${escapeHtml(err.message)}</p>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "🗑️ SUPPRIMER DÉFINITIVEMENT";
   }
 };
