@@ -160,7 +160,13 @@
     <!-- ===== Settings ===== -->
     <section class="panel" id="panel-settings">
       <h2>Options d'impression</h2>
-      <p class="muted">Choisissez la taille de l'étiquette avant d'imprimer.</p>
+      <p class="muted">Choisissez le mode et la taille d'impression.</p>
+
+      <label style="display:block;font-size:11px;color:#64748b;font-weight:800;letter-spacing:1.5px;margin-bottom:8px">MODE D'IMPRESSION</label>
+      <select id="printMode" style="margin-bottom:20px">
+        <option value="labels">🏷️ Étiquettes pliées (code caché)</option>
+        <option value="list">📋 Liste des codes (tout visible)</option>
+      </select>
 
       <label style="display:block;font-size:11px;color:#64748b;font-weight:800;letter-spacing:1.5px;margin-bottom:8px">TAILLE DE L'ÉTIQUETTE</label>
       <select id="labelSize">
