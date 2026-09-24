@@ -22,6 +22,8 @@ let chartTopLots = null;
 let pendingDeleteLot = null;
 let pendingDeleteCount = 0;
 
+let editingFaqId = null;
+
 function escapeHtml(v = "") {
   return String(v).replace(/[&<>"']/g, c => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
@@ -41,6 +43,7 @@ const PANEL_TITLES = {
   messages: "Messages",
   brands: "Marques",
   visitors: "Visiteurs",
+  faq: "FAQ",
   delete: "Suppression",
   settings: "Impression"
 };
@@ -62,6 +65,7 @@ function showPanel(name) {
   if (name === "messages") loadMessages();
   if (name === "brands") loadBrands();
   if (name === "visitors") loadVisitors();
+  if (name === "faq") loadFAQ();
 }
 
 document.querySelectorAll(".sidebar-nav button").forEach(btn => {
@@ -579,6 +583,191 @@ document.querySelectorAll("#visitorTabs .tab").forEach(t => {
     loadVisitors();
   });
 });
+
+// ============================================================
+// FAQ
+// ============================================================
+function resetFaqForm() {
+  editingFaqId = null;
+  if ($("faqQuestionAr")) $("faqQuestionAr").value = "";
+  if ($("faqAnswerAr")) $("faqAnswerAr").value = "";
+  if ($("faqQuestionFr")) $("faqQuestionFr").value = "";
+  if ($("faqAnswerFr")) $("faqAnswerFr").value = "";
+  if ($("faqQuestionEn")) $("faqQuestionEn").value = "";
+  if ($("faqAnswerEn")) $("faqAnswerEn").value = "";
+  if ($("faqSortOrder")) $("faqSortOrder").value = "0";
+  if ($("faqIsActive")) $("faqIsActive").checked = true;
+  if ($("faqEditTitle")) $("faqEditTitle").textContent = "Ajouter une question";
+}
+
+function openFaqForm(item) {
+  if (item) {
+    editingFaqId = item.id;
+    if ($("faqQuestionAr")) $("faqQuestionAr").value = item.question || "";
+    if ($("faqAnswerAr")) $("faqAnswerAr").value = item.answer || "";
+    if ($("faqQuestionFr")) $("faqQuestionFr").value = item.question_fr || "";
+    if ($("faqAnswerFr")) $("faqAnswerFr").value = item.answer_fr || "";
+    if ($("faqQuestionEn")) $("faqQuestionEn").value = item.question_en || "";
+    if ($("faqAnswerEn")) $("faqAnswerEn").value = item.answer_en || "";
+    if ($("faqSortOrder")) $("faqSortOrder").value = item.sort_order || 0;
+    if ($("faqIsActive")) $("faqIsActive").checked = item.is_active !== false;
+    if ($("faqEditTitle")) $("faqEditTitle").textContent = "Modifier la question";
+  } else {
+    resetFaqForm();
+  }
+  const box = $("faqEditBox");
+  if (box) {
+    box.classList.remove("hidden");
+    box.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+async function loadFAQ() {
+  const container = $("faqList");
+  if (!container) return;
+  container.innerHTML = `<p class="muted">Chargement...</p>`;
+
+  const { data, error } = await sb
+    .from("faq_items")
+    .select("*")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(error.message)}</p>`;
+    return;
+  }
+  if (!data || data.length === 0) {
+    container.innerHTML = `<p class="muted">Aucune question pour le moment.</p>`;
+    return;
+  }
+
+  let html = "";
+  data.forEach(item => {
+    const isActive = item.is_active !== false;
+    const statusClass = isActive ? "success" : "warning";
+    const label = isActive ? "✓ ACTIF" : "⏸️ DÉSACTIVÉ";
+
+    html += `
+      <div class="log-row log-${statusClass}" style="padding:16px">
+        <div class="log-top">
+          <span class="log-result log-result-${statusClass}">${label}</span>
+          <span class="log-date">#${item.sort_order || 0}</span>
+        </div>
+
+        <div style="font-weight:800;font-size:14px;color:inherit;margin:8px 0 6px">
+          ${escapeHtml(item.question || "(sans titre)")}
+        </div>
+
+        <div style="font-size:12px;color:#64748b;line-height:1.6;margin-bottom:12px;padding:10px 12px;background:rgba(255,255,255,0.5);border-radius:10px;border:1px solid rgba(0,0,0,0.05)">
+          ${escapeHtml((item.answer || "").slice(0, 200))}${(item.answer || "").length > 200 ? "..." : ""}
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button onclick="editFaqItem(${item.id})" style="flex:1;padding:8px 12px;background:#2563eb;color:#fff;border:0;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;margin:0;min-width:110px">✏️ Modifier</button>
+          <button onclick="toggleFaqActive(${item.id}, ${isActive})" style="flex:1;padding:8px 12px;background:${isActive ? "#eab308" : "#16a34a"};color:#fff;border:0;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;margin:0;min-width:110px">${isActive ? "⏸️ Désactiver" : "▶️ Activer"}</button>
+          <button onclick="deleteFaqItem(${item.id})" style="flex:1;padding:8px 12px;background:#dc2626;color:#fff;border:0;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;margin:0;min-width:110px">🗑️ Supprimer</button>
+        </div>
+      </div>`;
+  });
+  container.innerHTML = html;
+}
+
+window.editFaqItem = async function(id) {
+  const { data } = await sb
+    .from("faq_items")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (data) openFaqForm(data);
+};
+
+window.toggleFaqActive = async function(id, isActive) {
+  const { error } = await sb
+    .from("faq_items")
+    .update({ is_active: !isActive, updated_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) {
+    alert("Erreur : " + error.message);
+    return;
+  }
+  loadFAQ();
+};
+
+window.deleteFaqItem = async function(id) {
+  if (!confirm("Confirmer la suppression de cette question ?")) return;
+  const { error } = await sb.from("faq_items").delete().eq("id", id);
+  if (error) {
+    alert("Erreur : " + error.message);
+    return;
+  }
+  loadFAQ();
+};
+
+const _afb = $("addFaqBtn");
+if (_afb) _afb.onclick = () => openFaqForm(null);
+
+const _cfb = $("cancelFaqBtn");
+if (_cfb) _cfb.onclick = () => {
+  resetFaqForm();
+  const box = $("faqEditBox");
+  if (box) box.classList.add("hidden");
+};
+
+const _rfaq = $("refreshFaqBtn");
+if (_rfaq) _rfaq.onclick = () => loadFAQ();
+
+const _sfb = $("saveFaqBtn");
+if (_sfb) _sfb.onclick = async () => {
+  const questionAr = ($("faqQuestionAr")?.value || "").trim();
+  const answerAr = ($("faqAnswerAr")?.value || "").trim();
+
+  if (!questionAr || questionAr.length < 3) {
+    alert("السؤال بالعربية مطلوب (3 أحرف على الأقل).");
+    return;
+  }
+  if (!answerAr || answerAr.length < 5) {
+    alert("الجواب بالعربية مطلوب (5 أحرف على الأقل).");
+    return;
+  }
+
+  const payload = {
+    question: questionAr,
+    answer: answerAr,
+    question_fr: ($("faqQuestionFr")?.value || "").trim() || null,
+    answer_fr: ($("faqAnswerFr")?.value || "").trim() || null,
+    question_en: ($("faqQuestionEn")?.value || "").trim() || null,
+    answer_en: ($("faqAnswerEn")?.value || "").trim() || null,
+    sort_order: parseInt($("faqSortOrder")?.value || "0", 10) || 0,
+    is_active: $("faqIsActive")?.checked !== false,
+    updated_at: new Date().toISOString()
+  };
+
+  _sfb.disabled = true;
+  _sfb.textContent = "...";
+
+  let error;
+  if (editingFaqId) {
+    const res = await sb.from("faq_items").update(payload).eq("id", editingFaqId);
+    error = res.error;
+  } else {
+    const res = await sb.from("faq_items").insert(payload);
+    error = res.error;
+  }
+
+  _sfb.disabled = false;
+  _sfb.textContent = "💾 ENREGISTRER";
+
+  if (error) {
+    alert("Erreur : " + error.message);
+    return;
+  }
+
+  resetFaqForm();
+  const box = $("faqEditBox");
+  if (box) box.classList.add("hidden");
+  loadFAQ();
+};
 
 // ============================================================
 // DELETE LOG
