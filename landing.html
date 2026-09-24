@@ -78,7 +78,6 @@
       padding: 0 20px;
     }
 
-    /* ============ Header ============ */
     .header {
       position: sticky;
       top: 0;
@@ -195,7 +194,6 @@
       box-shadow: 0 12px 28px -6px rgba(22, 163, 74, 0.65);
     }
 
-    /* ============ Hero ============ */
     .hero {
       position: relative;
       padding: 60px 0 70px;
@@ -319,7 +317,6 @@
       box-shadow: var(--shadow);
     }
 
-    /* Phone mockup */
     .hero-visual {
       margin-top: 50px;
       display: flex;
@@ -447,7 +444,6 @@
       color: var(--primary);
     }
 
-    /* ============ Sections ============ */
     .section { padding: 80px 0; }
     .section-alt { background: var(--bg-alt); }
 
@@ -482,7 +478,6 @@
       margin: 0;
     }
 
-    /* Steps */
     .steps {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -524,7 +519,6 @@
       margin: 0;
     }
 
-    /* Features */
     .features {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -572,7 +566,6 @@
       margin: 0;
     }
 
-    /* ============ FAQ ============ */
     .faq-list {
       max-width: 820px;
       margin: 0 auto;
@@ -663,7 +656,6 @@
       text-decoration: underline;
     }
 
-    /* Stats */
     .stats {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -691,7 +683,6 @@
       text-transform: uppercase;
     }
 
-    /* For brands */
     .for-brands {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -825,7 +816,6 @@
       50% { transform: translateY(-8px) rotate(2deg); }
     }
 
-    /* Final CTA */
     .cta-section { padding: 80px 0; }
 
     .cta-box {
@@ -865,7 +855,6 @@
       line-height: 1.6;
     }
 
-    /* Footer */
     .footer {
       padding: 40px 0 30px;
       border-top: 1px solid var(--border);
@@ -1137,36 +1126,12 @@
 
       <div class="faq-item">
         <button class="faq-question">
-          <span data-i18n="q5">كيف أنشئ دفعة من الأكواد؟</span>
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <div class="faq-answer-inner" data-i18n="a5">
-            بعد تسجيل الدخول إلى لوحة التحكم، انتقل إلى قسم "Créer un lot"، املأ معلومات المنتج (العلامة، الاسم، الصورة...) وحدد الكمية. سيتم توليد الأكواد تلقائيًا في ثوانٍ.
-          </div>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-question">
           <span data-i18n="q6">هل الأكواد السرية آمنة؟</span>
           <span class="faq-icon">+</span>
         </button>
         <div class="faq-answer">
           <div class="faq-answer-inner" data-i18n="a6">
             نعم. جميع الأكواد مشفّرة بتقنية AES-256 في قاعدة البيانات. حتى لو تعرضت قاعدة البيانات للاختراق، لا يمكن قراءة الأكواد. كما أن كل كود صالح للاستعمال مرة واحدة فقط.
-          </div>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-question">
-          <span data-i18n="q7">هل يمكنني تخصيص الملصقات؟</span>
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <div class="faq-answer-inner" data-i18n="a7">
-            نعم! يمكنك إضافة شعار علامتك التجارية، تخصيص الألوان، واختيار حجم الملصق المناسب. النظام يولّد ملفات طباعة احترافية جاهزة للطبع على ورق لاصق.
           </div>
         </div>
       </div>
@@ -1310,14 +1275,12 @@
 <script>
   document.getElementById("year").textContent = new Date().getFullYear();
 
-  // ============ FAQ Accordion ============
   document.querySelectorAll(".faq-question").forEach(btn => {
     btn.addEventListener("click", () => {
       const item = btn.closest(".faq-item");
       const answer = item.querySelector(".faq-answer");
       const isOpen = item.classList.contains("open");
 
-      // Fermer tous les autres
       document.querySelectorAll(".faq-item").forEach(other => {
         if (other !== item) {
           other.classList.remove("open");
@@ -1326,7 +1289,6 @@
         }
       });
 
-      // Toggle actuel
       if (isOpen) {
         item.classList.remove("open");
         answer.style.maxHeight = null;
@@ -1385,12 +1347,8 @@
       a3: "نعم! التحقق من أصالة المنتجات مجاني تمامًا للزبائن. لا تحتاج إلى تسجيل أو دفع أي رسوم. فقط امسح، أدخل الكود، واحصل على النتيجة.",
       q4: "كم تكلفة الخدمة للعلامات التجارية؟",
       a4: "نقدم خططًا مرنة تناسب جميع أحجام العلامات. أنشئ حسابك مجانًا لاستكشاف النظام، أو تواصل معنا للحصول على عرض مخصص.",
-      q5: "كيف أنشئ دفعة من الأكواد؟",
-      a5: "بعد تسجيل الدخول إلى لوحة التحكم، انتقل إلى قسم Créer un lot، املأ معلومات المنتج وحدد الكمية. سيتم توليد الأكواد تلقائيًا في ثوانٍ.",
       q6: "هل الأكواد السرية آمنة؟",
       a6: "نعم. جميع الأكواد مشفّرة بتقنية AES-256 في قاعدة البيانات. حتى لو تعرضت قاعدة البيانات للاختراق، لا يمكن قراءة الأكواد. كما أن كل كود صالح للاستعمال مرة واحدة فقط.",
-      q7: "هل يمكنني تخصيص الملصقات؟",
-      a7: "نعم! يمكنك إضافة شعار علامتك التجارية، تخصيص الألوان، واختيار حجم الملصق المناسب. النظام يولّد ملفات طباعة احترافية جاهزة للطبع على ورق لاصق.",
       q8: "ماذا أفعل إذا اكتشفت تقليدًا؟",
       a8: "استخدم زر الإبلاغ عن تقليد في صفحة التحقق. أخبرنا بمكان الشراء تقريبًا (الولاية). ستصلنا بلاغاتك مباشرة ونعمل على حماية علامتك.",
       stat1: "كود مُولّد",
@@ -1468,12 +1426,8 @@
       a3: "Oui ! La vérification est totalement gratuite pour les clients. Aucune inscription ni frais requis.",
       q4: "Combien coûte le service pour les marques ?",
       a4: "Nous offrons des formules flexibles. Créez votre compte gratuitement pour explorer, ou contactez-nous pour une offre personnalisée.",
-      q5: "Comment créer un lot de codes ?",
-      a5: "Après connexion, allez dans Créer un lot, remplissez les infos produit et la quantité. Les codes sont générés en quelques secondes.",
       q6: "Les codes secrets sont-ils sécurisés ?",
       a6: "Oui. Tous les codes sont chiffrés AES-256. Chaque code n'est valable qu'une seule fois.",
-      q7: "Puis-je personnaliser les étiquettes ?",
-      a7: "Oui ! Vous pouvez ajouter votre logo, personnaliser les couleurs et choisir la taille d'étiquette. Le système génère des fichiers d'impression prêts.",
       q8: "Que faire si je découvre une contrefaçon ?",
       a8: "Utilisez le bouton \"Signaler une contrefaçon\" dans la page de vérification. Indiquez votre wilaya. Vos signalements nous arrivent directement.",
       stat1: "Codes générés",
@@ -1551,12 +1505,8 @@
       a3: "Yes! Verification is completely free for customers. No registration or fees required.",
       q4: "How much does it cost for brands?",
       a4: "We offer flexible plans. Create your free account to explore, or contact us for a custom quote.",
-      q5: "How do I create a batch?",
-      a5: "After logging in, go to Créer un lot, fill in product info and quantity. Codes are generated in seconds.",
       q6: "Are the secret codes secure?",
       a6: "Yes. All codes are AES-256 encrypted. Each code is valid only once.",
-      q7: "Can I customize the labels?",
-      a7: "Yes! You can add your logo, customize colors and choose the label size. The system generates print-ready files.",
       q8: "What if I discover a counterfeit?",
       a8: "Use the \"Report a counterfeit\" button on the verification page. Tell us your wilaya. Your reports come to us directly.",
       stat1: "Codes generated",
