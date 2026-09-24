@@ -1,4 +1,4 @@
-// app.js — Vérification + Avis + i18n + Offline + Wilaya + AI Image Analysis
+// app.js — Vérification + Avis + i18n + Offline + Wilaya + AI
 
 const form = document.getElementById("verifyForm");
 const codeInput = document.getElementById("code");
@@ -13,7 +13,6 @@ const feedbackMsg = document.getElementById("feedbackMsg");
 const reportBtn = document.getElementById("reportBtn");
 const reportMsg = document.getElementById("reportMsg");
 
-// Wilaya modal elements
 const wilayaModal = document.getElementById("wilayaModal");
 const wilayaSelect = document.getElementById("wilayaSelect");
 const wilayaComment = document.getElementById("wilayaComment");
@@ -144,7 +143,6 @@ function removeImage() {
   if (wilayaAiResult) wilayaAiResult.classList.add("hidden");
 }
 
-// Image sélectionnée → Analyse AI
 if (wilayaImage) {
   wilayaImage.addEventListener("change", async (e) => {
     const file = e.target.files && e.target.files[0];
@@ -171,7 +169,6 @@ if (wilayaImage) {
       if (wilayaImagePreview) wilayaImagePreview.classList.remove("hidden");
       if (wilayaMsg) wilayaMsg.classList.add("hidden");
 
-      // 🎯 Analyse AI automatique
       await analyzeImageWithAI(dataUrl);
 
     } catch (err) {
@@ -183,7 +180,6 @@ if (wilayaImage) {
   });
 }
 
-// Analyse avec Gemini Vision
 async function analyzeImageWithAI(dataUrl) {
   if (wilayaAiLoading) wilayaAiLoading.classList.remove("hidden");
   if (wilayaAiResult) wilayaAiResult.classList.add("hidden");
@@ -203,13 +199,14 @@ async function analyzeImageWithAI(dataUrl) {
       if (wilayaDescription) wilayaDescription.value = data.description || "";
       if (wilayaAiResult) wilayaAiResult.classList.remove("hidden");
     } else {
-      console.warn("AI analysis failed:", data.message);
-      // On affiche quand même les champs vides
+      wilayaMsg.textContent = "⚠️ " + (data.message || "Erreur inconnue");
+      if (data.detail) wilayaMsg.textContent += " — " + String(data.detail).slice(0, 150);
+      wilayaMsg.className = "wilaya-msg error";
       if (wilayaAiResult) wilayaAiResult.classList.remove("hidden");
     }
   } catch (err) {
-    console.warn("AI error:", err);
-    // En cas d'erreur, on affiche les champs vides pour permettre la saisie manuelle
+    wilayaMsg.textContent = "❌ Erreur réseau : " + err.message;
+    wilayaMsg.className = "wilaya-msg error";
     if (wilayaAiResult) wilayaAiResult.classList.remove("hidden");
   } finally {
     if (wilayaAiLoading) wilayaAiLoading.classList.add("hidden");
@@ -223,7 +220,6 @@ if (wilayaImageRemove) {
   });
 }
 
-// Compression d'image
 function compressImage(file, maxWidth, quality) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -255,14 +251,11 @@ function compressImage(file, maxWidth, quality) {
   });
 }
 
-if (wilayaClose) {
-  wilayaClose.addEventListener("click", closeWilayaModal);
-}
+if (wilayaClose) wilayaClose.addEventListener("click", closeWilayaModal);
 
 const _wo = document.querySelector(".wilaya-modal-overlay");
 if (_wo) _wo.addEventListener("click", closeWilayaModal);
 
-// Submit wilaya
 if (wilayaSubmit) {
   wilayaSubmit.addEventListener("click", async () => {
     const wilaya = (wilayaSelect?.value || "").trim();
@@ -482,7 +475,7 @@ if (feedbackSubmit) {
 }
 
 // ============================================================
-// BOUTON SIGNALEMENT → ouvre la modal wilaya
+// BOUTON SIGNALEMENT
 // ============================================================
 if (reportBtn) {
   reportBtn.addEventListener("click", (e) => {
