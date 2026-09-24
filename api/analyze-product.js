@@ -76,7 +76,7 @@ Ne mets AUCUN texte avant ou après le JSON.`;
               ],
               generationConfig: {
                 temperature: 0.2,
-                maxOutputTokens: 500,
+                maxOutputTokens: 300,
                 responseMimeType: "application/json"
               }
             })
