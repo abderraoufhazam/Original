@@ -24,10 +24,21 @@
   </script>
 </head>
 <body>
+
+<!-- Offline Banner -->
+<div id="offlineBanner" class="offline-banner hidden">
+  <div class="offline-content">
+    <div class="offline-icon">📴</div>
+    <div class="offline-text">
+      <div class="offline-title">أنت غير متصل بالإنترنت</div>
+      <div class="offline-subtitle">لكن يمكنك رؤية آخر تحققاتك أدناه</div>
+    </div>
+  </div>
+</div>
+
 <main class="page">
   <section class="card">
 
-    <!-- Sélecteur de langue + Dark Mode -->
     <div class="lang-switcher">
       <button class="lang-btn" data-lang="fr">FR</button>
       <button class="lang-btn" data-lang="ar">ع</button>
@@ -82,6 +93,13 @@
       <span data-i18n="footerBy">Application vérifiée par</span>
       <b>Produit dz ORG</b>
     </p>
+  </section>
+
+  <!-- Offline History -->
+  <section class="offline-history hidden" id="offlineHistory">
+    <h2 class="offline-history-title">📋 آخر تحققاتك</h2>
+    <div id="offlineHistoryList" class="offline-history-list"></div>
+    <p class="offline-history-note">يتم حفظ آخر 5 تحققات على جهازك فقط</p>
   </section>
 </main>
 
@@ -171,21 +189,6 @@
     });
   }
   applyDarkMode();
-
-  // ============================================================
-  // DÉTECTION ONLINE / OFFLINE
-  // ============================================================
-  function updateOnlineStatus() {
-    const verifyBtn = document.getElementById("verifyBtn");
-    if (navigator.onLine) {
-      if (verifyBtn) verifyBtn.disabled = false;
-    } else {
-      if (verifyBtn) verifyBtn.disabled = true;
-    }
-  }
-  window.addEventListener("online", updateOnlineStatus);
-  window.addEventListener("offline", updateOnlineStatus);
-  setTimeout(updateOnlineStatus, 300);
 </script>
 <script src="/bot-guard.js"></script>
 </body>
