@@ -36,6 +36,90 @@
   </div>
 </div>
 
+  <!-- Modal Wilaya (Fake Report) -->
+<div id="wilayaModal" class="wilaya-modal hidden">
+  <div class="wilaya-modal-overlay"></div>
+  <div class="wilaya-modal-box">
+    <button class="wilaya-close" id="wilayaClose" aria-label="Fermer">✕</button>
+
+    <div class="wilaya-icon">⚠️</div>
+    <h2 class="wilaya-title">منتج مقلّد</h2>
+    <p class="wilaya-subtitle">
+      ساعدنا في حماية المستهلكين. أين اشتريت هذا المنتج؟
+    </p>
+
+    <label class="wilaya-label">الولاية *</label>
+    <select id="wilayaSelect" class="wilaya-select">
+      <option value="">-- اختر الولاية --</option>
+      <option value="01 - أدرار">01 - أدرار</option>
+      <option value="02 - الشلف">02 - الشلف</option>
+      <option value="03 - الأغواط">03 - الأغواط</option>
+      <option value="04 - أم البواقي">04 - أم البواقي</option>
+      <option value="05 - باتنة">05 - باتنة</option>
+      <option value="06 - بجاية">06 - بجاية</option>
+      <option value="07 - بسكرة">07 - بسكرة</option>
+      <option value="08 - بشار">08 - بشار</option>
+      <option value="09 - البليدة">09 - البليدة</option>
+      <option value="10 - البويرة">10 - البويرة</option>
+      <option value="11 - تمنراست">11 - تمنراست</option>
+      <option value="12 - تبسة">12 - تبسة</option>
+      <option value="13 - تلمسان">13 - تلمسان</option>
+      <option value="14 - تيارت">14 - تيارت</option>
+      <option value="15 - تيزي وزو">15 - تيزي وزو</option>
+      <option value="16 - الجزائر">16 - الجزائر</option>
+      <option value="17 - الجلفة">17 - الجلفة</option>
+      <option value="18 - جيجل">18 - جيجل</option>
+      <option value="19 - سطيف">19 - سطيف</option>
+      <option value="20 - سعيدة">20 - سعيدة</option>
+      <option value="21 - سكيكدة">21 - سكيكدة</option>
+      <option value="22 - سيدي بلعباس">22 - سيدي بلعباس</option>
+      <option value="23 - عنابة">23 - عنابة</option>
+      <option value="24 - قالمة">24 - قالمة</option>
+      <option value="25 - قسنطينة">25 - قسنطينة</option>
+      <option value="26 - المدية">26 - المدية</option>
+      <option value="27 - مستغانم">27 - مستغانم</option>
+      <option value="28 - المسيلة">28 - المسيلة</option>
+      <option value="29 - معسكر">29 - معسكر</option>
+      <option value="30 - ورقلة">30 - ورقلة</option>
+      <option value="31 - وهران">31 - وهران</option>
+      <option value="32 - البيض">32 - البيض</option>
+      <option value="33 - إليزي">33 - إليزي</option>
+      <option value="34 - برج بوعريريج">34 - برج بوعريريج</option>
+      <option value="35 - بومرداس">35 - بومرداس</option>
+      <option value="36 - الطارف">36 - الطارف</option>
+      <option value="37 - تندوف">37 - تندوف</option>
+      <option value="38 - تيسمسيلت">38 - تيسمسيلت</option>
+      <option value="39 - الوادي">39 - الوادي</option>
+      <option value="40 - خنشلة">40 - خنشلة</option>
+      <option value="41 - سوق أهراس">41 - سوق أهراس</option>
+      <option value="42 - تيبازة">42 - تيبازة</option>
+      <option value="43 - ميلة">43 - ميلة</option>
+      <option value="44 - عين الدفلى">44 - عين الدفلى</option>
+      <option value="45 - النعامة">45 - النعامة</option>
+      <option value="46 - عين تموشنت">46 - عين تموشنت</option>
+      <option value="47 - غرداية">47 - غرداية</option>
+      <option value="48 - غليزان">48 - غليزان</option>
+      <option value="49 - تيميمون">49 - تيميمون</option>
+      <option value="50 - برج باجي مختار">50 - برج باجي مختار</option>
+      <option value="51 - أولاد جلال">51 - أولاد جلال</option>
+      <option value="52 - بني عباس">52 - بني عباس</option>
+      <option value="53 - عين صالح">53 - عين صالح</option>
+      <option value="54 - عين قزام">54 - عين قزام</option>
+      <option value="55 - تقرت">55 - تقرت</option>
+      <option value="56 - جانت">56 - جانت</option>
+      <option value="57 - المغير">57 - المغير</option>
+      <option value="58 - المنيعة">58 - المنيعة</option>
+    </select>
+
+    <label class="wilaya-label">تعليق (اختياري)</label>
+    <textarea id="wilayaComment" class="wilaya-textarea" placeholder="مثال: اشتريته من سوق باب الزوار..." maxlength="500" rows="3"></textarea>
+
+    <button id="wilayaSubmit" class="wilaya-submit">📩 إرسال البلاغ</button>
+    <div id="wilayaMsg" class="wilaya-msg hidden"></div>
+
+    <p class="wilaya-note">بياناتك آمنة ولن تُشارك مع أي طرف.</p>
+  </div>
+</div>
 <main class="page">
   <section class="card">
 
