@@ -36,7 +36,7 @@
   </div>
 </div>
 
-<!-- Modal Wilaya (Fake Report) -->
+<!-- Modal Wilaya -->
 <div id="wilayaModal" class="wilaya-modal hidden">
   <div class="wilaya-modal-overlay"></div>
   <div class="wilaya-modal-box">
@@ -124,15 +124,14 @@
       </div>
     </div>
 
-    <!-- AI Analysis Loading -->
     <div id="wilayaAiLoading" class="wilaya-ai-loading hidden">
       <div class="wilaya-ai-spinner"></div>
       <div class="wilaya-ai-text">
-  <div>🤖 جاري تحليل الصورة...</div>
-  <div style="font-size:10px;opacity:0.7;margin-top:2px">عادة يستغرق 3-5 ثوانٍ</div>
-</div>
+        <div>🤖 جاري تحليل الصورة...</div>
+        <div style="font-size:10px;opacity:0.7;margin-top:2px">عادة يستغرق 3-5 ثوانٍ</div>
+      </div>
+    </div>
 
-    <!-- AI Extracted Info -->
     <div id="wilayaAiResult" class="wilaya-ai-result hidden">
       <div class="wilaya-ai-badge">✨ تم التحليل بواسطة AI — يمكنك التعديل</div>
 
@@ -215,7 +214,6 @@
     </p>
   </section>
 
-  <!-- Offline History -->
   <section class="offline-history hidden" id="offlineHistory">
     <h2 class="offline-history-title">📋 آخر تحققاتك</h2>
     <div id="offlineHistoryList" class="offline-history-list"></div>
@@ -223,7 +221,6 @@
   </section>
 </main>
 
-<!-- CHATBOT -->
 <button id="chatFab" class="chat-fab" aria-label="Assistant">💬</button>
 
 <div id="chatWindow" class="chat-window hidden">
@@ -269,24 +266,26 @@
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    installBtn.classList.remove('hidden');
+    if (installBtn) installBtn.classList.remove('hidden');
   });
 
-  installBtn.addEventListener('click', async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    installBtn.classList.add('hidden');
-  });
+  if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      installBtn.classList.add('hidden');
+    });
+  }
 
   window.addEventListener('appinstalled', () => {
-    installBtn.classList.add('hidden');
+    if (installBtn) installBtn.classList.add('hidden');
   });
 
   document.querySelectorAll(".lang-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-      setLanguage(btn.dataset.lang);
+      if (typeof setLanguage === "function") setLanguage(btn.dataset.lang);
     });
   });
 
