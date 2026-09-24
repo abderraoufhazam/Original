@@ -46,13 +46,13 @@ Ne mets AUCUN texte avant ou après le JSON.`;
 
     // ✅ Modèles vérifiés comme disponibles dans votre compte
     const MODELS = [
-      'gemini-2.5-flash',
-      'gemini-flash-latest',
-      'gemini-2.5-flash-lite',
-      'gemini-3.5-flash',
-      'gemini-3.6-flash',
-      'gemini-flash-lite-latest'
-    ];
+  'gemini-2.5-flash-lite',
+  'gemini-2.5-flash',
+  'gemini-flash-lite-latest',
+  'gemini-flash-latest',
+  'gemini-3.5-flash',
+  'gemini-3.6-flash'
+];
 
     let lastError = null;
     let geminiData = null;
