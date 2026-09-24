@@ -36,7 +36,7 @@
   </div>
 </div>
 
-  <!-- Modal Wilaya (Fake Report) -->
+<!-- Modal Wilaya (Fake Report) -->
 <div id="wilayaModal" class="wilaya-modal hidden">
   <div class="wilaya-modal-overlay"></div>
   <div class="wilaya-modal-box">
@@ -48,7 +48,7 @@
       ساعدنا في حماية المستهلكين. أين اشتريت هذا المنتج؟
     </p>
 
-    <label class="wilaya-label">الولاية *</label>
+    <label class="wilaya-label">📍 الولاية *</label>
     <select id="wilayaSelect" class="wilaya-select">
       <option value="">-- اختر الولاية --</option>
       <option value="01 - أدرار">01 - أدرار</option>
@@ -111,8 +111,24 @@
       <option value="58 - المنيعة">58 - المنيعة</option>
     </select>
 
-    <label class="wilaya-label">تعليق (اختياري)</label>
-    <textarea id="wilayaComment" class="wilaya-textarea" placeholder="مثال: اشتريته من سوق باب الزوار..." maxlength="500" rows="3"></textarea>
+    <label class="wilaya-label">📸 صورة المنتج (اختياري)</label>
+    <div class="wilaya-image-section">
+      <input type="file" id="wilayaImage" accept="image/*" capture="environment" class="wilaya-file-input">
+      <label for="wilayaImage" class="wilaya-file-btn">
+        <span>📷</span>
+        <span>التقاط صورة أو اختيار من المعرض</span>
+      </label>
+      <div id="wilayaImagePreview" class="wilaya-image-preview hidden">
+        <img id="wilayaImagePreviewImg" alt="">
+        <button type="button" id="wilayaImageRemove" class="wilaya-image-remove">✕</button>
+      </div>
+    </div>
+
+    <label class="wilaya-label">📝 وصف المنتج (اختياري)</label>
+    <input id="wilayaDescription" class="wilaya-textarea" type="text" placeholder="مثال: سيروم روتين 30 مل" maxlength="200" style="min-height:auto;padding:13px 15px">
+
+    <label class="wilaya-label">💬 تعليق إضافي (اختياري)</label>
+    <textarea id="wilayaComment" class="wilaya-textarea" placeholder="مثال: اشتريته من سوق باب الزوار..." maxlength="500" rows="2"></textarea>
 
     <button id="wilayaSubmit" class="wilaya-submit">📩 إرسال البلاغ</button>
     <div id="wilayaMsg" class="wilaya-msg hidden"></div>
@@ -120,6 +136,7 @@
     <p class="wilaya-note">بياناتك آمنة ولن تُشارك مع أي طرف.</p>
   </div>
 </div>
+
 <main class="page">
   <section class="card">
 
