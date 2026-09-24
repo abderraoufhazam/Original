@@ -62,6 +62,7 @@
       <button data-panel="feedback"><span class="ico">⭐</span> Avis clients</button>
       <button data-panel="messages"><span class="ico">📩</span> Messages <span id="messagesBadge" style="margin-right:auto;background:#dc2626;color:#fff;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:800;display:none">0</span></button>
       <button data-panel="brands"><span class="ico">🏢</span> Marques</button>
+      <button data-panel="visitors"><span class="ico">👥</span> Visiteurs</button>
       <button data-panel="delete"><span class="ico">🗑️</span> Supprimer</button>
       <button data-panel="settings"><span class="ico">⚙️</span> Impression</button>
     </nav>
@@ -235,6 +236,23 @@
       <div id="brandsList" style="margin-top:12px"></div>
     </section>
 
+    <section class="panel" id="panel-visitors">
+      <h2>👥 Visiteurs</h2>
+      <p class="muted">Journal des visiteurs et détection automatique de bots.</p>
+
+      <div id="visitorStats" class="stats-grid" style="margin-top:18px;margin-bottom:18px"></div>
+
+      <div class="tabs" id="visitorTabs" style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">
+        <button class="tab active" data-tab="all" style="flex:1;background:#0f172a;color:#fff;padding:10px;border-radius:10px;border:0;font-weight:700;font-size:12px;cursor:pointer;min-width:80px">TOUT</button>
+        <button class="tab" data-tab="real" style="flex:1;background:#fff;color:#0f172a;padding:10px;border-radius:10px;border:1px solid #e2e8f0;font-weight:700;font-size:12px;cursor:pointer;min-width:80px">🟢 RÉELS</button>
+        <button class="tab" data-tab="suspicious" style="flex:1;background:#fff;color:#0f172a;padding:10px;border-radius:10px;border:1px solid #e2e8f0;font-weight:700;font-size:12px;cursor:pointer;min-width:80px">🟡 SUSPECTS</button>
+        <button class="tab" data-tab="bot" style="flex:1;background:#fff;color:#0f172a;padding:10px;border-radius:10px;border:1px solid #e2e8f0;font-weight:700;font-size:12px;cursor:pointer;min-width:80px">🔴 BOTS</button>
+      </div>
+
+      <button id="refreshVisitorsBtn" style="background:#475569">🔄 ACTUALISER</button>
+      <div id="visitorsList" style="margin-top:18px"></div>
+    </section>
+
     <section class="panel" id="panel-delete">
       <h2>🗑️ Suppression en masse</h2>
       <p class="muted">Supprimez un lot entier. Cette action est <b style="color:#dc2626">irréversible</b>.</p>
@@ -291,7 +309,7 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="/admin.js?v=5"></script>
+<script src="/admin.js"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
