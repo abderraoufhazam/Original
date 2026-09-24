@@ -347,19 +347,43 @@ if (typeof applyTranslations === "function") {
 }
 
 // ============================================================
-// ONLINE / OFFLINE DETECTION
+// ONLINE / OFFLINE DETECTION — Fiable
 // ============================================================
-function updateOnlineStatus() {
+let isOfflineMode = false;
+let checkInterval = null;
+
+async function checkRealInternet() {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+    const res = await fetch("/icon.svg?_=" + Date.now(), {
+      method: "HEAD",
+      cache: "no-store",
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
+}
+
+async function updateOnlineStatus() {
   const banner = document.getElementById("offlineBanner");
   const history = document.getElementById("offlineHistory");
   const verifyBtn = document.getElementById("verifyBtn");
-  const isOnline = navigator.onLine;
 
-  if (isOnline) {
+  const isReallyOnline = await checkRealInternet();
+
+  if (isReallyOnline) {
+    isOfflineMode = false;
     if (banner) banner.classList.add("hidden");
     if (history) history.classList.add("hidden");
     if (verifyBtn) verifyBtn.disabled = false;
   } else {
+    isOfflineMode = true;
     if (banner) banner.classList.remove("hidden");
     if (history) {
       history.classList.remove("hidden");
@@ -369,9 +393,25 @@ function updateOnlineStatus() {
   }
 }
 
-window.addEventListener("online", updateOnlineStatus);
-window.addEventListener("offline", updateOnlineStatus);
+// Événements navigateur
+window.addEventListener("online", () => setTimeout(updateOnlineStatus, 500));
+window.addEventListener("offline", () => setTimeout(updateOnlineStatus, 500));
 
-setTimeout(updateOnlineStatus, 300);
+// Vérification au démarrage
+setTimeout(updateOnlineStatus, 500);
+
+// Vérification périodique (toutes les 10s)
+checkInterval = setInterval(updateOnlineStatus, 10000);
+
+// Vérification au retour dans l'app
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) {
+    setTimeout(updateOnlineStatus, 300);
+  }
+});
+
+window.addEventListener("focus", () => {
+  setTimeout(updateOnlineStatus, 300);
+});
 
 window.__applyOfflineHistory = loadOfflineHistory;
