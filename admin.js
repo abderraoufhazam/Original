@@ -2,6 +2,18 @@ const SUPABASE_URL = "https://qfpmbbntxyrderjlejql.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// ============================================================
+// 🔒 قائمة الأدمن المسموح لهم بالدخول
+// ============================================================
+const ADMIN_EMAILS = [
+  "mepirf@gmail.com",
+  "abderraoufhazam@gmail.com"
+];
+
+function isAdminEmail(email) {
+  if (!email) return false;
+  return ADMIN_EMAILS.map(e => e.toLowerCase().trim()).includes(email.toLowerCase().trim());
+}
 const $ = id => document.getElementById(id);
 let lastCodes = [];
 let lastLogo = "";
@@ -1324,23 +1336,62 @@ window.__reloadCharts = loadCharts;
 // ============================================================
 async function refresh() {
   const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    const lp = $("loginPage"); if (lp) lp.classList.add("hidden");
-    const aa = $("adminApp"); if (aa) aa.classList.remove("hidden");
-    const url = location.origin + "/verify";
-    const pu = $("publicUrl"); if (pu) pu.textContent = url;
-    const qr = $("qr"); if (qr) {
-      qr.innerHTML = "";
-      new QRCode(qr, { text: url, width: 180, height: 180 });
+
+  // لا جلسة → أبقِ شاشة تسجيل الدخول
+  if (!session) return;
+
+  const userEmail = (session.user.email || "").toLowerCase().trim();
+
+  // ============================================================
+  // 🔒 حماية: التحقق أن المستخدم أدمن
+  // ============================================================
+  if (!isAdminEmail(userEmail)) {
+    // طرد فوري
+    await sb.auth.signOut();
+
+    const el = $("loginError");
+    if (el) {
+      el.className = "result danger";
+      el.innerHTML = `
+        <p style="margin:0;font-weight:800">⛔ ACCÈS REFUSÉ</p>
+        <p style="margin:6px 0 0;font-size:13px">Ce compte n'est pas un compte administrateur.</p>
+        <p style="margin:8px 0 0;font-size:11px;color:#64748b">${escapeHtml(userEmail)}</p>
+      `;
+      el.classList.remove("hidden");
     }
-    loadStats();
-    loadLog();
-    loadFeedback();
-    loadCharts();
-    loadMessagesBadge();
-    loadFakesBadge();
+
+    // امسح حقول كلمة السر
+    const pwd = $("password"); if (pwd) pwd.value = "";
+
+    // تأكد أن اللوحة مخفية
+    const aa = $("adminApp"); if (aa) aa.classList.add("hidden");
+    const lp = $("loginPage"); if (lp) lp.classList.remove("hidden");
+
+    return;
   }
+
+  // ============================================================
+  // ✅ المستخدم أدمن → اعرض اللوحة
+  // ============================================================
+  const lp = $("loginPage"); if (lp) lp.classList.add("hidden");
+  const aa = $("adminApp"); if (aa) aa.classList.remove("hidden");
+
+  const url = location.origin + "/verify";
+  const pu = $("publicUrl"); if (pu) pu.textContent = url;
+
+  const qr = $("qr");
+  if (qr && qr.innerHTML.trim() === "") {
+    new QRCode(qr, { text: url, width: 180, height: 180 });
+  }
+
+  loadStats();
+  loadLog();
+  loadFeedback();
+  loadCharts();
+  loadMessagesBadge();
+  loadFakesBadge();
 }
+
 refresh();
 
 const _lf = $("loginForm");
