@@ -1,5 +1,5 @@
 // api/report-fake.js
-// Enregistre les signalements + upload de l'image du produit contrefait
+// Enregistre les signalements + upload image + champs IA
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -16,8 +16,10 @@ export default async function handler(req, res) {
       attempted_code,
       wilaya,
       comment,
-      product_image,       // data URL (base64)
-      product_description
+      product_image,
+      product_description,
+      product_brand,
+      product_name
     } = req.body || {};
 
     // Validation
@@ -29,6 +31,8 @@ export default async function handler(req, res) {
     const cleanCode = (attempted_code || '').trim().toUpperCase().slice(0, 20);
     const cleanComment = (comment || '').trim().slice(0, 500) || null;
     const cleanDesc = (product_description || '').trim().slice(0, 500) || null;
+    const cleanBrand = (product_brand || '').trim().slice(0, 100) || null;
+    const cleanProductName = (product_name || '').trim().slice(0, 200) || null;
 
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -51,25 +55,20 @@ export default async function handler(req, res) {
 
     if (product_image && typeof product_image === 'string' && product_image.startsWith('data:image/')) {
       try {
-        // Extraire le type et les données base64
         const match = product_image.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
         if (match) {
           const mimeType = match[1];
           const base64Data = match[2];
           const buffer = Buffer.from(base64Data, 'base64');
 
-          // Vérifier la taille (max 5 MB)
           if (buffer.length > 5 * 1024 * 1024) {
             console.warn('Image trop grande:', buffer.length);
           } else {
-            // Générer un nom unique
             const ext = mimeType.split('/')[1].replace('jpeg', 'jpg');
             const fileName = `fake-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-            const uploadPath = `${fileName}`;
 
-            // Upload via REST API Supabase Storage
             const uploadRes = await fetch(
-              `${SUPABASE_URL}/storage/v1/object/fake-products/${uploadPath}`,
+              `${SUPABASE_URL}/storage/v1/object/fake-products/${fileName}`,
               {
                 method: 'POST',
                 headers: {
@@ -83,8 +82,7 @@ export default async function handler(req, res) {
             );
 
             if (uploadRes.ok) {
-              // Construire l'URL publique
-              imageUrl = `${SUPABASE_URL}/storage/v1/object/public/fake-products/${uploadPath}`;
+              imageUrl = `${SUPABASE_URL}/storage/v1/object/public/fake-products/${fileName}`;
             } else {
               const errText = await uploadRes.text();
               console.error('Upload error:', errText);
@@ -93,7 +91,6 @@ export default async function handler(req, res) {
         }
       } catch (uploadErr) {
         console.error('Image processing error:', uploadErr);
-        // On continue quand même sans l'image
       }
     }
 
@@ -114,6 +111,9 @@ export default async function handler(req, res) {
         comment: cleanComment,
         product_image: imageUrl,
         product_description: cleanDesc,
+        product_brand: cleanBrand,
+        product_name: cleanProductName,
+        ai_analyzed: !!(cleanBrand || cleanProductName),
         ip: ip,
         user_agent: userAgent
       })
