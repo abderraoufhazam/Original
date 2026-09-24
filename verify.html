@@ -45,7 +45,7 @@
     <div class="wilaya-icon">⚠️</div>
     <h2 class="wilaya-title">منتج مقلّد</h2>
     <p class="wilaya-subtitle">
-      ساعدنا في حماية المستهلكين. أين اشتريت هذا المنتج؟
+      ساعدنا في حماية المستهلكين. صوّر المنتج واملأ المعلومات.
     </p>
 
     <label class="wilaya-label">📍 الولاية *</label>
@@ -111,7 +111,7 @@
       <option value="58 - المنيعة">58 - المنيعة</option>
     </select>
 
-    <label class="wilaya-label">📸 صورة المنتج (اختياري)</label>
+    <label class="wilaya-label">📸 صورة المنتج *</label>
     <div class="wilaya-image-section">
       <input type="file" id="wilayaImage" accept="image/*" capture="environment" class="wilaya-file-input">
       <label for="wilayaImage" class="wilaya-file-btn">
@@ -124,8 +124,25 @@
       </div>
     </div>
 
-    <label class="wilaya-label">📝 وصف المنتج (اختياري)</label>
-    <input id="wilayaDescription" class="wilaya-textarea" type="text" placeholder="مثال: سيروم روتين 30 مل" maxlength="200" style="min-height:auto;padding:13px 15px">
+    <!-- AI Analysis Loading -->
+    <div id="wilayaAiLoading" class="wilaya-ai-loading hidden">
+      <div class="wilaya-ai-spinner"></div>
+      <div class="wilaya-ai-text">🤖 جاري تحليل الصورة بواسطة الذكاء الاصطناعي...</div>
+    </div>
+
+    <!-- AI Extracted Info -->
+    <div id="wilayaAiResult" class="wilaya-ai-result hidden">
+      <div class="wilaya-ai-badge">✨ تم التحليل بواسطة AI — يمكنك التعديل</div>
+
+      <label class="wilaya-label">🏷️ العلامة التجارية</label>
+      <input id="wilayaBrand" class="wilaya-textarea" type="text" placeholder="مثال: Rutin" maxlength="100" style="min-height:auto;padding:13px 15px">
+
+      <label class="wilaya-label">📦 اسم المنتج</label>
+      <input id="wilayaProductName" class="wilaya-textarea" type="text" placeholder="مثال: سيروم ليزر 30 مل" maxlength="200" style="min-height:auto;padding:13px 15px">
+
+      <label class="wilaya-label">📝 وصف المنتج</label>
+      <textarea id="wilayaDescription" class="wilaya-textarea" placeholder="وصف المنتج المقلد..." maxlength="500" rows="2"></textarea>
+    </div>
 
     <label class="wilaya-label">💬 تعليق إضافي (اختياري)</label>
     <textarea id="wilayaComment" class="wilaya-textarea" placeholder="مثال: اشتريته من سوق باب الزوار..." maxlength="500" rows="2"></textarea>
@@ -204,12 +221,8 @@
   </section>
 </main>
 
-<!-- ============================================================
-     CHATBOT FLOTTANT
-     ============================================================ -->
-<button id="chatFab" class="chat-fab" aria-label="Assistant">
-  💬
-</button>
+<!-- CHATBOT -->
+<button id="chatFab" class="chat-fab" aria-label="Assistant">💬</button>
 
 <div id="chatWindow" class="chat-window hidden">
   <div class="chat-header">
