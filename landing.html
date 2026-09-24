@@ -572,6 +572,97 @@
       margin: 0;
     }
 
+    /* ============ FAQ ============ */
+    .faq-list {
+      max-width: 820px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .faq-item {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: all 220ms ease;
+    }
+
+    .faq-item:hover {
+      box-shadow: var(--shadow);
+    }
+
+    .faq-question {
+      width: 100%;
+      padding: 20px 22px;
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 15.5px;
+      font-weight: 700;
+      color: var(--text);
+      text-align: start;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      transition: all 200ms ease;
+      letter-spacing: -0.2px;
+    }
+
+    .faq-question:hover {
+      background: var(--bg-alt);
+    }
+
+    .faq-question .faq-icon {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(22, 163, 74, 0.1);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+      transition: all 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .faq-item.open .faq-question .faq-icon {
+      transform: rotate(45deg);
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .faq-item.open {
+      border-color: var(--primary);
+      box-shadow: 0 8px 24px -10px rgba(22, 163, 74, 0.4);
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 400ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .faq-answer-inner {
+      padding: 0 22px 22px;
+      font-size: 14.5px;
+      line-height: 1.75;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      padding-top: 18px;
+    }
+
+    .faq-answer-inner a {
+      color: var(--primary);
+      font-weight: 700;
+      text-decoration: underline;
+    }
+
     /* Stats */
     .stats {
       display: grid;
@@ -835,6 +926,8 @@
         0%, 100% { transform: translateY(0); }
         50% { transform: translateY(-10px); }
       }
+      .faq-question { padding: 16px 18px; font-size: 14.5px; }
+      .faq-answer-inner { padding: 0 18px 18px; padding-top: 16px; }
     }
 
     @media (max-width: 480px) {
@@ -845,7 +938,6 @@
 </head>
 <body>
 
-<!-- ============ Header ============ -->
 <header class="header">
   <div class="container header-inner">
     <a href="/" class="logo">
@@ -870,7 +962,6 @@
   </div>
 </header>
 
-<!-- ============ Hero ============ -->
 <section class="hero">
   <div class="container">
     <div class="hero-inner">
@@ -916,7 +1007,6 @@
   </div>
 </section>
 
-<!-- ============ How it works ============ -->
 <section class="section section-alt">
   <div class="container">
     <div class="section-head">
@@ -945,7 +1035,6 @@
   </div>
 </section>
 
-<!-- ============ Features ============ -->
 <section class="section">
   <div class="container">
     <div class="section-head">
@@ -960,31 +1049,26 @@
         <h4 data-i18n="f1Title">تشفير AES-256</h4>
         <p data-i18n="f1Text">جميع الأكواد السرية مشفّرة في قاعدة البيانات. حتى لو تسرّبت، لا يمكن قراءتها.</p>
       </div>
-
       <div class="feature">
         <div class="feature-icon">🎯</div>
         <h4 data-i18n="f2Title">QR ثابت واحد</h4>
         <p data-i18n="f2Text">نفس QR لجميع الملصقات — ما يوفّر تكاليف الطباعة والتوزيع.</p>
       </div>
-
       <div class="feature">
         <div class="feature-icon">⚡</div>
         <h4 data-i18n="f3Title">تحقق فوري</h4>
         <p data-i18n="f3Text">الزبون يمسح ويكتب الكود، النتيجة تظهر في أقل من ثانية.</p>
       </div>
-
       <div class="feature">
         <div class="feature-icon">🌍</div>
         <h4 data-i18n="f4Title">3 لغات</h4>
         <p data-i18n="f4Text">واجهة بالعربية والفرنسية والإنجليزية مع دعم كامل للـ RTL.</p>
       </div>
-
       <div class="feature">
         <div class="feature-icon">📊</div>
         <h4 data-i18n="f5Title">إحصائيات دقيقة</h4>
         <p data-i18n="f5Text">تتبّع كل عملية تحقق مع IP، التاريخ، والموقع.</p>
       </div>
-
       <div class="feature">
         <div class="feature-icon">🤖</div>
         <h4 data-i18n="f6Title">مساعد ذكي</h4>
@@ -994,8 +1078,115 @@
   </div>
 </section>
 
-<!-- ============ Stats ============ -->
 <section class="section section-alt">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow" data-i18n="faqEyebrow">الأسئلة الشائعة</div>
+      <h2 data-i18n="faqTitle">إجابات فورية لأسئلتك</h2>
+      <p data-i18n="faqSub">كل ما تحتاج معرفته عن النظام، الزبون، والعلامات التجارية.</p>
+    </div>
+
+    <div class="faq-list" id="faqList">
+      <div class="faq-item">
+        <button class="faq-question">
+          <span data-i18n="q1">كيف أتحقق من منتج؟</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner" data-i18n="a1">
+            امسح رمز QR الموجود على الملصق بكاميرا هاتفك، ثم اخدش الطبقة الفضية لكشف الكود السري وأدخله في الصفحة. ستظهر لك النتيجة فورًا.
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          <span data-i18n="q2">ما معنى "منتج غير أصلي"؟</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner" data-i18n="a2">
+            هذا يعني أن الكود الذي أدخلته غير موجود في قاعدة بياناتنا. المنتج قد يكون مقلّدًا. ننصحك بالإبلاغ عن التقليد فورًا عبر الزر الموجود في صفحة النتيجة.
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          <span data-i18n="q3">هل التحقق مجاني للزبائن؟</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner" data-i18n="a3">
+            نعم! التحقق من أصالة المنتجات مجاني تمامًا للزبائن. لا تحتاج إلى تسجيل أو دفع أي رسوم. فقط امسح، أدخل الكود، واحصل على النتيجة.
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          <span data-i18n="q4">كم تكلفة الخدمة للعلامات التجارية؟</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner" data-i18n="a4">
+            نقدم خططًا مرنة تناسب جميع أحجام العلامات. <a href="/signup">أنشئ حسابك مجانًا</a> لاستكشاف النظام، أو تواصل معنا للحصول على عرض مخصص.
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          <span data-i18n="q5">كيف أنشئ دفعة من الأكواد؟</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner" data-i18n="a5">
+            بعد تسجيل الدخول إلى لوحة التحكم، انتقل إلى قسم "Créer un lot"، املأ معلومات المنتج (العلامة، الاسم، الصورة...) وحدد الكمية. سيتم توليد الأكواد تلقائيًا في ثوانٍ.
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          <span data-i18n="q6">هل الأكواد السرية آمنة؟</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner" data-i18n="a6">
+            نعم. جميع الأكواد مشفّرة بتقنية AES-256 في قاعدة البيانات. حتى لو تعرضت قاعدة البيانات للاختراق، لا يمكن قراءة الأكواد. كما أن كل كود صالح للاستعمال مرة واحدة فقط.
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          <span data-i18n="q7">هل يمكنني تخصيص الملصقات؟</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner" data-i18n="a7">
+            نعم! يمكنك إضافة شعار علامتك التجارية، تخصيص الألوان، واختيار حجم الملصق المناسب. النظام يولّد ملفات طباعة احترافية جاهزة للطبع على ورق لاصق.
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          <span data-i18n="q8">ماذا أفعل إذا اكتشفت تقليدًا؟</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner" data-i18n="a8">
+            استخدم زر "الإبلاغ عن تقليد" في صفحة التحقق. أخبرنا بمكان الشراء تقريبًا (الولاية). ستصلنا بلاغاتك مباشرة ونعمل على حماية علامتك.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
   <div class="container">
     <div class="stats">
       <div>
@@ -1018,8 +1209,7 @@
   </div>
 </section>
 
-<!-- ============ For Brands ============ -->
-<section class="section" id="for-brands">
+<section class="section section-alt" id="for-brands">
   <div class="container">
     <div class="for-brands">
       <div class="for-brands-content">
@@ -1080,7 +1270,6 @@
   </div>
 </section>
 
-<!-- ============ Final CTA ============ -->
 <section class="cta-section">
   <div class="container">
     <div class="cta-box">
@@ -1104,7 +1293,6 @@
   </div>
 </section>
 
-<!-- ============ Footer ============ -->
 <footer class="footer">
   <div class="container">
     <div class="footer-links">
@@ -1121,6 +1309,33 @@
 
 <script>
   document.getElementById("year").textContent = new Date().getFullYear();
+
+  // ============ FAQ Accordion ============
+  document.querySelectorAll(".faq-question").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const item = btn.closest(".faq-item");
+      const answer = item.querySelector(".faq-answer");
+      const isOpen = item.classList.contains("open");
+
+      // Fermer tous les autres
+      document.querySelectorAll(".faq-item").forEach(other => {
+        if (other !== item) {
+          other.classList.remove("open");
+          const a = other.querySelector(".faq-answer");
+          if (a) a.style.maxHeight = null;
+        }
+      });
+
+      // Toggle actuel
+      if (isOpen) {
+        item.classList.remove("open");
+        answer.style.maxHeight = null;
+      } else {
+        item.classList.add("open");
+        answer.style.maxHeight = answer.scrollHeight + "px";
+      }
+    });
+  });
 
   const TRANSLATIONS = {
     ar: {
@@ -1159,6 +1374,25 @@
       f5Text: "تتبّع كل عملية تحقق مع IP، التاريخ، والموقع.",
       f6Title: "مساعد ذكي",
       f6Text: "روبوت دردشة يعمل بالذكاء الاصطناعي للإجابة على أسئلة الزبائن.",
+      faqEyebrow: "الأسئلة الشائعة",
+      faqTitle: "إجابات فورية لأسئلتك",
+      faqSub: "كل ما تحتاج معرفته عن النظام، الزبون، والعلامات التجارية.",
+      q1: "كيف أتحقق من منتج؟",
+      a1: "امسح رمز QR الموجود على الملصق بكاميرا هاتفك، ثم اخدش الطبقة الفضية لكشف الكود السري وأدخله في الصفحة. ستظهر لك النتيجة فورًا.",
+      q2: "ما معنى \"منتج غير أصلي\"؟",
+      a2: "هذا يعني أن الكود الذي أدخلته غير موجود في قاعدة بياناتنا. المنتج قد يكون مقلّدًا. ننصحك بالإبلاغ عن التقليد فورًا عبر الزر الموجود في صفحة النتيجة.",
+      q3: "هل التحقق مجاني للزبائن؟",
+      a3: "نعم! التحقق من أصالة المنتجات مجاني تمامًا للزبائن. لا تحتاج إلى تسجيل أو دفع أي رسوم. فقط امسح، أدخل الكود، واحصل على النتيجة.",
+      q4: "كم تكلفة الخدمة للعلامات التجارية؟",
+      a4: "نقدم خططًا مرنة تناسب جميع أحجام العلامات. أنشئ حسابك مجانًا لاستكشاف النظام، أو تواصل معنا للحصول على عرض مخصص.",
+      q5: "كيف أنشئ دفعة من الأكواد؟",
+      a5: "بعد تسجيل الدخول إلى لوحة التحكم، انتقل إلى قسم Créer un lot، املأ معلومات المنتج وحدد الكمية. سيتم توليد الأكواد تلقائيًا في ثوانٍ.",
+      q6: "هل الأكواد السرية آمنة؟",
+      a6: "نعم. جميع الأكواد مشفّرة بتقنية AES-256 في قاعدة البيانات. حتى لو تعرضت قاعدة البيانات للاختراق، لا يمكن قراءة الأكواد. كما أن كل كود صالح للاستعمال مرة واحدة فقط.",
+      q7: "هل يمكنني تخصيص الملصقات؟",
+      a7: "نعم! يمكنك إضافة شعار علامتك التجارية، تخصيص الألوان، واختيار حجم الملصق المناسب. النظام يولّد ملفات طباعة احترافية جاهزة للطبع على ورق لاصق.",
+      q8: "ماذا أفعل إذا اكتشفت تقليدًا؟",
+      a8: "استخدم زر الإبلاغ عن تقليد في صفحة التحقق. أخبرنا بمكان الشراء تقريبًا (الولاية). ستصلنا بلاغاتك مباشرة ونعمل على حماية علامتك.",
       stat1: "كود مُولّد",
       stat2: "علامة تجارية",
       stat3: "دقة التحقق",
@@ -1223,18 +1457,37 @@
       f5Text: "Suivez chaque vérification avec IP, date et localisation.",
       f6Title: "Assistant IA",
       f6Text: "Chatbot propulsé par l'IA pour répondre aux questions des clients.",
+      faqEyebrow: "Questions fréquentes",
+      faqTitle: "Réponses instantanées",
+      faqSub: "Tout ce que vous devez savoir sur le système.",
+      q1: "Comment vérifier un produit ?",
+      a1: "Scannez le QR sur l'étiquette avec l'appareil photo, puis grattez la zone argentée pour révéler le code secret et entrez-le. Le résultat s'affiche instantanément.",
+      q2: "Que signifie \"PRODUIT NON ORIGINAL\" ?",
+      a2: "Cela signifie que le code n'existe pas dans notre base. Le produit peut être une contrefaçon. Nous vous recommandons de signaler immédiatement.",
+      q3: "La vérification est-elle gratuite ?",
+      a3: "Oui ! La vérification est totalement gratuite pour les clients. Aucune inscription ni frais requis.",
+      q4: "Combien coûte le service pour les marques ?",
+      a4: "Nous offrons des formules flexibles. Créez votre compte gratuitement pour explorer, ou contactez-nous pour une offre personnalisée.",
+      q5: "Comment créer un lot de codes ?",
+      a5: "Après connexion, allez dans Créer un lot, remplissez les infos produit et la quantité. Les codes sont générés en quelques secondes.",
+      q6: "Les codes secrets sont-ils sécurisés ?",
+      a6: "Oui. Tous les codes sont chiffrés AES-256. Chaque code n'est valable qu'une seule fois.",
+      q7: "Puis-je personnaliser les étiquettes ?",
+      a7: "Oui ! Vous pouvez ajouter votre logo, personnaliser les couleurs et choisir la taille d'étiquette. Le système génère des fichiers d'impression prêts.",
+      q8: "Que faire si je découvre une contrefaçon ?",
+      a8: "Utilisez le bouton \"Signaler une contrefaçon\" dans la page de vérification. Indiquez votre wilaya. Vos signalements nous arrivent directement.",
       stat1: "Codes générés",
       stat2: "Marques",
       stat3: "Précision",
       stat4: "Disponible",
       brandsEyebrow: "Pour les marques",
       brandsTitle: "Protégez votre marque professionnellement",
-      brandsText: "Rejoignez les marques qui nous font confiance pour protéger leurs produits. Obtenez un tableau de bord complet.",
-      b1: "Créez des lots de n'importe quelle taille (100 / 1000 / 10000+)",
-      b2: "Chiffrement complet des codes en base de données",
-      b3: "Impression d'étiquettes professionnelles avec pliage",
-      b4: "Suivi en temps réel de chaque vérification",
-      b5: "Statistiques détaillées et graphiques",
+      brandsText: "Rejoignez les marques qui nous font confiance.",
+      b1: "Créez des lots de n'importe quelle taille",
+      b2: "Chiffrement complet des codes",
+      b3: "Impression d'étiquettes professionnelles",
+      b4: "Suivi en temps réel",
+      b5: "Statistiques détaillées",
       ctaStart: "Commencer gratuitement",
       card1Title: "Tableau de bord",
       card1Unused: "Non utilisés",
@@ -1242,9 +1495,9 @@
       card1Total: "Total",
       card2Title: "Dernières vérifications",
       finalTitle: "Prêt à protéger vos produits ?",
-      finalText: "Commencez dès aujourd'hui à générer vos premiers codes.",
+      finalText: "Commencez dès aujourd'hui.",
       ctaStart2: "Commencer",
-      ctaVerify2: "Essayer la vérification",
+      ctaVerify2: "Essayer",
       footVerify: "Vérification",
       footBrands: "Marques",
       footContact: "Contact",
@@ -1256,7 +1509,7 @@
       heroBadge: "#1 Authenticity Platform in Algeria",
       heroTitle1: "Protect your products from",
       heroTitle2: "counterfeiting",
-      heroLead: "Professional authentication system with fixed QR code and secret code hidden under a scratch area. Monitor your products in real time.",
+      heroLead: "Professional authentication system with fixed QR code and secret code hidden under a scratch area.",
       ctaVerify: "Verify a product",
       ctaBrands: "For brands",
       phoneBrand: "Produit dz ORG",
@@ -1287,18 +1540,37 @@
       f5Text: "Track every verification with IP, date and location.",
       f6Title: "AI Assistant",
       f6Text: "AI-powered chatbot to answer customer questions.",
+      faqEyebrow: "FAQ",
+      faqTitle: "Instant answers",
+      faqSub: "Everything you need to know about the system.",
+      q1: "How do I verify a product?",
+      a1: "Scan the QR on the label with your phone camera, then scratch the silver area to reveal the secret code and enter it. The result appears instantly.",
+      q2: "What does \"NON-ORIGINAL PRODUCT\" mean?",
+      a2: "It means the code doesn't exist in our database. The product may be counterfeit. We recommend reporting it immediately.",
+      q3: "Is verification free?",
+      a3: "Yes! Verification is completely free for customers. No registration or fees required.",
+      q4: "How much does it cost for brands?",
+      a4: "We offer flexible plans. Create your free account to explore, or contact us for a custom quote.",
+      q5: "How do I create a batch?",
+      a5: "After logging in, go to Créer un lot, fill in product info and quantity. Codes are generated in seconds.",
+      q6: "Are the secret codes secure?",
+      a6: "Yes. All codes are AES-256 encrypted. Each code is valid only once.",
+      q7: "Can I customize the labels?",
+      a7: "Yes! You can add your logo, customize colors and choose the label size. The system generates print-ready files.",
+      q8: "What if I discover a counterfeit?",
+      a8: "Use the \"Report a counterfeit\" button on the verification page. Tell us your wilaya. Your reports come to us directly.",
       stat1: "Codes generated",
       stat2: "Brands",
       stat3: "Accuracy",
       stat4: "Available",
       brandsEyebrow: "For brands",
       brandsTitle: "Protect your brand professionally",
-      brandsText: "Join the brands that trust us to protect their products. Get a complete dashboard.",
-      b1: "Create batches of any size (100 / 1000 / 10000+)",
-      b2: "Full code encryption in database",
-      b3: "Professional label printing with folding",
-      b4: "Real-time tracking of every verification",
-      b5: "Detailed statistics and charts",
+      brandsText: "Join the brands that trust us.",
+      b1: "Create batches of any size",
+      b2: "Full code encryption",
+      b3: "Professional label printing",
+      b4: "Real-time tracking",
+      b5: "Detailed statistics",
       ctaStart: "Start for free",
       card1Title: "Dashboard",
       card1Unused: "Unused",
@@ -1306,9 +1578,9 @@
       card1Total: "Total",
       card2Title: "Latest verifications",
       finalTitle: "Ready to protect your products?",
-      finalText: "Start generating your first codes today.",
+      finalText: "Start today.",
       ctaStart2: "Get started",
-      ctaVerify2: "Try verification",
+      ctaVerify2: "Try it",
       footVerify: "Verify",
       footBrands: "Brands",
       footContact: "Contact",
@@ -1330,7 +1602,13 @@
 
   function applyTranslations() {
     document.querySelectorAll("[data-i18n]").forEach(el => {
-      el.textContent = t(el.dataset.i18n);
+      const key = el.dataset.i18n;
+      const translation = t(key);
+      if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
+        el.placeholder = translation;
+      } else {
+        el.textContent = translation;
+      }
     });
 
     document.title = currentLang === "ar"
