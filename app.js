@@ -1,4 +1,4 @@
-// app.js — Vérification + Avis + Signalement + i18n + Chatbot context + Social media PNG
+// app.js — Vérification + Avis + Signalement + i18n + Offline History
 
 const form = document.getElementById("verifyForm");
 const codeInput = document.getElementById("code");
@@ -28,6 +28,79 @@ function show(type, html) {
   result.innerHTML = html;
 }
 
+// ============================================================
+// OFFLINE HISTORY
+// ============================================================
+function saveVerification(code, status, product) {
+  try {
+    const key = "qr_verify_history";
+    let history = JSON.parse(localStorage.getItem(key) || "[]");
+
+    history.unshift({
+      code: code,
+      status: status,
+      product: product ? {
+        brand: product.brand || null,
+        product_name: product.product_name || null
+      } : null,
+      date: new Date().toISOString()
+    });
+
+    history = history.slice(0, 5);
+    localStorage.setItem(key, JSON.stringify(history));
+  } catch (e) {
+    console.warn("Save history error:", e);
+  }
+}
+
+function loadOfflineHistory() {
+  try {
+    const key = "qr_verify_history";
+    const history = JSON.parse(localStorage.getItem(key) || "[]");
+
+    const listEl = document.getElementById("offlineHistoryList");
+    if (!listEl) return;
+
+    if (history.length === 0) {
+      listEl.innerHTML = `<p class="muted" style="text-align:center;padding:20px">لا يوجد سجل محلي</p>`;
+      return;
+    }
+
+    let html = "";
+    history.forEach(item => {
+      const statusMap = {
+        "ORIGINAL": { class: "success", label: "أصلي", icon: "✅" },
+        "USED": { class: "warning", label: "مستعمل", icon: "⚠️" },
+        "NOT_FOUND": { class: "danger", label: "مقلد", icon: "❌" },
+        "DISABLED": { class: "danger", label: "معطل", icon: "🚫" },
+        "EXPIRED": { class: "warning", label: "منتهي", icon: "⏰" }
+      };
+
+      const st = statusMap[item.status] || { class: "warning", label: item.status, icon: "❓" };
+      const date = item.date ? new Date(item.date).toLocaleString("ar-DZ") : "";
+      const productName = item.product?.product_name || item.product?.brand || "";
+
+      html += `
+        <div class="offline-history-item ${st.class}">
+          <div class="offline-history-icon">${st.icon}</div>
+          <div class="offline-history-info">
+            <div class="offline-history-code">${escapeHtml(item.code)}</div>
+            <div class="offline-history-meta">
+              ${productName ? escapeHtml(productName) + " • " : ""}${escapeHtml(date)}
+            </div>
+          </div>
+          <div class="offline-history-status ${st.class}">${st.label}</div>
+        </div>`;
+    });
+    listEl.innerHTML = html;
+  } catch (e) {
+    console.warn("Load history error:", e);
+  }
+}
+
+// ============================================================
+// RENDU DES RÉSULTATS
+// ============================================================
 function renderResult(data) {
   if (!data) { result.className = "result hidden"; return; }
 
@@ -112,6 +185,9 @@ window.__reapplyMessages = function () {
   }
 };
 
+// ============================================================
+// ÉTOILES
+// ============================================================
 if (starsContainer) {
   starsContainer.querySelectorAll("button").forEach(b => {
     b.addEventListener("click", () => {
@@ -123,6 +199,9 @@ if (starsContainer) {
   });
 }
 
+// ============================================================
+// ENVOI AVIS
+// ============================================================
 if (feedbackSubmit) {
   feedbackSubmit.addEventListener("click", async () => {
     if (!currentRating) {
@@ -167,6 +246,9 @@ if (feedbackSubmit) {
   });
 }
 
+// ============================================================
+// ENVOI SIGNALEMENT
+// ============================================================
 if (reportBtn) {
   reportBtn.addEventListener("click", async () => {
     if (!confirm(t("reportConfirm"))) return;
@@ -205,6 +287,9 @@ if (reportBtn) {
   });
 }
 
+// ============================================================
+// RESET
+// ============================================================
 function resetFeedbackSections() {
   feedbackSection.classList.add("hidden");
   reportSection.classList.add("hidden");
@@ -219,6 +304,9 @@ function resetFeedbackSections() {
   reportMsg.classList.add("hidden");
 }
 
+// ============================================================
+// VÉRIFICATION
+// ============================================================
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const code = codeInput.value.trim().toUpperCase();
@@ -239,6 +327,10 @@ form.addEventListener("submit", async (e) => {
     const data = await r.json();
     lastResultData = data;
     renderResult(data);
+
+    // Sauvegarder dans l'historique local
+    saveVerification(code, data.status, data.product);
+
   } catch {
     show("danger", `<h2>${escapeHtml(t("errorTitle"))}</h2><p>${escapeHtml(t("errorMsg"))}</p>`);
   } finally {
@@ -247,6 +339,39 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
+// ============================================================
+// i18n
+// ============================================================
 if (typeof applyTranslations === "function") {
   applyTranslations();
 }
+
+// ============================================================
+// ONLINE / OFFLINE DETECTION
+// ============================================================
+function updateOnlineStatus() {
+  const banner = document.getElementById("offlineBanner");
+  const history = document.getElementById("offlineHistory");
+  const verifyBtn = document.getElementById("verifyBtn");
+  const isOnline = navigator.onLine;
+
+  if (isOnline) {
+    if (banner) banner.classList.add("hidden");
+    if (history) history.classList.add("hidden");
+    if (verifyBtn) verifyBtn.disabled = false;
+  } else {
+    if (banner) banner.classList.remove("hidden");
+    if (history) {
+      history.classList.remove("hidden");
+      loadOfflineHistory();
+    }
+    if (verifyBtn) verifyBtn.disabled = true;
+  }
+}
+
+window.addEventListener("online", updateOnlineStatus);
+window.addEventListener("offline", updateOnlineStatus);
+
+setTimeout(updateOnlineStatus, 300);
+
+window.__applyOfflineHistory = loadOfflineHistory;
