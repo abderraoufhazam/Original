@@ -1397,25 +1397,43 @@ refresh();
 const _lf = $("loginForm");
 if (_lf) _lf.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const lb = $("loginBtn");
-  if (lb) { lb.disabled = true; lb.textContent = "CONNEXION..."; }
-  const { error } = await sb.auth.signInWithPassword({
-    email: $("email").value.trim(),
-    password: $("password").value
-  });
-  if (lb) { lb.disabled = false; lb.textContent = "SE CONNECTER"; }
-  if (error) {
-    const el = $("loginError");
+
+  const emailInput = $("email").value.trim();
+  const passwordInput = $("password").value;
+  const el = $("loginError");
+
+  // التحقق المبكر من الإيميل قبل إرسال الطلب
+  if (!isAdminEmail(emailInput)) {
     if (el) {
       el.className = "result danger";
-      el.innerHTML = `<p style="margin:0">${escapeHtml(error.message)}</p>`;
+      el.innerHTML = `<p style="margin:0">⛔ Ce compte n'est pas autorisé.</p>`;
+      el.classList.remove("hidden");
     }
     return;
   }
-  const el = $("loginError"); if (el) el.classList.add("hidden");
+
+  const lb = $("loginBtn");
+  if (lb) { lb.disabled = true; lb.textContent = "CONNEXION..."; }
+
+  const { error } = await sb.auth.signInWithPassword({
+    email: emailInput,
+    password: passwordInput
+  });
+
+  if (lb) { lb.disabled = false; lb.textContent = "SE CONNECTER"; }
+
+  if (error) {
+    if (el) {
+      el.className = "result danger";
+      el.innerHTML = `<p style="margin:0">${escapeHtml(error.message)}</p>`;
+      el.classList.remove("hidden");
+    }
+    return;
+  }
+
+  if (el) el.classList.add("hidden");
   refresh();
 });
-
 const _lb = $("logoutBtn");
 if (_lb) _lb.onclick = async () => {
   await sb.auth.signOut();
