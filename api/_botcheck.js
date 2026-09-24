@@ -21,13 +21,22 @@ const BAD_BOT_PATTERNS = [
 ];
 
 const DATACENTER_PREFIXES = [
-  '47.', '43.', '103.21', '103.22', '103.23', '103.24',
-  '103.25', '103.26', '103.27', '103.28',
-  '104.16', '104.17', '104.18', '104.19', '104.20',
-  '104.21', '104.22', '104.23', '104.24', '104.25',
-  '104.26', '104.27', '20.', '13.64', '13.107',
-  '40.77', '52.', '35.', '34.',
-  '8.8.', '8.34', '8.35', '8.12', '8.15',
+  // Cloudflare
+  '103.21.', '103.22.', '103.23.', '103.24.',
+  '103.25.', '103.26.', '103.27.', '103.28.',
+  '104.16.', '104.17.', '104.18.', '104.19.',
+  '104.20.', '104.21.', '104.22.', '104.23.',
+  '104.24.', '104.25.', '104.26.', '104.27.',
+
+  // AWS (بادئات ضيقة)
+  '13.64.', '13.107.',
+  '40.77.',
+
+  // Google Cloud (نطاق محدود)
+  '35.190.', '35.191.',
+
+  // Google DNS (خاص)
+  '8.8.8.', '8.8.4.',
 ];
 
 export function analyzeRequest(req) {
@@ -67,16 +76,15 @@ export function analyzeRequest(req) {
     reasons.push('bad-ua:' + badMatch);
   }
 
-  // 4. IP de datacenter
+  // 4. IP de datacenter (قرينة ضعيفة فقط)
   const isDatacenter = DATACENTER_PREFIXES.some(p => ip.startsWith(p));
   if (isDatacenter) {
-    botScore += 40;
+    botScore += 15;
     reasons.push('datacenter-ip');
   }
-
   // 5. User-Agent générique (suspect)
   if (userAgent === 'mozilla/5.0' || userAgent === 'mozilla' || userAgent === 'chrome') {
-    botScore += 50;
+   botScore += 50;
     reasons.push('generic-ua');
   }
 
