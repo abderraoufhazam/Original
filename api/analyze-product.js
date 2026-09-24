@@ -1,5 +1,5 @@
 // api/analyze-product.js
-// Analyse une image avec Gemini Vision + fallback multi-modèles
+// Analyse une image avec Gemini Vision (modèles vérifiés)
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -34,28 +34,24 @@ export default async function handler(req, res) {
     const prompt = `Tu es un expert en identification de produits.
 Analyse cette image et identifie le produit.
 
-Réponds UNIQUEMENT en JSON valide, sans aucun texte avant ou après, avec cette structure exacte :
+Réponds UNIQUEMENT en JSON valide :
 {
   "brand": "nom de la marque si visible, sinon vide",
-  "product_name": "nom court du produit, ex: 'Sérum visage 30ml'",
-  "description": "description détaillée en 1-2 phrases: type, taille, couleur, packaging",
+  "product_name": "nom court du produit",
+  "description": "description en 1-2 phrases: type, taille, couleur, packaging",
   "confidence": "high|medium|low"
 }
 
-Règles :
-- Si tu ne vois pas la marque, mets brand = "".
-- Écris dans la langue du produit.
-- Ne mets AUCUN texte avant ou après le JSON.`;
+Ne mets AUCUN texte avant ou après le JSON.`;
 
-    // Liste de modèles à essayer (ordre de préférence)
+    // ✅ Modèles vérifiés comme disponibles dans votre compte
     const MODELS = [
       'gemini-2.5-flash',
-      'gemini-2.5-flash-lite',
       'gemini-flash-latest',
-      'gemini-2.0-flash',
-      'gemini-2.0-flash-001',
-      'gemini-1.5-flash',
-      'gemini-1.5-flash-latest'
+      'gemini-2.5-flash-lite',
+      'gemini-3.5-flash',
+      'gemini-3.6-flash',
+      'gemini-flash-lite-latest'
     ];
 
     let lastError = null;
@@ -90,25 +86,25 @@ Règles :
         if (geminiRes.ok) {
           geminiData = await geminiRes.json();
           usedModel = model;
+          console.log('✅ Success with model:', model);
           break;
         } else {
           const errText = await geminiRes.text();
           lastError = { status: geminiRes.status, model, body: errText.slice(0, 250) };
-          console.warn(`Model ${model} failed:`, geminiRes.status);
+          console.warn(`⚠️ Model ${model} failed:`, geminiRes.status);
         }
       } catch (err) {
         lastError = { status: 'exception', model, body: String(err).slice(0, 250) };
-        console.warn(`Model ${model} exception:`, err);
+        console.warn(`❌ Model ${model} exception:`, err);
       }
     }
 
     if (!geminiData) {
-      // Tous les modèles ont échoué
       const isOverload = lastError && (lastError.status === 503 || lastError.status === 429);
       return res.status(isOverload ? 503 : 500).json({
         status: 'ERROR',
         message: isOverload
-          ? 'Le service IA est temporairement surchargé. Réessayez dans 1-2 minutes.'
+          ? 'IA temporairement surchargée. Réessayez dans 1 minute.'
           : 'Erreur analyse IA',
         detail: JSON.stringify(lastError).slice(0, 300)
       });
