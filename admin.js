@@ -12,6 +12,7 @@ let loadedLotLot = "";
 let loadedLotLogo = "";
 let currentFeedbackFilter = "all";
 let currentMessagesFilter = "all";
+let currentVisitorFilter = "all";
 let unreadMessagesCount = 0;
 
 let chartDaily = null;
@@ -39,6 +40,7 @@ const PANEL_TITLES = {
   feedback: "Avis clients",
   messages: "Messages",
   brands: "Marques",
+  visitors: "Visiteurs",
   delete: "Suppression",
   settings: "Impression"
 };
@@ -59,6 +61,7 @@ function showPanel(name) {
   if (name === "delete") loadDeleteLog();
   if (name === "messages") loadMessages();
   if (name === "brands") loadBrands();
+  if (name === "visitors") loadVisitors();
 }
 
 document.querySelectorAll(".sidebar-nav button").forEach(btn => {
@@ -439,6 +442,143 @@ async function loadBrands() {
 
 const _rbb = $("refreshBrandsBtn");
 if (_rbb) _rbb.onclick = () => loadBrands();
+
+// ============================================================
+// VISITORS
+// ============================================================
+async function loadVisitors() {
+  const container = $("visitorsList");
+  const statsBox = $("visitorStats");
+  if (!container) return;
+
+  container.innerHTML = `<p class="muted">Chargement...</p>`;
+  if (statsBox) statsBox.innerHTML = "";
+
+  try {
+    const counts = {};
+    for (const st of ["real", "suspicious", "bot", "good-bot"]) {
+      const { count } = await sb
+        .from("visitor_logs")
+        .select("*", { count: "exact", head: true })
+        .eq("status", st);
+      counts[st] = count || 0;
+    }
+
+    const total = counts.real + counts.suspicious + counts.bot + counts["good-bot"];
+
+    if (statsBox) {
+      statsBox.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-num">${total}</div>
+          <div class="stat-label">TOTAL</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color:#16a34a">${counts.real}</div>
+          <div class="stat-label">🟢 RÉELS</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color:#eab308">${counts.suspicious}</div>
+          <div class="stat-label">🟡 SUSPECTS</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color:#dc2626">${counts.bot}</div>
+          <div class="stat-label">🔴 BOTS</div>
+        </div>
+      `;
+    }
+
+    let query = sb
+      .from("visitor_logs")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    if (currentVisitorFilter !== "all") {
+      query = query.eq("status", currentVisitorFilter);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(error.message)}</p>`;
+      return;
+    }
+    if (!data || data.length === 0) {
+      container.innerHTML = `<p class="muted">Aucune visite enregistrée pour le moment.</p>`;
+      return;
+    }
+
+    let html = "";
+    data.forEach(v => {
+      const statusColors = {
+        "real": "success",
+        "good-bot": "success",
+        "suspicious": "warning",
+        "bot": "danger"
+      };
+      const statusLabels = {
+        "real": "🟢 RÉEL",
+        "good-bot": "🤖 GOOGLE/BING",
+        "suspicious": "🟡 SUSPECT",
+        "bot": "🔴 BOT"
+      };
+      const statusClass = statusColors[v.status] || "warning";
+      const label = statusLabels[v.status] || v.status;
+      const date = v.created_at ? new Date(v.created_at).toLocaleString() : "—";
+      const ua = (v.user_agent || "").slice(0, 80);
+
+      html += `
+        <div class="log-row log-${statusClass}" style="padding:16px">
+          <div class="log-top">
+            <span class="log-result log-result-${statusClass}">${label}</span>
+            <span class="log-date">${escapeHtml(date)}</span>
+          </div>
+
+          <div style="font-family:monospace;font-size:12px;color:inherit;margin:8px 0">
+            <b>IP:</b> ${escapeHtml(v.ip || "—")}
+            ${v.country ? ` | <b>Pays:</b> ${escapeHtml(v.country)}` : ""}
+          </div>
+
+          <div style="font-size:11px;color:#64748b;margin-bottom:8px;word-break:break-all">
+            ${escapeHtml(v.path || "/")}
+          </div>
+
+          <div style="font-size:10px;color:#94a3b8;font-family:monospace;margin-bottom:8px;word-break:break-all">
+            ${escapeHtml(ua)}
+          </div>
+
+          ${v.reason ? `<div style="font-size:10px;color:#dc2626;margin-bottom:6px">Raison: ${escapeHtml(v.reason)}</div>` : ""}
+          <div style="font-size:11px;color:inherit">
+            <b>Bot Score:</b> ${v.bot_score || 0}/100
+          </div>
+        </div>`;
+    });
+    container.innerHTML = html;
+
+  } catch (err) {
+    container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(err.message)}</p>`;
+  }
+}
+
+const _rvb = $("refreshVisitorsBtn");
+if (_rvb) _rvb.onclick = () => loadVisitors();
+
+document.querySelectorAll("#visitorTabs .tab").forEach(t => {
+  t.addEventListener("click", () => {
+    document.querySelectorAll("#visitorTabs .tab").forEach(x => {
+      x.classList.remove("active");
+      x.style.background = "#fff";
+      x.style.color = "#0f172a";
+      x.style.border = "1px solid #e2e8f0";
+    });
+    t.classList.add("active");
+    t.style.background = "#0f172a";
+    t.style.color = "#fff";
+    t.style.border = "0";
+    currentVisitorFilter = t.dataset.tab;
+    loadVisitors();
+  });
+});
 
 // ============================================================
 // DELETE LOG
