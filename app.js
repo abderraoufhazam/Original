@@ -165,7 +165,7 @@ if (wilayaImage) {
     }
 
     try {
-      const dataUrl = await compressImage(file, 1200, 0.85);
+      const dataUrl = await compressImage(file, 450, 0.55);
       currentImageDataUrl = dataUrl;
       if (wilayaImagePreviewImg) wilayaImagePreviewImg.src = dataUrl;
       if (wilayaImagePreview) wilayaImagePreview.classList.remove("hidden");
