@@ -1,4 +1,4 @@
-// app.js — Vérification + Avis + Signalement + i18n + Offline History
+// app.js — Vérification + Avis + Signalement + i18n + Offline + Wilaya
 
 const form = document.getElementById("verifyForm");
 const codeInput = document.getElementById("code");
@@ -12,6 +12,13 @@ const feedbackSubmit = document.getElementById("feedbackSubmit");
 const feedbackMsg = document.getElementById("feedbackMsg");
 const reportBtn = document.getElementById("reportBtn");
 const reportMsg = document.getElementById("reportMsg");
+
+const wilayaModal = document.getElementById("wilayaModal");
+const wilayaSelect = document.getElementById("wilayaSelect");
+const wilayaComment = document.getElementById("wilayaComment");
+const wilayaSubmit = document.getElementById("wilayaSubmit");
+const wilayaMsg = document.getElementById("wilayaMsg");
+const wilayaClose = document.getElementById("wilayaClose");
 
 let currentCode = "";
 let currentRating = 0;
@@ -99,6 +106,82 @@ function loadOfflineHistory() {
 }
 
 // ============================================================
+// WILAYA MODAL
+// ============================================================
+function openWilayaModal() {
+  if (!wilayaModal) return;
+  wilayaModal.classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+  if (wilayaSelect) wilayaSelect.value = "";
+  if (wilayaComment) wilayaComment.value = "";
+  if (wilayaMsg) wilayaMsg.classList.add("hidden");
+}
+
+function closeWilayaModal() {
+  if (!wilayaModal) return;
+  wilayaModal.classList.add("hidden");
+  document.body.style.overflow = "";
+}
+
+if (wilayaClose) {
+  wilayaClose.addEventListener("click", closeWilayaModal);
+}
+
+const _wo = document.querySelector(".wilaya-modal-overlay");
+if (_wo) _wo.addEventListener("click", closeWilayaModal);
+
+if (wilayaSubmit) {
+  wilayaSubmit.addEventListener("click", async () => {
+    const wilaya = (wilayaSelect?.value || "").trim();
+    const comment = (wilayaComment?.value || "").trim();
+
+    if (!wilaya) {
+      wilayaMsg.textContent = "الرجاء اختيار الولاية";
+      wilayaMsg.className = "wilaya-msg error";
+      return;
+    }
+
+    wilayaSubmit.disabled = true;
+    wilayaSubmit.textContent = "جاري الإرسال...";
+
+    try {
+      const res = await fetch("/api/report-fake", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          attempted_code: currentCode || null,
+          wilaya: wilaya,
+          comment: comment || null
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.status === "OK") {
+        wilayaMsg.textContent = "✓ تم إرسال البلاغ. شكرًا لك!";
+        wilayaMsg.className = "wilaya-msg success";
+
+        setTimeout(() => {
+          closeWilayaModal();
+          wilayaSubmit.disabled = false;
+          wilayaSubmit.textContent = "📩 إرسال البلاغ";
+        }, 2000);
+      } else {
+        wilayaMsg.textContent = "Erreur : " + (data.message || "");
+        wilayaMsg.className = "wilaya-msg error";
+        wilayaSubmit.disabled = false;
+        wilayaSubmit.textContent = "📩 إرسال البلاغ";
+      }
+    } catch (e) {
+      wilayaMsg.textContent = "خطأ في الاتصال. الرجاء المحاولة مجددًا.";
+      wilayaMsg.className = "wilaya-msg error";
+      wilayaSubmit.disabled = false;
+      wilayaSubmit.textContent = "📩 إرسال البلاغ";
+    }
+  });
+}
+
+// ============================================================
 // RENDU DES RÉSULTATS
 // ============================================================
 function renderResult(data) {
@@ -170,6 +253,11 @@ function renderResult(data) {
     window.__lastVerifiedProduct = null;
     show("danger", `<div class="icon">×</div><h2>${escapeHtml(t("notOriginalTitle"))}</h2><p>${escapeHtml(t("notOriginalMsg"))}</p>`);
     reportSection.classList.remove("hidden");
+
+    // Ouvre automatiquement la modal wilaya après 1.5 secondes
+    setTimeout(() => {
+      openWilayaModal();
+    }, 1500);
   }
 }
 
@@ -247,43 +335,13 @@ if (feedbackSubmit) {
 }
 
 // ============================================================
-// ENVOI SIGNALEMENT
+// BOUTON SIGNALEMENT (ouvre la modal wilaya)
 // ============================================================
 if (reportBtn) {
-  reportBtn.addEventListener("click", async () => {
-    if (!confirm(t("reportConfirm"))) return;
-    reportBtn.disabled = true;
-    reportBtn.textContent = "...";
-    try {
-      const res = await fetch("/api/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          secret_code: currentCode || null,
-          type: "report",
-          comment: "Signalement de contrefaçon"
-        })
-      });
-      const data = await res.json();
-      if (data.status === "OK") {
-        reportMsg.textContent = t("reportThanks");
-        reportMsg.style.color = "#16a34a";
-        reportMsg.classList.remove("hidden");
-        reportSection.style.opacity = "0.6";
-        reportSection.style.pointerEvents = "none";
-      } else {
-        reportMsg.textContent = "Erreur : " + (data.message || "");
-        reportMsg.style.color = "#dc2626";
-        reportMsg.classList.remove("hidden");
-      }
-    } catch (e) {
-      reportMsg.textContent = t("errorConn");
-      reportMsg.style.color = "#dc2626";
-      reportMsg.classList.remove("hidden");
-    } finally {
-      reportBtn.disabled = false;
-      reportBtn.textContent = t("reportBtn");
-    }
+  reportBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openWilayaModal();
   });
 }
 
