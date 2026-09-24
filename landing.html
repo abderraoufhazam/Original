@@ -1076,77 +1076,7 @@
     </div>
 
     <div class="faq-list" id="faqList">
-      <div class="faq-item">
-        <button class="faq-question">
-          <span data-i18n="q1">كيف أتحقق من منتج؟</span>
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <div class="faq-answer-inner" data-i18n="a1">
-            امسح رمز QR الموجود على الملصق بكاميرا هاتفك، ثم اخدش الطبقة الفضية لكشف الكود السري وأدخله في الصفحة. ستظهر لك النتيجة فورًا.
-          </div>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-question">
-          <span data-i18n="q2">ما معنى "منتج غير أصلي"؟</span>
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <div class="faq-answer-inner" data-i18n="a2">
-            هذا يعني أن الكود الذي أدخلته غير موجود في قاعدة بياناتنا. المنتج قد يكون مقلّدًا. ننصحك بالإبلاغ عن التقليد فورًا عبر الزر الموجود في صفحة النتيجة.
-          </div>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-question">
-          <span data-i18n="q3">هل التحقق مجاني للزبائن؟</span>
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <div class="faq-answer-inner" data-i18n="a3">
-            نعم! التحقق من أصالة المنتجات مجاني تمامًا للزبائن. لا تحتاج إلى تسجيل أو دفع أي رسوم. فقط امسح، أدخل الكود، واحصل على النتيجة.
-          </div>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-question">
-          <span data-i18n="q4">كم تكلفة الخدمة للعلامات التجارية؟</span>
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <div class="faq-answer-inner" data-i18n="a4">
-            نقدم خططًا مرنة تناسب جميع أحجام العلامات. <a href="/signup">أنشئ حسابك مجانًا</a> لاستكشاف النظام، أو تواصل معنا للحصول على عرض مخصص.
-          </div>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-question">
-          <span data-i18n="q6">هل الأكواد السرية آمنة؟</span>
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <div class="faq-answer-inner" data-i18n="a6">
-            نعم. جميع الأكواد مشفّرة بتقنية AES-256 في قاعدة البيانات. حتى لو تعرضت قاعدة البيانات للاختراق، لا يمكن قراءة الأكواد. كما أن كل كود صالح للاستعمال مرة واحدة فقط.
-          </div>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-question">
-          <span data-i18n="q8">ماذا أفعل إذا اكتشفت تقليدًا؟</span>
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <div class="faq-answer-inner" data-i18n="a8">
-            استخدم زر "الإبلاغ عن تقليد" في صفحة التحقق. أخبرنا بمكان الشراء تقريبًا (الولاية). ستصلنا بلاغاتك مباشرة ونعمل على حماية علامتك.
-          </div>
-        </div>
-      </div>
+      <p class="muted" style="text-align:center;padding:20px">Chargement...</p>
     </div>
   </div>
 </section>
@@ -1272,33 +1202,123 @@
   </div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   document.getElementById("year").textContent = new Date().getFullYear();
 
-  document.querySelectorAll(".faq-question").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const item = btn.closest(".faq-item");
-      const answer = item.querySelector(".faq-answer");
-      const isOpen = item.classList.contains("open");
+  // ============================================================
+  // SUPABASE
+  // ============================================================
+  const SUPABASE_URL = "https://qfpmbbntxyrderjlejql.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m";
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      document.querySelectorAll(".faq-item").forEach(other => {
-        if (other !== item) {
-          other.classList.remove("open");
-          const a = other.querySelector(".faq-answer");
-          if (a) a.style.maxHeight = null;
-        }
+  let faqData = [];
+
+  function escapeHtml(v = "") {
+    return String(v).replace(/[&<>"']/g, c => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+    }[c]));
+  }
+
+  // ============================================================
+  // FAQ — LOAD FROM DATABASE
+  // ============================================================
+  async function loadFAQ() {
+    const container = document.getElementById("faqList");
+    if (!container) return;
+
+    try {
+      const { data, error } = await sb
+        .from("faq_items")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: true });
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        container.innerHTML = `<p class="muted" style="text-align:center;padding:20px">Aucune question pour le moment.</p>`;
+        return;
+      }
+
+      faqData = data;
+
+      let html = "";
+      data.forEach((item, i) => {
+        html += `
+          <div class="faq-item">
+            <button class="faq-question">
+              <span data-faq-q="${i}">${escapeHtml(item.question || "")}</span>
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer">
+              <div class="faq-answer-inner" data-faq-a="${i}">${escapeHtml(item.answer || "")}</div>
+            </div>
+          </div>`;
+      });
+      container.innerHTML = html;
+
+      // Bind accordion
+      container.querySelectorAll(".faq-question").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const item = btn.closest(".faq-item");
+          const answer = item.querySelector(".faq-answer");
+          const isOpen = item.classList.contains("open");
+
+          container.querySelectorAll(".faq-item").forEach(other => {
+            if (other !== item) {
+              other.classList.remove("open");
+              const a = other.querySelector(".faq-answer");
+              if (a) a.style.maxHeight = null;
+            }
+          });
+
+          if (isOpen) {
+            item.classList.remove("open");
+            answer.style.maxHeight = null;
+          } else {
+            item.classList.add("open");
+            answer.style.maxHeight = answer.scrollHeight + "px";
+          }
+        });
       });
 
-      if (isOpen) {
-        item.classList.remove("open");
-        answer.style.maxHeight = null;
-      } else {
-        item.classList.add("open");
-        answer.style.maxHeight = answer.scrollHeight + "px";
-      }
-    });
-  });
+      applyFaqTranslations();
 
+    } catch (e) {
+      console.warn("FAQ error:", e);
+      container.innerHTML = `<p class="muted" style="text-align:center;padding:20px">Erreur de chargement.</p>`;
+    }
+  }
+
+  function applyFaqTranslations() {
+    if (!faqData || faqData.length === 0) return;
+
+    faqData.forEach((item, i) => {
+      const qEl = document.querySelector(`[data-faq-q="${i}"]`);
+      const aEl = document.querySelector(`[data-faq-a="${i}"]`);
+
+      let q = item.question;
+      let a = item.answer;
+
+      if (currentLang === "fr" && item.question_fr && item.answer_fr) {
+        q = item.question_fr;
+        a = item.answer_fr;
+      } else if (currentLang === "en" && item.question_en && item.answer_en) {
+        q = item.question_en;
+        a = item.answer_en;
+      }
+
+      if (qEl) qEl.textContent = q || "";
+      if (aEl) aEl.textContent = a || "";
+    });
+  }
+
+  // ============================================================
+  // TRANSLATIONS
+  // ============================================================
   const TRANSLATIONS = {
     ar: {
       verifyNow: "تحقق الآن",
@@ -1339,18 +1359,6 @@
       faqEyebrow: "الأسئلة الشائعة",
       faqTitle: "إجابات فورية لأسئلتك",
       faqSub: "كل ما تحتاج معرفته عن النظام، الزبون، والعلامات التجارية.",
-      q1: "كيف أتحقق من منتج؟",
-      a1: "امسح رمز QR الموجود على الملصق بكاميرا هاتفك، ثم اخدش الطبقة الفضية لكشف الكود السري وأدخله في الصفحة. ستظهر لك النتيجة فورًا.",
-      q2: "ما معنى \"منتج غير أصلي\"؟",
-      a2: "هذا يعني أن الكود الذي أدخلته غير موجود في قاعدة بياناتنا. المنتج قد يكون مقلّدًا. ننصحك بالإبلاغ عن التقليد فورًا عبر الزر الموجود في صفحة النتيجة.",
-      q3: "هل التحقق مجاني للزبائن؟",
-      a3: "نعم! التحقق من أصالة المنتجات مجاني تمامًا للزبائن. لا تحتاج إلى تسجيل أو دفع أي رسوم. فقط امسح، أدخل الكود، واحصل على النتيجة.",
-      q4: "كم تكلفة الخدمة للعلامات التجارية؟",
-      a4: "نقدم خططًا مرنة تناسب جميع أحجام العلامات. أنشئ حسابك مجانًا لاستكشاف النظام، أو تواصل معنا للحصول على عرض مخصص.",
-      q6: "هل الأكواد السرية آمنة؟",
-      a6: "نعم. جميع الأكواد مشفّرة بتقنية AES-256 في قاعدة البيانات. حتى لو تعرضت قاعدة البيانات للاختراق، لا يمكن قراءة الأكواد. كما أن كل كود صالح للاستعمال مرة واحدة فقط.",
-      q8: "ماذا أفعل إذا اكتشفت تقليدًا؟",
-      a8: "استخدم زر الإبلاغ عن تقليد في صفحة التحقق. أخبرنا بمكان الشراء تقريبًا (الولاية). ستصلنا بلاغاتك مباشرة ونعمل على حماية علامتك.",
       stat1: "كود مُولّد",
       stat2: "علامة تجارية",
       stat3: "دقة التحقق",
@@ -1418,18 +1426,6 @@
       faqEyebrow: "Questions fréquentes",
       faqTitle: "Réponses instantanées",
       faqSub: "Tout ce que vous devez savoir sur le système.",
-      q1: "Comment vérifier un produit ?",
-      a1: "Scannez le QR sur l'étiquette avec l'appareil photo, puis grattez la zone argentée pour révéler le code secret et entrez-le. Le résultat s'affiche instantanément.",
-      q2: "Que signifie \"PRODUIT NON ORIGINAL\" ?",
-      a2: "Cela signifie que le code n'existe pas dans notre base. Le produit peut être une contrefaçon. Nous vous recommandons de signaler immédiatement.",
-      q3: "La vérification est-elle gratuite ?",
-      a3: "Oui ! La vérification est totalement gratuite pour les clients. Aucune inscription ni frais requis.",
-      q4: "Combien coûte le service pour les marques ?",
-      a4: "Nous offrons des formules flexibles. Créez votre compte gratuitement pour explorer, ou contactez-nous pour une offre personnalisée.",
-      q6: "Les codes secrets sont-ils sécurisés ?",
-      a6: "Oui. Tous les codes sont chiffrés AES-256. Chaque code n'est valable qu'une seule fois.",
-      q8: "Que faire si je découvre une contrefaçon ?",
-      a8: "Utilisez le bouton \"Signaler une contrefaçon\" dans la page de vérification. Indiquez votre wilaya. Vos signalements nous arrivent directement.",
       stat1: "Codes générés",
       stat2: "Marques",
       stat3: "Précision",
@@ -1497,18 +1493,6 @@
       faqEyebrow: "FAQ",
       faqTitle: "Instant answers",
       faqSub: "Everything you need to know about the system.",
-      q1: "How do I verify a product?",
-      a1: "Scan the QR on the label with your phone camera, then scratch the silver area to reveal the secret code and enter it. The result appears instantly.",
-      q2: "What does \"NON-ORIGINAL PRODUCT\" mean?",
-      a2: "It means the code doesn't exist in our database. The product may be counterfeit. We recommend reporting it immediately.",
-      q3: "Is verification free?",
-      a3: "Yes! Verification is completely free for customers. No registration or fees required.",
-      q4: "How much does it cost for brands?",
-      a4: "We offer flexible plans. Create your free account to explore, or contact us for a custom quote.",
-      q6: "Are the secret codes secure?",
-      a6: "Yes. All codes are AES-256 encrypted. Each code is valid only once.",
-      q8: "What if I discover a counterfeit?",
-      a8: "Use the \"Report a counterfeit\" button on the verification page. Tell us your wilaya. Your reports come to us directly.",
       stat1: "Codes generated",
       stat2: "Brands",
       stat3: "Accuracy",
@@ -1573,6 +1557,10 @@
     document.querySelectorAll(".lang-btn").forEach(b => {
       b.classList.toggle("active", b.dataset.lang === currentLang);
     });
+
+    if (typeof applyFaqTranslations === "function") {
+      applyFaqTranslations();
+    }
   }
 
   document.querySelectorAll(".lang-btn").forEach(btn => {
@@ -1580,6 +1568,9 @@
       currentLang = btn.dataset.lang;
       localStorage.setItem("lang", currentLang);
       applyTranslations();
+      if (typeof applyFaqTranslations === "function") {
+        applyFaqTranslations();
+      }
     });
   });
 
@@ -1599,6 +1590,9 @@
   });
 
   updateDarkIcon();
+
+  // Load FAQ dynamically
+  loadFAQ();
 </script>
 
 <script src="/bot-guard.js"></script>
