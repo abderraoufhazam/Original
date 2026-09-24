@@ -13,7 +13,9 @@ let loadedLotLogo = "";
 let currentFeedbackFilter = "all";
 let currentMessagesFilter = "all";
 let currentVisitorFilter = "all";
+let currentFakesFilter = "all";
 let unreadMessagesCount = 0;
+let unreadFakesCount = 0;
 
 let chartDaily = null;
 let chartResults = null;
@@ -43,6 +45,7 @@ const PANEL_TITLES = {
   messages: "Messages",
   brands: "Marques",
   visitors: "Visiteurs",
+  fakes: "Contrefaçons",
   faq: "FAQ",
   delete: "Suppression",
   settings: "Impression"
@@ -66,6 +69,7 @@ function showPanel(name) {
   if (name === "brands") loadBrands();
   if (name === "visitors") loadVisitors();
   if (name === "faq") loadFAQ();
+  if (name === "fakes") loadFakes();
 }
 
 document.querySelectorAll(".sidebar-nav button").forEach(btn => {
@@ -585,6 +589,305 @@ document.querySelectorAll("#visitorTabs .tab").forEach(t => {
 });
 
 // ============================================================
+// FAKES (Contrefaçons)
+// ============================================================
+const WILAYA_NAMES = [
+  "01 - أدرار","02 - الشلف","03 - الأغواط","04 - أم البواقي","05 - باتنة",
+  "06 - بجاية","07 - بسكرة","08 - بشار","09 - البليدة","10 - البويرة",
+  "11 - تمنراست","12 - تبسة","13 - تلمسان","14 - تيارت","15 - تيزي وزو",
+  "16 - الجزائر","17 - الجلفة","18 - جيجل","19 - سطيف","20 - سعيدة",
+  "21 - سكيكدة","22 - سيدي بلعباس","23 - عنابة","24 - قالمة","25 - قسنطينة",
+  "26 - المدية","27 - مستغانم","28 - المسيلة","29 - معسكر","30 - ورقلة",
+  "31 - وهران","32 - البيض","33 - إليزي","34 - برج بوعريريج","35 - بومرداس",
+  "36 - الطارف","37 - تندوف","38 - تيسمسيلت","39 - الوادي","40 - خنشلة",
+  "41 - سوق أهراس","42 - تيبازة","43 - ميلة","44 - عين الدفلى","45 - النعامة",
+  "46 - عين تموشنت","47 - غرداية","48 - غليزان","49 - تيميمون","50 - برج باجي مختار",
+  "51 - أولاد جلال","52 - بني عباس","53 - عين صالح","54 - عين قزام","55 - تقرت",
+  "56 - جانت","57 - المغير","58 - المنيعة"
+];
+
+let fakesData = [];
+
+async function loadFakesBadge() {
+  try {
+    const { count } = await sb
+      .from("fake_reports")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "NEW");
+
+    unreadFakesCount = count || 0;
+    const badge = $("fakesBadge");
+    if (badge) {
+      if (unreadFakesCount > 0) {
+        badge.textContent = unreadFakesCount;
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+    }
+  } catch (e) {
+    console.warn("loadFakesBadge:", e);
+  }
+}
+
+async function loadFakes() {
+  const container = $("fakesList");
+  const statsBox = $("fakesStats");
+  const heatmapBox = $("wilayaHeatmap");
+  if (!container) return;
+
+  container.innerHTML = `<p class="muted">Chargement...</p>`;
+  if (statsBox) statsBox.innerHTML = "";
+  if (heatmapBox) heatmapBox.innerHTML = "";
+
+  try {
+    let query = sb
+      .from("fake_reports")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(500);
+
+    if (currentFakesFilter !== "all") {
+      query = query.eq("status", currentFakesFilter);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(error.message)}</p>`;
+      return;
+    }
+
+    // Compte tous les rapports (sans filtre) pour les statistiques
+    const { data: allData } = await sb
+      .from("fake_reports")
+      .select("wilaya, status, ai_analyzed")
+      .limit(5000);
+
+    const total = (allData || []).length;
+    const newCount = (allData || []).filter(r => r.status === "NEW").length;
+    const reviewedCount = (allData || []).filter(r => r.status === "REVIEWED").length;
+    const aiCount = (allData || []).filter(r => r.ai_analyzed).length;
+
+    if (statsBox) {
+      statsBox.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-num">${total}</div>
+          <div class="stat-label">TOTAL</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color:#dc2626">${newCount}</div>
+          <div class="stat-label">🔴 NOUVEAUX</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color:#16a34a">${reviewedCount}</div>
+          <div class="stat-label">✓ TRAITÉS</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color:#3b82f6">${aiCount}</div>
+          <div class="stat-label">🤖 ANALYSÉS IA</div>
+        </div>
+      `;
+    }
+
+    // Heatmap par wilaya
+    const wilayaCounts = {};
+    (allData || []).forEach(r => {
+      if (r.wilaya) {
+        wilayaCounts[r.wilaya] = (wilayaCounts[r.wilaya] || 0) + 1;
+      }
+    });
+
+    const maxCount = Math.max(1, ...Object.values(wilayaCounts));
+
+    if (heatmapBox) {
+      let heatHtml = "";
+      WILAYA_NAMES.forEach(w => {
+        const c = wilayaCounts[w] || 0;
+        let bg, color;
+        if (c === 0) {
+          bg = "rgba(148, 163, 184, 0.08)";
+          color = "#94a3b8";
+        } else {
+          const intensity = c / maxCount;
+          if (intensity > 0.7) {
+            bg = "linear-gradient(135deg, #dc2626, #ef4444)";
+            color = "#fff";
+          } else if (intensity > 0.4) {
+            bg = "linear-gradient(135deg, #f59e0b, #fbbf24)";
+            color = "#fff";
+          } else if (intensity > 0.15) {
+            bg = "linear-gradient(135deg, #fbbf24, #fde047)";
+            color = "#78350f";
+          } else {
+            bg = "linear-gradient(135deg, #fef3c7, #fef9c3)";
+            color = "#a16207";
+          }
+        }
+        heatHtml += `
+          <div style="padding:10px 12px;border-radius:10px;background:${bg};color:${color};text-align:center;font-weight:700;font-size:12px;border:1px solid rgba(0,0,0,0.06)">
+            <div>${escapeHtml(w)}</div>
+            <div style="font-size:18px;font-weight:900;margin-top:4px">${c}</div>
+          </div>`;
+      });
+      heatmapBox.innerHTML = heatHtml;
+    }
+
+    // Liste
+    if (!data || data.length === 0) {
+      container.innerHTML = `<p class="muted">Aucun signalement pour le moment.</p>`;
+      return;
+    }
+
+    let html = "";
+    data.forEach(r => {
+      const isNew = r.status === "NEW";
+      const statusClass = isNew ? "danger" : "success";
+      const date = r.created_at ? new Date(r.created_at).toLocaleString() : "—";
+
+      html += `
+        <div class="log-row log-${statusClass}" style="padding:18px">
+          <div class="log-top">
+            <span class="log-result log-result-${statusClass}">
+              ${isNew ? "🔴 NOUVEAU" : "✓ TRAITÉ"}
+            </span>
+            <span class="log-date">${escapeHtml(date)}</span>
+          </div>
+
+          ${r.product_image ? `
+            <img src="${escapeHtml(r.product_image)}" alt="Produit" style="max-width:200px;max-height:200px;display:block;margin:10px auto;border-radius:12px;border:1px solid rgba(0,0,0,0.08)">
+          ` : ""}
+
+          ${r.product_brand ? `<div style="font-size:14px;font-weight:800;color:inherit;margin:8px 0 4px">🏷️ ${escapeHtml(r.product_brand)}</div>` : ""}
+          ${r.product_name ? `<div style="font-size:13px;font-weight:700;color:inherit;margin-bottom:6px">📦 ${escapeHtml(r.product_name)}</div>` : ""}
+          ${r.product_description ? `<div style="font-size:12px;color:#64748b;line-height:1.5;margin-bottom:10px">${escapeHtml(r.product_description)}</div>` : ""}
+
+          <div class="details" style="margin-top:10px">
+            ${r.wilaya ? `<div><b>📍 Wilaya</b><span>${escapeHtml(r.wilaya)}</span></div>` : ""}
+            ${r.attempted_code ? `<div><b>Code essayé</b><span style="font-family:monospace">${escapeHtml(r.attempted_code)}</span></div>` : ""}
+            ${r.ai_analyzed ? `<div><b>Analyse</b><span style="color:#3b82f6">🤖 IA utilisée</span></div>` : ""}
+            ${r.ip ? `<div><b>IP</b><span style="font-family:monospace;font-size:11px">${escapeHtml(r.ip)}</span></div>` : ""}
+          </div>
+
+          ${r.comment ? `<div style="font-size:12px;color:inherit;line-height:1.6;padding:10px 12px;background:rgba(255,255,255,0.5);border-radius:10px;border:1px solid rgba(0,0,0,0.05);margin-top:10px">💬 ${escapeHtml(r.comment)}</div>` : ""}
+
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+            ${isNew ? `<button onclick="markFakeReviewed(${r.id})" style="flex:1;padding:8px 12px;background:#16a34a;color:#fff;border:0;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;margin:0;min-width:110px">✓ Marquer traité</button>` : ""}
+            <button onclick="deleteFake(${r.id})" style="flex:1;padding:8px 12px;background:#dc2626;color:#fff;border:0;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;margin:0;min-width:110px">🗑️ Supprimer</button>
+          </div>
+        </div>`;
+    });
+    container.innerHTML = html;
+
+  } catch (err) {
+    container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(err.message)}</p>`;
+  }
+}
+
+window.markFakeReviewed = async function(id) {
+  const { error } = await sb
+    .from("fake_reports")
+    .update({ status: "REVIEWED" })
+    .eq("id", id);
+
+  if (error) {
+    alert("Erreur : " + error.message);
+    return;
+  }
+
+  loadFakes();
+  loadFakesBadge();
+};
+
+window.deleteFake = async function(id) {
+  if (!confirm("Confirmer la suppression de ce signalement ?")) return;
+
+  const { error } = await sb
+    .from("fake_reports")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    alert("Erreur : " + error.message);
+    return;
+  }
+
+  loadFakes();
+  loadFakesBadge();
+};
+
+const _rfb2 = $("refreshFakesBtn");
+if (_rfb2) {
+  _rfb2.onclick = () => {
+    loadFakes();
+    loadFakesBadge();
+  };
+}
+
+document.querySelectorAll("#fakesTabs .tab").forEach(t => {
+  t.addEventListener("click", () => {
+    document.querySelectorAll("#fakesTabs .tab").forEach(x => {
+      x.classList.remove("active");
+      x.style.background = "#fff";
+      x.style.color = "#0f172a";
+      x.style.border = "1px solid #e2e8f0";
+    });
+    t.classList.add("active");
+    t.style.background = "#0f172a";
+    t.style.color = "#fff";
+    t.style.border = "0";
+    currentFakesFilter = t.dataset.tab;
+    loadFakes();
+  });
+});
+
+// ============================================================
+// EXPORT FAKES
+// ============================================================
+const _efk = $("exportFakesBtn");
+if (_efk) _efk.onclick = async () => {
+  const btn = _efk;
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "⏳ Export...";
+
+  try {
+    const { data, error } = await sb
+      .from("fake_reports")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(5000);
+
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      alert("Aucun signalement à exporter.");
+      return;
+    }
+
+    const rows = data.map(r => ({
+      "Date": r.created_at ? new Date(r.created_at).toLocaleString() : "",
+      "Wilaya": r.wilaya || "",
+      "Marque": r.product_brand || "",
+      "Produit": r.product_name || "",
+      "Description": r.product_description || "",
+      "Code essayé": r.attempted_code || "",
+      "Commentaire": r.comment || "",
+      "Image": r.product_image || "",
+      "IA": r.ai_analyzed ? "Oui" : "Non",
+      "Statut": r.status === "NEW" ? "Nouveau" : "Traité",
+      "IP": r.ip || ""
+    }));
+
+    downloadExcel(rows, "Contrefacons", "Contrefacons");
+  } catch (err) {
+    alert("Erreur : " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+};
+
+// ============================================================
 // FAQ
 // ============================================================
 function resetFaqForm() {
@@ -1035,6 +1338,7 @@ async function refresh() {
     loadFeedback();
     loadCharts();
     loadMessagesBadge();
+    loadFakesBadge();
   }
 }
 refresh();
