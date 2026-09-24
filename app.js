@@ -1,4 +1,4 @@
-// app.js — Vérification + Avis + Signalement + i18n + Offline + Wilaya
+// app.js — Vérification + Avis + i18n + Offline + Wilaya + Image
 
 const form = document.getElementById("verifyForm");
 const codeInput = document.getElementById("code");
@@ -16,6 +16,11 @@ const reportMsg = document.getElementById("reportMsg");
 const wilayaModal = document.getElementById("wilayaModal");
 const wilayaSelect = document.getElementById("wilayaSelect");
 const wilayaComment = document.getElementById("wilayaComment");
+const wilayaDescription = document.getElementById("wilayaDescription");
+const wilayaImage = document.getElementById("wilayaImage");
+const wilayaImagePreview = document.getElementById("wilayaImagePreview");
+const wilayaImagePreviewImg = document.getElementById("wilayaImagePreviewImg");
+const wilayaImageRemove = document.getElementById("wilayaImageRemove");
 const wilayaSubmit = document.getElementById("wilayaSubmit");
 const wilayaMsg = document.getElementById("wilayaMsg");
 const wilayaClose = document.getElementById("wilayaClose");
@@ -23,6 +28,7 @@ const wilayaClose = document.getElementById("wilayaClose");
 let currentCode = "";
 let currentRating = 0;
 let lastResultData = null;
+let currentImageDataUrl = null;
 
 function escapeHtml(v = "") {
   return String(v).replace(/[&<>"']/g, c => ({
@@ -114,13 +120,98 @@ function openWilayaModal() {
   document.body.style.overflow = "hidden";
   if (wilayaSelect) wilayaSelect.value = "";
   if (wilayaComment) wilayaComment.value = "";
+  if (wilayaDescription) wilayaDescription.value = "";
   if (wilayaMsg) wilayaMsg.classList.add("hidden");
+  removeImage();
 }
 
 function closeWilayaModal() {
   if (!wilayaModal) return;
   wilayaModal.classList.add("hidden");
   document.body.style.overflow = "";
+}
+
+function removeImage() {
+  currentImageDataUrl = null;
+  if (wilayaImage) wilayaImage.value = "";
+  if (wilayaImagePreview) wilayaImagePreview.classList.add("hidden");
+  if (wilayaImagePreviewImg) wilayaImagePreviewImg.src = "";
+}
+
+// Image sélectionnée
+if (wilayaImage) {
+  wilayaImage.addEventListener("change", async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    // Vérifier la taille (max 4 MB pour éviter les limites Vercel)
+    if (file.size > 4 * 1024 * 1024) {
+      wilayaMsg.textContent = "الصورة كبيرة جدًا (الحد الأقصى 4 ميغا).";
+      wilayaMsg.className = "wilaya-msg error";
+      removeImage();
+      return;
+    }
+
+    // Vérifier le type
+    if (!file.type.startsWith("image/")) {
+      wilayaMsg.textContent = "الرجاء اختيار صورة صالحة.";
+      wilayaMsg.className = "wilaya-msg error";
+      removeImage();
+      return;
+    }
+
+    try {
+      const dataUrl = await compressImage(file, 1200, 0.8);
+      currentImageDataUrl = dataUrl;
+      if (wilayaImagePreviewImg) wilayaImagePreviewImg.src = dataUrl;
+      if (wilayaImagePreview) wilayaImagePreview.classList.remove("hidden");
+      if (wilayaMsg) wilayaMsg.classList.add("hidden");
+    } catch (err) {
+      console.error("Image error:", err);
+      wilayaMsg.textContent = "خطأ في معالجة الصورة.";
+      wilayaMsg.className = "wilaya-msg error";
+      removeImage();
+    }
+  });
+}
+
+if (wilayaImageRemove) {
+  wilayaImageRemove.addEventListener("click", (e) => {
+    e.preventDefault();
+    removeImage();
+  });
+}
+
+// Compression d'image via canvas
+function compressImage(file, maxWidth, quality) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxWidth) {
+          height = Math.round(height * (maxWidth / width));
+          width = maxWidth;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        try {
+          const dataUrl = canvas.toDataURL("image/jpeg", quality);
+          resolve(dataUrl);
+        } catch (e) {
+          reject(e);
+        }
+      };
+      img.onerror = reject;
+      img.src = ev.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 if (wilayaClose) {
@@ -134,6 +225,7 @@ if (wilayaSubmit) {
   wilayaSubmit.addEventListener("click", async () => {
     const wilaya = (wilayaSelect?.value || "").trim();
     const comment = (wilayaComment?.value || "").trim();
+    const description = (wilayaDescription?.value || "").trim();
 
     if (!wilaya) {
       wilayaMsg.textContent = "الرجاء اختيار الولاية";
@@ -143,16 +235,21 @@ if (wilayaSubmit) {
 
     wilayaSubmit.disabled = true;
     wilayaSubmit.textContent = "جاري الإرسال...";
+    wilayaMsg.classList.add("hidden");
 
     try {
+      const payload = {
+        attempted_code: currentCode || null,
+        wilaya: wilaya,
+        comment: comment || null,
+        product_description: description || null,
+        product_image: currentImageDataUrl || null
+      };
+
       const res = await fetch("/api/report-fake", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          attempted_code: currentCode || null,
-          wilaya: wilaya,
-          comment: comment || null
-        })
+        body: JSON.stringify(payload)
       });
 
       const data = await res.json();
@@ -254,7 +351,6 @@ function renderResult(data) {
     show("danger", `<div class="icon">×</div><h2>${escapeHtml(t("notOriginalTitle"))}</h2><p>${escapeHtml(t("notOriginalMsg"))}</p>`);
     reportSection.classList.remove("hidden");
 
-    // Ouvre automatiquement la modal wilaya après 1.5 secondes
     setTimeout(() => {
       openWilayaModal();
     }, 1500);
@@ -335,7 +431,7 @@ if (feedbackSubmit) {
 }
 
 // ============================================================
-// BOUTON SIGNALEMENT (ouvre la modal wilaya)
+// BOUTON SIGNALEMENT → ouvre la modal wilaya
 // ============================================================
 if (reportBtn) {
   reportBtn.addEventListener("click", (e) => {
@@ -386,7 +482,6 @@ form.addEventListener("submit", async (e) => {
     lastResultData = data;
     renderResult(data);
 
-    // Sauvegarder dans l'historique local
     saveVerification(code, data.status, data.product);
 
   } catch {
@@ -405,7 +500,7 @@ if (typeof applyTranslations === "function") {
 }
 
 // ============================================================
-// ONLINE / OFFLINE DETECTION — Fiable
+// ONLINE / OFFLINE DETECTION
 // ============================================================
 let isOfflineMode = false;
 let checkInterval = null;
@@ -451,17 +546,12 @@ async function updateOnlineStatus() {
   }
 }
 
-// Événements navigateur
 window.addEventListener("online", () => setTimeout(updateOnlineStatus, 500));
 window.addEventListener("offline", () => setTimeout(updateOnlineStatus, 500));
 
-// Vérification au démarrage
 setTimeout(updateOnlineStatus, 500);
-
-// Vérification périodique (toutes les 10s)
 checkInterval = setInterval(updateOnlineStatus, 10000);
 
-// Vérification au retour dans l'app
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) {
     setTimeout(updateOnlineStatus, 300);
