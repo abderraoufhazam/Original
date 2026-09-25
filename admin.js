@@ -1463,6 +1463,10 @@ if (_cb) _cb.onclick = async () => {
 
   const qty = Math.min(10000, Math.max(1, Number($("quantity").value) || 1));
 
+  // ✨ الحالة الأولية للدفعة (PENDING أو UNUSED)
+  const statusRadio = document.querySelector('input[name="initial_status"]:checked');
+  const initialStatus = statusRadio ? statusRadio.value : 'PENDING';
+
   _cb.disabled = true;
   _cb.textContent = "CRÉATION...";
   const ar = $("adminResult"); if (ar) ar.className = "result hidden";
@@ -1488,6 +1492,7 @@ if (_cb) _cb.onclick = async () => {
         tiktok_url: $("tiktok_url").value.trim() || null,
         description: $("description").value.trim() || null,
         quantity: qty,
+        initial_status: initialStatus,
         access_token: session.access_token
       })
     });
@@ -1503,6 +1508,7 @@ if (_cb) _cb.onclick = async () => {
           <h2>✓ LOT CRÉÉ</h2>
           <p>${data.inserted} codes générés avec succès.</p>
           <p style="font-size:12px;margin-top:8px;color:#64748b">🔒 Les codes sont chiffrés en base de données (AES-256).</p>
+          <p style="font-size:12px;margin-top:4px;color:#64748b">Statut initial : <b>${escapeHtml(data.initial_status || 'UNUSED')}</b></p>
         `;
       }
       const pb = $("printBtn"); if (pb) pb.classList.remove("hidden");
@@ -2289,7 +2295,7 @@ if (_pdb) _pdb.onclick = async () => {
     return;
   }
 
-  const statuses = { UNUSED: 0, USED: 0, DISABLED: 0, EXPIRED: 0 };
+  const statuses = { PENDING: 0, UNUSED: 0, USED: 0, DISABLED: 0, EXPIRED: 0 };
   data.forEach(r => {
     if (statuses[r.secret_status] !== undefined) statuses[r.secret_status]++;
   });
@@ -2304,6 +2310,7 @@ if (_pdb) _pdb.onclick = async () => {
       <p>Lot : <b>${escapeHtml(lot)}</b></p>
       <p>Total : <b>${data.length}</b> code(s)</p>
       <div class="details" style="margin-top:12px">
+        <div><b>PENDING</b><span>${statuses.PENDING}</span></div>
         <div><b>UNUSED</b><span>${statuses.UNUSED}</span></div>
         <div><b>USED</b><span>${statuses.USED}</span></div>
         <div><b>DISABLED</b><span>${statuses.DISABLED}</span></div>
