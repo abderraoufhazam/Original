@@ -4,11 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Produit dz ORG — حماية المنتجات من التقليد</title>
-  <meta name="description" content="نظام احترافي للتحقق من أصالة المنتجات عبر QR وكود سري مخفي. حماية متقدمة بتشفير AES-256 وكشف فوري للمقلدات.">
-  <meta name="keywords" content="التحقق من الأصالة, مكافحة التقليد, QR code, الجزائر, Produit dz ORG">
-  <meta property="og:title" content="Produit dz ORG — حماية المنتجات من التقليد">
-  <meta property="og:description" content="نظام احترافي للتحقق من أصالة المنتجات">
-  <meta property="og:type" content="website">
+  <meta name="description" content="نظام احترافي للتحقق من أصالة المنتجات عبر QR وكود سري مخفي. تشفير AES-256 وكشف فوري للتقليد.">
 
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#0f172a">
@@ -29,25 +25,17 @@
     :root {
       --bg: #ffffff;
       --bg-alt: #f8fafc;
-      --bg-dark: #0f172a;
       --text: #0f172a;
       --text-muted: #64748b;
       --text-light: #94a3b8;
       --border: #e2e8f0;
       --primary: #16a34a;
-      --primary-dark: #15803d;
       --primary-light: #22c55e;
-      --accent: #fbbf24;
-      --gold: #eab308;
-      --danger: #dc2626;
       --card-bg: #ffffff;
       --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
       --shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.15);
-      --shadow-lg: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
-      --shadow-glow: 0 0 40px rgba(22, 163, 74, 0.35);
       --radius: 16px;
       --radius-lg: 24px;
-      --radius-xl: 32px;
     }
 
     html.dark {
@@ -58,14 +46,11 @@
       --text-light: #64748b;
       --border: #1e293b;
       --card-bg: #131a2c;
-      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-      --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
-      --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
     }
 
     html, body {
       margin: 0; padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Noto Kufi Arabic", Tahoma, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Kufi Arabic", Tahoma, Arial, sans-serif;
       font-size: 15px; line-height: 1.6;
       color: var(--text); background: var(--bg);
       -webkit-font-smoothing: antialiased;
@@ -75,29 +60,22 @@
     a { color: inherit; text-decoration: none; }
     img { max-width: 100%; height: auto; }
 
-    .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+    .container { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
 
     /* ============ HEADER ============ */
     .header {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background: var(--bg);
       border-bottom: 1px solid var(--border);
     }
-    html.dark .header { background: rgba(10, 15, 28, 0.85); }
 
     .header-inner {
       display: flex; align-items: center; justify-content: space-between;
       padding: 14px 0; gap: 12px;
     }
 
-    .logo {
-      display: flex; align-items: center; gap: 10px;
-      font-weight: 900; font-size: 15px; letter-spacing: -0.3px;
-      flex-shrink: 0;
-    }
-    .logo img { width: 38px; height: 38px; border-radius: 10px; box-shadow: var(--shadow-sm); }
+    .logo { display: flex; align-items: center; gap: 10px; font-weight: 900; font-size: 15px; }
+    .logo img { width: 38px; height: 38px; border-radius: 10px; }
     .logo-text { display: flex; flex-direction: column; line-height: 1.2; }
     .logo-text small { font-size: 9px; color: var(--text-muted); letter-spacing: 2px; font-weight: 800; }
 
@@ -108,9 +86,7 @@
       background: var(--bg-alt); border: 1px solid var(--border);
       font-size: 11px; font-weight: 800; cursor: pointer;
       color: var(--text-muted); font-family: inherit;
-      transition: all 160ms;
     }
-    .lang-btn:hover { color: var(--text); }
     .lang-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
 
     .dark-btn {
@@ -118,9 +94,7 @@
       background: var(--bg-alt); border: 1px solid var(--border);
       font-size: 16px; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      transition: all 180ms;
     }
-    .dark-btn:hover { transform: scale(1.06); }
 
     .btn-login {
       display: inline-flex; align-items: center; gap: 6px;
@@ -128,59 +102,42 @@
       background: var(--text); color: var(--bg);
       font-size: 13px; font-weight: 800;
       border: 0; cursor: pointer;
-      transition: all 200ms;
     }
-    .btn-login:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
 
     /* ============ HERO ============ */
     .hero {
-      position: relative; padding: 80px 0 100px;
+      position: relative; padding: 70px 0 80px;
+      background: var(--bg-alt);
       overflow: hidden;
     }
     .hero::before {
       content: "";
       position: absolute; inset: 0;
-      background:
-        radial-gradient(ellipse 60% 50% at 20% 0%, rgba(22, 163, 74, 0.15), transparent 60%),
-        radial-gradient(ellipse 50% 40% at 80% 100%, rgba(251, 191, 36, 0.1), transparent 60%),
-        radial-gradient(ellipse 40% 30% at 50% 50%, rgba(22, 163, 74, 0.05), transparent 70%);
+      background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(22, 163, 74, 0.08), transparent 60%);
       pointer-events: none;
     }
 
     .hero-inner {
       position: relative; text-align: center;
-      max-width: 900px; margin: 0 auto;
+      max-width: 860px; margin: 0 auto;
     }
 
     .hero-badge {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 8px 18px;
-      background: linear-gradient(135deg, rgba(22, 163, 74, 0.12), rgba(34, 197, 94, 0.08));
+      background: rgba(22, 163, 74, 0.1);
       border: 1px solid rgba(22, 163, 74, 0.3);
       color: var(--primary);
       border-radius: 100px;
       font-size: 12px; font-weight: 800;
-      letter-spacing: 0.3px;
-      margin-bottom: 28px;
-      box-shadow: 0 4px 20px -4px rgba(22, 163, 74, 0.3);
-    }
-    .hero-badge::before {
-      content: "";
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--primary);
-      box-shadow: 0 0 10px var(--primary);
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.6; transform: scale(1.4); }
+      margin-bottom: 24px;
     }
 
     .hero h1 {
-      font-size: clamp(34px, 7vw, 64px);
-      font-weight: 900; line-height: 1.05;
-      letter-spacing: -2px;
-      margin: 0 0 24px;
+      font-size: clamp(32px, 6vw, 58px);
+      font-weight: 900; line-height: 1.1;
+      letter-spacing: -1.5px;
+      margin: 0 0 22px;
       color: var(--text);
     }
     .hero h1 .highlight {
@@ -188,227 +145,170 @@
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
-      position: relative;
-    }
-    .hero h1 .highlight::after {
-      content: "";
-      position: absolute; bottom: 0.1em; left: 0; right: 0;
-      height: 0.15em;
-      background: linear-gradient(90deg, transparent, var(--primary-light), transparent);
-      border-radius: 100px;
-      opacity: 0.4;
     }
 
     .hero p.lead {
-      font-size: clamp(15px, 2vw, 19px);
+      font-size: clamp(15px, 2vw, 18px);
       color: var(--text-muted);
       line-height: 1.7;
-      margin: 0 auto 40px;
-      max-width: 700px;
+      margin: 0 auto 36px;
+      max-width: 680px;
     }
 
     .hero-cta {
-      display: flex; gap: 14px; justify-content: center;
-      flex-wrap: wrap; margin-bottom: 60px;
+      display: flex; gap: 12px; justify-content: center;
+      flex-wrap: wrap; margin-bottom: 50px;
     }
 
     .btn {
       display: inline-flex; align-items: center; gap: 10px;
-      padding: 16px 32px; border-radius: 14px;
+      padding: 15px 28px; border-radius: 14px;
       font-size: 15px; font-weight: 800;
-      letter-spacing: 0.3px;
       cursor: pointer; border: 0;
       font-family: inherit;
-      transition: all 240ms cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: transform 200ms ease, box-shadow 200ms ease;
       text-decoration: none;
     }
     .btn-primary {
       background: linear-gradient(135deg, var(--primary), var(--primary-light));
       color: #fff;
-      box-shadow: 0 10px 30px -8px rgba(22, 163, 74, 0.6);
+      box-shadow: 0 8px 20px -6px rgba(22, 163, 74, 0.5);
     }
     .btn-primary:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 20px 40px -10px rgba(22, 163, 74, 0.7);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px -8px rgba(22, 163, 74, 0.6);
     }
     .btn-secondary {
       background: var(--card-bg); color: var(--text);
       border: 1.5px solid var(--border);
-      box-shadow: var(--shadow-sm);
     }
     .btn-secondary:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow);
+      transform: translateY(-2px);
       border-color: var(--primary);
     }
 
-    /* ============ HERO VISUAL ============ */
+    /* ============ HERO VISUAL (بسيط) ============ */
     .hero-visual {
-      margin-top: 60px;
+      margin-top: 50px;
       display: flex; justify-content: center;
-      perspective: 1400px;
-      position: relative;
     }
 
     .phone-mockup {
-      width: 280px; height: 560px;
+      width: 260px; height: 520px;
       background: linear-gradient(135deg, #1e293b, #0f172a);
-      border-radius: 44px;
-      padding: 14px;
-      box-shadow:
-        0 60px 100px -30px rgba(15, 23, 42, 0.6),
-        0 0 0 2px rgba(255,255,255,0.08) inset,
-        0 0 80px -20px rgba(22, 163, 74, 0.4);
-      transform: rotateY(-10deg) rotateX(3deg);
-      animation: phoneFloat 7s ease-in-out infinite;
-      position: relative;
-    }
-    @keyframes phoneFloat {
-      0%, 100% { transform: rotateY(-10deg) rotateX(3deg) translateY(0); }
-      50% { transform: rotateY(-10deg) rotateX(3deg) translateY(-15px); }
-    }
-    .phone-mockup::before {
-      content: "";
-      position: absolute;
-      top: 16px; left: 50%; transform: translateX(-50%);
-      width: 90px; height: 5px;
-      background: rgba(255,255,255,0.15);
-      border-radius: 5px;
+      border-radius: 40px;
+      padding: 12px;
+      box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.5);
     }
 
     .phone-screen {
       width: 100%; height: 100%;
       background: #fff;
-      border-radius: 32px;
+      border-radius: 30px;
       overflow: hidden;
       display: flex; flex-direction: column;
-      padding: 40px 20px 20px;
-      gap: 14px;
+      padding: 40px 18px 18px;
+      gap: 12px;
     }
     html.dark .phone-screen { background: var(--card-bg); }
 
-    .phone-logo {
-      width: 56px; height: 56px;
-      margin: 0 auto 8px;
-      border-radius: 16px;
-      box-shadow: 0 6px 20px -4px rgba(15, 23, 42, 0.25);
-    }
-    .phone-title {
-      text-align: center; font-size: 13px; font-weight: 800;
-      color: var(--text); letter-spacing: 0.3px;
-    }
-    .phone-sub {
-      text-align: center; font-size: 11px;
-      color: var(--text-muted); margin-bottom: 10px;
-    }
+    .phone-logo { width: 52px; height: 52px; margin: 0 auto 6px; border-radius: 14px; }
+    .phone-title { text-align: center; font-size: 13px; font-weight: 800; color: var(--text); }
+    .phone-sub { text-align: center; font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
     .phone-input {
-      width: 100%; padding: 14px;
+      width: 100%; padding: 13px;
       border: 1.5px solid var(--border);
-      border-radius: 14px;
+      border-radius: 12px;
       text-align: center;
-      font-family: monospace; font-size: 15px;
+      font-family: monospace; font-size: 14px;
       font-weight: 800; letter-spacing: 3px;
       color: var(--text); background: var(--bg-alt);
     }
     .phone-btn {
-      width: 100%; padding: 14px;
+      width: 100%; padding: 13px;
       background: linear-gradient(135deg, #0f172a, #1e293b);
-      color: #fff; border: 0; border-radius: 14px;
+      color: #fff; border: 0; border-radius: 12px;
       font-weight: 800; font-size: 13px;
-      letter-spacing: 1px;
     }
     .phone-result {
-      background: linear-gradient(135deg, rgba(22, 163, 74, 0.1), rgba(34, 197, 94, 0.05));
-      border: 1.5px solid rgba(22, 163, 74, 0.35);
-      border-radius: 14px;
-      padding: 16px;
+      background: rgba(22, 163, 74, 0.1);
+      border: 1.5px solid rgba(22, 163, 74, 0.3);
+      border-radius: 12px;
+      padding: 14px;
       text-align: center;
-      margin-top: 6px;
+      margin-top: 4px;
     }
     .phone-check {
-      width: 36px; height: 36px;
+      width: 34px; height: 34px;
       background: linear-gradient(135deg, var(--primary), var(--primary-light));
       border-radius: 50%; color: #fff;
       display: flex; align-items: center; justify-content: center;
-      font-size: 18px; font-weight: bold;
-      margin: 0 auto 8px;
-      box-shadow: 0 6px 20px -4px rgba(22, 163, 74, 0.5);
+      font-size: 17px; font-weight: bold;
+      margin: 0 auto 6px;
     }
-    .phone-result-text {
-      font-size: 12px; font-weight: 800;
-      color: var(--primary);
-    }
+    .phone-result-text { font-size: 12px; font-weight: 800; color: var(--primary); }
 
     /* ============ STATS BAR ============ */
     .stats-bar {
-      padding: 60px 0;
-      background: var(--bg-alt);
+      padding: 50px 0;
+      background: var(--bg);
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
     }
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 40px;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 30px;
       text-align: center;
     }
-    .stat-item { position: relative; }
-    .stat-item::after {
-      content: "";
-      position: absolute; left: 50%; bottom: -20px; transform: translateX(-50%);
-      width: 40px; height: 3px;
-      background: linear-gradient(90deg, var(--primary), var(--primary-light));
-      border-radius: 3px;
-    }
-    .stat-item:last-child::after { display: none; }
     .stat-num {
-      font-size: clamp(32px, 5vw, 48px);
+      font-size: clamp(28px, 4vw, 42px);
       font-weight: 900;
-      letter-spacing: -2px;
+      letter-spacing: -1.5px;
       background: linear-gradient(135deg, var(--primary), var(--primary-light));
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
       line-height: 1;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
     .stat-label {
-      font-size: 12px; font-weight: 800;
+      font-size: 11px; font-weight: 800;
       color: var(--text-muted);
-      letter-spacing: 1.5px;
+      letter-spacing: 1.2px;
       text-transform: uppercase;
     }
 
     /* ============ SECTIONS ============ */
-    .section { padding: 100px 0; }
+    .section { padding: 80px 0; }
     .section-alt { background: var(--bg-alt); }
 
     .section-head {
       text-align: center;
-      max-width: 720px;
-      margin: 0 auto 70px;
+      max-width: 700px;
+      margin: 0 auto 55px;
     }
     .eyebrow {
       display: inline-block;
-      font-size: 12px; font-weight: 900;
-      letter-spacing: 3px;
+      font-size: 11px; font-weight: 900;
+      letter-spacing: 2.5px;
       color: var(--primary);
       text-transform: uppercase;
-      padding: 6px 14px;
+      padding: 5px 12px;
       background: rgba(22, 163, 74, 0.1);
       border-radius: 100px;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
     .section-head h2 {
-      font-size: clamp(28px, 5vw, 46px);
+      font-size: clamp(26px, 4.5vw, 42px);
       font-weight: 900;
-      letter-spacing: -1.5px;
-      line-height: 1.1;
-      margin: 0 0 18px;
+      letter-spacing: -1.2px;
+      line-height: 1.15;
+      margin: 0 0 16px;
       color: var(--text);
     }
     .section-head p {
-      font-size: 17px;
+      font-size: 16px;
       color: var(--text-muted);
       line-height: 1.7;
       margin: 0;
@@ -418,50 +318,36 @@
     .steps {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 24px;
-      position: relative;
-    }
-    .steps::before {
-      content: "";
-      position: absolute;
-      top: 70px; left: 12%; right: 12%;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--border) 20%, var(--border) 80%, transparent);
-      z-index: 0;
+      gap: 20px;
     }
     .step {
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
-      padding: 36px 24px;
+      padding: 32px 22px;
       text-align: center;
-      position: relative;
-      z-index: 1;
-      transition: all 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: transform 250ms ease, box-shadow 250ms ease;
     }
     .step:hover {
-      transform: translateY(-8px);
-      box-shadow: var(--shadow-lg);
-      border-color: var(--primary);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
     }
     .step-num {
-      width: 56px; height: 56px;
+      width: 52px; height: 52px;
       background: linear-gradient(135deg, var(--primary), var(--primary-light));
       color: #fff;
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: 22px; font-weight: 900;
-      margin: 0 auto 20px;
-      box-shadow: 0 8px 24px -6px rgba(22, 163, 74, 0.5);
+      font-size: 21px; font-weight: 900;
+      margin: 0 auto 18px;
     }
     .step h3 {
-      font-size: 17px; font-weight: 900;
+      font-size: 16px; font-weight: 900;
       color: var(--text);
-      margin: 0 0 12px;
-      letter-spacing: -0.3px;
+      margin: 0 0 10px;
     }
     .step p {
-      font-size: 14px;
+      font-size: 13.5px;
       color: var(--text-muted);
       line-height: 1.6;
       margin: 0;
@@ -470,92 +356,39 @@
     /* ============ FEATURES ============ */
     .features {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 22px;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 20px;
     }
     .feature {
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
-      padding: 32px 28px;
-      transition: all 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
-      position: relative;
-      overflow: hidden;
-    }
-    .feature::before {
-      content: "";
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--primary), var(--primary-light));
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 400ms ease;
+      padding: 28px 24px;
+      transition: transform 250ms ease, box-shadow 250ms ease, border-color 250ms ease;
     }
     .feature:hover {
-      transform: translateY(-6px);
-      box-shadow: var(--shadow-lg);
-      border-color: transparent;
-    }
-    .feature:hover::before { transform: scaleX(1); }
-
-    .feature-icon {
-      width: 56px; height: 56px;
-      background: linear-gradient(135deg, rgba(22, 163, 74, 0.12), rgba(34, 197, 94, 0.08));
-      border: 1px solid rgba(22, 163, 74, 0.2);
-      border-radius: 16px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 26px;
-      margin-bottom: 20px;
-      transition: all 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    .feature:hover .feature-icon {
-      transform: scale(1.08) rotate(-6deg);
-      background: linear-gradient(135deg, rgba(22, 163, 74, 0.2), rgba(34, 197, 94, 0.12));
-    }
-    .feature h4 {
-      font-size: 17px; font-weight: 900;
-      color: var(--text);
-      margin: 0 0 10px;
-      letter-spacing: -0.3px;
-    }
-    .feature p {
-      font-size: 14px;
-      color: var(--text-muted);
-      line-height: 1.65;
-      margin: 0;
-    }
-
-    /* ============ TRUST BADGES ============ */
-    .badges-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 18px;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-    .badge-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px 18px;
-      text-align: center;
-      transition: all 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    .badge-card:hover {
-      transform: translateY(-6px) scale(1.02);
-      box-shadow: var(--shadow-lg);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
       border-color: var(--primary);
     }
-    .badge-icon { font-size: 36px; margin-bottom: 10px; display: block; }
-    .badge-title {
-      font-size: 14px; font-weight: 900;
-      color: var(--text);
-      margin: 0 0 4px;
+    .feature-icon {
+      width: 52px; height: 52px;
+      background: rgba(22, 163, 74, 0.1);
+      border: 1px solid rgba(22, 163, 74, 0.2);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      margin-bottom: 18px;
     }
-    .badge-desc {
-      font-size: 12px;
+    .feature h4 {
+      font-size: 16px; font-weight: 900;
+      color: var(--text);
+      margin: 0 0 8px;
+    }
+    .feature p {
+      font-size: 13.5px;
       color: var(--text-muted);
+      line-height: 1.6;
       margin: 0;
     }
 
@@ -563,68 +396,68 @@
     .for-brands {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 70px;
+      gap: 60px;
       align-items: center;
     }
     .for-brands-content h2 {
-      font-size: clamp(28px, 5vw, 42px);
+      font-size: clamp(26px, 4.5vw, 40px);
       font-weight: 900;
       letter-spacing: -1.2px;
-      line-height: 1.1;
-      margin: 0 0 22px;
+      line-height: 1.15;
+      margin: 0 0 20px;
       color: var(--text);
     }
     .for-brands-content > p {
       font-size: 16px;
       color: var(--text-muted);
       line-height: 1.7;
-      margin: 0 0 32px;
+      margin: 0 0 28px;
     }
     .brand-list {
       list-style: none;
-      padding: 0; margin: 0 0 36px;
-      display: flex; flex-direction: column; gap: 16px;
+      padding: 0; margin: 0 0 32px;
+      display: flex; flex-direction: column; gap: 14px;
     }
     .brand-list li {
-      display: flex; align-items: flex-start; gap: 14px;
-      font-size: 15px;
+      display: flex; align-items: flex-start; gap: 12px;
+      font-size: 14.5px;
       color: var(--text);
       line-height: 1.5;
     }
     .brand-list li::before {
       content: "✓";
       flex-shrink: 0;
-      width: 24px; height: 24px;
+      width: 22px; height: 22px;
       background: linear-gradient(135deg, var(--primary), var(--primary-light));
       color: #fff;
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: bold;
+      font-size: 12px; font-weight: bold;
       margin-top: 1px;
-      box-shadow: 0 4px 12px -2px rgba(22, 163, 74, 0.5);
     }
 
-    .for-brands-visual { position: relative; height: 420px; }
-
+    .for-brands-visual {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
     .brand-card {
-      position: absolute;
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 20px;
-      box-shadow: var(--shadow-lg);
-      width: 240px;
+      padding: 18px;
+      box-shadow: var(--shadow);
     }
     .brand-card h5 {
-      font-size: 12px; font-weight: 900;
+      font-size: 11px; font-weight: 900;
       color: var(--text);
-      margin: 0 0 14px;
+      margin: 0 0 12px;
       letter-spacing: 0.5px;
       text-transform: uppercase;
     }
     .brand-card-row {
       display: flex; justify-content: space-between; align-items: center;
-      padding: 9px 0;
+      padding: 8px 0;
       font-size: 12px;
       border-bottom: 1px solid var(--border);
     }
@@ -645,151 +478,122 @@
       font-weight: 800; font-size: 10px;
     }
 
-    .brand-card-1 {
-      top: 20px; right: 30px;
-      animation: floatCard1 7s ease-in-out infinite;
-    }
-    .brand-card-2 {
-      bottom: 30px; left: 20px;
-      animation: floatCard2 8s ease-in-out infinite;
-    }
-    @keyframes floatCard1 {
-      0%, 100% { transform: translateY(0) rotate(-3deg); }
-      50% { transform: translateY(-14px) rotate(-3deg); }
-    }
-    @keyframes floatCard2 {
-      0%, 100% { transform: translateY(0) rotate(3deg); }
-      50% { transform: translateY(-10px) rotate(3deg); }
-    }
-
     /* ============ FAQ ============ */
     .faq-list {
-      max-width: 800px; margin: 0 auto;
-      display: flex; flex-direction: column; gap: 14px;
+      max-width: 780px; margin: 0 auto;
+      display: flex; flex-direction: column; gap: 12px;
     }
     .faq-item {
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       overflow: hidden;
-      transition: all 220ms ease;
     }
-    .faq-item:hover { box-shadow: var(--shadow); }
     .faq-question {
-      width: 100%; padding: 22px 24px;
+      width: 100%; padding: 20px 22px;
       background: transparent; border: 0; cursor: pointer;
-      font-family: inherit; font-size: 16px; font-weight: 800;
+      font-family: inherit; font-size: 15.5px; font-weight: 800;
       color: var(--text); text-align: start;
       display: flex; align-items: center; justify-content: space-between;
-      gap: 16px; transition: all 200ms ease;
-      letter-spacing: -0.2px;
+      gap: 14px;
     }
-    .faq-question:hover { background: var(--bg-alt); }
     .faq-icon {
       flex-shrink: 0;
-      width: 32px; height: 32px;
+      width: 30px; height: 30px;
       border-radius: 50%;
       background: rgba(22, 163, 74, 0.1);
       color: var(--primary);
       display: flex; align-items: center; justify-content: center;
-      font-size: 16px; font-weight: bold;
-      transition: all 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+      font-size: 15px; font-weight: bold;
+      transition: transform 250ms ease;
     }
     .faq-item.open .faq-icon {
       transform: rotate(45deg);
       background: var(--primary);
       color: #fff;
     }
-    .faq-item.open {
-      border-color: var(--primary);
-      box-shadow: 0 10px 30px -12px rgba(22, 163, 74, 0.4);
-    }
+    .faq-item.open { border-color: var(--primary); }
     .faq-answer {
       max-height: 0; overflow: hidden;
-      transition: max-height 400ms cubic-bezier(0.16, 1, 0.3, 1);
+      transition: max-height 350ms ease;
     }
     .faq-answer-inner {
-      padding: 0 24px 24px;
-      font-size: 15px; line-height: 1.75;
+      padding: 0 22px 20px;
+      font-size: 14.5px; line-height: 1.7;
       color: var(--text-muted);
       border-top: 1px solid var(--border);
-      padding-top: 20px;
+      padding-top: 16px;
     }
 
     /* ============ CTA FINAL ============ */
-    .cta-section { padding: 100px 0; }
+    .cta-section { padding: 80px 0; }
     .cta-box {
       background: linear-gradient(135deg, #0f172a, #1e293b);
-      border-radius: var(--radius-xl);
-      padding: 70px 40px;
+      border-radius: var(--radius-lg);
+      padding: 55px 35px;
       text-align: center;
+      color: #fff;
       position: relative;
       overflow: hidden;
-      color: #fff;
     }
     .cta-box::before {
       content: "";
       position: absolute; inset: 0;
-      background:
-        radial-gradient(circle at 25% 20%, rgba(22, 163, 74, 0.35), transparent 50%),
-        radial-gradient(circle at 75% 80%, rgba(251, 191, 36, 0.2), transparent 50%);
+      background: radial-gradient(circle at 30% 20%, rgba(22, 163, 74, 0.25), transparent 50%);
       pointer-events: none;
     }
     .cta-box-inner { position: relative; }
     .cta-box h2 {
-      font-size: clamp(28px, 5vw, 46px);
+      font-size: clamp(26px, 4.5vw, 42px);
       font-weight: 900;
       letter-spacing: -1.2px;
-      margin: 0 0 18px;
-      line-height: 1.1;
+      margin: 0 0 16px;
+      line-height: 1.15;
     }
     .cta-box p {
-      font-size: 17px;
+      font-size: 16px;
       color: #cbd5e1;
-      margin: 0 auto 40px;
-      max-width: 560px;
+      margin: 0 auto 32px;
+      max-width: 540px;
       line-height: 1.6;
     }
 
     /* ============ FOOTER ============ */
     .footer {
-      padding: 60px 0 40px;
+      padding: 50px 0 30px;
       border-top: 1px solid var(--border);
       background: var(--bg-alt);
     }
     .footer-grid {
       display: grid;
       grid-template-columns: 2fr 1fr 1fr 1fr;
-      gap: 40px;
-      margin-bottom: 40px;
+      gap: 36px;
+      margin-bottom: 36px;
     }
-    .footer-brand img { width: 42px; height: 42px; border-radius: 10px; margin-bottom: 14px; }
-    .footer-brand h4 {
-      font-size: 16px; font-weight: 900;
-      margin: 0 0 8px; color: var(--text);
-    }
+    .footer-brand img { width: 40px; height: 40px; border-radius: 10px; margin-bottom: 12px; }
+    .footer-brand h4 { font-size: 15px; font-weight: 900; margin: 0 0 8px; color: var(--text); }
     .footer-brand p {
       font-size: 13px; color: var(--text-muted);
-      line-height: 1.7; margin: 0;
-      max-width: 320px;
+      line-height: 1.6; margin: 0;
+      max-width: 300px;
     }
     .footer-col h5 {
-      font-size: 12px; font-weight: 900;
+      font-size: 11px; font-weight: 900;
       color: var(--text);
-      margin: 0 0 16px;
+      margin: 0 0 14px;
       letter-spacing: 1.5px;
       text-transform: uppercase;
     }
     .footer-col ul { list-style: none; padding: 0; margin: 0; }
-    .footer-col li { margin-bottom: 10px; }
+    .footer-col li { margin-bottom: 9px; }
     .footer-col a {
       font-size: 13px; color: var(--text-muted);
-      transition: color 180ms; font-weight: 600;
+      font-weight: 600;
     }
     .footer-col a:hover { color: var(--primary); }
 
     .footer-bottom {
-      padding-top: 30px;
+      padding-top: 24px;
       border-top: 1px solid var(--border);
       text-align: center;
       font-size: 12px;
@@ -797,11 +601,11 @@
     }
     .footer-bottom strong { color: var(--text-muted); }
 
-    /* ============ ANIMATIONS ============ */
+    /* ============ REVEAL ============ */
     .reveal {
       opacity: 0;
-      transform: translateY(30px);
-      transition: all 800ms cubic-bezier(0.16, 1, 0.3, 1);
+      transform: translateY(24px);
+      transition: opacity 600ms ease, transform 600ms ease;
     }
     .reveal.visible {
       opacity: 1;
@@ -811,43 +615,54 @@
     /* ============ RESPONSIVE ============ */
     @media (max-width: 900px) {
       .for-brands { grid-template-columns: 1fr; gap: 40px; }
-      .for-brands-visual { height: 380px; }
-      .footer-grid { grid-template-columns: 1fr 1fr; gap: 30px; }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 24px; }
       .steps { grid-template-columns: repeat(2, 1fr); }
-      .steps::before { display: none; }
     }
 
     @media (max-width: 640px) {
-      .hero { padding: 50px 0 70px; }
-      .section { padding: 70px 0; }
+      .hero { padding: 45px 0 60px; }
+      .section { padding: 55px 0; }
       .header-inner { padding: 12px 0; gap: 8px; }
       .logo-text { display: none; }
       .btn-login { padding: 9px 14px; font-size: 12px; }
       .lang-btn { padding: 5px 8px; font-size: 10px; }
       .dark-btn { width: 32px; height: 32px; font-size: 14px; }
-      .cta-box { padding: 50px 24px; border-radius: 24px; }
-      .phone-mockup {
-        transform: none;
-        animation: phoneFloatMobile 7s ease-in-out infinite;
-        width: 260px; height: 520px;
-      }
-      @keyframes phoneFloatMobile {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-12px); }
-      }
+      .cta-box { padding: 40px 22px; }
       .footer-grid { grid-template-columns: 1fr; }
       .steps { grid-template-columns: 1fr; }
-      .stats-bar { padding: 40px 0; }
-      .stats-grid { gap: 30px; }
-      .stat-item::after { display: none; }
-      .features { gap: 16px; }
-      .feature { padding: 26px 22px; }
+      .stats-bar { padding: 35px 0; }
     }
 
     @media (max-width: 480px) {
       .hero-cta { flex-direction: column; align-items: stretch; }
       .btn { justify-content: center; }
-      .brand-card { width: 200px; padding: 16px; }
+    }
+
+    /* ============ 🚀 PERFORMANCE ============ */
+
+    /* تعطيل الأنيميشن الثقيلة على الجوال */
+    @media (max-width: 768px) {
+      .feature:hover,
+      .step:hover {
+        transform: none !important;
+      }
+    }
+
+    /* تقليل الحركة حسب تفضيل المستخدم */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+      .reveal { opacity: 1; transform: none; }
+    }
+
+    /* تسريع الرسم */
+    .phone-mockup,
+    .feature,
+    .step,
+    .brand-card {
+      transform: translateZ(0);
     }
   </style>
 </head>
@@ -868,7 +683,7 @@
       <button class="lang-btn active" data-lang="ar">ع</button>
       <button class="lang-btn" data-lang="fr">FR</button>
       <button class="lang-btn" data-lang="en">EN</button>
-      <button class="dark-btn" id="darkBtn" aria-label="Mode sombre">🌙</button>
+      <button class="dark-btn" id="darkBtn">🌙</button>
       <a href="/login" class="btn-login">
         <span>🔐</span>
         <span data-i18n="loginBtn">دخول</span>
@@ -881,21 +696,21 @@
 <section class="hero">
   <div class="container">
     <div class="hero-inner">
-      <div class="hero-badge reveal" data-i18n="heroBadge">
+      <div class="hero-badge" data-i18n="heroBadge">
         🥇 منصة التحقق من الأصالة #1 في الجزائر
       </div>
 
-      <h1 class="reveal" style="transition-delay:100ms">
+      <h1>
         <span data-i18n="heroTitle1">احمِ منتجاتك من</span>
         <br>
         <span class="highlight" data-i18n="heroTitle2">التقليد والمزيف</span>
       </h1>
 
-      <p class="lead reveal" style="transition-delay:200ms" data-i18n="heroLead">
+      <p class="lead" data-i18n="heroLead">
         نظام احترافي للتحقق من أصالة المنتجات عبر QR وكود سري مخفي. تقنية تشفير AES-256، كشف فوري للتقليد، وإحصائيات في الوقت الحقيقي.
       </p>
 
-      <div class="hero-cta reveal" style="transition-delay:300ms">
+      <div class="hero-cta">
         <a href="/verify" class="btn btn-primary">
           <span>🔍</span>
           <span data-i18n="ctaVerify">تحقق من منتج</span>
@@ -906,7 +721,7 @@
         </a>
       </div>
 
-      <div class="hero-visual reveal" style="transition-delay:400ms">
+      <div class="hero-visual">
         <div class="phone-mockup">
           <div class="phone-screen">
             <img class="phone-logo" src="/icon.svg" alt="">
@@ -925,23 +740,23 @@
   </div>
 </section>
 
-<!-- ==================== STATS BAR ==================== -->
+<!-- ==================== STATS ==================== -->
 <section class="stats-bar">
   <div class="container">
     <div class="stats-grid">
-      <div class="stat-item reveal">
+      <div>
         <div class="stat-num">1M+</div>
         <div class="stat-label" data-i18n="stat1">كود محمي</div>
       </div>
-      <div class="stat-item reveal" style="transition-delay:100ms">
+      <div>
         <div class="stat-num">100+</div>
         <div class="stat-label" data-i18n="stat2">علامة تجارية</div>
       </div>
-      <div class="stat-item reveal" style="transition-delay:200ms">
+      <div>
         <div class="stat-num">99.9%</div>
         <div class="stat-label" data-i18n="stat3">دقة التحقق</div>
       </div>
-      <div class="stat-item reveal" style="transition-delay:300ms">
+      <div>
         <div class="stat-num">24/7</div>
         <div class="stat-label" data-i18n="stat4">متاح دائمًا</div>
       </div>
@@ -955,26 +770,26 @@
     <div class="section-head reveal">
       <div class="eyebrow" data-i18n="howEyebrow">كيف يعمل</div>
       <h2 data-i18n="howTitle">4 خطوات بسيطة للتحقق</h2>
-      <p data-i18n="howSub">يستغرق التحقق أقل من 10 ثوانٍ ولا يحتاج أي تطبيق.</p>
+      <p data-i18n="howSub">يستغرق التحقق أقل من 10 ثوانٍ.</p>
     </div>
 
     <div class="steps">
       <div class="step reveal">
         <div class="step-num">1</div>
         <h3 data-i18n="step1Title">📱 امسح QR</h3>
-        <p data-i18n="step1Text">افتح كاميرا هاتفك وامسح الرمز على الملصق.</p>
+        <p data-i18n="step1Text">افتح كاميرا هاتفك وامسح الرمز.</p>
       </div>
-      <div class="step reveal" style="transition-delay:100ms">
+      <div class="step reveal">
         <div class="step-num">2</div>
         <h3 data-i18n="step2Title">✂️ اخدش الطبقة</h3>
-        <p data-i18n="step2Text">اكشف الكود السري تحت الطبقة الفضية.</p>
+        <p data-i18n="step2Text">اكشف الكود السري تحت الطبقة.</p>
       </div>
-      <div class="step reveal" style="transition-delay:200ms">
+      <div class="step reveal">
         <div class="step-num">3</div>
         <h3 data-i18n="step3Title">🔢 أدخل الكود</h3>
         <p data-i18n="step3Text">اكتب الكود في صفحة التحقق.</p>
       </div>
-      <div class="step reveal" style="transition-delay:300ms">
+      <div class="step reveal">
         <div class="step-num">4</div>
         <h3 data-i18n="step4Title">✅ النتيجة فورًا</h3>
         <p data-i18n="step4Text">تعرف في ثانية إذا المنتج أصلي.</p>
@@ -996,112 +811,59 @@
       <div class="feature reveal">
         <div class="feature-icon">🔒</div>
         <h4 data-i18n="f1Title">تشفير AES-256</h4>
-        <p data-i18n="f1Text">جميع الأكواد السرية مشفّرة في قاعدة البيانات. حتى لو تسرّبت، لا يمكن قراءتها.</p>
+        <p data-i18n="f1Text">جميع الأكواد السرية مشفّرة في قاعدة البيانات.</p>
       </div>
-      <div class="feature reveal" style="transition-delay:80ms">
+      <div class="feature reveal">
         <div class="feature-icon">🎯</div>
         <h4 data-i18n="f2Title">QR ثابت موحّد</h4>
-        <p data-i18n="f2Text">نفس QR لكل الملصقات — توفير كبير في تكاليف الطباعة.</p>
+        <p data-i18n="f2Text">نفس QR لكل الملصقات — توفير في الطباعة.</p>
       </div>
-      <div class="feature reveal" style="transition-delay:160ms">
+      <div class="feature reveal">
         <div class="feature-icon">⚡</div>
         <h4 data-i18n="f3Title">تحقق فوري</h4>
-        <p data-i18n="f3Text">الزبون يمسح ويكتب الكود، والنتيجة تظهر في أقل من ثانية.</p>
+        <p data-i18n="f3Text">النتيجة تظهر في أقل من ثانية.</p>
       </div>
       <div class="feature reveal">
         <div class="feature-icon">🌍</div>
         <h4 data-i18n="f4Title">3 لغات</h4>
-        <p data-i18n="f4Text">واجهة كاملة بالعربية والفرنسية والإنجليزية مع دعم RTL.</p>
+        <p data-i18n="f4Text">عربي، فرنسي، إنجليزي مع دعم RTL.</p>
       </div>
-      <div class="feature reveal" style="transition-delay:80ms">
+      <div class="feature reveal">
         <div class="feature-icon">📊</div>
         <h4 data-i18n="f5Title">إحصائيات دقيقة</h4>
-        <p data-i18n="f5Text">تتبّع كل عملية تحقق مع IP، التاريخ، والموقع الجغرافي.</p>
+        <p data-i18n="f5Text">تتبّع كل تحقق مع IP والتاريخ والموقع.</p>
       </div>
-      <div class="feature reveal" style="transition-delay:160ms">
+      <div class="feature reveal">
         <div class="feature-icon">🤖</div>
         <h4 data-i18n="f6Title">مساعد ذكي</h4>
-        <p data-i18n="f6Text">روبوت دردشة بالذكاء الاصطناعي يجيب على أسئلة الزبائن.</p>
+        <p data-i18n="f6Text">روبوت دردشة AI للإجابة على الزبائن.</p>
       </div>
       <div class="feature reveal">
         <div class="feature-icon">🗺️</div>
         <h4 data-i18n="f7Title">خريطة حرارية</h4>
-        <p data-i18n="f7Text">رؤية جغرافية لكل بلاغات التقليد في 58 ولاية.</p>
+        <p data-i18n="f7Text">رؤية جغرافية لكل البلاغات (58 ولاية).</p>
       </div>
-      <div class="feature reveal" style="transition-delay:80ms">
+      <div class="feature reveal">
         <div class="feature-icon">📱</div>
         <h4 data-i18n="f8Title">PWA + Offline</h4>
-        <p data-i18n="f8Text">يعمل بدون تحميل وبدون إنترنت، مع حفظ آخر التحققات.</p>
+        <p data-i18n="f8Text">يعمل بدون تحميل وبدون إنترنت.</p>
       </div>
-      <div class="feature reveal" style="transition-delay:160ms">
+      <div class="feature reveal">
         <div class="feature-icon">🛡️</div>
         <h4 data-i18n="f9Title">كشف البوتات</h4>
-        <p data-i18n="f9Text">حماية تلقائية من السكريبتات ومحاولات الاختراق.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ==================== TRUST BADGES ==================== -->
-<section class="section section-alt">
-  <div class="container">
-    <div class="section-head reveal">
-      <div class="eyebrow" data-i18n="certEyebrow">ثقة وأمان</div>
-      <h2 data-i18n="certTitle">تقنيات عالمية المستوى</h2>
-    </div>
-
-    <div class="badges-grid">
-      <div class="badge-card reveal">
-        <span class="badge-icon">🔐</span>
-        <h4 class="badge-title">AES-256</h4>
-        <p class="badge-desc" data-i18n="c1Desc">تشفير عسكري</p>
-      </div>
-      <div class="badge-card reveal" style="transition-delay:80ms">
-        <span class="badge-icon">🇩🇿</span>
-        <h4 class="badge-title" data-i18n="c2Title">صنع في الجزائر</h4>
-        <p class="badge-desc" data-i18n="c2Desc">فخر وطني</p>
-      </div>
-      <div class="badge-card reveal" style="transition-delay:160ms">
-        <span class="badge-icon">⚡</span>
-        <h4 class="badge-title">Fast</h4>
-        <p class="badge-desc" data-i18n="c3Desc">استجابة <1s</p>
-      </div>
-      <div class="badge-card reveal">
-        <span class="badge-icon">📱</span>
-        <h4 class="badge-title">PWA</h4>
-        <p class="badge-desc" data-i18n="c4Desc">بدون تحميل</p>
-      </div>
-      <div class="badge-card reveal" style="transition-delay:80ms">
-        <span class="badge-icon">🌍</span>
-        <h4 class="badge-title">3 Langues</h4>
-        <p class="badge-desc" data-i18n="c5Desc">عربي فرنسي إنجليزي</p>
-      </div>
-      <div class="badge-card reveal" style="transition-delay:160ms">
-        <span class="badge-icon">🛡️</span>
-        <h4 class="badge-title">RLS</h4>
-        <p class="badge-desc" data-i18n="c6Desc">حماية قاعدة البيانات</p>
-      </div>
-      <div class="badge-card reveal">
-        <span class="badge-icon">🤖</span>
-        <h4 class="badge-title">AI Gemini</h4>
-        <p class="badge-desc" data-i18n="c7Desc">ذكاء اصطناعي</p>
-      </div>
-      <div class="badge-card reveal" style="transition-delay:80ms">
-        <span class="badge-icon">🕐</span>
-        <h4 class="badge-title">24/7</h4>
-        <p class="badge-desc" data-i18n="c8Desc">متاح دائمًا</p>
+        <p data-i18n="f9Text">حماية تلقائية من السكريبتات.</p>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ==================== FOR BRANDS ==================== -->
-<section class="section" id="for-brands">
+<section class="section section-alt" id="for-brands">
   <div class="container">
     <div class="for-brands">
       <div class="for-brands-content reveal">
         <div class="eyebrow" data-i18n="brandsEyebrow">للعلامات التجارية</div>
-        <h2 data-i18n="brandsTitle">احمِ علامتك التجارية باحترافية</h2>
+        <h2 data-i18n="brandsTitle">احمِ علامتك التجارية</h2>
         <p data-i18n="brandsText">
           انضم إلى العلامات التجارية التي تثق بنا. احصل على لوحة تحكم كاملة لإدارة أكوادك ومتابعة بلاغات التقليد.
         </p>
@@ -1122,7 +884,7 @@
       </div>
 
       <div class="for-brands-visual reveal">
-        <div class="brand-card brand-card-1">
+        <div class="brand-card">
           <h5 data-i18n="card1Title">لوحة التحكم</h5>
           <div class="brand-card-row">
             <b data-i18n="card1Unused">غير مستعمل</b>
@@ -1138,7 +900,7 @@
           </div>
         </div>
 
-        <div class="brand-card brand-card-2">
+        <div class="brand-card">
           <h5 data-i18n="card2Title">آخر التحققات</h5>
           <div class="brand-card-row">
             <span>K5NU-CYX-RLX9</span>
@@ -1159,7 +921,7 @@
 </section>
 
 <!-- ==================== FAQ ==================== -->
-<section class="section section-alt">
+<section class="section">
   <div class="container">
     <div class="section-head reveal">
       <div class="eyebrow" data-i18n="faqEyebrow">الأسئلة الشائعة</div>
@@ -1168,7 +930,7 @@
     </div>
 
     <div class="faq-list" id="faqList">
-      <p class="muted" style="text-align:center;padding:20px">Chargement...</p>
+      <p style="text-align:center;padding:20px;color:var(--text-muted)">Chargement...</p>
     </div>
   </div>
 </section>
@@ -1176,13 +938,13 @@
 <!-- ==================== FINAL CTA ==================== -->
 <section class="cta-section">
   <div class="container">
-    <div class="cta-box reveal">
+    <div class="cta-box">
       <div class="cta-box-inner">
         <h2 data-i18n="finalTitle">هل أنت مستعد لحماية منتجاتك؟</h2>
         <p data-i18n="finalText">
-          ابدأ اليوم بحماية علامتك التجارية من التقليد واكتسب ثقة زبائنك.
+          ابدأ اليوم بحماية علامتك التجارية من التقليد.
         </p>
-        <div class="hero-cta" style="margin-bottom:0">
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
           <a href="/signup" class="btn btn-primary">
             <span>🚀</span>
             <span data-i18n="ctaStart2">ابدأ مجانًا</span>
@@ -1205,7 +967,7 @@
         <img src="/icon.svg" alt="">
         <h4>Produit dz ORG</h4>
         <p data-i18n="footDesc">
-          نظام جزائري احترافي لحماية المنتجات من التقليد عبر تقنيات QR والذكاء الاصطناعي.
+          نظام جزائري احترافي لحماية المنتجات من التقليد.
         </p>
       </div>
 
@@ -1229,14 +991,8 @@
       <div class="footer-col">
         <h5 data-i18n="footCol3">تواصل</h5>
         <ul>
-          <li>
-            <a href="https://wa.me/213556339415" target="_blank" rel="noopener">
-              💬 WhatsApp
-            </a>
-          </li>
-          <li>
-            <a href="mailto:mepirf@gmail.com">📧 Email</a>
-          </li>
+          <li><a href="https://wa.me/213556339415" target="_blank" rel="noopener">💬 WhatsApp</a></li>
+          <li><a href="mailto:mepirf@gmail.com">📧 Email</a></li>
         </ul>
       </div>
     </div>
@@ -1264,19 +1020,35 @@
   }
 
   // ============================================================
-  // SCROLL REVEAL
+  // 🚀 SCROLL REVEAL (Optimized)
   // ============================================================
-  const observerOptions = { threshold: 0.1, rootMargin: "0px 0px -50px 0px" };
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("visible");
-        observer.unobserve(entry.target);
-      }
-    });
-  }, observerOptions);
+  function initReveal() {
+    const elements = document.querySelectorAll(".reveal");
+    if (!elements.length) return;
 
-  document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+    // كشف فوري لأول 3 عناصر (فوق الشاشة)
+    const aboveFold = document.querySelectorAll(".hero .reveal");
+    aboveFold.forEach(el => el.classList.add("visible"));
+
+    if ("IntersectionObserver" in window) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15, rootMargin: "0px 0px -40px 0px" });
+
+      elements.forEach(el => {
+        if (!el.classList.contains("visible")) observer.observe(el);
+      });
+    } else {
+      // Fallback للمتصفحات القديمة
+      elements.forEach(el => el.classList.add("visible"));
+    }
+  }
+  initReveal();
 
   // ============================================================
   // FAQ
@@ -1296,7 +1068,7 @@
       if (error) throw error;
 
       if (!data || data.length === 0) {
-        container.innerHTML = `<p class="muted" style="text-align:center;padding:20px">Aucune question pour le moment.</p>`;
+        container.innerHTML = `<p style="text-align:center;padding:20px;color:var(--text-muted)">Aucune question pour le moment.</p>`;
         return;
       }
 
@@ -1345,7 +1117,7 @@
 
     } catch (e) {
       console.warn("FAQ error:", e);
-      container.innerHTML = `<p class="muted" style="text-align:center;padding:20px">Erreur de chargement.</p>`;
+      container.innerHTML = `<p style="text-align:center;padding:20px;color:var(--text-muted)">Erreur de chargement.</p>`;
     }
   }
 
@@ -1393,11 +1165,11 @@
       stat4: "متاح دائمًا",
       howEyebrow: "كيف يعمل",
       howTitle: "4 خطوات بسيطة للتحقق",
-      howSub: "يستغرق التحقق أقل من 10 ثوانٍ ولا يحتاج أي تطبيق.",
+      howSub: "يستغرق التحقق أقل من 10 ثوانٍ.",
       step1Title: "📱 امسح QR",
-      step1Text: "افتح كاميرا هاتفك وامسح الرمز على الملصق.",
+      step1Text: "افتح كاميرا هاتفك وامسح الرمز.",
       step2Title: "✂️ اخدش الطبقة",
-      step2Text: "اكشف الكود السري تحت الطبقة الفضية.",
+      step2Text: "اكشف الكود السري تحت الطبقة.",
       step3Title: "🔢 أدخل الكود",
       step3Text: "اكتب الكود في صفحة التحقق.",
       step4Title: "✅ النتيجة فورًا",
@@ -1406,39 +1178,28 @@
       featTitle: "نظام متكامل، حماية قوية",
       featSub: "كل ما تحتاجه لحماية علامتك واكتساب ثقة زبائنك.",
       f1Title: "تشفير AES-256",
-      f1Text: "جميع الأكواد السرية مشفّرة في قاعدة البيانات. حتى لو تسرّبت، لا يمكن قراءتها.",
+      f1Text: "جميع الأكواد السرية مشفّرة في قاعدة البيانات.",
       f2Title: "QR ثابت موحّد",
-      f2Text: "نفس QR لكل الملصقات — توفير كبير في تكاليف الطباعة.",
+      f2Text: "نفس QR لكل الملصقات — توفير في الطباعة.",
       f3Title: "تحقق فوري",
-      f3Text: "الزبون يمسح ويكتب الكود، والنتيجة تظهر في أقل من ثانية.",
+      f3Text: "النتيجة تظهر في أقل من ثانية.",
       f4Title: "3 لغات",
-      f4Text: "واجهة كاملة بالعربية والفرنسية والإنجليزية مع دعم RTL.",
+      f4Text: "عربي، فرنسي، إنجليزي مع دعم RTL.",
       f5Title: "إحصائيات دقيقة",
-      f5Text: "تتبّع كل عملية تحقق مع IP، التاريخ، والموقع الجغرافي.",
+      f5Text: "تتبّع كل تحقق مع IP والتاريخ والموقع.",
       f6Title: "مساعد ذكي",
-      f6Text: "روبوت دردشة بالذكاء الاصطناعي يجيب على أسئلة الزبائن.",
+      f6Text: "روبوت دردشة AI للإجابة على الزبائن.",
       f7Title: "خريطة حرارية",
-      f7Text: "رؤية جغرافية لكل بلاغات التقليد في 58 ولاية.",
+      f7Text: "رؤية جغرافية لكل البلاغات (58 ولاية).",
       f8Title: "PWA + Offline",
-      f8Text: "يعمل بدون تحميل وبدون إنترنت، مع حفظ آخر التحققات.",
+      f8Text: "يعمل بدون تحميل وبدون إنترنت.",
       f9Title: "كشف البوتات",
-      f9Text: "حماية تلقائية من السكريبتات ومحاولات الاختراق.",
-      certEyebrow: "ثقة وأمان",
-      certTitle: "تقنيات عالمية المستوى",
-      c1Desc: "تشفير عسكري",
-      c2Title: "صنع في الجزائر",
-      c2Desc: "فخر وطني",
-      c3Desc: "استجابة <1s",
-      c4Desc: "بدون تحميل",
-      c5Desc: "عربي فرنسي إنجليزي",
-      c6Desc: "حماية قاعدة البيانات",
-      c7Desc: "ذكاء اصطناعي",
-      c8Desc: "متاح دائمًا",
+      f9Text: "حماية تلقائية من السكريبتات.",
       faqEyebrow: "الأسئلة الشائعة",
       faqTitle: "إجابات فورية لأسئلتك",
       faqSub: "كل ما تحتاج معرفته عن النظام.",
       brandsEyebrow: "للعلامات التجارية",
-      brandsTitle: "احمِ علامتك التجارية باحترافية",
+      brandsTitle: "احمِ علامتك التجارية",
       brandsText: "انضم إلى العلامات التجارية التي تثق بنا. احصل على لوحة تحكم كاملة لإدارة أكوادك ومتابعة بلاغات التقليد.",
       b1: "إنشاء دفعات بأي عدد (100 / 1000 / 10000+)",
       b2: "تشفير كامل للأكواد في قاعدة البيانات",
@@ -1453,10 +1214,10 @@
       card1Total: "المجموع",
       card2Title: "آخر التحققات",
       finalTitle: "هل أنت مستعد لحماية منتجاتك؟",
-      finalText: "ابدأ اليوم بحماية علامتك التجارية من التقليد واكتسب ثقة زبائنك.",
+      finalText: "ابدأ اليوم بحماية علامتك التجارية من التقليد.",
       ctaStart2: "ابدأ مجانًا",
       ctaVerify2: "جرّب التحقق",
-      footDesc: "نظام جزائري احترافي لحماية المنتجات من التقليد عبر تقنيات QR والذكاء الاصطناعي.",
+      footDesc: "نظام جزائري احترافي لحماية المنتجات من التقليد.",
       footCol1: "المنصة",
       footCol2: "الشركة",
       footCol3: "تواصل",
@@ -1472,7 +1233,7 @@
       heroBadge: "🥇 Plateforme d'authenticité #1 en Algérie",
       heroTitle1: "Protégez vos produits de",
       heroTitle2: "la contrefaçon",
-      heroLead: "Système professionnel de vérification d'authenticité via QR fixe et code secret caché. Chiffrement AES-256, détection instantanée de contrefaçon, statistiques en temps réel.",
+      heroLead: "Système professionnel de vérification d'authenticité via QR fixe et code secret caché. Chiffrement AES-256, détection instantanée.",
       ctaVerify: "Vérifier un produit",
       ctaBrands: "Pour les marques",
       phoneSub: "Entrez le code secret",
@@ -1484,59 +1245,48 @@
       stat4: "Toujours disponible",
       howEyebrow: "Comment ça marche",
       howTitle: "4 étapes simples",
-      howSub: "Moins de 10 secondes. Aucune application requise.",
+      howSub: "Moins de 10 secondes.",
       step1Title: "📱 Scannez le QR",
-      step1Text: "Ouvrez l'appareil photo et scannez le QR sur l'étiquette.",
+      step1Text: "Ouvrez l'appareil photo et scannez.",
       step2Title: "✂️ Grattez la zone",
-      step2Text: "Révélez le code secret sous la couche argentée.",
+      step2Text: "Révélez le code secret.",
       step3Title: "🔢 Entrez le code",
-      step3Text: "Saisissez le code sur la page de vérification.",
+      step3Text: "Saisissez le code.",
       step4Title: "✅ Résultat immédiat",
-      step4Text: "Vous savez en une seconde si le produit est authentique.",
+      step4Text: "Vous savez en une seconde.",
       featEyebrow: "Fonctionnalités",
       featTitle: "Un système complet",
-      featSub: "Tout ce dont vous avez besoin pour protéger votre marque.",
+      featSub: "Tout pour protéger votre marque.",
       f1Title: "Chiffrement AES-256",
-      f1Text: "Tous les codes secrets sont chiffrés en base de données. Impossible à lire même en cas de fuite.",
+      f1Text: "Tous les codes secrets sont chiffrés.",
       f2Title: "QR fixe unique",
-      f2Text: "Même QR pour toutes les étiquettes — économie considérable d'impression.",
+      f2Text: "Même QR pour toutes les étiquettes.",
       f3Title: "Vérification instantanée",
-      f3Text: "Le client scanne, entre le code, résultat en moins d'une seconde.",
+      f3Text: "Résultat en moins d'une seconde.",
       f4Title: "3 langues",
-      f4Text: "Interface complète en arabe, français et anglais avec support RTL.",
+      f4Text: "Arabe, français et anglais avec RTL.",
       f5Title: "Statistiques précises",
-      f5Text: "Suivez chaque vérification avec IP, date et géolocalisation.",
+      f5Text: "Suivez chaque vérification avec IP et date.",
       f6Title: "Assistant IA",
-      f6Text: "Chatbot propulsé par l'IA pour répondre aux clients.",
+      f6Text: "Chatbot propulsé par l'IA.",
       f7Title: "Carte thermique",
-      f7Text: "Vue géographique de tous les signalements dans 58 wilayas.",
+      f7Text: "Vue géographique des signalements.",
       f8Title: "PWA + Offline",
-      f8Text: "Fonctionne sans téléchargement et hors ligne.",
+      f8Text: "Fonctionne hors ligne.",
       f9Title: "Détection de bots",
-      f9Text: "Protection automatique contre scripts et tentatives d'intrusion.",
-      certEyebrow: "Confiance",
-      certTitle: "Technologies de classe mondiale",
-      c1Desc: "Chiffrement militaire",
-      c2Title: "Fabriqué en Algérie",
-      c2Desc: "Fierté nationale",
-      c3Desc: "Réponse <1s",
-      c4Desc: "Sans téléchargement",
-      c5Desc: "Arabe, français, anglais",
-      c6Desc: "Protection BDD",
-      c7Desc: "Intelligence artificielle",
-      c8Desc: "Toujours disponible",
+      f9Text: "Protection automatique.",
       faqEyebrow: "Questions fréquentes",
       faqTitle: "Réponses instantanées",
-      faqSub: "Tout ce que vous devez savoir sur le système.",
+      faqSub: "Tout ce que vous devez savoir.",
       brandsEyebrow: "Pour les marques",
-      brandsTitle: "Protégez votre marque professionnellement",
-      brandsText: "Rejoignez les marques qui nous font confiance. Obtenez un tableau de bord complet pour gérer vos codes et suivre les signalements.",
-      b1: "Créez des lots de n'importe quelle taille (100 / 1000 / 10000+)",
-      b2: "Chiffrement complet des codes en base de données",
-      b3: "Impression d'étiquettes professionnelles avec ligne de pliage",
-      b4: "Suivi en temps réel de chaque vérification",
-      b5: "Tableau de bord dédié à vos statistiques",
-      b6: "Notifications en temps réel en cas de contrefaçon",
+      brandsTitle: "Protégez votre marque",
+      brandsText: "Rejoignez les marques qui nous font confiance.",
+      b1: "Créez des lots de n'importe quelle taille",
+      b2: "Chiffrement complet des codes",
+      b3: "Impression d'étiquettes professionnelles",
+      b4: "Suivi en temps réel",
+      b5: "Tableau de bord dédié",
+      b6: "Notifications en temps réel",
       ctaStart: "Commencer gratuitement",
       card1Title: "Tableau de bord",
       card1Unused: "Non utilisés",
@@ -1544,10 +1294,10 @@
       card1Total: "Total",
       card2Title: "Dernières vérifications",
       finalTitle: "Prêt à protéger vos produits ?",
-      finalText: "Protégez votre marque de la contrefaçon et gagnez la confiance de vos clients.",
+      finalText: "Protégez votre marque dès aujourd'hui.",
       ctaStart2: "Commencer",
       ctaVerify2: "Essayer",
-      footDesc: "Système algérien professionnel de protection des produits contre la contrefaçon via QR et IA.",
+      footDesc: "Système algérien professionnel de protection contre la contrefaçon.",
       footCol1: "Plateforme",
       footCol2: "Entreprise",
       footCol3: "Contact",
@@ -1563,7 +1313,7 @@
       heroBadge: "🥇 #1 Authenticity Platform in Algeria",
       heroTitle1: "Protect your products from",
       heroTitle2: "counterfeiting",
-      heroLead: "Professional authentication system with fixed QR code and hidden secret code. AES-256 encryption, instant counterfeit detection, real-time statistics.",
+      heroLead: "Professional authentication system with fixed QR code and hidden secret code. AES-256 encryption, instant counterfeit detection.",
       ctaVerify: "Verify a product",
       ctaBrands: "For brands",
       phoneSub: "Enter secret code",
@@ -1575,59 +1325,48 @@
       stat4: "Always available",
       howEyebrow: "How it works",
       howTitle: "4 simple steps",
-      howSub: "Takes less than 10 seconds. No app required.",
+      howSub: "Takes less than 10 seconds.",
       step1Title: "📱 Scan QR",
-      step1Text: "Open your phone camera and scan the QR on the label.",
+      step1Text: "Open your camera and scan.",
       step2Title: "✂️ Scratch the area",
-      step2Text: "Reveal the secret code hidden under the silver layer.",
+      step2Text: "Reveal the secret code.",
       step3Title: "🔢 Enter the code",
-      step3Text: "Type the code on the verification page.",
+      step3Text: "Type the code.",
       step4Title: "✅ Instant result",
-      step4Text: "Know in a second if the product is authentic.",
+      step4Text: "Know in a second.",
       featEyebrow: "Features",
       featTitle: "A complete system",
-      featSub: "Everything you need to protect your brand.",
+      featSub: "Everything to protect your brand.",
       f1Title: "AES-256 Encryption",
-      f1Text: "All secret codes are encrypted in the database. Unreadable even if leaked.",
+      f1Text: "All codes are encrypted.",
       f2Title: "One fixed QR",
-      f2Text: "Same QR for all labels — significant printing savings.",
+      f2Text: "Same QR for all labels.",
       f3Title: "Instant verification",
-      f3Text: "Customer scans, enters code, result in less than a second.",
+      f3Text: "Result in less than a second.",
       f4Title: "3 languages",
-      f4Text: "Full interface in Arabic, French and English with RTL support.",
+      f4Text: "Arabic, French, English.",
       f5Title: "Accurate statistics",
-      f5Text: "Track every verification with IP, date and geolocation.",
+      f5Text: "Track every verification.",
       f6Title: "AI Assistant",
-      f6Text: "AI-powered chatbot to answer customer questions.",
+      f6Text: "AI-powered chatbot.",
       f7Title: "Heatmap",
-      f7Text: "Geographic view of all counterfeit reports in 58 wilayas.",
+      f7Text: "Geographic view of reports.",
       f8Title: "PWA + Offline",
-      f8Text: "Works without download and offline.",
+      f8Text: "Works offline.",
       f9Title: "Bot detection",
-      f9Text: "Automatic protection against scripts and intrusion attempts.",
-      certEyebrow: "Trust",
-      certTitle: "World-class technologies",
-      c1Desc: "Military-grade encryption",
-      c2Title: "Made in Algeria",
-      c2Desc: "National pride",
-      c3Desc: "Response <1s",
-      c4Desc: "No download needed",
-      c5Desc: "Arabic, French, English",
-      c6Desc: "Database protection",
-      c7Desc: "Artificial intelligence",
-      c8Desc: "Always available",
+      f9Text: "Automatic protection.",
       faqEyebrow: "FAQ",
       faqTitle: "Instant answers",
-      faqSub: "Everything you need to know about the system.",
+      faqSub: "Everything you need to know.",
       brandsEyebrow: "For brands",
-      brandsTitle: "Protect your brand professionally",
-      brandsText: "Join the brands that trust us. Get a complete dashboard to manage your codes and track counterfeit reports.",
-      b1: "Create batches of any size (100 / 1000 / 10000+)",
-      b2: "Full code encryption in database",
-      b3: "Professional label printing with fold line",
-      b4: "Real-time tracking of each verification",
-      b5: "Dedicated dashboard for your statistics",
-      b6: "Real-time notifications on counterfeit detection",
+      brandsTitle: "Protect your brand",
+      brandsText: "Join the brands that trust us.",
+      b1: "Create batches of any size",
+      b2: "Full code encryption",
+      b3: "Professional label printing",
+      b4: "Real-time tracking",
+      b5: "Dedicated dashboard",
+      b6: "Real-time notifications",
       ctaStart: "Start for free",
       card1Title: "Dashboard",
       card1Unused: "Unused",
@@ -1635,10 +1374,10 @@
       card1Total: "Total",
       card2Title: "Latest verifications",
       finalTitle: "Ready to protect your products?",
-      finalText: "Protect your brand from counterfeiting and earn your customers' trust.",
+      finalText: "Protect your brand today.",
       ctaStart2: "Get started",
       ctaVerify2: "Try it",
-      footDesc: "Algerian professional system to protect products from counterfeiting via QR and AI.",
+      footDesc: "Algerian professional system against counterfeiting.",
       footCol1: "Platform",
       footCol2: "Company",
       footCol3: "Contact",
@@ -1664,13 +1403,7 @@
 
   function applyTranslations() {
     document.querySelectorAll("[data-i18n]").forEach(el => {
-      const key = el.dataset.i18n;
-      const translation = t(key);
-      if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
-        el.placeholder = translation;
-      } else {
-        el.textContent = translation;
-      }
+      el.textContent = t(el.dataset.i18n);
     });
 
     document.title = currentLang === "ar"
@@ -1718,7 +1451,26 @@
   }
   updateDarkIcon();
 
-  loadFAQ();
+  // ============================================================
+  // 🚀 LAZY LOAD FAQ
+  // ============================================================
+  function initFAQ() {
+    const faqList = document.getElementById("faqList");
+    if (!faqList) return;
+
+    if ("IntersectionObserver" in window) {
+      const faqObserver = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          loadFAQ();
+          faqObserver.disconnect();
+        }
+      }, { rootMargin: "300px" });
+      faqObserver.observe(faqList);
+    } else {
+      loadFAQ();
+    }
+  }
+  initFAQ();
 </script>
 
 <script src="/bot-guard.js"></script>
