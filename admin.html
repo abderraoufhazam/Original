@@ -174,6 +174,42 @@
       <div id="searchResult" class="result hidden"></div>
     </section>
 
+    <section class="panel" id="panel-adv-search">
+  <h2>🔎 Recherche avancée</h2>
+  <p class="muted">Filtrez les codes par marque, statut, date ou référence.</p>
+
+  <div class="form-grid" style="margin-top:16px">
+    <input id="advSearchText" placeholder="Marque, code, lot, référence..." class="full">
+
+    <select id="advSearchStatus" style="margin-top:0">
+      <option value="">🏷️ Tous les statuts</option>
+      <option value="PENDING">⏳ PENDING</option>
+      <option value="UNUSED">🟢 UNUSED</option>
+      <option value="USED">🔵 USED</option>
+      <option value="DISABLED">🔴 DISABLED</option>
+      <option value="EXPIRED">⏰ EXPIRED</option>
+    </select>
+
+    <select id="advSearchLimit" style="margin-top:0">
+      <option value="50">50 résultats</option>
+      <option value="100" selected>100 résultats</option>
+      <option value="500">500 résultats</option>
+      <option value="1000">1000 résultats</option>
+    </select>
+
+    <input id="advSearchDateFrom" type="date" placeholder="Du">
+    <input id="advSearchDateTo" type="date" placeholder="Au">
+  </div>
+
+  <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+    <button id="advSearchBtn" style="flex:1;min-width:130px">🔍 RECHERCHER</button>
+    <button id="advExportBtn" style="flex:1;min-width:130px;background:linear-gradient(135deg,#0ea5e9,#0284c7)">📊 EXCEL</button>
+    <button id="advResetBtn" style="flex:1;min-width:130px;background:#64748b">↺ RÉINITIALISER</button>
+  </div>
+
+  <div id="advSearchStats" class="stats-grid" style="margin-top:22px;display:none"></div>
+  <div id="advSearchResults" style="margin-top:18px"></div>
+    </section>
     <section class="panel" id="panel-manage">
       <h2>Gérer un lot</h2>
       <p class="muted">Chargez un lot par son numéro pour le visualiser, l'imprimer ou le modifier.</p>
