@@ -214,14 +214,14 @@ async function handleReport(req, res) {
       });
     }
 
-    // 🔔 إشعار واتساب (non-bloquant)
-    sendWhatsApp(buildReportMessage({
-      wilaya: cleanWilaya,
-      product_brand: cleanBrand,
-      product_name: cleanProductName,
-      comment: cleanComment,
-      ai_analyzed: !!(cleanBrand || cleanProductName)
-    })).catch(e => console.warn('WhatsApp report:', e));
+    // 🔔 إشعار واتساب
+await sendWhatsApp(buildReportMessage({
+  wilaya: cleanWilaya,
+  product_brand: cleanBrand,
+  product_name: cleanProductName,
+  comment: cleanComment,
+  ai_analyzed: !!(cleanBrand || cleanProductName)
+}));
 
     return res.status(200).json({
       status: 'OK',
