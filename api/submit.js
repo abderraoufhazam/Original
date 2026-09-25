@@ -1,8 +1,6 @@
 // api/submit.js
-// API موحّد: feedback (تقييمات) + report (بلاغات التقليد)
-// الاستخدام:
-//   POST /api/submit?type=feedback   { secret_code, type, rating, comment }
-//   POST /api/submit?type=report     { attempted_code, wilaya, comment, product_image, ... }
+// API موحّد: feedback + report + message + signup
+// + إشعارات واتساب تلقائية للأدمن
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -18,10 +16,12 @@ export default async function handler(req, res) {
 
   if (type === 'feedback') return handleFeedback(req, res);
   if (type === 'report')   return handleReport(req, res);
+  if (type === 'message')  return handleMessage(req, res);
+  if (type === 'signup')   return handleSignup(req, res);
 
   return res.status(400).json({
     status: 'ERROR',
-    message: 'Type invalide. Utilisez ?type=feedback ou ?type=report'
+    message: 'Type invalide. Utilisez: feedback, report, message ou signup'
   });
 }
 
@@ -99,7 +99,7 @@ async function handleFeedback(req, res) {
 }
 
 // ============================================================
-// TYPE 2: REPORT — بلاغات التقليد
+// TYPE 2: REPORT — بلاغات التقليد + إشعار واتساب
 // ============================================================
 async function handleReport(req, res) {
   try {
@@ -214,6 +214,15 @@ async function handleReport(req, res) {
       });
     }
 
+    // 🔔 إشعار واتساب (non-bloquant)
+    sendWhatsApp(buildReportMessage({
+      wilaya: cleanWilaya,
+      product_brand: cleanBrand,
+      product_name: cleanProductName,
+      comment: cleanComment,
+      ai_analyzed: !!(cleanBrand || cleanProductName)
+    })).catch(e => console.warn('WhatsApp report:', e));
+
     return res.status(200).json({
       status: 'OK',
       message: 'Signalement enregistré. Merci !',
@@ -228,4 +237,156 @@ async function handleReport(req, res) {
       detail: String(error).slice(0, 200)
     });
   }
+}
+
+// ============================================================
+// TYPE 3: MESSAGE — رسائل الماركات + إشعار واتساب
+// (الرسالة تُحفظ في brand_messages من contact.html)
+// ============================================================
+async function handleMessage(req, res) {
+  try {
+    const { brand_name, email, phone, subject, message } = req.body || {};
+
+    if (!brand_name || !email) {
+      return res.status(400).json({ status: 'ERROR', message: 'Données manquantes' });
+    }
+
+    // 🔔 إشعار واتساب
+    await sendWhatsApp(buildMessageNotification({
+      brand_name,
+      email,
+      phone,
+      subject,
+      message
+    }));
+
+    return res.status(200).json({
+      status: 'OK',
+      message: 'Notification envoyée'
+    });
+
+  } catch (error) {
+    console.error('Handler error:', error);
+    return res.status(500).json({
+      status: 'ERROR',
+      message: 'Erreur inattendue',
+      detail: String(error).slice(0, 200)
+    });
+  }
+}
+
+// ============================================================
+// TYPE 4: SIGNUP — تسجيل ماركة جديدة + إشعار واتساب
+// ============================================================
+async function handleSignup(req, res) {
+  try {
+    const { brand_name, email, phone } = req.body || {};
+
+    if (!brand_name || !email) {
+      return res.status(400).json({ status: 'ERROR', message: 'Données manquantes' });
+    }
+
+    // 🔔 إشعار واتساب
+    await sendWhatsApp(buildSignupMessage({
+      brand_name,
+      email,
+      phone
+    }));
+
+    return res.status(200).json({
+      status: 'OK',
+      message: 'Notification envoyée'
+    });
+
+  } catch (error) {
+    console.error('Handler error:', error);
+    return res.status(500).json({
+      status: 'ERROR',
+      message: 'Erreur inattendue',
+      detail: String(error).slice(0, 200)
+    });
+  }
+}
+
+// ============================================================
+// WHATSAPP HELPER
+// ============================================================
+async function sendWhatsApp(message) {
+  const phone = process.env.CALLMEBOT_PHONE;
+  const apikey = process.env.CALLMEBOT_API_KEY;
+
+  if (!phone || !apikey) {
+    console.warn('CallMeBot not configured');
+    return false;
+  }
+
+  try {
+    const url = `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(phone)}&text=${encodeURIComponent(message)}&apikey=${encodeURIComponent(apikey)}`;
+    const r = await fetch(url);
+    return r.ok;
+  } catch (e) {
+    console.warn('WhatsApp send error:', e);
+    return false;
+  }
+}
+
+function buildReportMessage(body) {
+  const { wilaya, product_brand, product_name, comment, ai_analyzed } = body;
+
+  const lines = [
+    '🚨 *NOUVEAU SIGNALEMENT*',
+    '',
+    `📍 *Wilaya:* ${wilaya || '—'}`,
+  ];
+
+  if (product_brand) lines.push(`🏢 *Marque:* ${product_brand}`);
+  if (product_name) lines.push(`📦 *Produit:* ${product_name}`);
+  if (ai_analyzed) lines.push(`🤖 *Analysé par IA:* Oui`);
+  if (comment) lines.push('', `💬 *Commentaire:*`, truncate(comment, 200));
+
+  lines.push('', '👉 Ouvrez votre dashboard pour traiter.');
+
+  return lines.join('\n');
+}
+
+function buildMessageNotification(body) {
+  const { brand_name, email, phone, subject, message } = body;
+
+  const lines = [
+    '📩 *NOUVEAU MESSAGE*',
+    '',
+    `🏢 *Marque:* ${brand_name || '—'}`,
+    `📧 *Email:* ${email || '—'}`,
+  ];
+
+  if (phone) lines.push(`📱 *Téléphone:* ${phone}`);
+  if (subject) lines.push('', `📌 *Sujet:* ${subject}`);
+  if (message) lines.push('', `💬 *Message:*`, truncate(message, 300));
+
+  lines.push('', '👉 Répondez depuis le dashboard admin.');
+
+  return lines.join('\n');
+}
+
+function buildSignupMessage(body) {
+  const { brand_name, email, phone } = body;
+
+  const lines = [
+    '🎉 *NOUVELLE MARQUE INSCRITE*',
+    '',
+    `🏢 *Nom:* ${brand_name || '—'}`,
+    `📧 *Email:* ${email || '—'}`,
+  ];
+
+  if (phone) lines.push(`📱 *Téléphone:* ${phone}`);
+
+  lines.push('', '👉 Contactez-la pour la bienvenue.');
+
+  return lines.join('\n');
+}
+
+function truncate(text, max) {
+  const str = String(text || '');
+  if (str.length <= max) return str;
+  return str.slice(0, max - 3) + '...';
 }
