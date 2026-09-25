@@ -97,7 +97,7 @@ async function init() {
   const { data: { session } } = await sb.auth.getSession();
   
   if (!session) {
-    window.location.href = "/signup";
+    window.location.href = "/login";
     return;
   }
 
