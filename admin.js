@@ -52,6 +52,7 @@ const PANEL_TITLES = {
   dashboard: "Tableau de bord",
   create: "Créer un lot",
   search: "Rechercher un code",
+  "adv-search": "Recherche avancée",        
   manage: "Gérer un lot",
   log: "Journal",
   feedback: "Avis clients",
@@ -81,6 +82,7 @@ function showPanel(name) {
   if (name === "messages") loadMessages();
   if (name === "brands") loadBrands();
   if (name === "visitors") loadVisitors();
+  if (name === "adv-search") loadAdvancedSearch();
   if (name === "faq") loadFAQ();
   if (name === "fakes") loadFakes();
 }
@@ -2393,3 +2395,150 @@ if (_cdb) _cdb.onclick = async () => {
     btn.textContent = "🗑️ SUPPRIMER DÉFINITIVEMENT";
   }
 };
+
+// ============================================================
+// ADVANCED SEARCH
+// ============================================================
+let advSearchData = [];
+
+async function loadAdvancedSearch() {
+  const resultsBox = $("advSearchResults");
+  const statsBox = $("advSearchStats");
+  if (!resultsBox) return;
+
+  const text = ($("advSearchText")?.value || "").trim();
+  const status = ($("advSearchStatus")?.value || "").trim();
+  const limit = parseInt($("advSearchLimit")?.value || "100", 10);
+  const dateFrom = $("advSearchDateFrom")?.value || "";
+  const dateTo = $("advSearchDateTo")?.value || "";
+
+  resultsBox.innerHTML = `<p class="muted">Recherche en cours...</p>`;
+  if (statsBox) statsBox.style.display = "none";
+
+  try {
+    let query = sb
+      .from("qr_codes")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (status) {
+      query = query.eq("secret_status", status);
+    }
+    if (dateFrom) {
+      query = query.gte("created_at", dateFrom + "T00:00:00");
+    }
+    if (dateTo) {
+      query = query.lte("created_at", dateTo + "T23:59:59");
+    }
+
+    if (text) {
+      const safeText = text.replace(/[%,()]/g, "");
+      query = query.or(
+        `brand.ilike.%${safeText}%,lot.ilike.%${safeText}%,secret_code.ilike.%${safeText}%,reference.ilike.%${safeText}%,product_name.ilike.%${safeText}%`
+      );
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      resultsBox.innerHTML = `<p class="muted">Erreur : ${escapeHtml(error.message)}</p>`;
+      return;
+    }
+
+    advSearchData = data || [];
+
+    if (advSearchData.length === 0) {
+      resultsBox.innerHTML = `<p class="muted" style="text-align:center;padding:40px 0">Aucun résultat.</p>`;
+      return;
+    }
+
+    const counts = { PENDING: 0, UNUSED: 0, USED: 0, DISABLED: 0, EXPIRED: 0 };
+    advSearchData.forEach(r => {
+      if (counts[r.secret_status] !== undefined) counts[r.secret_status]++;
+    });
+
+    if (statsBox) {
+      statsBox.style.display = "grid";
+      statsBox.innerHTML = `
+        <div class="stat-card"><div class="stat-num">${advSearchData.length}</div><div class="stat-label">TOTAL</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#a16207">${counts.PENDING}</div><div class="stat-label">PENDING</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#16a34a">${counts.UNUSED}</div><div class="stat-label">UNUSED</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#2563eb">${counts.USED}</div><div class="stat-label">USED</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#dc2626">${counts.DISABLED}</div><div class="stat-label">DISABLED</div></div>
+      `;
+    }
+
+    let html = "";
+    advSearchData.forEach(r => {
+      const statusClass =
+        r.secret_status === "UNUSED" ? "success" :
+        r.secret_status === "PENDING" ? "warning" :
+        r.secret_status === "USED" ? "success" :
+        "danger";
+
+      const date = r.created_at ? new Date(r.created_at).toLocaleString() : "—";
+      const usedDate = r.used_at ? new Date(r.used_at).toLocaleString() : null;
+
+      html += `
+        <div class="log-row log-${statusClass}" style="padding:14px">
+          <div class="log-top">
+            <span class="log-result log-result-${statusClass}">${escapeHtml(r.secret_status)}</span>
+            <span class="log-date">${escapeHtml(date)}</span>
+          </div>
+          <div class="log-code" style="font-size:14px">${escapeHtml(r.secret_code || "—")}</div>
+          <div class="log-meta">
+            ${r.brand ? `<span>🏷 ${escapeHtml(r.brand)}</span>` : ""}
+            ${r.lot ? `<span>📦 ${escapeHtml(r.lot)}</span>` : ""}
+            ${r.reference ? `<span>🔖 ${escapeHtml(r.reference)}</span>` : ""}
+            ${usedDate ? `<span>✓ ${escapeHtml(usedDate)}</span>` : ""}
+          </div>
+        </div>`;
+    });
+    resultsBox.innerHTML = html;
+
+  } catch (err) {
+    resultsBox.innerHTML = `<p class="muted">Erreur : ${escapeHtml(err.message)}</p>`;
+  }
+}
+
+const _advBtn = $("advSearchBtn");
+if (_advBtn) _advBtn.onclick = () => loadAdvancedSearch();
+
+const _advReset = $("advResetBtn");
+if (_advReset) _advReset.onclick = () => {
+  if ($("advSearchText")) $("advSearchText").value = "";
+  if ($("advSearchStatus")) $("advSearchStatus").value = "";
+  if ($("advSearchLimit")) $("advSearchLimit").value = "100";
+  if ($("advSearchDateFrom")) $("advSearchDateFrom").value = "";
+  if ($("advSearchDateTo")) $("advSearchDateTo").value = "";
+  const rb = $("advSearchResults"); if (rb) rb.innerHTML = "";
+  const sb2 = $("advSearchStats"); if (sb2) sb2.style.display = "none";
+  advSearchData = [];
+};
+
+const _advExport = $("advExportBtn");
+if (_advExport) _advExport.onclick = () => {
+  if (!advSearchData || advSearchData.length === 0) {
+    alert("Aucun résultat à exporter. Lancez d'abord une recherche.");
+    return;
+  }
+
+  const rows = advSearchData.map(r => ({
+    "Code": r.secret_code || "",
+    "Statut": r.secret_status || "",
+    "Marque": r.brand || "",
+    "Produit": r.product_name || "",
+    "Référence": r.reference || "",
+    "Lot": r.lot || "",
+    "Créé le": r.created_at ? new Date(r.created_at).toLocaleString() : "",
+    "Utilisé le": r.used_at ? new Date(r.used_at).toLocaleString() : ""
+  }));
+
+  downloadExcel(rows, "Recherche_Avancee", "Résultats");
+};
+
+const _advText = $("advSearchText");
+if (_advText) _advText.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") loadAdvancedSearch();
+});
