@@ -1804,7 +1804,7 @@ if (_actBtn) _actBtn.onclick = async () => {
   _actBtn.textContent = "⏳ Activation...";
 
   try {
-    const res = await fetch("/api/activate-batch", {
+    const res = await fetch("/api/batch-actions?action=activate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ lot: loadedLot, access_token: session.access_token })
@@ -1836,7 +1836,7 @@ if (_disBtn) _disBtn.onclick = async () => {
   _disBtn.textContent = "⏳ Désactivation...";
 
   try {
-    const res = await fetch("/api/disable-batch", {
+    const res = await fetch("/api/batch-actions?action=disable", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ lot: loadedLot, access_token: session.access_token })
