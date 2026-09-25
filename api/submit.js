@@ -1,6 +1,6 @@
 // api/submit.js
 // API موحّد: feedback + report + message + signup
-// + إشعارات واتساب تلقائية للأدمن
+// + إشعارات واتساب تلقائية للأدمن عبر Green API
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -241,7 +241,6 @@ async function handleReport(req, res) {
 
 // ============================================================
 // TYPE 3: MESSAGE — رسائل الماركات + إشعار واتساب
-// (الرسالة تُحفظ في brand_messages من contact.html)
 // ============================================================
 async function handleMessage(req, res) {
   try {
@@ -309,23 +308,53 @@ async function handleSignup(req, res) {
 }
 
 // ============================================================
-// WHATSAPP HELPER
+// WHATSAPP HELPER — Green API
 // ============================================================
 async function sendWhatsApp(message) {
-  const phone = process.env.CALLMEBOT_PHONE;
-  const apikey = process.env.CALLMEBOT_API_KEY;
+  const apiUrl = process.env.GREEN_API_URL || 'https://7107.api.greenapi.com';
+  const idInstance = process.env.GREEN_ID_INSTANCE || '7107';
+  const apiToken = process.env.GREEN_API_TOKEN;
+  const to = process.env.WHATSAPP_TO;
 
-  if (!phone || !apikey) {
-    console.warn('CallMeBot not configured');
+  if (!apiUrl || !idInstance || !apiToken || !to) {
+    console.warn('Green API not configured:', {
+      hasApiUrl: !!apiUrl,
+      hasIdInstance: !!idInstance,
+      hasApiToken: !!apiToken,
+      hasTo: !!to
+    });
     return false;
   }
 
   try {
-    const url = `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(phone)}&text=${encodeURIComponent(message)}&apikey=${encodeURIComponent(apikey)}`;
-    const r = await fetch(url);
-    return r.ok;
+    const url = `${apiUrl}/waInstance${idInstance}/sendMessage/${apiToken}`;
+    const chatId = `${to}@c.us`;
+
+    console.log('Green API: Sending to', chatId);
+
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        chatId: chatId,
+        message: message
+      })
+    });
+
+    const data = await r.json();
+    
+    if (!r.ok) {
+      console.error('Green API error:', data);
+      return false;
+    }
+
+    console.log('Green API success:', data);
+    return true;
+
   } catch (e) {
-    console.warn('WhatsApp send error:', e);
+    console.warn('Green API send error:', e);
     return false;
   }
 }
