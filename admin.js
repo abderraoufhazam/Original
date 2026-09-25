@@ -3,7 +3,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ============================================================
-// 🔒 قائمة الأدمن المسموح لهم بالدخول
+// 🔒 قائمة الأدمن
 // ============================================================
 const ADMIN_EMAILS = [
   "mepirf@gmail.com",
@@ -39,10 +39,20 @@ let pendingDeleteCount = 0;
 
 let editingFaqId = null;
 
+// Orders state
+let currentOrders = [];
+let orderItemCounter = 0;
+let allBrandsCache = [];
+
 function escapeHtml(v = "") {
   return String(v).replace(/[&<>"']/g, c => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
   }[c]));
+}
+
+function formatMoney(amount) {
+  const num = parseFloat(amount || 0);
+  return num.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + " DA";
 }
 
 // ============================================================
@@ -52,8 +62,9 @@ const PANEL_TITLES = {
   dashboard: "Tableau de bord",
   create: "Créer un lot",
   search: "Rechercher un code",
-  "adv-search": "Recherche avancée",        
+  "adv-search": "Recherche avancée",
   manage: "Gérer un lot",
+  orders: "Commandes",
   log: "Journal",
   feedback: "Avis clients",
   messages: "Messages",
@@ -85,6 +96,7 @@ function showPanel(name) {
   if (name === "adv-search") loadAdvancedSearch();
   if (name === "faq") loadFAQ();
   if (name === "fakes") loadFakes();
+  if (name === "orders") loadOrders();
 }
 
 document.querySelectorAll(".sidebar-nav button").forEach(btn => {
@@ -372,7 +384,7 @@ async function loadBrands() {
   }
 
   try {
-    const res = await fetch("/api/batch-actions?action=list-brands", {
+    const res = await fetch("/api/orders?action=list-brands", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -390,11 +402,9 @@ async function loadBrands() {
 
     const brands = data.brands || [];
     const now = new Date();
-    const last7days = brands.filter(b => {
-      const d = new Date(b.created_at);
-      return (now - d) < 7 * 24 * 60 * 60 * 1000;
-    }).length;
-    const active = brands.filter(b => b.last_sign_in_at).length;
+    const registeredCount = brands.filter(b => b.is_registered).length;
+    const unregisteredCount = brands.filter(b => !b.is_registered).length;
+    const withCodesCount = brands.filter(b => (b.codes_count || 0) > 0).length;
 
     if (statsBox) {
       statsBox.innerHTML = `
@@ -403,60 +413,84 @@ async function loadBrands() {
           <div class="stat-label">TOTAL</div>
         </div>
         <div class="stat-card">
-          <div class="stat-num" style="color:#16a34a">${last7days}</div>
-          <div class="stat-label">7 DERNIERS JOURS</div>
+          <div class="stat-num" style="color:#16a34a">${registeredCount}</div>
+          <div class="stat-label">✅ INSCRITES</div>
         </div>
         <div class="stat-card">
-          <div class="stat-num" style="color:#2563eb">${active}</div>
-          <div class="stat-label">ACTIVES</div>
+          <div class="stat-num" style="color:#eab308">${unregisteredCount}</div>
+          <div class="stat-label">⚠️ NON INSCRITES</div>
         </div>
         <div class="stat-card">
-          <div class="stat-num" style="color:#dc2626">${brands.length - active}</div>
-          <div class="stat-label">INACTIVES</div>
+          <div class="stat-num" style="color:#2563eb">${withCodesCount}</div>
+          <div class="stat-label">📦 AVEC CODES</div>
         </div>
       `;
     }
 
     if (brands.length === 0) {
-      container.innerHTML = `<p class="muted">Aucune marque inscrite pour le moment.</p>`;
+      container.innerHTML = `<p class="muted">Aucune marque pour le moment.</p>`;
       return;
     }
 
     let html = "";
     brands.forEach(b => {
-      const created = b.created_at ? new Date(b.created_at).toLocaleString() : "—";
-      const lastSeen = b.last_sign_in_at ? new Date(b.last_sign_in_at).toLocaleString() : "Jamais connecté";
-      const isRecent = (now - new Date(b.created_at)) < 24 * 60 * 60 * 1000;
+      const tierColors = {
+        'VIP': '#7c3aed',
+        'GOLD': '#eab308',
+        'SILVER': '#94a3b8',
+        'REGULAR': '#64748b'
+      };
+      const tierIcons = { 'VIP': '💎', 'GOLD': '🥇', 'SILVER': '🥈', 'REGULAR': '👤' };
+      const tier = b.tier || 'REGULAR';
 
       html += `
-        <div class="log-row log-${isRecent ? "success" : "warning"}" style="padding:16px">
+        <div class="log-row log-${b.is_registered ? "success" : "warning"}" style="padding:16px">
           <div class="log-top">
-            <span class="log-result log-result-${isRecent ? "success" : "warning"}">
-              ${isRecent ? "🆕 NOUVELLE" : "🏢 MARQUE"}
+            <span class="log-result log-result-${b.is_registered ? "success" : "warning"}">
+              ${b.is_registered ? "✅ INSCRITE" : "⚠️ NON INSCRITE"}
             </span>
-            <span class="log-date">${escapeHtml(created)}</span>
+            <span style="font-size:10px;font-weight:800;padding:4px 10px;border-radius:6px;background:${tierColors[tier]}20;color:${tierColors[tier]}">${tierIcons[tier]} ${tier}</span>
           </div>
 
-          <div style="font-weight:800;font-size:15px;color:inherit;margin:8px 0 6px">
-            ${escapeHtml(b.brand_name || "(sans nom)")}
+          <div style="font-weight:800;font-size:16px;color:inherit;margin:10px 0 6px">
+            🏢 ${escapeHtml(b.brand_name)}
           </div>
 
           <div class="log-meta" style="margin-bottom:10px">
-            <span>📧 ${escapeHtml(b.email)}</span>
+            ${b.email ? `<span>📧 ${escapeHtml(b.email)}</span>` : ""}
             ${b.phone ? `<span>📱 ${escapeHtml(b.phone)}</span>` : ""}
           </div>
 
-          <div style="font-size:11px;color:#64748b;margin-bottom:10px">
-            Dernière connexion : ${escapeHtml(lastSeen)}
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px">
+            <div style="text-align:center;padding:8px;background:var(--bg);border-radius:8px">
+              <div style="font-size:18px;font-weight:900;color:inherit">${b.codes_count || 0}</div>
+              <div style="font-size:9px;color:#64748b;font-weight:800;letter-spacing:0.5px">CODES</div>
+            </div>
+            <div style="text-align:center;padding:8px;background:var(--bg);border-radius:8px">
+              <div style="font-size:18px;font-weight:900;color:inherit">${b.total_orders || 0}</div>
+              <div style="font-size:9px;color:#64748b;font-weight:800;letter-spacing:0.5px">COMMANDES</div>
+            </div>
+            <div style="text-align:center;padding:8px;background:var(--bg);border-radius:8px">
+              <div style="font-size:14px;font-weight:900;color:#16a34a">${formatMoney(b.total_spent || 0)}</div>
+              <div style="font-size:9px;color:#64748b;font-weight:800;letter-spacing:0.5px">DÉPENSÉ</div>
+            </div>
           </div>
 
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
             ${b.phone ? `<a href="https://wa.me/${encodeURIComponent(b.phone.replace(/[^0-9]/g,''))}?text=${encodeURIComponent('Bonjour ' + (b.brand_name || '') + ', bienvenue sur Produit dz ORG !')}" target="_blank" rel="noopener" style="flex:1;padding:8px 12px;background:#25D366;color:#fff;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none;text-align:center;min-width:110px;display:inline-flex;align-items:center;justify-content:center;gap:4px">💬 WhatsApp</a>` : ""}
-            <a href="mailto:${escapeHtml(b.email)}" style="flex:1;padding:8px 12px;background:#0f172a;color:#fff;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none;text-align:center;min-width:110px;display:inline-flex;align-items:center;justify-content:center;gap:4px">📧 Email</a>
+            ${b.email ? `<a href="mailto:${escapeHtml(b.email)}" style="flex:1;padding:8px 12px;background:#0f172a;color:#fff;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none;text-align:center;min-width:110px;display:inline-flex;align-items:center;justify-content:center;gap:4px">📧 Email</a>` : ""}
+            <button onclick="openOrderForBrand('${escapeHtml(b.brand_name).replace(/'/g, "\\'")}','${escapeHtml(b.phone || '').replace(/'/g, "\\'")}','${escapeHtml(b.email || '').replace(/'/g, "\\'")}')" style="flex:1;padding:8px 12px;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border:0;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;margin:0;min-width:110px">📋 Commander</button>
           </div>
         </div>`;
     });
     container.innerHTML = html;
+    allBrandsCache = brands;
+
+    // Populate datalist
+    const dl = $("brandsList");
+    if (dl) {
+      dl.innerHTML = brands.map(b => `<option value="${escapeHtml(b.brand_name)}">`).join("");
+    }
 
   } catch (err) {
     container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(err.message)}</p>`;
@@ -465,6 +499,20 @@ async function loadBrands() {
 
 const _rbb = $("refreshBrandsBtn");
 if (_rbb) _rbb.onclick = () => loadBrands();
+
+window.openOrderForBrand = function(name, phone, email) {
+  showPanel("orders");
+  setTimeout(() => {
+    if ($("newOrderBtn")) $("newOrderBtn").click();
+    setTimeout(() => {
+      if ($("orderBrand")) {
+        $("orderBrand").value = name;
+        $("orderBrandPhone").value = phone || "";
+        $("orderBrandEmail").value = email || "";
+      }
+    }, 100);
+  }, 200);
+};
 
 // ============================================================
 // VISITORS
@@ -491,22 +539,10 @@ async function loadVisitors() {
 
     if (statsBox) {
       statsBox.innerHTML = `
-        <div class="stat-card">
-          <div class="stat-num">${total}</div>
-          <div class="stat-label">TOTAL</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" style="color:#16a34a">${counts.real}</div>
-          <div class="stat-label">🟢 RÉELS</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" style="color:#eab308">${counts.suspicious}</div>
-          <div class="stat-label">🟡 SUSPECTS</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" style="color:#dc2626">${counts.bot}</div>
-          <div class="stat-label">🔴 BOTS</div>
-        </div>
+        <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">TOTAL</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#16a34a">${counts.real}</div><div class="stat-label">🟢 RÉELS</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#eab308">${counts.suspicious}</div><div class="stat-label">🟡 SUSPECTS</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#dc2626">${counts.bot}</div><div class="stat-label">🔴 BOTS</div></div>
       `;
     }
 
@@ -527,7 +563,7 @@ async function loadVisitors() {
       return;
     }
     if (!data || data.length === 0) {
-      container.innerHTML = `<p class="muted">Aucune visite enregistrée pour le moment.</p>`;
+      container.innerHTML = `<p class="muted">Aucune visite enregistrée.</p>`;
       return;
     }
 
@@ -556,24 +592,18 @@ async function loadVisitors() {
             <span class="log-result log-result-${statusClass}">${label}</span>
             <span class="log-date">${escapeHtml(date)}</span>
           </div>
-
           <div style="font-family:monospace;font-size:12px;color:inherit;margin:8px 0">
             <b>IP:</b> ${escapeHtml(v.ip || "—")}
             ${v.country ? ` | <b>Pays:</b> ${escapeHtml(v.country)}` : ""}
           </div>
-
           <div style="font-size:11px;color:#64748b;margin-bottom:8px;word-break:break-all">
             ${escapeHtml(v.path || "/")}
           </div>
-
           <div style="font-size:10px;color:#94a3b8;font-family:monospace;margin-bottom:8px;word-break:break-all">
             ${escapeHtml(ua)}
           </div>
-
           ${v.reason ? `<div style="font-size:10px;color:#dc2626;margin-bottom:6px">Raison: ${escapeHtml(v.reason)}</div>` : ""}
-          <div style="font-size:11px;color:inherit">
-            <b>Bot Score:</b> ${v.bot_score || 0}/100
-          </div>
+          <div style="font-size:11px;color:inherit"><b>Bot Score:</b> ${v.bot_score || 0}/100</div>
         </div>`;
     });
     container.innerHTML = html;
@@ -603,6 +633,13 @@ document.querySelectorAll("#visitorTabs .tab").forEach(t => {
   });
 });
 
+// ⚠️ الجزء الثاني يأتي في الرسالة القادمة — يحتوي على:
+// - FAKES (Contrefaçons)
+// - FAQ
+// - CHARTS
+// - ADVANCED SEARCH
+// - ORDERS (نظام الطلبات الكامل)
+// - AUTH + INIT
 // ============================================================
 // FAKES (Contrefaçons)
 // ============================================================
@@ -685,30 +722,16 @@ async function loadFakes() {
 
     if (statsBox) {
       statsBox.innerHTML = `
-        <div class="stat-card">
-          <div class="stat-num">${total}</div>
-          <div class="stat-label">TOTAL</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" style="color:#dc2626">${newCount}</div>
-          <div class="stat-label">🔴 NOUVEAUX</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" style="color:#16a34a">${reviewedCount}</div>
-          <div class="stat-label">✓ TRAITÉS</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" style="color:#3b82f6">${aiCount}</div>
-          <div class="stat-label">🤖 ANALYSÉS IA</div>
-        </div>
+        <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">TOTAL</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#dc2626">${newCount}</div><div class="stat-label">🔴 NOUVEAUX</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#16a34a">${reviewedCount}</div><div class="stat-label">✓ TRAITÉS</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#3b82f6">${aiCount}</div><div class="stat-label">🤖 ANALYSÉS IA</div></div>
       `;
     }
 
     const wilayaCounts = {};
     (allData || []).forEach(r => {
-      if (r.wilaya) {
-        wilayaCounts[r.wilaya] = (wilayaCounts[r.wilaya] || 0) + 1;
-      }
+      if (r.wilaya) wilayaCounts[r.wilaya] = (wilayaCounts[r.wilaya] || 0) + 1;
     });
 
     const maxCount = Math.max(1, ...Object.values(wilayaCounts));
@@ -723,19 +746,10 @@ async function loadFakes() {
           color = "#94a3b8";
         } else {
           const intensity = c / maxCount;
-          if (intensity > 0.7) {
-            bg = "linear-gradient(135deg, #dc2626, #ef4444)";
-            color = "#fff";
-          } else if (intensity > 0.4) {
-            bg = "linear-gradient(135deg, #f59e0b, #fbbf24)";
-            color = "#fff";
-          } else if (intensity > 0.15) {
-            bg = "linear-gradient(135deg, #fbbf24, #fde047)";
-            color = "#78350f";
-          } else {
-            bg = "linear-gradient(135deg, #fef3c7, #fef9c3)";
-            color = "#a16207";
-          }
+          if (intensity > 0.7) { bg = "linear-gradient(135deg, #dc2626, #ef4444)"; color = "#fff"; }
+          else if (intensity > 0.4) { bg = "linear-gradient(135deg, #f59e0b, #fbbf24)"; color = "#fff"; }
+          else if (intensity > 0.15) { bg = "linear-gradient(135deg, #fbbf24, #fde047)"; color = "#78350f"; }
+          else { bg = "linear-gradient(135deg, #fef3c7, #fef9c3)"; color = "#a16207"; }
         }
         heatHtml += `
           <div style="padding:10px 12px;border-radius:10px;background:${bg};color:${color};text-align:center;font-weight:700;font-size:12px;border:1px solid rgba(0,0,0,0.06)">
@@ -747,7 +761,7 @@ async function loadFakes() {
     }
 
     if (!data || data.length === 0) {
-      container.innerHTML = `<p class="muted">Aucun signalement pour le moment.</p>`;
+      container.innerHTML = `<p class="muted">Aucun signalement.</p>`;
       return;
     }
 
@@ -766,9 +780,7 @@ async function loadFakes() {
             <span class="log-date">${escapeHtml(date)}</span>
           </div>
 
-          ${r.product_image ? `
-            <img src="${escapeHtml(r.product_image)}" alt="Produit" style="max-width:200px;max-height:200px;display:block;margin:10px auto;border-radius:12px;border:1px solid rgba(0,0,0,0.08)">
-          ` : ""}
+          ${r.product_image ? `<img src="${escapeHtml(r.product_image)}" alt="Produit" style="max-width:200px;max-height:200px;display:block;margin:10px auto;border-radius:12px;border:1px solid rgba(0,0,0,0.08)">` : ""}
 
           ${r.product_brand ? `<div style="font-size:14px;font-weight:800;color:inherit;margin:8px 0 4px">🏷️ ${escapeHtml(r.product_brand)}</div>` : ""}
           ${r.product_name ? `<div style="font-size:13px;font-weight:700;color:inherit;margin-bottom:6px">📦 ${escapeHtml(r.product_name)}</div>` : ""}
@@ -777,7 +789,7 @@ async function loadFakes() {
           <div class="details" style="margin-top:10px">
             ${r.wilaya ? `<div><b>📍 Wilaya</b><span>${escapeHtml(r.wilaya)}</span></div>` : ""}
             ${r.attempted_code ? `<div><b>Code essayé</b><span style="font-family:monospace">${escapeHtml(r.attempted_code)}</span></div>` : ""}
-            ${r.ai_analyzed ? `<div><b>Analyse</b><span style="color:#3b82f6">🤖 IA utilisée</span></div>` : ""}
+            ${r.ai_analyzed ? `<div><b>Analyse</b><span style="color:#3b82f6">🤖 IA</span></div>` : ""}
             ${r.ip ? `<div><b>IP</b><span style="font-family:monospace;font-size:11px">${escapeHtml(r.ip)}</span></div>` : ""}
           </div>
 
@@ -797,33 +809,16 @@ async function loadFakes() {
 }
 
 window.markFakeReviewed = async function(id) {
-  const { error } = await sb
-    .from("fake_reports")
-    .update({ status: "REVIEWED" })
-    .eq("id", id);
-
-  if (error) {
-    alert("Erreur : " + error.message);
-    return;
-  }
-
+  const { error } = await sb.from("fake_reports").update({ status: "REVIEWED" }).eq("id", id);
+  if (error) { alert("Erreur : " + error.message); return; }
   loadFakes();
   loadFakesBadge();
 };
 
 window.deleteFake = async function(id) {
   if (!confirm("Confirmer la suppression de ce signalement ?")) return;
-
-  const { error } = await sb
-    .from("fake_reports")
-    .delete()
-    .eq("id", id);
-
-  if (error) {
-    alert("Erreur : " + error.message);
-    return;
-  }
-
+  const { error } = await sb.from("fake_reports").delete().eq("id", id);
+  if (error) { alert("Erreur : " + error.message); return; }
   loadFakes();
   loadFakesBadge();
 };
@@ -864,17 +859,9 @@ if (_efk) _efk.onclick = async () => {
   btn.textContent = "⏳ Export...";
 
   try {
-    const { data, error } = await sb
-      .from("fake_reports")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(5000);
-
+    const { data, error } = await sb.from("fake_reports").select("*").order("created_at", { ascending: false }).limit(5000);
     if (error) throw error;
-    if (!data || data.length === 0) {
-      alert("Aucun signalement à exporter.");
-      return;
-    }
+    if (!data || data.length === 0) { alert("Aucun signalement à exporter."); return; }
 
     const rows = data.map(r => ({
       "Date": r.created_at ? new Date(r.created_at).toLocaleString() : "",
@@ -953,7 +940,7 @@ async function loadFAQ() {
     return;
   }
   if (!data || data.length === 0) {
-    container.innerHTML = `<p class="muted">Aucune question pour le moment.</p>`;
+    container.innerHTML = `<p class="muted">Aucune question.</p>`;
     return;
   }
 
@@ -969,15 +956,12 @@ async function loadFAQ() {
           <span class="log-result log-result-${statusClass}">${label}</span>
           <span class="log-date">#${item.sort_order || 0}</span>
         </div>
-
         <div style="font-weight:800;font-size:14px;color:inherit;margin:8px 0 6px">
           ${escapeHtml(item.question || "(sans titre)")}
         </div>
-
         <div style="font-size:12px;color:#64748b;line-height:1.6;margin-bottom:12px;padding:10px 12px;background:rgba(255,255,255,0.5);border-radius:10px;border:1px solid rgba(0,0,0,0.05)">
           ${escapeHtml((item.answer || "").slice(0, 200))}${(item.answer || "").length > 200 ? "..." : ""}
         </div>
-
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button onclick="editFaqItem(${item.id})" style="flex:1;padding:8px 12px;background:#2563eb;color:#fff;border:0;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;margin:0;min-width:110px">✏️ Modifier</button>
           <button onclick="toggleFaqActive(${item.id}, ${isActive})" style="flex:1;padding:8px 12px;background:${isActive ? "#eab308" : "#16a34a"};color:#fff;border:0;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;margin:0;min-width:110px">${isActive ? "⏸️ Désactiver" : "▶️ Activer"}</button>
@@ -989,33 +973,20 @@ async function loadFAQ() {
 }
 
 window.editFaqItem = async function(id) {
-  const { data } = await sb
-    .from("faq_items")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const { data } = await sb.from("faq_items").select("*").eq("id", id).single();
   if (data) openFaqForm(data);
 };
 
 window.toggleFaqActive = async function(id, isActive) {
-  const { error } = await sb
-    .from("faq_items")
-    .update({ is_active: !isActive, updated_at: new Date().toISOString() })
-    .eq("id", id);
-  if (error) {
-    alert("Erreur : " + error.message);
-    return;
-  }
+  const { error } = await sb.from("faq_items").update({ is_active: !isActive, updated_at: new Date().toISOString() }).eq("id", id);
+  if (error) { alert("Erreur : " + error.message); return; }
   loadFAQ();
 };
 
 window.deleteFaqItem = async function(id) {
   if (!confirm("Confirmer la suppression de cette question ?")) return;
   const { error } = await sb.from("faq_items").delete().eq("id", id);
-  if (error) {
-    alert("Erreur : " + error.message);
-    return;
-  }
+  if (error) { alert("Erreur : " + error.message); return; }
   loadFAQ();
 };
 
@@ -1037,14 +1008,8 @@ if (_sfb) _sfb.onclick = async () => {
   const questionAr = ($("faqQuestionAr")?.value || "").trim();
   const answerAr = ($("faqAnswerAr")?.value || "").trim();
 
-  if (!questionAr || questionAr.length < 3) {
-    alert("السؤال بالعربية مطلوب (3 أحرف على الأقل).");
-    return;
-  }
-  if (!answerAr || answerAr.length < 5) {
-    alert("الجواب بالعربية مطلوب (5 أحرف على الأقل).");
-    return;
-  }
+  if (!questionAr || questionAr.length < 3) { alert("السؤال بالعربية مطلوب."); return; }
+  if (!answerAr || answerAr.length < 5) { alert("الجواب بالعربية مطلوب."); return; }
 
   const payload = {
     question: questionAr,
@@ -1073,10 +1038,7 @@ if (_sfb) _sfb.onclick = async () => {
   _sfb.disabled = false;
   _sfb.textContent = "💾 ENREGISTRER";
 
-  if (error) {
-    alert("Erreur : " + error.message);
-    return;
-  }
+  if (error) { alert("Erreur : " + error.message); return; }
 
   resetFaqForm();
   const box = $("faqEditBox");
@@ -1098,11 +1060,7 @@ async function loadDeleteLog() {
     .order("deleted_at", { ascending: false })
     .limit(20);
 
-  if (error) {
-    container.innerHTML = `<p class="muted">Aucune donnée.</p>`;
-    return;
-  }
-  if (!data || data.length === 0) {
+  if (error || !data || data.length === 0) {
     container.innerHTML = `<p class="muted">Aucune suppression enregistrée.</p>`;
     return;
   }
@@ -1124,9 +1082,6 @@ async function loadDeleteLog() {
   });
   container.innerHTML = html;
 }
-
-const _rdlb = $("refreshDeleteLogBtn");
-if (_rdlb) _rdlb.onclick = () => loadDeleteLog();
 
 // ============================================================
 // CHARTS
@@ -1186,17 +1141,13 @@ async function loadCharts() {
             pointBackgroundColor: "#16a34a",
             pointBorderColor: "#fff",
             pointBorderWidth: 2,
-            pointRadius: 4,
-            pointHoverRadius: 6
+            pointRadius: 4
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: { backgroundColor: "#0f172a", titleColor: "#fff", bodyColor: "#e2e8f0", padding: 10, cornerRadius: 8 }
-          },
+          plugins: { legend: { display: false } },
           scales: {
             y: { beginAtZero: true, ticks: { color: colors.text, precision: 0 }, grid: { color: colors.grid } },
             x: { ticks: { color: colors.text, font: { size: 10 } }, grid: { display: false } }
@@ -1207,11 +1158,7 @@ async function loadCharts() {
   } catch (e) { console.warn("chartDaily error:", e); }
 
   try {
-    const { data: allVerifs } = await sb
-      .from("qr_verifications")
-      .select("result")
-      .limit(10000);
-
+    const { data: allVerifs } = await sb.from("qr_verifications").select("result").limit(10000);
     const distribution = { ORIGINAL: 0, USED: 0, NOT_FOUND: 0 };
     (allVerifs || []).forEach(v => {
       if (distribution[v.result] !== undefined) distribution[v.result]++;
@@ -1241,16 +1188,6 @@ async function loadCharts() {
             legend: {
               position: "bottom",
               labels: { color: getChartColors().text, padding: 14, font: { size: 12, weight: "600" }, usePointStyle: true, pointStyle: "circle" }
-            },
-            tooltip: {
-              backgroundColor: "#0f172a", titleColor: "#fff", bodyColor: "#e2e8f0", padding: 10, cornerRadius: 8,
-              callbacks: {
-                label: function(ctx) {
-                  const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                  const pct = total > 0 ? Math.round((ctx.parsed / total) * 100) : 0;
-                  return ` ${ctx.label}: ${ctx.parsed} (${pct}%)`;
-                }
-              }
             }
           }
         }
@@ -1281,7 +1218,7 @@ async function loadCharts() {
       if (labels.length === 0) {
         const parent = ctx.parentElement;
         if (parent && !parent.querySelector(".empty-msg")) {
-          parent.innerHTML = `<p class="muted empty-msg" style="text-align:center;padding:40px 0">Aucune donnée pour le moment.</p>`;
+          parent.innerHTML = `<p class="muted empty-msg" style="text-align:center;padding:40px 0">Aucune donnée.</p>`;
         }
         return;
       }
@@ -1294,11 +1231,8 @@ async function loadCharts() {
             label: "Vérifications",
             data: data,
             backgroundColor: [
-              "rgba(22,163,74,0.85)",
-              "rgba(59,130,246,0.85)",
-              "rgba(234,179,8,0.85)",
-              "rgba(168,85,247,0.85)",
-              "rgba(236,72,153,0.85)"
+              "rgba(22,163,74,0.85)", "rgba(59,130,246,0.85)", "rgba(234,179,8,0.85)",
+              "rgba(168,85,247,0.85)", "rgba(236,72,153,0.85)"
             ],
             borderRadius: 8,
             borderSkipped: false,
@@ -1309,16 +1243,7 @@ async function loadCharts() {
           responsive: true,
           maintainAspectRatio: false,
           indexAxis: "y",
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: "#0f172a", titleColor: "#fff", bodyColor: "#e2e8f0", padding: 10, cornerRadius: 8,
-              callbacks: {
-                title: (items) => "Lot: " + items[0].label,
-                label: (ctx) => " " + ctx.parsed.x + " vérification(s)"
-              }
-            }
-          },
+          plugins: { legend: { display: false } },
           scales: {
             x: { beginAtZero: true, ticks: { color: getChartColors().text, precision: 0 }, grid: { color: getChartColors().grid } },
             y: { ticks: { color: getChartColors().text, font: { size: 12, weight: "600" } }, grid: { display: false } }
@@ -1332,114 +1257,918 @@ async function loadCharts() {
 window.__reloadCharts = loadCharts;
 
 // ============================================================
-// AUTH
+// ADVANCED SEARCH
 // ============================================================
-async function refresh() {
-  const { data: { session } } = await sb.auth.getSession();
+let advSearchData = [];
 
-  // ❌ لا جلسة → اذهب لصفحة الدخول
-  if (!session) {
-    window.location.href = "/login";
-    return;
+async function loadAdvancedSearch() {
+  const resultsBox = $("advSearchResults");
+  const statsBox = $("advSearchStats");
+  if (!resultsBox) return;
+
+  const text = ($("advSearchText")?.value || "").trim();
+  const status = ($("advSearchStatus")?.value || "").trim();
+  const limit = parseInt($("advSearchLimit")?.value || "100", 10);
+  const dateFrom = $("advSearchDateFrom")?.value || "";
+  const dateTo = $("advSearchDateTo")?.value || "";
+
+  resultsBox.innerHTML = `<p class="muted">Recherche en cours...</p>`;
+  if (statsBox) statsBox.style.display = "none";
+
+  try {
+    let query = sb.from("qr_codes").select("*").order("created_at", { ascending: false }).limit(limit);
+
+    if (status) query = query.eq("secret_status", status);
+    if (dateFrom) query = query.gte("created_at", dateFrom + "T00:00:00");
+    if (dateTo) query = query.lte("created_at", dateTo + "T23:59:59");
+
+    if (text) {
+      const safeText = text.replace(/[%,()]/g, "");
+      query = query.or(`brand.ilike.%${safeText}%,lot.ilike.%${safeText}%,secret_code.ilike.%${safeText}%,reference.ilike.%${safeText}%,product_name.ilike.%${safeText}%`);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      resultsBox.innerHTML = `<p class="muted">Erreur : ${escapeHtml(error.message)}</p>`;
+      return;
+    }
+
+    advSearchData = data || [];
+
+    if (advSearchData.length === 0) {
+      resultsBox.innerHTML = `<p class="muted" style="text-align:center;padding:40px 0">Aucun résultat.</p>`;
+      return;
+    }
+
+    const counts = { PENDING: 0, UNUSED: 0, USED: 0, DISABLED: 0, EXPIRED: 0 };
+    advSearchData.forEach(r => {
+      if (counts[r.secret_status] !== undefined) counts[r.secret_status]++;
+    });
+
+    if (statsBox) {
+      statsBox.style.display = "grid";
+      statsBox.innerHTML = `
+        <div class="stat-card"><div class="stat-num">${advSearchData.length}</div><div class="stat-label">TOTAL</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#a16207">${counts.PENDING}</div><div class="stat-label">PENDING</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#16a34a">${counts.UNUSED}</div><div class="stat-label">UNUSED</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#2563eb">${counts.USED}</div><div class="stat-label">USED</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#dc2626">${counts.DISABLED}</div><div class="stat-label">DISABLED</div></div>
+      `;
+    }
+
+    let html = "";
+    advSearchData.forEach(r => {
+      const statusClass =
+        r.secret_status === "UNUSED" ? "success" :
+        r.secret_status === "PENDING" ? "warning" :
+        r.secret_status === "USED" ? "success" : "danger";
+
+      const date = r.created_at ? new Date(r.created_at).toLocaleString() : "—";
+      const usedDate = r.used_at ? new Date(r.used_at).toLocaleString() : null;
+
+      html += `
+        <div class="log-row log-${statusClass}" style="padding:14px">
+          <div class="log-top">
+            <span class="log-result log-result-${statusClass}">${escapeHtml(r.secret_status)}</span>
+            <span class="log-date">${escapeHtml(date)}</span>
+          </div>
+          <div class="log-code" style="font-size:14px">${escapeHtml(r.secret_code || "—")}</div>
+          <div class="log-meta">
+            ${r.brand ? `<span>🏷 ${escapeHtml(r.brand)}</span>` : ""}
+            ${r.lot ? `<span>📦 ${escapeHtml(r.lot)}</span>` : ""}
+            ${r.reference ? `<span>🔖 ${escapeHtml(r.reference)}</span>` : ""}
+            ${usedDate ? `<span>✓ ${escapeHtml(usedDate)}</span>` : ""}
+          </div>
+        </div>`;
+    });
+    resultsBox.innerHTML = html;
+
+  } catch (err) {
+    resultsBox.innerHTML = `<p class="muted">Erreur : ${escapeHtml(err.message)}</p>`;
   }
-
-  const userEmail = (session.user.email || "").toLowerCase().trim();
-
-  // ❌ ليست ماركة أدمن → اذهب لوحة الماركة
-  if (!isAdminEmail(userEmail)) {
-    window.location.href = "/brand";
-    return;
-  }
-
-  // ✅ أدمن → اعرض اللوحة
-  const lp = $("loginPage"); if (lp) lp.classList.add("hidden");
-  const aa = $("adminApp"); if (aa) aa.classList.remove("hidden");
-
-  const url = location.origin + "/verify";
-  const pu = $("publicUrl"); if (pu) pu.textContent = url;
-
-  const qr = $("qr");
-  if (qr && qr.innerHTML.trim() === "") {
-    new QRCode(qr, { text: url, width: 180, height: 180 });
-  }
-
-  loadStats();
-  loadLog();
-  loadFeedback();
-  loadCharts();
-  loadMessagesBadge();
-  loadFakesBadge();
 }
 
-refresh();
-const _lf = $("loginForm");
-if (_lf) _lf.addEventListener("submit", async (e) => {
-  e.preventDefault();
+const _advBtn = $("advSearchBtn");
+if (_advBtn) _advBtn.onclick = () => loadAdvancedSearch();
 
-  const emailInput = $("email").value.trim();
-  const passwordInput = $("password").value;
-  const el = $("loginError");
-
-  if (!isAdminEmail(emailInput)) {
-    if (el) {
-      el.className = "result danger";
-      el.innerHTML = `<p style="margin:0">⛔ Ce compte n'est pas autorisé.</p>`;
-      el.classList.remove("hidden");
-    }
-    return;
-  }
-
-  const lb = $("loginBtn");
-  if (lb) { lb.disabled = true; lb.textContent = "CONNEXION..."; }
-
-  const { error } = await sb.auth.signInWithPassword({
-    email: emailInput,
-    password: passwordInput
-  });
-
-  if (lb) { lb.disabled = false; lb.textContent = "SE CONNECTER"; }
-
-  if (error) {
-    if (el) {
-      el.className = "result danger";
-      el.innerHTML = `<p style="margin:0">${escapeHtml(error.message)}</p>`;
-      el.classList.remove("hidden");
-    }
-    return;
-  }
-
-  if (el) el.classList.add("hidden");
-  refresh();
-});
-
-const _lb = $("logoutBtn");
-if (_lb) _lb.onclick = async () => {
-  await sb.auth.signOut();
-  location.reload();
+const _advReset = $("advResetBtn");
+if (_advReset) _advReset.onclick = () => {
+  if ($("advSearchText")) $("advSearchText").value = "";
+  if ($("advSearchStatus")) $("advSearchStatus").value = "";
+  if ($("advSearchLimit")) $("advSearchLimit").value = "100";
+  if ($("advSearchDateFrom")) $("advSearchDateFrom").value = "";
+  if ($("advSearchDateTo")) $("advSearchDateTo").value = "";
+  const rb = $("advSearchResults"); if (rb) rb.innerHTML = "";
+  const sb2 = $("advSearchStats"); if (sb2) sb2.style.display = "none";
+  advSearchData = [];
 };
 
-const _rlb = $("refreshLogBtn");
-if (_rlb) _rlb.onclick = () => loadLog();
+const _advExport = $("advExportBtn");
+if (_advExport) _advExport.onclick = () => {
+  if (!advSearchData || advSearchData.length === 0) {
+    alert("Aucun résultat à exporter.");
+    return;
+  }
 
-const _rfb = $("refreshFeedbackBtn");
-if (_rfb) _rfb.onclick = () => loadFeedback();
+  const rows = advSearchData.map(r => ({
+    "Code": r.secret_code || "",
+    "Statut": r.secret_status || "",
+    "Marque": r.brand || "",
+    "Produit": r.product_name || "",
+    "Référence": r.reference || "",
+    "Lot": r.lot || "",
+    "Créé le": r.created_at ? new Date(r.created_at).toLocaleString() : "",
+    "Utilisé le": r.used_at ? new Date(r.used_at).toLocaleString() : ""
+  }));
 
-document.querySelectorAll("#feedbackTabs .tab").forEach(t => {
-  t.addEventListener("click", () => {
-    document.querySelectorAll("#feedbackTabs .tab").forEach(x => {
-      x.classList.remove("active");
-      x.style.background = "#fff";
-      x.style.color = "#0f172a";
-      x.style.border = "1px solid #e2e8f0";
+  downloadExcel(rows, "Recherche_Avancee", "Résultats");
+};
+
+const _advText = $("advSearchText");
+if (_advText) _advText.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") loadAdvancedSearch();
+});
+
+// ============================================================
+// ORDERS — نظام الطلبات
+// ============================================================
+let currentOrderItems = [];
+let currentOrderId = null;
+
+async function getAdminToken() {
+  const { data: { session } } = await sb.auth.getSession();
+  return session ? session.access_token : null;
+}
+
+async function loadOrders() {
+  const container = $("ordersList");
+  const statsBox = $("ordersStats");
+  if (!container) return;
+
+  container.innerHTML = `<p class="muted">Chargement...</p>`;
+  if (statsBox) statsBox.innerHTML = "";
+
+  const token = await getAdminToken();
+  if (!token) return;
+
+  const search = ($("ordersSearch")?.value || "").trim();
+  const status = ($("ordersStatus")?.value || "").trim();
+  const payment = ($("ordersPayment")?.value || "").trim();
+
+  try {
+    const res = await fetch("/api/orders?action=list", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        access_token: token,
+        search,
+        status,
+        payment_status: payment,
+        limit: 200
+      })
     });
-    t.classList.add("active");
-    t.style.background = "#0f172a";
-    t.style.color = "#fff";
-    t.style.border = "0";
-    currentFeedbackFilter = t.dataset.tab;
-    loadFeedback();
+
+    const data = await res.json();
+
+    if (data.status !== "OK") {
+      container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(data.message || "")}</p>`;
+      return;
+    }
+
+    currentOrders = data.orders || [];
+
+    if (statsBox) {
+      const total = currentOrders.length;
+      const totalRevenue = currentOrders.reduce((s, o) => s + parseFloat(o.total_price || 0), 0);
+      const paidCount = currentOrders.filter(o => o.payment_status === "PAID").length;
+      const unpaidAmount = currentOrders
+        .filter(o => o.payment_status !== "PAID")
+        .reduce((s, o) => s + parseFloat(o.total_price || 0) - parseFloat(o.paid_amount || 0), 0);
+
+      statsBox.innerHTML = `
+        <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">TOTAL</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#16a34a">${paidCount}</div><div class="stat-label">✅ PAYÉES</div></div>
+        <div class="stat-card"><div class="stat-num" style="font-size:16px">${formatMoney(totalRevenue)}</div><div class="stat-label">💰 REVENU</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#dc2626;font-size:16px">${formatMoney(unpaidAmount)}</div><div class="stat-label">⚠️ IMPAYÉ</div></div>
+      `;
+    }
+
+    if (currentOrders.length === 0) {
+      container.innerHTML = `<p class="muted" style="text-align:center;padding:40px 0">Aucune commande pour le moment.</p>`;
+      return;
+    }
+
+    const statusLabels = {
+      IN_PRODUCTION: "🟡 En production",
+      READY: "📦 Prête",
+      HANDED_TO_CARRIER: "🟣 Confiée transporteur",
+      SHIPPED: "🚚 Expédiée",
+      AWAITING_PICKUP: "🟠 En attente retrait",
+      AWAITING_HANDOVER: "⏳ En attente remise",
+      DELIVERED: "✅ Livrée",
+      PAID: "💰 Payée",
+      CANCELLED: "❌ Annulée"
+    };
+
+    const paymentLabels = {
+      UNPAID: "❌ Non payé",
+      PARTIAL: "🟡 Partiel",
+      PAID: "✅ Payé"
+    };
+
+    let html = "";
+    currentOrders.forEach(o => {
+      const date = o.created_at ? new Date(o.created_at).toLocaleDateString("fr-FR") : "—";
+
+      const itemsHtml = (o.items || []).map(it =>
+        `<span class="order-item-pill">Lot ${escapeHtml(it.lot_number)} × ${it.quantity}</span>`
+      ).join("");
+
+      html += `
+        <div class="order-card status-${o.order_status}">
+          <div class="order-header">
+            <div>
+              <div class="order-number">${escapeHtml(o.order_number)}</div>
+              <div class="order-brand">🏢 ${escapeHtml(o.brand_name)}</div>
+            </div>
+            <div style="text-align:right">
+              <span class="status-pill ${o.order_status}">${statusLabels[o.order_status] || o.order_status}</span>
+              <div style="margin-top:6px">
+                <span class="payment-pill ${o.payment_status}">${paymentLabels[o.payment_status] || o.payment_status}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="order-meta">
+            <span>📅 ${escapeHtml(date)}</span>
+            ${o.brand_phone ? `<span>📱 ${escapeHtml(o.brand_phone)}</span>` : ""}
+            ${o.delivery_method === "hand_to_hand" ? "<span>🤝 Main à main</span>" : "<span>🚚 Livraison</span>"}
+          </div>
+
+          ${itemsHtml ? `<div class="order-items-list">${itemsHtml}</div>` : ""}
+
+          <div class="order-total-box">
+            <div style="font-size:12px;color:var(--text-muted)">${o.total_quantity} codes</div>
+            <div class="order-total-amount">${formatMoney(o.total_price)}</div>
+          </div>
+
+          <div class="order-actions">
+            <button onclick="openOrderDetails(${o.id})" style="background:#0f172a">👁 Détails</button>
+            <button onclick="printOrderInvoice(${o.id})" style="background:linear-gradient(135deg,#16a34a,#22c55e)">🖨 Facture</button>
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+
+  } catch (err) {
+    container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(err.message)}</p>`;
+  }
+}
+
+// ============================================================
+// MODAL: Nouvelle commande
+// ============================================================
+const _nob = $("newOrderBtn");
+if (_nob) _nob.onclick = () => openNewOrderModal();
+
+async function openNewOrderModal() {
+  const modal = $("newOrderModal");
+  if (!modal) return;
+
+  modal.classList.remove("hidden");
+  const errBox = $("newOrderError");
+  if (errBox) errBox.classList.add("hidden");
+
+  if ($("orderBrand")) $("orderBrand").value = "";
+  if ($("orderBrandPhone")) $("orderBrandPhone").value = "";
+  if ($("orderBrandEmail")) $("orderBrandEmail").value = "";
+  if ($("orderUnitPrice")) $("orderUnitPrice").value = "15";
+  if ($("orderDiscount")) $("orderDiscount").value = "0";
+  if ($("orderDeliveryCost")) $("orderDeliveryCost").value = "0";
+  if ($("orderTva")) $("orderTva").value = "0";
+  if ($("orderNotes")) $("orderNotes").value = "";
+  if ($("orderDeliveryCompany")) $("orderDeliveryCompany").value = "";
+  if ($("orderTrackingNumber")) $("orderTrackingNumber").value = "";
+  if ($("orderWilaya")) $("orderWilaya").value = "";
+  if ($("orderBaladiya")) $("orderBaladiya").value = "";
+  if ($("orderDeliveryAddress")) $("orderDeliveryAddress").value = "";
+  if ($("orderRecipientPhone")) $("orderRecipientPhone").value = "";
+  if ($("orderShippingDate")) $("orderShippingDate").value = "";
+  if ($("brandHint")) { $("brandHint").textContent = ""; }
+
+  const deliveryRadio = document.querySelector('input[name="orderDeliveryMethod"][value="delivery"]');
+  if (deliveryRadio) deliveryRadio.checked = true;
+
+  const df = $("deliveryFields");
+  if (df) df.style.display = "block";
+
+  currentOrderItems = [{ lot_number: "", quantity: 0 }];
+  renderOrderItems();
+  updateOrderTotals();
+  await loadBrandsForDatalist();
+}
+
+async function loadBrandsForDatalist() {
+  const token = await getAdminToken();
+  if (!token) return;
+
+  try {
+    const res = await fetch("/api/orders?action=list-brands", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ access_token: token })
+    });
+
+    const data = await res.json();
+    if (data.status !== "OK") return;
+
+    allBrandsCache = data.brands || [];
+    const dl = $("brandsList");
+    if (dl) {
+      dl.innerHTML = allBrandsCache.map(b => `<option value="${escapeHtml(b.brand_name)}">`).join("");
+    }
+  } catch (e) {
+    console.warn("loadBrandsForDatalist:", e);
+  }
+}
+
+const _orderBrandInput = $("orderBrand");
+if (_orderBrandInput) {
+  _orderBrandInput.addEventListener("input", () => {
+    const brandName = $("orderBrand").value.trim();
+    const hint = $("brandHint");
+    if (!hint) return;
+
+    if (!brandName) {
+      hint.textContent = "";
+      return;
+    }
+
+    const found = allBrandsCache.find(b =>
+      b.brand_name.toLowerCase() === brandName.toLowerCase()
+    );
+
+    if (found) {
+      if (found.phone && $("orderBrandPhone")) $("orderBrandPhone").value = found.phone;
+      if (found.email && $("orderBrandEmail")) $("orderBrandEmail").value = found.email;
+
+      if (found.is_registered) {
+        hint.textContent = `✅ Marque inscrite — ${found.codes_count || 0} codes — ${found.tier || 'REGULAR'}`;
+        hint.style.color = "#16a34a";
+      } else {
+        hint.textContent = `⚠️ Marque non inscrite — ${found.codes_count || 0} codes existants`;
+        hint.style.color = "#eab308";
+      }
+    } else {
+      hint.textContent = "🆕 Nouvelle marque (sera enregistrée comme contact)";
+      hint.style.color = "#64748b";
+    }
+  });
+}
+
+function renderOrderItems() {
+  const container = $("orderItemsList");
+  if (!container) return;
+
+  if (currentOrderItems.length === 0) {
+    container.innerHTML = `<p class="muted" style="font-size:12px;text-align:center;padding:14px 0">Aucun lot.</p>`;
+    return;
+  }
+
+  let html = "";
+  currentOrderItems.forEach((item, idx) => {
+    html += `
+      <div class="order-item-row">
+        <div>
+          <input data-item-idx="${idx}" data-field="lot" placeholder="N° de lot" value="${escapeHtml(item.lot_number)}">
+          <div class="lot-check-hint" data-hint="${idx}"></div>
+        </div>
+        <input data-item-idx="${idx}" data-field="qty" type="number" min="1" placeholder="Qté" value="${item.quantity || ''}">
+        <button data-remove-idx="${idx}">✕</button>
+      </div>
+    `;
+  });
+  container.innerHTML = html;
+
+  container.querySelectorAll("input").forEach(inp => {
+    inp.addEventListener("input", (e) => {
+      const idx = parseInt(e.target.dataset.itemIdx, 10);
+      const field = e.target.dataset.field;
+      if (field === "lot") {
+        currentOrderItems[idx].lot_number = e.target.value.trim();
+        checkLot(idx);
+      } else {
+        currentOrderItems[idx].quantity = parseInt(e.target.value, 10) || 0;
+      }
+      updateOrderTotals();
+    });
+  });
+
+  container.querySelectorAll("[data-remove-idx]").forEach(btn => {
+    btn.onclick = () => {
+      const idx = parseInt(btn.dataset.removeIdx, 10);
+      currentOrderItems.splice(idx, 1);
+      renderOrderItems();
+      updateOrderTotals();
+    };
+  });
+}
+
+async function checkLot(idx) {
+  const lot = currentOrderItems[idx]?.lot_number;
+  const hint = document.querySelector(`[data-hint="${idx}"]`);
+  if (!hint) return;
+
+  if (!lot || lot.length < 1) {
+    hint.textContent = "";
+    hint.className = "lot-check-hint";
+    return;
+  }
+
+  hint.textContent = "🔍 Vérification...";
+  hint.className = "lot-check-hint";
+
+  const token = await getAdminToken();
+  if (!token) return;
+
+  try {
+    const res = await fetch("/api/orders?action=check-lots", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ access_token: token, lots: [lot] })
+    });
+
+    const data = await res.json();
+    const result = data.results?.[0];
+
+    if (!result || !result.exists) {
+      hint.textContent = "❌ Lot introuvable";
+      hint.className = "lot-check-hint err";
+    } else {
+      hint.textContent = `✅ ${result.count} codes — ${result.brand || "?"}`;
+      hint.className = "lot-check-hint ok";
+    }
+  } catch (e) {
+    hint.textContent = "⚠️ Erreur de vérification";
+    hint.className = "lot-check-hint warn";
+  }
+}
+
+const _aoi = $("addOrderItemBtn");
+if (_aoi) _aoi.onclick = () => {
+  currentOrderItems.push({ lot_number: "", quantity: 0 });
+  renderOrderItems();
+};
+
+function updateOrderTotals() {
+  const totalQty = currentOrderItems.reduce((s, it) => s + (it.quantity || 0), 0);
+  const unitPrice = parseFloat($("orderUnitPrice")?.value || 0);
+  const discountPct = parseFloat($("orderDiscount")?.value || 0);
+  const deliveryCost = parseFloat($("orderDeliveryCost")?.value || 0);
+  const tvaPct = parseFloat($("orderTva")?.value || 0);
+
+  const subtotal = unitPrice * totalQty;
+  const discountAmt = subtotal * (discountPct / 100);
+  const afterDiscount = subtotal - discountAmt;
+  const tvaAmt = afterDiscount * (tvaPct / 100);
+  const total = afterDiscount + tvaAmt + deliveryCost;
+
+  if ($("orderSubtotal")) $("orderSubtotal").textContent = formatMoney(subtotal);
+  if ($("orderDiscountAmt")) $("orderDiscountAmt").textContent = "-" + formatMoney(discountAmt);
+  if ($("orderTvaAmt")) $("orderTvaAmt").textContent = formatMoney(tvaAmt);
+  if ($("orderDeliveryAmt")) $("orderDeliveryAmt").textContent = formatMoney(deliveryCost);
+  if ($("orderTotalPrice")) $("orderTotalPrice").textContent = formatMoney(total);
+}
+
+["orderUnitPrice", "orderDiscount", "orderDeliveryCost", "orderTva"].forEach(id => {
+  const el = $(id);
+  if (el) el.addEventListener("input", updateOrderTotals);
+});
+
+document.querySelectorAll('input[name="orderDeliveryMethod"]').forEach(radio => {
+  radio.addEventListener("change", () => {
+    const method = document.querySelector('input[name="orderDeliveryMethod"]:checked')?.value;
+    const fields = $("deliveryFields");
+    if (fields) fields.style.display = method === "hand_to_hand" ? "none" : "block";
   });
 });
+
+const _cnob = $("closeNewOrderBtn");
+if (_cnob) _cnob.onclick = () => $("newOrderModal").classList.add("hidden");
+
+const _cancelNob = $("cancelNewOrderBtn");
+if (_cancelNob) _cancelNob.onclick = () => $("newOrderModal").classList.add("hidden");
+
+const _cob = $("createOrderBtn");
+if (_cob) _cob.onclick = async () => {
+  const errBox = $("newOrderError");
+  if (errBox) errBox.classList.add("hidden");
+
+  const brandName = $("orderBrand").value.trim();
+  const validItems = currentOrderItems.filter(it => it.lot_number && it.quantity > 0);
+
+  if (!brandName) {
+    if (errBox) { errBox.innerHTML = "<p style='margin:0'>Nom de marque obligatoire</p>"; errBox.classList.remove("hidden"); }
+    return;
+  }
+
+  if (validItems.length === 0) {
+    if (errBox) { errBox.innerHTML = "<p style='margin:0'>Ajoutez au moins un lot valide</p>"; errBox.classList.remove("hidden"); }
+    return;
+  }
+
+  const token = await getAdminToken();
+  if (!token) return;
+
+  const deliveryMethod = document.querySelector('input[name="orderDeliveryMethod"]:checked')?.value || "delivery";
+
+  const payload = {
+    access_token: token,
+    brand_name: brandName,
+    brand_phone: $("orderBrandPhone").value.trim() || null,
+    brand_email: $("orderBrandEmail").value.trim() || null,
+    items: validItems.map(it => ({ lot_number: it.lot_number, quantity: it.quantity })),
+    unit_price: parseFloat($("orderUnitPrice").value || 0),
+    discount_percent: parseFloat($("orderDiscount").value || 0),
+    delivery_cost: parseFloat($("orderDeliveryCost").value || 0),
+    tva: parseFloat($("orderTva").value || 0),
+    delivery_method: deliveryMethod,
+    delivery_company: $("orderDeliveryCompany").value.trim() || null,
+    tracking_number: $("orderTrackingNumber").value.trim() || null,
+    delivery_wilaya: $("orderWilaya").value.trim() || null,
+    delivery_baladiya: $("orderBaladiya").value.trim() || null,
+    delivery_address: $("orderDeliveryAddress").value.trim() || null,
+    recipient_phone: $("orderRecipientPhone").value.trim() || null,
+    shipping_date: $("orderShippingDate").value || null,
+    notes: $("orderNotes").value.trim() || null
+  };
+
+  _cob.disabled = true;
+  _cob.textContent = "⏳ Création...";
+
+  try {
+    const res = await fetch("/api/orders?action=create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (data.status === "OK") {
+      const found = allBrandsCache.find(b => b.brand_name.toLowerCase() === brandName.toLowerCase());
+
+      if (!found || !found.is_registered) {
+        fetch("/api/orders?action=save-contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            access_token: token,
+            brand_name: brandName,
+            phone: $("orderBrandPhone").value.trim() || null,
+            email: $("orderBrandEmail").value.trim() || null
+          })
+        }).catch(e => console.warn(e));
+      }
+
+      alert(`✅ Commande créée : ${data.order.order_number}`);
+      $("newOrderModal").classList.add("hidden");
+      loadOrders();
+    } else {
+      if (errBox) { errBox.innerHTML = `<p style='margin:0'>${escapeHtml(data.message || "Erreur")}</p>`; errBox.classList.remove("hidden"); }
+    }
+  } catch (e) {
+    if (errBox) { errBox.innerHTML = `<p style='margin:0'>Erreur réseau : ${escapeHtml(e.message)}</p>`; errBox.classList.remove("hidden"); }
+  } finally {
+    _cob.disabled = false;
+    _cob.textContent = "✓ Créer la commande";
+  }
+};
+
+// ============================================================
+// تفاصيل الطلب
+// ============================================================
+window.openOrderDetails = async function(orderId) {
+  const token = await getAdminToken();
+  if (!token) return;
+
+  const modal = $("orderDetailsModal");
+  const body = $("orderDetailsBody");
+  const footer = $("orderDetailsFooter");
+  const title = $("orderDetailsTitle");
+
+  if (!modal) return;
+
+  modal.classList.remove("hidden");
+  body.innerHTML = `<p class="muted" style="text-align:center;padding:30px 0">Chargement...</p>`;
+  footer.innerHTML = "";
+
+  try {
+    const res = await fetch("/api/orders?action=get", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ access_token: token, order_id: orderId })
+    });
+
+    const data = await res.json();
+    if (data.status !== "OK" || !data.order) {
+      body.innerHTML = `<p class="muted">Erreur : ${escapeHtml(data.message || "")}</p>`;
+      return;
+    }
+
+    const o = data.order;
+    currentOrderId = orderId;
+
+    title.textContent = `📄 ${o.order_number}`;
+
+    const statusLabels = {
+      IN_PRODUCTION: "🟡 En production",
+      READY: "📦 Prête",
+      HANDED_TO_CARRIER: "🟣 Confiée transporteur",
+      SHIPPED: "🚚 Expédiée",
+      AWAITING_PICKUP: "🟠 En attente retrait",
+      AWAITING_HANDOVER: "⏳ En attente remise",
+      DELIVERED: "✅ Livrée",
+      PAID: "💰 Payée",
+      CANCELLED: "❌ Annulée"
+    };
+
+    const statusOptions = Object.entries(statusLabels).map(([k, v]) =>
+      `<option value="${k}" ${o.order_status === k ? "selected" : ""}>${v}</option>`
+    ).join("");
+
+    const paymentLabels = {
+      UNPAID: "❌ Non payé",
+      PARTIAL: "🟡 Partiel",
+      PAID: "✅ Payé"
+    };
+
+    const paymentOptions = Object.entries(paymentLabels).map(([k, v]) =>
+      `<option value="${k}" ${o.payment_status === k ? "selected" : ""}>${v}</option>`
+    ).join("");
+
+    const itemsRows = (o.items || []).map(it =>
+      `<tr><td>Lot ${escapeHtml(it.lot_number)}</td><td>${it.quantity}</td></tr>`
+    ).join("");
+
+    let html = `
+      <div class="detail-row"><span>Marque</span><span>${escapeHtml(o.brand_name)}</span></div>
+      ${o.brand_phone ? `<div class="detail-row"><span>Téléphone</span><span>${escapeHtml(o.brand_phone)}</span></div>` : ""}
+      ${o.brand_email ? `<div class="detail-row"><span>Email</span><span>${escapeHtml(o.brand_email)}</span></div>` : ""}
+      <div class="detail-row"><span>Date</span><span>${o.created_at ? new Date(o.created_at).toLocaleString("fr-FR") : "—"}</span></div>
+      <div class="detail-row"><span>Méthode</span><span>${o.delivery_method === "hand_to_hand" ? "🤝 Main à main" : "🚚 Livraison"}</span></div>
+
+      <h3 style="margin:20px 0 8px;font-size:13px;font-weight:900">📦 Articles</h3>
+      <table class="detail-items-table">
+        <thead><tr><th>Lot</th><th>Quantité</th></tr></thead>
+        <tbody>${itemsRows}</tbody>
+      </table>
+
+      <div class="detail-row"><span>Sous-total</span><span>${formatMoney(o.subtotal)}</span></div>
+      ${parseFloat(o.discount_amount || 0) > 0 ? `<div class="detail-row"><span>Remise (${o.discount_percent}%)</span><span>-${formatMoney(o.discount_amount)}</span></div>` : ""}
+      ${parseFloat(o.delivery_cost || 0) > 0 ? `<div class="detail-row"><span>Livraison</span><span>${formatMoney(o.delivery_cost)}</span></div>` : ""}
+      <div class="detail-row"><span style="font-weight:900;color:var(--text)">TOTAL</span><span style="font-weight:900;color:#16a34a;font-size:18px">${formatMoney(o.total_price)}</span></div>
+
+      ${o.delivery_company ? `<div class="detail-row"><span>Transporteur</span><span>${escapeHtml(o.delivery_company)}</span></div>` : ""}
+      ${o.tracking_number ? `<div class="detail-row"><span>N° Suivi</span><span style="font-family:monospace">${escapeHtml(o.tracking_number)}</span></div>` : ""}
+      ${o.delivery_wilaya ? `<div class="detail-row"><span>Wilaya</span><span>${escapeHtml(o.delivery_wilaya)}</span></div>` : ""}
+      ${o.delivery_baladiya ? `<div class="detail-row"><span>Baladiya</span><span>${escapeHtml(o.delivery_baladiya)}</span></div>` : ""}
+      ${o.recipient_phone ? `<div class="detail-row"><span>Tel. destinataire</span><span>${escapeHtml(o.recipient_phone)}</span></div>` : ""}
+      ${o.notes ? `<div class="detail-row"><span>Notes</span><span>${escapeHtml(o.notes)}</span></div>` : ""}
+
+      <div style="margin-top:22px;padding:16px;background:var(--bg);border:1px solid var(--border);border-radius:12px">
+        <h3 style="margin:0 0 12px;font-size:12px;font-weight:900">⚙️ Modifier</h3>
+
+        <label style="font-size:11px;font-weight:800;color:var(--text-muted);display:block;margin-bottom:6px">STATUT</label>
+        <select id="orderUpdateStatus" style="margin-bottom:12px">${statusOptions}</select>
+
+        <label style="font-size:11px;font-weight:800;color:var(--text-muted);display:block;margin-bottom:6px">PAIEMENT</label>
+        <select id="orderUpdatePayment" style="margin-bottom:12px">${paymentOptions}</select>
+
+        <label style="font-size:11px;font-weight:800;color:var(--text-muted);display:block;margin-bottom:6px">MONTANT PAYÉ (DA)</label>
+        <input id="orderUpdatePaidAmount" type="number" step="0.01" min="0" value="${o.paid_amount || 0}" style="margin-bottom:12px">
+
+        <button id="saveOrderChangesBtn" style="background:linear-gradient(135deg,#16a34a,#22c55e);font-weight:800">💾 ENREGISTRER</button>
+      </div>
+    `;
+
+    body.innerHTML = html;
+
+    footer.innerHTML = `
+      <button id="printInvoiceFromDetails" style="background:linear-gradient(135deg,#0ea5e9,#0284c7)">🖨 Facture</button>
+      <button id="deleteOrderBtn" style="background:#dc2626">🗑️ Supprimer</button>
+    `;
+
+    $("saveOrderChangesBtn").onclick = () => saveOrderChanges(o.id);
+    $("printInvoiceFromDetails").onclick = () => printOrderInvoice(o.id);
+    $("deleteOrderBtn").onclick = () => deleteOrder(o.id);
+
+  } catch (e) {
+    body.innerHTML = `<p class="muted">Erreur : ${escapeHtml(e.message)}</p>`;
+  }
+};
+
+async function saveOrderChanges(orderId) {
+  const token = await getAdminToken();
+  if (!token) return;
+
+  const payload = {
+    access_token: token,
+    order_id: orderId,
+    order_status: $("orderUpdateStatus")?.value,
+    payment_status: $("orderUpdatePayment")?.value,
+    paid_amount: parseFloat($("orderUpdatePaidAmount")?.value || 0)
+  };
+
+  const btn = $("saveOrderChangesBtn");
+  btn.disabled = true;
+  btn.textContent = "⏳...";
+
+  try {
+    const res = await fetch("/api/orders?action=update", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (data.status === "OK") {
+      alert("✅ Commande mise à jour");
+      $("orderDetailsModal").classList.add("hidden");
+      loadOrders();
+    } else {
+      alert("Erreur : " + (data.message || ""));
+    }
+  } catch (e) {
+    alert("Erreur réseau : " + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "💾 ENREGISTRER";
+  }
+}
+
+async function deleteOrder(orderId) {
+  if (!confirm("⚠️ Supprimer cette commande ?\n\nCette action est irréversible.")) return;
+
+  const token = await getAdminToken();
+  if (!token) return;
+
+  try {
+    const res = await fetch("/api/orders?action=delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ access_token: token, order_id: orderId })
+    });
+
+    const data = await res.json();
+
+    if (data.status === "OK") {
+      alert("✅ Commande supprimée");
+      $("orderDetailsModal").classList.add("hidden");
+      loadOrders();
+    } else {
+      alert("Erreur : " + (data.message || ""));
+    }
+  } catch (e) {
+    alert("Erreur réseau : " + e.message);
+  }
+}
+
+const _codb = $("closeOrderDetailsBtn");
+if (_codb) _codb.onclick = () => $("orderDetailsModal").classList.add("hidden");
+
+const _rob = $("refreshOrdersBtn");
+if (_rob) _rob.onclick = () => loadOrders();
+
+["ordersSearch", "ordersStatus", "ordersPayment"].forEach(id => {
+  const el = $(id);
+  if (!el) return;
+  if (id === "ordersSearch") {
+    let timer;
+    el.addEventListener("input", () => {
+      clearTimeout(timer);
+      timer = setTimeout(loadOrders, 400);
+    });
+  } else {
+    el.addEventListener("change", loadOrders);
+  }
+});
+
+// ============================================================
+// طباعة الفاتورة
+// ============================================================
+window.printOrderInvoice = async function(orderId) {
+  const token = await getAdminToken();
+  if (!token) return;
+
+  try {
+    const res = await fetch("/api/orders?action=get", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ access_token: token, order_id: orderId })
+    });
+
+    const data = await res.json();
+    if (data.status !== "OK") { alert("Erreur : " + (data.message || "")); return; }
+
+    const o = data.order;
+    const w = window.open("", "_blank");
+
+    const itemsRows = (o.items || []).map(it =>
+      `<tr><td>Lot ${escapeHtml(it.lot_number)}</td><td style="text-align:right">${it.quantity}</td></tr>`
+    ).join("");
+
+    const date = o.created_at ? new Date(o.created_at).toLocaleDateString("fr-FR") : "—";
+
+    let html = `<!doctype html><html lang="fr"><head><meta charset="utf-8">
+    <title>Facture ${escapeHtml(o.order_number)}</title>
+    <style>
+      @page { margin: 15mm; }
+      * { box-sizing: border-box; }
+      body { font-family: -apple-system, Arial, sans-serif; padding: 20px; margin: 0; color: #0f172a; background: #f8fafc; }
+      .toolbar { background: #0f172a; color: #fff; padding: 12px; text-align: center; margin-bottom: 20px; border-radius: 8px; }
+      .toolbar button { background: #16a34a; color: #fff; border: 0; padding: 10px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
+      .invoice { background: #fff; border-radius: 12px; padding: 30px; max-width: 800px; margin: 0 auto; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+      .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #0f172a; flex-wrap: wrap; gap: 20px; }
+      .brand-info h1 { margin: 0 0 8px; font-size: 24px; letter-spacing: -0.5px; }
+      .brand-info p { margin: 4px 0; font-size: 13px; color: #64748b; }
+      .invoice-meta { text-align: right; }
+      .invoice-meta h2 { margin: 0 0 8px; font-size: 20px; color: #16a34a; font-family: 'Courier New', monospace; }
+      .invoice-meta p { margin: 4px 0; font-size: 13px; }
+      .client-info { margin-bottom: 24px; padding: 16px; background: #f8fafc; border-radius: 10px; }
+      .client-info h3 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; }
+      .client-info p { margin: 4px 0; font-size: 14px; }
+      .items-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+      .items-table th { background: #0f172a; color: #fff; padding: 12px 10px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+      .items-table td { padding: 12px 10px; border-bottom: 1px solid #e2e8f0; }
+      .items-table tr:nth-child(even) td { background: #f9fafb; }
+      .totals { margin-top: 24px; margin-left: auto; max-width: 320px; }
+      .totals-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px dashed #e2e8f0; }
+      .totals-row.grand-total { padding: 16px 0; font-size: 20px; font-weight: 900; border-top: 3px solid #0f172a; border-bottom: 3px solid #0f172a; color: #16a34a; }
+      .footer-info { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; text-align: center; }
+      .status-badge { display: inline-block; padding: 6px 14px; border-radius: 100px; font-size: 11px; font-weight: 800; margin-top: 8px; }
+      .status-IN_PRODUCTION { background: #fef3c7; color: #a16207; }
+      .status-DELIVERED { background: #dcfce7; color: #166534; }
+      .status-PAID { background: #d1fae5; color: #065f46; }
+      .status-CANCELLED { background: #fee2e2; color: #991b1b; }
+      @media print { .toolbar { display: none !important; } body { background: #fff; padding: 0; } .invoice { box-shadow: none; padding: 0; } }
+    </style></head><body>
+
+    <div class="toolbar">
+      <button onclick="window.print()">🖨 IMPRIMER LA FACTURE</button>
+    </div>
+
+    <div class="invoice">
+      <div class="header">
+        <div class="brand-info">
+          <h1>🛡️ Produit dz ORG</h1>
+          <p>+213 556 339 415</p>
+          <p>mepirf@gmail.com</p>
+        </div>
+        <div class="invoice-meta">
+          <h2>${escapeHtml(o.order_number)}</h2>
+          <p><b>Date:</b> ${escapeHtml(date)}</p>
+          <p class="status-badge status-${o.order_status}">${o.order_status}</p>
+        </div>
+      </div>
+
+      <div class="client-info">
+        <h3>👤 Client</h3>
+        <p><b>${escapeHtml(o.brand_name)}</b></p>
+        ${o.brand_phone ? `<p>📱 ${escapeHtml(o.brand_phone)}</p>` : ""}
+        ${o.brand_email ? `<p>📧 ${escapeHtml(o.brand_email)}</p>` : ""}
+      </div>
+
+      <table class="items-table">
+        <thead><tr><th>Description</th><th style="text-align:right">Quantité</th></tr></thead>
+        <tbody>${itemsRows}</tbody>
+      </table>
+
+      <div class="totals">
+        <div class="totals-row"><span>Sous-total</span><b>${formatMoney(o.subtotal)}</b></div>
+        ${parseFloat(o.discount_amount || 0) > 0 ? `<div class="totals-row"><span>Remise (${o.discount_percent}%)</span><b>-${formatMoney(o.discount_amount)}</b></div>` : ""}
+        ${parseFloat(o.delivery_cost || 0) > 0 ? `<div class="totals-row"><span>Livraison</span><b>${formatMoney(o.delivery_cost)}</b></div>` : ""}
+        <div class="totals-row grand-total"><span>TOTAL</span><b>${formatMoney(o.total_price)}</b></div>
+      </div>
+
+      <div class="footer-info">
+        <p>Merci pour votre confiance 🙏</p>
+        <p>Produit dz ORG — Protection contre la contrefaçon</p>
+      </div>
+    </div>
+
+    </body></html>`;
+
+    w.document.write(html);
+    w.document.close();
+
+  } catch (e) {
+    alert("Erreur : " + e.message);
+  }
+};
 
 // ============================================================
 // CREATE BATCH
@@ -1453,8 +2182,6 @@ if (_cb) _cb.onclick = async () => {
   if (!brand) return alert("La marque est obligatoire.");
 
   const qty = Math.min(10000, Math.max(1, Number($("quantity").value) || 1));
-
-  // ✨ الحالة الأولية للدفعة (PENDING أو UNUSED)
   const statusRadio = document.querySelector('input[name="initial_status"]:checked');
   const initialStatus = statusRadio ? statusRadio.value : 'PENDING';
 
@@ -1497,9 +2224,8 @@ if (_cb) _cb.onclick = async () => {
         ar.className = "result success";
         ar.innerHTML = `
           <h2>✓ LOT CRÉÉ</h2>
-          <p>${data.inserted} codes générés avec succès.</p>
-          <p style="font-size:12px;margin-top:8px;color:#64748b">🔒 Les codes sont chiffrés en base de données (AES-256).</p>
-          <p style="font-size:12px;margin-top:4px;color:#64748b">Statut initial : <b>${escapeHtml(data.initial_status || 'UNUSED')}</b></p>
+          <p>${data.inserted} codes générés.</p>
+          <p style="font-size:12px;margin-top:8px;color:#64748b">🔒 AES-256 — Statut: <b>${escapeHtml(data.initial_status || 'UNUSED')}</b></p>
         `;
       }
       const pb = $("printBtn"); if (pb) pb.classList.remove("hidden");
@@ -1509,10 +2235,7 @@ if (_cb) _cb.onclick = async () => {
     } else {
       if (ar) {
         ar.className = "result danger";
-        ar.innerHTML = `
-          <p>Erreur : ${escapeHtml(data.message || "")}</p>
-          ${data.detail ? `<p style="font-size:11px;color:#dc2626;word-break:break-all">${escapeHtml(data.detail)}</p>` : ""}
-        `;
+        ar.innerHTML = `<p>Erreur : ${escapeHtml(data.message || "")}</p>${data.detail ? `<p style="font-size:11px;color:#dc2626;word-break:break-all">${escapeHtml(data.detail)}</p>` : ""}`;
       }
     }
   } catch (err) {
@@ -1536,22 +2259,16 @@ if (_sb) _sb.onclick = async () => {
   if (!res) return;
   if (!code) { res.className = "result hidden"; return; }
 
-  const { data, error } = await sb
-    .from("qr_codes")
-    .select("*")
-    .eq("secret_code", code)
-    .limit(1);
+  const { data, error } = await sb.from("qr_codes").select("*").eq("secret_code", code).limit(1);
 
   if (error || !data || data.length === 0) {
     res.className = "result danger";
-    res.innerHTML = `<h2>NON TROUVÉ</h2><p>Aucun code ne correspond.</p><p style="font-size:11px;color:#64748b;margin-top:8px">Note : les codes chiffrés ne sont pas recherchables ici.</p>`;
+    res.innerHTML = `<h2>NON TROUVÉ</h2><p>Aucun code ne correspond.</p>`;
     return;
   }
 
   const r = data[0];
-  const statusClass =
-    r.secret_status === "UNUSED" ? "success" :
-    r.secret_status === "USED" ? "warning" : "danger";
+  const statusClass = r.secret_status === "UNUSED" ? "success" : r.secret_status === "USED" ? "warning" : "danger";
 
   res.className = "result " + statusClass;
   res.innerHTML = `
@@ -1559,7 +2276,6 @@ if (_sb) _sb.onclick = async () => {
     <div class="details">
       ${r.brand ? `<div><b>Marque</b><span>${escapeHtml(r.brand)}</span></div>` : ""}
       ${r.product_name ? `<div><b>Produit</b><span>${escapeHtml(r.product_name)}</span></div>` : ""}
-      ${r.reference ? `<div><b>Référence</b><span>${escapeHtml(r.reference)}</span></div>` : ""}
       ${r.lot ? `<div><b>Lot</b><span>${escapeHtml(r.lot)}</span></div>` : ""}
       ${r.used_at ? `<div><b>Utilisé le</b><span>${escapeHtml(new Date(r.used_at).toLocaleString())}</span></div>` : ""}
     </div>
@@ -1602,11 +2318,7 @@ if (_llb) _llb.onclick = async () => {
   loadedLot = null;
   loadedLotCodes = [];
 
-  const { data, error } = await sb
-    .from("qr_codes")
-    .select("*")
-    .eq("lot", lot)
-    .limit(10000);
+  const { data, error } = await sb.from("qr_codes").select("*").eq("lot", lot).limit(10000);
 
   if (error) {
     info.className = "result danger";
@@ -1632,18 +2344,14 @@ if (_llb) _llb.onclick = async () => {
   info.className = "result success";
   info.innerHTML = `
     <h2>${data.length} code(s) trouvé(s)</h2>
-    ${hasEncrypted ? `<p style="font-size:11px;color:#16a34a;margin:6px 0">🔒 Lot chiffré — utilisez IMPRIMER ou EXPORTER</p>` : ""}
+    ${hasEncrypted ? `<p style="font-size:11px;color:#16a34a;margin:6px 0">🔒 Lot chiffré</p>` : ""}
     <div class="details">
       ${r.brand ? `<div><b>Marque</b><span>${escapeHtml(r.brand)}</span></div>` : ""}
       ${r.product_name ? `<div><b>Produit</b><span>${escapeHtml(r.product_name)}</span></div>` : ""}
-      ${r.reference ? `<div><b>Référence</b><span>${escapeHtml(r.reference)}</span></div>` : ""}
       ${r.lot ? `<div><b>Lot</b><span>${escapeHtml(r.lot)}</span></div>` : ""}
-      ${r.manufacture_date ? `<div><b>Fabrication</b><span>${escapeHtml(r.manufacture_date)}</span></div>` : ""}
-      ${r.expiry_date ? `<div><b>Expiration</b><span>${escapeHtml(r.expiry_date)}</span></div>` : ""}
     </div>
   `;
 
-  // ✨ عرض حالة الدفعة
   showBatchStatus(data.map(row => row.secret_status));
 
   if (printLotBtn) printLotBtn.classList.remove("hidden");
@@ -1707,17 +2415,11 @@ if (_ub) _ub.onclick = async () => {
   _ub.textContent = "METTRE À JOUR LE LOT";
 
   if (error) {
-    if (info) {
-      info.className = "result danger";
-      info.innerHTML = `<p>Erreur : ${escapeHtml(error.message)}</p>`;
-    }
+    if (info) { info.className = "result danger"; info.innerHTML = `<p>Erreur : ${escapeHtml(error.message)}</p>`; }
     return;
   }
 
-  if (info) {
-    info.className = "result success";
-    info.innerHTML = `<h2>✓ LOT MIS À JOUR</h2><p>Tous les codes du lot "${escapeHtml(loadedLot)}" ont été modifiés.</p>`;
-  }
+  if (info) { info.className = "result success"; info.innerHTML = `<h2>✓ LOT MIS À JOUR</h2>`; }
   loadStats();
 
   if (updates.brand) loadedLotBrand = updates.brand;
@@ -1750,17 +2452,13 @@ function showBatchStatus(statuses) {
   let bg = '#f1f5f9';
 
   if (counts.PENDING > 0 && counts.UNUSED === 0 && counts.USED === 0) {
-    label = `⏳ EN ATTENTE — ${counts.PENDING} code(s)`;
-    color = '#a16207'; bg = '#fef3c7';
+    label = `⏳ EN ATTENTE — ${counts.PENDING} code(s)`; color = '#a16207'; bg = '#fef3c7';
   } else if (counts.UNUSED > 0) {
-    label = `🟢 ACTIF — ${counts.UNUSED} disponible(s)`;
-    color = '#166534'; bg = '#dcfce7';
+    label = `🟢 ACTIF — ${counts.UNUSED} disponible(s)`; color = '#166534'; bg = '#dcfce7';
   } else if (counts.USED > 0 && counts.UNUSED === 0 && counts.PENDING === 0) {
-    label = `🔵 UTILISÉ — ${counts.USED} code(s) vérifié(s)`;
-    color = '#1e40af'; bg = '#dbeafe';
+    label = `🔵 UTILISÉ — ${counts.USED} code(s)`; color = '#1e40af'; bg = '#dbeafe';
   } else if (counts.DISABLED > 0) {
-    label = `🔴 DÉSACTIVÉ — ${counts.DISABLED} code(s)`;
-    color = '#991b1b'; bg = '#fee2e2';
+    label = `🔴 DÉSACTIVÉ — ${counts.DISABLED} code(s)`; color = '#991b1b'; bg = '#fee2e2';
   } else {
     label = '—';
   }
@@ -1784,13 +2482,13 @@ function showBatchStatus(statuses) {
 const _actBtn = $("activateBatchBtn");
 if (_actBtn) _actBtn.onclick = async () => {
   if (!loadedLot) return;
-  if (!confirm(`✅ Activer le lot "${loadedLot}" ?\n\nLes codes PENDING deviendront utilisables par les clients.`)) return;
+  if (!confirm(`✅ Activer le lot "${loadedLot}" ?`)) return;
 
   const { data: { session } } = await sb.auth.getSession();
   if (!session) return alert("Connectez-vous.");
 
   _actBtn.disabled = true;
-  _actBtn.textContent = "⏳ Activation...";
+  _actBtn.textContent = "⏳...";
 
   try {
     const res = await fetch("/api/batch-actions?action=activate", {
@@ -1816,13 +2514,13 @@ if (_actBtn) _actBtn.onclick = async () => {
 const _disBtn = $("disableBatchBtn");
 if (_disBtn) _disBtn.onclick = async () => {
   if (!loadedLot) return;
-  if (!confirm(`⚠️ DÉSACTIVER le lot "${loadedLot}" ?\n\nLes codes UNUSED seront désactivés.\nLes codes déjà utilisés resteront valides.\n\nCette action est irréversible !`)) return;
+  if (!confirm(`⚠️ DÉSACTIVER le lot "${loadedLot}" ?`)) return;
 
   const { data: { session } } = await sb.auth.getSession();
   if (!session) return alert("Connectez-vous.");
 
   _disBtn.disabled = true;
-  _disBtn.textContent = "⏳ Désactivation...";
+  _disBtn.textContent = "⏳...";
 
   try {
     const res = await fetch("/api/batch-actions?action=disable", {
@@ -1865,12 +2563,9 @@ function printLabels(codes, brand, lot, logoUrl) {
       .toolbar { background: #111; color: #fff; padding: 12px; text-align: center; margin-bottom: 20px; border-radius: 8px; }
       .toolbar button { background: #fff; color: #111; border: 0; padding: 10px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; }
       .header { text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 3px solid #111; }
-      .header h1 { margin: 0 0 6px; font-size: 22px; }
       table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-      th { background: #111; color: #fff; padding: 10px 8px; text-align: left; font-size: 11px; text-transform: uppercase; }
+      th { background: #111; color: #fff; padding: 10px 8px; text-align: left; font-size: 11px; }
       td { padding: 9px 8px; border-bottom: 1px solid #e5e7eb; }
-      tr:nth-child(even) td { background: #f9fafb; }
-      .num { color: #6b7280; width: 45px; font-weight: bold; }
       .code-cell { font-family: 'Courier New', monospace; font-weight: bold; font-size: 15px; letter-spacing: 2px; }
       @media print { .toolbar { display: none !important; } body { padding: 0; } }
     </style></head><body>
@@ -1878,15 +2573,13 @@ function printLabels(codes, brand, lot, logoUrl) {
     <div class="header">
       ${logoUrl ? `<img src="${escapeHtml(logoUrl)}" style="max-height:50px;margin-bottom:10px">` : ""}
       <h1>${escapeHtml(brand)}</h1>
-      <p><b>Liste des codes de sécurité</b></p>
-      <p>${lot ? "Lot: " + escapeHtml(lot) + " — " : ""}Total: ${codes.length}</p>
+      <p>Lot: ${escapeHtml(lot)} — Total: ${codes.length}</p>
     </div>
-    <table><thead><tr><th class="num">#</th><th>Code de sécurité</th></tr></thead><tbody>`;
+    <table><thead><tr><th>#</th><th>Code</th></tr></thead><tbody>`;
 
     codes.forEach((code, i) => {
-      html += `<tr><td class="num">${i + 1}</td><td class="code-cell">${code.match(/.{1,4}/g).join(" ")}</td></tr>`;
+      html += `<tr><td>${i + 1}</td><td class="code-cell">${code.match(/.{1,4}/g).join(" ")}</td></tr>`;
     });
-
     html += `</tbody></table></body></html>`;
     w.document.write(html);
     w.document.close();
@@ -1895,13 +2588,9 @@ function printLabels(codes, brand, lot, logoUrl) {
 
   const size = ($("labelSize") && $("labelSize").value) || "60x90";
   let labelWidth, labelHeight, qrSize, codeFontSize, brandFontSize;
-  if (size === "50x50") {
-    labelWidth = "50mm"; labelHeight = "50mm"; qrSize = "22mm"; codeFontSize = "9px"; brandFontSize = "8px";
-  } else if (size === "70x50") {
-    labelWidth = "70mm"; labelHeight = "50mm"; qrSize = "28mm"; codeFontSize = "11px"; brandFontSize = "10px";
-  } else {
-    labelWidth = "60mm"; labelHeight = "90mm"; qrSize = "34mm"; codeFontSize = "13px"; brandFontSize = "11px";
-  }
+  if (size === "50x50") { labelWidth = "50mm"; labelHeight = "50mm"; qrSize = "22mm"; codeFontSize = "9px"; brandFontSize = "8px"; }
+  else if (size === "70x50") { labelWidth = "70mm"; labelHeight = "50mm"; qrSize = "28mm"; codeFontSize = "11px"; brandFontSize = "10px"; }
+  else { labelWidth = "60mm"; labelHeight = "90mm"; qrSize = "34mm"; codeFontSize = "13px"; brandFontSize = "11px"; }
 
   let html = `<!doctype html><html lang="fr"><head><meta charset="utf-8">
   <title>Impression</title>
@@ -1915,15 +2604,13 @@ function printLabels(codes, brand, lot, logoUrl) {
     .label { width: ${labelWidth}; height: ${labelHeight}; border: 1px dashed #bbb; display: flex; flex-direction: column; page-break-inside: avoid; background: #fff; position: relative; border-radius: 3mm; overflow: hidden; }
     .label-top { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3mm; text-align: center; }
     .label-logo { max-height: 8mm; max-width: 40mm; margin-bottom: 1.5mm; }
-    .label-brand { font-size: ${brandFontSize}; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 2mm; }
-    .label-qr { width: ${qrSize}; height: ${qrSize}; display: block; }
+    .label-brand { font-size: ${brandFontSize}; font-weight: bold; letter-spacing: 2px; margin-bottom: 2mm; }
+    .label-qr { width: ${qrSize}; height: ${qrSize}; }
     .label-inst { font-size: 7px; color: #666; margin-top: 2mm; }
     .label-fold { height: 6mm; display: flex; align-items: center; justify-content: center; font-size: 6px; color: #888; border-top: 1px dashed #666; border-bottom: 1px dashed #666; background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 3px, #e8e8e8 3px, #e8e8e8 6px); }
     .label-bottom { height: 28mm; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2mm; text-align: center; }
-    .label-code-title { font-size: 6.5px; color: #888; letter-spacing: 1.5px; margin-bottom: 1.5mm; text-transform: uppercase; }
     .label-code { font-family: 'Courier New', monospace; font-size: ${codeFontSize}; font-weight: bold; letter-spacing: 1.5px; padding: 1.5mm 3mm; border: 1px solid #ddd; border-radius: 2mm; background: #fafafa; }
     .label-hint { font-size: 5.5px; color: #999; margin-top: 1.5mm; font-style: italic; }
-    .label-lot { position: absolute; top: 2mm; right: 2mm; font-size: 6px; color: #aaa; font-family: monospace; }
     @media print { .toolbar, .info { display: none !important; } body { padding: 0; } .sheet { padding: 0; gap: 2mm; } }
   </style></head><body>
   <div class="toolbar"><button onclick="window.print()">🖨 IMPRIMER</button></div>
@@ -1933,7 +2620,6 @@ function printLabels(codes, brand, lot, logoUrl) {
   codes.forEach((code) => {
     html += `
       <div class="label">
-        ${lot ? `<div class="label-lot">LOT ${escapeHtml(lot)}</div>` : ""}
         <div class="label-top">
           ${logoUrl ? `<img class="label-logo" src="${escapeHtml(logoUrl)}">` : ""}
           <div class="label-brand">${escapeHtml(brand)}</div>
@@ -1942,13 +2628,11 @@ function printLabels(codes, brand, lot, logoUrl) {
         </div>
         <div class="label-fold">✂ - - - PLIEZ ICI - - - ✂</div>
         <div class="label-bottom">
-          <div class="label-code-title">Code de sécurité</div>
           <div class="label-code">${code.match(/.{1,4}/g).join(" ")}</div>
           <div class="label-hint">Ne pas révéler avant l'achat</div>
         </div>
       </div>`;
   });
-
   html += `</div></body></html>`;
   w.document.write(html);
   w.document.close();
@@ -1969,7 +2653,7 @@ if (_plb) _plb.onclick = async () => {
   const btn = _plb;
   const originalText = btn.textContent;
   btn.disabled = true;
-  btn.textContent = "🔓 Déchiffrement...";
+  btn.textContent = "🔓...";
 
   try {
     const res = await fetch("/api/batch-manager?action=print", {
@@ -1983,17 +2667,10 @@ if (_plb) _plb.onclick = async () => {
 
     const data = await res.json();
 
-    if (data.status !== "OK") {
-      alert("Erreur : " + (data.message || ""));
-      return;
-    }
+    if (data.status !== "OK") { alert("Erreur : " + (data.message || "")); return; }
 
     const codes = (data.codes || []).map(c => c.code).filter(Boolean);
-
-    if (codes.length === 0) {
-      alert("Aucun code à imprimer.");
-      return;
-    }
+    if (codes.length === 0) { alert("Aucun code."); return; }
 
     printLabels(codes, data.brand || loadedLotBrand || "MARQUE", data.lot || loadedLotLot, data.logo_url || loadedLotLogo);
 
@@ -2009,14 +2686,8 @@ if (_plb) _plb.onclick = async () => {
 // EXCEL EXPORT
 // ============================================================
 function downloadExcel(data, filename, sheetName) {
-  if (!data || data.length === 0) {
-    alert("Aucune donnée à exporter.");
-    return;
-  }
-  if (typeof XLSX === "undefined") {
-    alert("Bibliothèque Excel non chargée. Rechargez la page.");
-    return;
-  }
+  if (!data || data.length === 0) { alert("Aucune donnée."); return; }
+  if (typeof XLSX === "undefined") { alert("XLSX non chargé."); return; }
 
   const ws = XLSX.utils.json_to_sheet(data);
   const wb = XLSX.utils.book_new();
@@ -2037,21 +2708,17 @@ function downloadExcel(data, filename, sheetName) {
 
 const _enlb = $("exportNewLotBtn");
 if (_enlb) _enlb.onclick = () => {
-  if (!lastCodes || lastCodes.length === 0) return alert("Aucun code à exporter.");
+  if (!lastCodes || lastCodes.length === 0) return alert("Aucun code.");
 
   const brand = $("brand").value.trim() || "MARQUE";
   const lot = $("lot").value.trim() || "—";
-  const productName = $("product_name").value.trim() || "";
-  const reference = $("reference").value.trim() || "";
 
   const rows = lastCodes.map((code, i) => ({
     "#": i + 1,
-    "Code de sécurité": code,
+    "Code": code,
     "Statut": "UNUSED",
     "Lot": lot,
-    "Marque": brand,
-    "Produit": productName,
-    "Référence": reference
+    "Marque": brand
   }));
 
   downloadExcel(rows, "Codes_" + lot, "Codes");
@@ -2059,19 +2726,16 @@ if (_enlb) _enlb.onclick = () => {
 
 const _elcb = $("exportLotCodesBtn");
 if (_elcb) _elcb.onclick = async () => {
-  if (!loadedLot) return alert("Chargez d'abord un lot.");
+  if (!loadedLot) return alert("Chargez un lot.");
 
   const btn = _elcb;
   const originalText = btn.textContent;
   btn.disabled = true;
-  btn.textContent = "⏳ Export...";
+  btn.textContent = "⏳...";
 
   try {
     const { data: { session } } = await sb.auth.getSession();
-    if (!session) {
-      alert("Session expirée.");
-      return;
-    }
+    if (!session) return;
 
     const res = await fetch("/api/batch-manager?action=print", {
       method: "POST",
@@ -2083,20 +2747,14 @@ if (_elcb) _elcb.onclick = async () => {
     });
 
     const data = await res.json();
-
-    if (data.status !== "OK") {
-      alert("Erreur : " + (data.message || ""));
-      return;
-    }
+    if (data.status !== "OK") { alert("Erreur"); return; }
 
     const rows = (data.codes || []).map((c, i) => ({
       "#": i + 1,
-      "Code de sécurité": c.code,
+      "Code": c.code,
       "Statut": c.status || "UNUSED",
       "Lot": data.lot || loadedLot,
-      "Marque": data.brand || loadedLotBrand,
-      "Produit": data.product_name || "",
-      "Référence": data.reference || ""
+      "Marque": data.brand || loadedLotBrand
     }));
 
     downloadExcel(rows, "Codes_" + loadedLot, "Codes");
@@ -2113,20 +2771,12 @@ if (_emb) _emb.onclick = async () => {
   const btn = _emb;
   const originalText = btn.textContent;
   btn.disabled = true;
-  btn.textContent = "⏳ Export...";
+  btn.textContent = "⏳...";
 
   try {
-    const { data, error } = await sb
-      .from("brand_messages")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(5000);
-
+    const { data, error } = await sb.from("brand_messages").select("*").order("created_at", { ascending: false }).limit(5000);
     if (error) throw error;
-    if (!data || data.length === 0) {
-      alert("Aucun message à exporter.");
-      return;
-    }
+    if (!data || data.length === 0) { alert("Aucun message."); return; }
 
     const rows = data.map(m => ({
       "Date": m.created_at ? new Date(m.created_at).toLocaleString() : "",
@@ -2152,33 +2802,21 @@ if (_ebb) _ebb.onclick = async () => {
   const btn = _ebb;
   const originalText = btn.textContent;
   btn.disabled = true;
-  btn.textContent = "⏳ Export...";
+  btn.textContent = "⏳...";
 
   try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) {
-      alert("Session expirée.");
-      return;
-    }
+    const token = await getAdminToken();
+    if (!token) return;
 
-    const res = await fetch("/api/batch-actions?action=list-brands", {
+    const res = await fetch("/api/orders?action=list-brands", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + session.access_token
-      },
-      body: JSON.stringify({ access_token: session.access_token })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ access_token: token })
     });
 
     const data = await res.json();
-
-    if (data.status !== "OK") {
-      alert("Erreur : " + (data.message || ""));
-      return;
-    }
-
-    if (!data.brands || data.brands.length === 0) {
-      alert("Aucune marque à exporter.");
+    if (data.status !== "OK" || !data.brands || data.brands.length === 0) {
+      alert("Aucune marque.");
       return;
     }
 
@@ -2186,9 +2824,11 @@ if (_ebb) _ebb.onclick = async () => {
       "Marque": b.brand_name || "",
       "Email": b.email || "",
       "Téléphone": b.phone || "",
-      "Inscrit le": b.created_at ? new Date(b.created_at).toLocaleString() : "",
-      "Dernière connexion": b.last_sign_in_at ? new Date(b.last_sign_in_at).toLocaleString() : "Jamais",
-      "Statut": b.last_sign_in_at ? "Active" : "Inactive"
+      "Inscrite": b.is_registered ? "Oui" : "Non",
+      "Tier": b.tier || "REGULAR",
+      "Codes": b.codes_count || 0,
+      "Commandes": b.total_orders || 0,
+      "Total dépensé": b.total_spent || 0
     }));
 
     downloadExcel(rows, "Marques", "Marques");
@@ -2205,20 +2845,12 @@ if (_efb) _efb.onclick = async () => {
   const btn = _efb;
   const originalText = btn.textContent;
   btn.disabled = true;
-  btn.textContent = "⏳ Export...";
+  btn.textContent = "⏳...";
 
   try {
-    const { data, error } = await sb
-      .from("qr_feedback")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(5000);
-
+    const { data, error } = await sb.from("qr_feedback").select("*").order("created_at", { ascending: false }).limit(5000);
     if (error) throw error;
-    if (!data || data.length === 0) {
-      alert("Aucun avis à exporter.");
-      return;
-    }
+    if (!data || data.length === 0) { alert("Aucun avis."); return; }
 
     const rows = data.map(f => ({
       "Date": f.created_at ? new Date(f.created_at).toLocaleString() : "",
@@ -2253,43 +2885,21 @@ if (_pdb) _pdb.onclick = async () => {
   pendingDeleteLot = null;
 
   if (!lot) {
-    if (preview) {
-      preview.className = "result danger";
-      preview.innerHTML = `<p>Entrez un numéro de lot.</p>`;
-    }
+    if (preview) { preview.className = "result danger"; preview.innerHTML = `<p>Entrez un lot.</p>`; }
     return;
   }
 
-  if (preview) {
-    preview.className = "result";
-    preview.innerHTML = `<p>Recherche...</p>`;
-  }
+  if (preview) { preview.className = "result"; preview.innerHTML = `<p>Recherche...</p>`; }
 
-  const { data, error } = await sb
-    .from("qr_codes")
-    .select("secret_status")
-    .eq("lot", lot);
+  const { data, error } = await sb.from("qr_codes").select("secret_status").eq("lot", lot);
 
-  if (error) {
-    if (preview) {
-      preview.className = "result danger";
-      preview.innerHTML = `<p>Erreur : ${escapeHtml(error.message)}</p>`;
-    }
+  if (error || !data || data.length === 0) {
+    if (preview) { preview.className = "result danger"; preview.innerHTML = `<h2>AUCUN RÉSULTAT</h2>`; }
     return;
   }
 
-  if (!data || data.length === 0) {
-    if (preview) {
-      preview.className = "result danger";
-      preview.innerHTML = `<h2>AUCUN RÉSULTAT</h2><p>Aucun code trouvé pour le lot "<b>${escapeHtml(lot)}</b>".</p>`;
-    }
-    return;
-  }
-
-  const statuses = { PENDING: 0, UNUSED: 0, USED: 0, DISABLED: 0, EXPIRED: 0 };
-  data.forEach(r => {
-    if (statuses[r.secret_status] !== undefined) statuses[r.secret_status]++;
-  });
+  const statuses = { UNUSED: 0, USED: 0, DISABLED: 0, EXPIRED: 0, PENDING: 0 };
+  data.forEach(r => { if (statuses[r.secret_status] !== undefined) statuses[r.secret_status]++; });
 
   pendingDeleteLot = lot;
   pendingDeleteCount = data.length;
@@ -2299,13 +2909,12 @@ if (_pdb) _pdb.onclick = async () => {
     preview.innerHTML = `
       <h2>⚠️ PRÊT À SUPPRIMER</h2>
       <p>Lot : <b>${escapeHtml(lot)}</b></p>
-      <p>Total : <b>${data.length}</b> code(s)</p>
+      <p>Total : <b>${data.length}</b></p>
       <div class="details" style="margin-top:12px">
         <div><b>PENDING</b><span>${statuses.PENDING}</span></div>
         <div><b>UNUSED</b><span>${statuses.UNUSED}</span></div>
         <div><b>USED</b><span>${statuses.USED}</span></div>
         <div><b>DISABLED</b><span>${statuses.DISABLED}</span></div>
-        <div><b>EXPIRED</b><span>${statuses.EXPIRED}</span></div>
       </div>
     `;
   }
@@ -2331,36 +2940,25 @@ if (_cdb) _cdb.onclick = async () => {
   if ($("deleteConfirmInput").value.trim().toUpperCase() !== "DELETE") return;
 
   const { data: { session } } = await sb.auth.getSession();
-  if (!session) return alert("Connectez-vous.");
+  if (!session) return;
 
   const btn = _cdb;
   btn.disabled = true;
-  btn.textContent = "SUPPRESSION EN COURS...";
+  btn.textContent = "SUPPRESSION...";
 
   const lot = pendingDeleteLot;
   const count = pendingDeleteCount;
 
   try {
-    const { error: deleteError } = await sb
-      .from("qr_codes")
-      .delete()
-      .eq("lot", lot);
-
+    const { error: deleteError } = await sb.from("qr_codes").delete().eq("lot", lot);
     if (deleteError) throw deleteError;
 
-    try {
-      await sb.from("qr_delete_logs").insert({ lot: lot, count: count, action: 'DELETE' });
-    } catch (logErr) {
-      console.warn("Log insert failed:", logErr);
-    }
+    try { await sb.from("qr_delete_logs").insert({ lot, count, action: 'DELETE' }); } catch (e) {}
 
     const result = $("deleteResult");
     if (result) {
       result.className = "result success";
-      result.innerHTML = `
-        <h2>✓ SUPPRESSION RÉUSSIE</h2>
-        <p><b>${count}</b> code(s) du lot "<b>${escapeHtml(lot)}</b>" ont été supprimés définitivement.</p>
-      `;
+      result.innerHTML = `<h2>✓ SUPPRESSION</h2><p><b>${count}</b> code(s) supprimés.</p>`;
     }
 
     if ($("deletePreview")) $("deletePreview").classList.add("hidden");
@@ -2371,163 +2969,117 @@ if (_cdb) _cdb.onclick = async () => {
 
     loadStats();
     loadCharts();
-    loadDeleteLog();
 
   } catch (err) {
     const result = $("deleteResult");
-    if (result) {
-      result.className = "result danger";
-      result.innerHTML = `<p>Erreur : ${escapeHtml(err.message)}</p>`;
-    }
+    if (result) { result.className = "result danger"; result.innerHTML = `<p>Erreur : ${escapeHtml(err.message)}</p>`; }
   } finally {
     btn.disabled = false;
-    btn.textContent = "🗑️ SUPPRIMER DÉFINITIVEMENT";
+    btn.textContent = "🗑️ SUPPRIMER";
   }
 };
 
 // ============================================================
-// ADVANCED SEARCH
+// AUTH
 // ============================================================
-let advSearchData = [];
+async function refresh() {
+  const { data: { session } } = await sb.auth.getSession();
 
-async function loadAdvancedSearch() {
-  const resultsBox = $("advSearchResults");
-  const statsBox = $("advSearchStats");
-  if (!resultsBox) return;
-
-  const text = ($("advSearchText")?.value || "").trim();
-  const status = ($("advSearchStatus")?.value || "").trim();
-  const limit = parseInt($("advSearchLimit")?.value || "100", 10);
-  const dateFrom = $("advSearchDateFrom")?.value || "";
-  const dateTo = $("advSearchDateTo")?.value || "";
-
-  resultsBox.innerHTML = `<p class="muted">Recherche en cours...</p>`;
-  if (statsBox) statsBox.style.display = "none";
-
-  try {
-    let query = sb
-      .from("qr_codes")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(limit);
-
-    if (status) {
-      query = query.eq("secret_status", status);
-    }
-    if (dateFrom) {
-      query = query.gte("created_at", dateFrom + "T00:00:00");
-    }
-    if (dateTo) {
-      query = query.lte("created_at", dateTo + "T23:59:59");
-    }
-
-    if (text) {
-      const safeText = text.replace(/[%,()]/g, "");
-      query = query.or(
-        `brand.ilike.%${safeText}%,lot.ilike.%${safeText}%,secret_code.ilike.%${safeText}%,reference.ilike.%${safeText}%,product_name.ilike.%${safeText}%`
-      );
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      resultsBox.innerHTML = `<p class="muted">Erreur : ${escapeHtml(error.message)}</p>`;
-      return;
-    }
-
-    advSearchData = data || [];
-
-    if (advSearchData.length === 0) {
-      resultsBox.innerHTML = `<p class="muted" style="text-align:center;padding:40px 0">Aucun résultat.</p>`;
-      return;
-    }
-
-    const counts = { PENDING: 0, UNUSED: 0, USED: 0, DISABLED: 0, EXPIRED: 0 };
-    advSearchData.forEach(r => {
-      if (counts[r.secret_status] !== undefined) counts[r.secret_status]++;
-    });
-
-    if (statsBox) {
-      statsBox.style.display = "grid";
-      statsBox.innerHTML = `
-        <div class="stat-card"><div class="stat-num">${advSearchData.length}</div><div class="stat-label">TOTAL</div></div>
-        <div class="stat-card"><div class="stat-num" style="color:#a16207">${counts.PENDING}</div><div class="stat-label">PENDING</div></div>
-        <div class="stat-card"><div class="stat-num" style="color:#16a34a">${counts.UNUSED}</div><div class="stat-label">UNUSED</div></div>
-        <div class="stat-card"><div class="stat-num" style="color:#2563eb">${counts.USED}</div><div class="stat-label">USED</div></div>
-        <div class="stat-card"><div class="stat-num" style="color:#dc2626">${counts.DISABLED}</div><div class="stat-label">DISABLED</div></div>
-      `;
-    }
-
-    let html = "";
-    advSearchData.forEach(r => {
-      const statusClass =
-        r.secret_status === "UNUSED" ? "success" :
-        r.secret_status === "PENDING" ? "warning" :
-        r.secret_status === "USED" ? "success" :
-        "danger";
-
-      const date = r.created_at ? new Date(r.created_at).toLocaleString() : "—";
-      const usedDate = r.used_at ? new Date(r.used_at).toLocaleString() : null;
-
-      html += `
-        <div class="log-row log-${statusClass}" style="padding:14px">
-          <div class="log-top">
-            <span class="log-result log-result-${statusClass}">${escapeHtml(r.secret_status)}</span>
-            <span class="log-date">${escapeHtml(date)}</span>
-          </div>
-          <div class="log-code" style="font-size:14px">${escapeHtml(r.secret_code || "—")}</div>
-          <div class="log-meta">
-            ${r.brand ? `<span>🏷 ${escapeHtml(r.brand)}</span>` : ""}
-            ${r.lot ? `<span>📦 ${escapeHtml(r.lot)}</span>` : ""}
-            ${r.reference ? `<span>🔖 ${escapeHtml(r.reference)}</span>` : ""}
-            ${usedDate ? `<span>✓ ${escapeHtml(usedDate)}</span>` : ""}
-          </div>
-        </div>`;
-    });
-    resultsBox.innerHTML = html;
-
-  } catch (err) {
-    resultsBox.innerHTML = `<p class="muted">Erreur : ${escapeHtml(err.message)}</p>`;
-  }
-}
-
-const _advBtn = $("advSearchBtn");
-if (_advBtn) _advBtn.onclick = () => loadAdvancedSearch();
-
-const _advReset = $("advResetBtn");
-if (_advReset) _advReset.onclick = () => {
-  if ($("advSearchText")) $("advSearchText").value = "";
-  if ($("advSearchStatus")) $("advSearchStatus").value = "";
-  if ($("advSearchLimit")) $("advSearchLimit").value = "100";
-  if ($("advSearchDateFrom")) $("advSearchDateFrom").value = "";
-  if ($("advSearchDateTo")) $("advSearchDateTo").value = "";
-  const rb = $("advSearchResults"); if (rb) rb.innerHTML = "";
-  const sb2 = $("advSearchStats"); if (sb2) sb2.style.display = "none";
-  advSearchData = [];
-};
-
-const _advExport = $("advExportBtn");
-if (_advExport) _advExport.onclick = () => {
-  if (!advSearchData || advSearchData.length === 0) {
-    alert("Aucun résultat à exporter. Lancez d'abord une recherche.");
+  if (!session) {
+    window.location.href = "/login";
     return;
   }
 
-  const rows = advSearchData.map(r => ({
-    "Code": r.secret_code || "",
-    "Statut": r.secret_status || "",
-    "Marque": r.brand || "",
-    "Produit": r.product_name || "",
-    "Référence": r.reference || "",
-    "Lot": r.lot || "",
-    "Créé le": r.created_at ? new Date(r.created_at).toLocaleString() : "",
-    "Utilisé le": r.used_at ? new Date(r.used_at).toLocaleString() : ""
-  }));
+  const userEmail = (session.user.email || "").toLowerCase().trim();
 
-  downloadExcel(rows, "Recherche_Avancee", "Résultats");
+  if (!isAdminEmail(userEmail)) {
+    window.location.href = "/brand";
+    return;
+  }
+
+  const lp = $("loginPage"); if (lp) lp.classList.add("hidden");
+  const aa = $("adminApp"); if (aa) aa.classList.remove("hidden");
+
+  const url = location.origin + "/verify";
+  const pu = $("publicUrl"); if (pu) pu.textContent = url;
+
+  const qr = $("qr");
+  if (qr && qr.innerHTML.trim() === "") {
+    new QRCode(qr, { text: url, width: 180, height: 180 });
+  }
+
+  loadStats();
+  loadLog();
+  loadFeedback();
+  loadCharts();
+  loadMessagesBadge();
+  loadFakesBadge();
+}
+
+refresh();
+
+const _lf = $("loginForm");
+if (_lf) _lf.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const emailInput = $("email").value.trim();
+  const passwordInput = $("password").value;
+  const el = $("loginError");
+
+  if (!isAdminEmail(emailInput)) {
+    if (el) {
+      el.className = "result danger";
+      el.innerHTML = `<p style="margin:0">⛔ Compte non autorisé.</p>`;
+      el.classList.remove("hidden");
+    }
+    return;
+  }
+
+  const lb = $("loginBtn");
+  if (lb) { lb.disabled = true; lb.textContent = "CONNEXION..."; }
+
+  const { error } = await sb.auth.signInWithPassword({ email: emailInput, password: passwordInput });
+
+  if (lb) { lb.disabled = false; lb.textContent = "SE CONNECTER"; }
+
+  if (error) {
+    if (el) {
+      el.className = "result danger";
+      el.innerHTML = `<p style="margin:0">${escapeHtml(error.message)}</p>`;
+      el.classList.remove("hidden");
+    }
+    return;
+  }
+
+  if (el) el.classList.add("hidden");
+  refresh();
+});
+
+const _lb = $("logoutBtn");
+if (_lb) _lb.onclick = async () => {
+  await sb.auth.signOut();
+  location.reload();
 };
 
-const _advText = $("advSearchText");
-if (_advText) _advText.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") loadAdvancedSearch();
+const _rlb = $("refreshLogBtn");
+if (_rlb) _rlb.onclick = () => loadLog();
+
+const _rfb = $("refreshFeedbackBtn");
+if (_rfb) _rfb.onclick = () => loadFeedback();
+
+document.querySelectorAll("#feedbackTabs .tab").forEach(t => {
+  t.addEventListener("click", () => {
+    document.querySelectorAll("#feedbackTabs .tab").forEach(x => {
+      x.classList.remove("active");
+      x.style.background = "#fff";
+      x.style.color = "#0f172a";
+      x.style.border = "1px solid #e2e8f0";
+    });
+    t.classList.add("active");
+    t.style.background = "#0f172a";
+    t.style.color = "#fff";
+    t.style.border = "0";
+    currentFeedbackFilter = t.dataset.tab;
+    loadFeedback();
+  });
 });
