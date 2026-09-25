@@ -372,7 +372,7 @@ async function loadBrands() {
   }
 
   try {
-    const res = await fetch("/api/list-brands", {
+    const res = await fetch("/api/batch-actions?action=list-brands", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -2172,7 +2172,7 @@ if (_ebb) _ebb.onclick = async () => {
       return;
     }
 
-    const res = await fetch("/api/list-brands", {
+    const res = await fetch("/api/batch-actions?action=list-brands", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
