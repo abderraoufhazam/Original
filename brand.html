@@ -72,9 +72,7 @@
       position: relative;
       min-height: 0;
     }
-    .chart-canvas-wrap canvas {
-      max-width: 100%;
-    }
+    .chart-canvas-wrap canvas { max-width: 100%; }
     @media (max-width: 640px) {
       .chart-grid { grid-template-columns: 1fr; }
     }
@@ -104,66 +102,111 @@
     html.dark .batch-pill.red { background: rgba(220,38,38,0.2); color: #fca5a5; }
     html.dark .batch-pill.gray { background: rgba(148,163,184,0.15); color: #cbd5e1; }
 
-    /* REPORT GROUPS */
-    .wilaya-group {
-      background: var(--card-bg); border: 1px solid var(--border);
-      border-radius: 14px; margin-bottom: 10px; overflow: hidden;
+    /* ORDERS CARDS */
+    .brand-order-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
     }
-    .wilaya-group.has-new { border-left: 4px solid #dc2626; }
-    .wilaya-group.all-reviewed { border-left: 4px solid #16a34a; }
-    .wilaya-header {
-      padding: 14px 16px; cursor: pointer;
-      display: flex; align-items: center; gap: 10px;
-    }
-    .wilaya-header-icon { font-size: 18px; flex-shrink: 0; }
-    .wilaya-header-name { font-weight: 800; font-size: 14px; color: var(--text); flex: 1; }
-    .wilaya-header-counts { display: flex; gap: 6px; }
-    .wilaya-count-pill {
-      font-size: 11px; font-weight: 800; padding: 3px 9px;
-      border-radius: 100px;
-    }
-    .wilaya-count-pill.new { background: #fee2e2; color: #991b1b; }
-    .wilaya-count-pill.reviewed { background: #dcfce7; color: #166534; }
-    html.dark .wilaya-count-pill.new { background: rgba(220,38,38,0.2); color: #fca5a5; }
-    html.dark .wilaya-count-pill.reviewed { background: rgba(22,163,74,0.2); color: #86efac; }
-    .wilaya-arrow { font-size: 12px; color: var(--text-muted); transition: transform 300ms; }
-    .wilaya-group.open .wilaya-arrow { transform: rotate(180deg); }
-    .wilaya-body { max-height: 0; overflow: hidden; transition: max-height 400ms; background: var(--bg); }
-    html.dark .wilaya-body { background: rgba(0,0,0,0.15); }
-    .wilaya-group.open .wilaya-body { max-height: 10000px; }
-    .wilaya-body-inner { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+    .brand-order-card.status-IN_PRODUCTION { border-left-color: #eab308; }
+    .brand-order-card.status-READY { border-left-color: #3b82f6; }
+    .brand-order-card.status-HANDED_TO_CARRIER { border-left-color: #a855f7; }
+    .brand-order-card.status-SHIPPED { border-left-color: #06b6d4; }
+    .brand-order-card.status-AWAITING_PICKUP { border-left-color: #f97316; }
+    .brand-order-card.status-AWAITING_HANDOVER { border-left-color: #f59e0b; }
+    .brand-order-card.status-DELIVERED { border-left-color: #16a34a; }
+    .brand-order-card.status-PAID { border-left-color: #10b981; }
+    .brand-order-card.status-CANCELLED { border-left-color: #dc2626; opacity: 0.7; }
 
-    .report-card {
-      background: var(--card-bg); border: 1px solid var(--border);
-      border-radius: 12px; padding: 12px;
+    .brand-order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
     }
-    .report-card.new { border-left: 3px solid #dc2626; }
-    .report-card.reviewed { border-left: 3px solid #16a34a; }
-    .report-header {
-      display: flex; justify-content: space-between;
-      align-items: center; margin-bottom: 8px; gap: 10px;
+    .brand-order-number {
+      font-family: 'Courier New', monospace;
+      font-weight: 900;
+      font-size: 14px;
+      color: var(--text);
     }
-    .report-status {
-      font-size: 10px; font-weight: 800; padding: 3px 8px;
-      border-radius: 6px; text-transform: uppercase;
+    .brand-order-date {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
     }
-    .report-status.new { background: #fee2e2; color: #991b1b; }
-    .report-status.reviewed { background: #dcfce7; color: #166534; }
-    html.dark .report-status.new { background: rgba(220,38,38,0.2); color: #fca5a5; }
-    html.dark .report-status.reviewed { background: rgba(22,163,74,0.2); color: #86efac; }
-    .report-date { font-size: 11px; color: var(--text-muted); }
-    .report-product { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
-    .report-image {
-      max-width: 120px; max-height: 120px;
-      border-radius: 10px; display: block;
-      margin: 8px 0; border: 1px solid var(--border);
+    .brand-order-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 10px 0;
     }
-    .report-comment {
-      font-size: 12px; color: var(--text-muted); line-height: 1.5;
-      padding: 8px 10px; background: var(--bg); border-radius: 8px;
+    .brand-order-pill {
+      padding: 3px 8px;
+      background: rgba(148,163,184,0.15);
+      border-radius: 100px;
+      font-family: monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .brand-order-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      margin-top: 10px;
+    }
+    .brand-order-amount {
+      font-size: 18px;
+      font-weight: 900;
+      color: #16a34a;
+    }
+    .brand-order-tracking {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
       margin-top: 8px;
     }
-    html.dark .report-comment { background: rgba(255,255,255,0.03); }
+
+    .brand-status-pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .brand-status-pill.IN_PRODUCTION { background: #fef3c7; color: #a16207; }
+    .brand-status-pill.READY { background: #dbeafe; color: #1e40af; }
+    .brand-status-pill.HANDED_TO_CARRIER { background: #f3e8ff; color: #7c3aed; }
+    .brand-status-pill.SHIPPED { background: #cffafe; color: #0e7490; }
+    .brand-status-pill.AWAITING_PICKUP { background: #ffedd5; color: #c2410c; }
+    .brand-status-pill.AWAITING_HANDOVER { background: #fef3c7; color: #a16207; }
+    .brand-status-pill.DELIVERED { background: #dcfce7; color: #166534; }
+    .brand-status-pill.PAID { background: #d1fae5; color: #065f46; }
+    .brand-status-pill.CANCELLED { background: #fee2e2; color: #991b1b; }
+
+    .brand-payment-pill {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 100px;
+      font-size: 10px;
+      font-weight: 800;
+      margin-left: 6px;
+    }
+    .brand-payment-pill.UNPAID { background: #fee2e2; color: #991b1b; }
+    .brand-payment-pill.PARTIAL { background: #fef3c7; color: #a16207; }
+    .brand-payment-pill.PAID { background: #dcfce7; color: #166534; }
   </style>
 </head>
 <body>
@@ -213,6 +256,16 @@
   </div>
 
   <div class="brand-section">
+    <h2>📋 Mes commandes</h2>
+    <p style="font-size:12px;color:var(--text-muted);margin:0 0 14px">
+      Suivez l'état de vos commandes et téléchargez vos factures.
+    </p>
+    <div id="ordersList">
+      <div class="brand-loading" style="padding:20px 0">Chargement...</div>
+    </div>
+  </div>
+
+  <div class="brand-section">
     <h2>📦 Mes lots</h2>
     <div id="batchesList" style="display:flex;flex-direction:column;gap:10px">
       <div class="brand-loading" style="padding:20px 0">Chargement...</div>
@@ -222,7 +275,7 @@
   <div class="brand-section">
     <h2>🚨 Signalements de contrefaçon</h2>
     <p style="font-size:12px;color:var(--text-muted);margin:0 0 14px">
-      Signalements groupés par wilaya. Cliquez sur une wilaya pour voir les détails.
+      Signalements groupés par wilaya. Cliquez pour voir les détails.
     </p>
     <div id="reportsList"></div>
   </div>
@@ -256,6 +309,11 @@ function escapeHtml(v = "") {
   return String(v).replace(/[&<>"']/g, c => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
   }[c]));
+}
+
+function formatMoney(amount) {
+  const num = parseFloat(amount || 0);
+  return num.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + " DA";
 }
 
 function getThemeColors() {
@@ -305,21 +363,12 @@ async function loadDailyChart() {
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
-          y: {
-            beginAtZero: true,
-            ticks: { color: colors.text, precision: 0, font: { size: 10 } },
-            grid: { color: colors.grid }
-          },
-          x: {
-            ticks: { color: colors.text, font: { size: 9 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 },
-            grid: { display: false }
-          }
+          y: { beginAtZero: true, ticks: { color: colors.text, precision: 0, font: { size: 10 } }, grid: { color: colors.grid } },
+          x: { ticks: { color: colors.text, font: { size: 9 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 }, grid: { display: false } }
         }
       }
     });
-  } catch (e) {
-    console.warn("chartDaily error:", e);
-  }
+  } catch (e) { console.warn("chartDaily error:", e); }
 }
 
 function renderStatusChart(stats) {
@@ -334,12 +383,7 @@ function renderStatusChart(stats) {
     data: {
       labels: ["Actifs", "Utilisés", "En attente", "Désactivés"],
       datasets: [{
-        data: [
-          stats.unused || 0,
-          stats.used || 0,
-          stats.pending || 0,
-          stats.disabled || 0
-        ],
+        data: [stats.unused || 0, stats.used || 0, stats.pending || 0, stats.disabled || 0],
         backgroundColor: ["#16a34a", "#2563eb", "#eab308", "#dc2626"],
         borderWidth: 0,
         hoverOffset: 6
@@ -352,14 +396,7 @@ function renderStatusChart(stats) {
       plugins: {
         legend: {
           position: "bottom",
-          labels: {
-            color: colors.text,
-            padding: 10,
-            font: { size: 11 },
-            usePointStyle: true,
-            pointStyle: "circle",
-            boxWidth: 8
-          }
+          labels: { color: colors.text, padding: 10, font: { size: 11 }, usePointStyle: true, pointStyle: "circle", boxWidth: 8 }
         }
       }
     }
@@ -380,7 +417,7 @@ function renderWilayaChart() {
   if (sorted.length === 0) {
     const parent = ctx.parentElement;
     if (parent) {
-      parent.innerHTML = '<p style="text-align:center;padding:60px 0;color:var(--text-muted);font-size:13px;margin:0">Aucun signalement pour le moment</p>';
+      parent.innerHTML = '<p style="text-align:center;padding:60px 0;color:var(--text-muted);font-size:13px;margin:0">Aucun signalement</p>';
     }
     return;
   }
@@ -409,18 +446,99 @@ function renderWilayaChart() {
       indexAxis: "y",
       plugins: { legend: { display: false } },
       scales: {
-        x: {
-          beginAtZero: true,
-          ticks: { color: colors.text, precision: 0, font: { size: 10 } },
-          grid: { color: colors.grid }
-        },
-        y: {
-          ticks: { color: colors.text, font: { size: 11, weight: "600" } },
-          grid: { display: false }
-        }
+        x: { beginAtZero: true, ticks: { color: colors.text, precision: 0, font: { size: 10 } }, grid: { color: colors.grid } },
+        y: { ticks: { color: colors.text, font: { size: 11, weight: "600" } }, grid: { display: false } }
       }
     }
   });
+}
+
+// ============================================================
+// ORDERS
+// ============================================================
+const ORDER_STATUS_LABELS = {
+  IN_PRODUCTION: "🟡 En production",
+  READY: "📦 Prête",
+  HANDED_TO_CARRIER: "🟣 Confiée transporteur",
+  SHIPPED: "🚚 Expédiée",
+  AWAITING_PICKUP: "🟠 En attente retrait",
+  AWAITING_HANDOVER: "⏳ En attente remise",
+  DELIVERED: "✅ Livrée",
+  PAID: "💰 Payée",
+  CANCELLED: "❌ Annulée"
+};
+
+const PAYMENT_LABELS = {
+  UNPAID: "❌ Non payé",
+  PARTIAL: "🟡 Partiel",
+  PAID: "✅ Payé"
+};
+
+async function loadBrandOrders() {
+  const container = $("ordersList");
+  if (!container) return;
+
+  container.innerHTML = `<div class="brand-loading" style="padding:20px 0">Chargement...</div>`;
+
+  try {
+    const { data, error } = await sb.rpc("brand_get_orders");
+    if (error) throw error;
+
+    const orders = data || [];
+
+    if (orders.length === 0) {
+      container.innerHTML = `<div style="text-align:center;padding:30px;color:var(--text-muted);font-size:13px">Aucune commande pour le moment.</div>`;
+      return;
+    }
+
+    let html = "";
+    orders.forEach(o => {
+      const date = o.created_at ? new Date(o.created_at).toLocaleDateString("fr-FR") : "—";
+
+      const itemsHtml = (o.items || []).map(it =>
+        `<span class="brand-order-pill">Lot ${escapeHtml(it.lot_number)} × ${it.quantity}</span>`
+      ).join("");
+
+      let trackingHtml = "";
+      if (o.delivery_company) trackingHtml += `<span>🚚 ${escapeHtml(o.delivery_company)}</span>`;
+      if (o.tracking_number) trackingHtml += `<span>🔢 ${escapeHtml(o.tracking_number)}</span>`;
+
+      html += `
+        <div class="brand-order-card status-${o.order_status}">
+          <div class="brand-order-header">
+            <div>
+              <div class="brand-order-number">${escapeHtml(o.order_number)}</div>
+              <div class="brand-order-date">📅 ${escapeHtml(date)}</div>
+            </div>
+            <div style="text-align:right">
+              <span class="brand-status-pill ${o.order_status}">
+                ${ORDER_STATUS_LABELS[o.order_status] || o.order_status}
+              </span>
+              <div style="margin-top:6px">
+                <span class="brand-payment-pill ${o.payment_status}">
+                  ${PAYMENT_LABELS[o.payment_status] || o.payment_status}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          ${itemsHtml ? `<div class="brand-order-items">${itemsHtml}</div>` : ""}
+
+          ${trackingHtml ? `<div class="brand-order-tracking">${trackingHtml}</div>` : ""}
+
+          <div class="brand-order-total">
+            <div style="font-size:12px;color:var(--text-muted)">${o.total_quantity} codes</div>
+            <div class="brand-order-amount">${formatMoney(o.total_price)}</div>
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = `<div style="text-align:center;padding:20px;color:#dc2626;font-size:13px">Erreur : ${escapeHtml(err.message)}</div>`;
+  }
 }
 
 // ============================================================
@@ -493,7 +611,7 @@ function renderReports() {
   if (!container) return;
 
   if (!allReports || allReports.length === 0) {
-    container.innerHTML = `<div style="text-align:center;padding:30px;color:var(--text-muted);font-size:13px">Aucun signalement pour le moment.</div>`;
+    container.innerHTML = `<div style="text-align:center;padding:30px;color:var(--text-muted);font-size:13px">Aucun signalement.</div>`;
     return;
   }
 
@@ -607,6 +725,7 @@ async function init() {
 
     renderStatusChart(data);
     loadDailyChart();
+    loadBrandOrders();
     loadBatches();
     loadReports();
   } catch (err) {
