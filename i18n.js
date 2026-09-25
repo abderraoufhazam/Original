@@ -16,6 +16,8 @@ const TRANSLATIONS = {
     originalMsg: "Code authentifié avec succès.",
     usedTitle: "CODE DÉJÀ UTILISÉ",
     usedMsg: "Ce code a déjà été vérifié. Si vous pensez qu'il s'agit d'une erreur, contactez la marque.",
+    pendingTitle: "PRODUIT NON ACTIVÉ",
+    pendingMsg: "Ce code n'a pas encore été activé. Contactez la marque.",
     invalidTitle: "CODE INVALIDE",
     invalidMsg: "Ce code n'est plus actif.",
     notOriginalTitle: "PRODUIT NON ORIGINAL",
@@ -63,6 +65,8 @@ const TRANSLATIONS = {
     originalMsg: "تم التحقق من الكود بنجاح.",
     usedTitle: "كود مستعمل من قبل",
     usedMsg: "تم استعمال هذا الكود سابقًا. إذا كنت تعتقد أنه خطأ، اتصل بالعلامة التجارية.",
+    pendingTitle: "منتج غير مفعّل",
+    pendingMsg: "هذا الكود لم يُفعّل بعد. تواصل مع العلامة التجارية.",
     invalidTitle: "كود غير صالح",
     invalidMsg: "هذا الكود لم يعد نشطًا.",
     notOriginalTitle: "منتج غير أصلي",
@@ -110,6 +114,8 @@ const TRANSLATIONS = {
     originalMsg: "Code successfully authenticated.",
     usedTitle: "CODE ALREADY USED",
     usedMsg: "This code has already been verified. If you believe this is an error, contact the brand.",
+    pendingTitle: "PRODUCT NOT ACTIVATED",
+    pendingMsg: "This code has not been activated yet. Contact the brand.",
     invalidTitle: "INVALID CODE",
     invalidMsg: "This code is no longer active.",
     notOriginalTitle: "NON-ORIGINAL PRODUCT",
@@ -143,10 +149,8 @@ const TRANSLATIONS = {
   }
 };
 
-// Langue active
 let currentLang = localStorage.getItem("lang") || "fr";
 
-// Détection automatique à la première visite
 if (!localStorage.getItem("lang")) {
   const browserLang = (navigator.language || "fr").toLowerCase().slice(0, 2);
   if (browserLang === "ar") currentLang = "ar";
