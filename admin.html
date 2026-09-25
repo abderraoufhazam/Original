@@ -20,6 +20,370 @@
       if (isDark) document.documentElement.classList.add("dark");
     })();
   </script>
+
+  <style>
+    /* ============ ORDERS PANEL ============ */
+    .order-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+      transition: all 200ms;
+    }
+    .order-card:hover { box-shadow: 0 8px 20px -8px rgba(15,23,42,0.15); }
+
+    .order-card.status-IN_PRODUCTION { border-left-color: #eab308; }
+    .order-card.status-READY { border-left-color: #3b82f6; }
+    .order-card.status-HANDED_TO_CARRIER { border-left-color: #a855f7; }
+    .order-card.status-SHIPPED { border-left-color: #06b6d4; }
+    .order-card.status-AWAITING_PICKUP { border-left-color: #f97316; }
+    .order-card.status-AWAITING_HANDOVER { border-left-color: #f59e0b; }
+    .order-card.status-DELIVERED { border-left-color: #16a34a; }
+    .order-card.status-PAID { border-left-color: #10b981; }
+    .order-card.status-CANCELLED { border-left-color: #dc2626; opacity: 0.7; }
+
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .order-number {
+      font-family: 'Courier New', monospace;
+      font-weight: 900;
+      font-size: 14px;
+      color: var(--text);
+    }
+    .order-brand {
+      font-weight: 800;
+      font-size: 15px;
+      margin: 4px 0;
+      color: var(--text);
+    }
+    .order-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .order-items-list {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin: 8px 0;
+    }
+    .order-item-pill {
+      padding: 3px 8px;
+      background: rgba(148,163,184,0.15);
+      border-radius: 100px;
+      font-family: monospace;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .order-total-box {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      margin-top: 10px;
+    }
+    .order-total-amount {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .status-pill.IN_PRODUCTION { background: #fef3c7; color: #a16207; }
+    .status-pill.READY { background: #dbeafe; color: #1e40af; }
+    .status-pill.HANDED_TO_CARRIER { background: #f3e8ff; color: #7c3aed; }
+    .status-pill.SHIPPED { background: #cffafe; color: #0e7490; }
+    .status-pill.AWAITING_PICKUP { background: #ffedd5; color: #c2410c; }
+    .status-pill.AWAITING_HANDOVER { background: #fef3c7; color: #a16207; }
+    .status-pill.DELIVERED { background: #dcfce7; color: #166534; }
+    .status-pill.PAID { background: #d1fae5; color: #065f46; }
+    .status-pill.CANCELLED { background: #fee2e2; color: #991b1b; }
+
+    html.dark .status-pill.IN_PRODUCTION { background: rgba(234,179,8,0.2); color: #fde047; }
+    html.dark .status-pill.READY { background: rgba(59,130,246,0.2); color: #93c5fd; }
+    html.dark .status-pill.HANDED_TO_CARRIER { background: rgba(168,85,247,0.2); color: #d8b4fe; }
+    html.dark .status-pill.SHIPPED { background: rgba(6,182,212,0.2); color: #67e8f9; }
+    html.dark .status-pill.AWAITING_PICKUP { background: rgba(249,115,22,0.2); color: #fdba74; }
+    html.dark .status-pill.AWAITING_HANDOVER { background: rgba(234,179,8,0.2); color: #fde047; }
+    html.dark .status-pill.DELIVERED { background: rgba(22,163,74,0.2); color: #86efac; }
+    html.dark .status-pill.PAID { background: rgba(16,185,129,0.2); color: #6ee7b7; }
+    html.dark .status-pill.CANCELLED { background: rgba(220,38,38,0.2); color: #fca5a5; }
+
+    .payment-pill {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 100px;
+      font-size: 10px;
+      font-weight: 800;
+    }
+    .payment-pill.UNPAID { background: #fee2e2; color: #991b1b; }
+    .payment-pill.PARTIAL { background: #fef3c7; color: #a16207; }
+    .payment-pill.PAID { background: #dcfce7; color: #166534; }
+    html.dark .payment-pill.UNPAID { background: rgba(220,38,38,0.2); color: #fca5a5; }
+    html.dark .payment-pill.PARTIAL { background: rgba(234,179,8,0.2); color: #fde047; }
+    html.dark .payment-pill.PAID { background: rgba(22,163,74,0.2); color: #86efac; }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.7);
+      z-index: 10000;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .modal-overlay.hidden { display: none !important; }
+
+    .modal-box {
+      background: var(--card-bg);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 640px;
+      margin: auto;
+      box-shadow: 0 30px 60px -12px rgba(15,23,42,0.5);
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100vh - 40px);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 22px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .modal-header h2 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 900;
+      color: var(--text);
+    }
+    .modal-close {
+      width: 32px !important;
+      height: 32px !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      background: #f1f5f9 !important;
+      color: #64748b !important;
+      border: 0 !important;
+      border-radius: 50% !important;
+      font-size: 14px !important;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: none !important;
+    }
+    html.dark .modal-close { background: #1e293b !important; color: #94a3b8 !important; }
+
+    .modal-body {
+      padding: 20px 22px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .modal-footer {
+      padding: 16px 22px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .modal-footer button {
+      flex: 1;
+      margin: 0 !important;
+      font-weight: 800;
+    }
+
+    .form-section {
+      padding: 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 14px;
+    }
+    html.dark .form-section { background: rgba(255,255,255,0.03); }
+    .form-section h3 {
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--text);
+      margin: 0 0 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .form-section input,
+    .form-section textarea,
+    .form-section select {
+      margin-bottom: 0;
+    }
+
+    .radio-card {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 14px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      background: var(--card-bg);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      transition: all 180ms;
+    }
+    .radio-card:has(input:checked) {
+      border-color: #16a34a;
+      background: rgba(22,163,74,0.05);
+    }
+    .radio-card input {
+      width: auto !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      accent-color: #16a34a;
+    }
+
+    .order-item-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr auto;
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: start;
+    }
+    .order-item-row input { margin: 0 !important; }
+    .order-item-row button {
+      width: 38px !important;
+      height: 38px !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      background: #fee2e2 !important;
+      color: #dc2626 !important;
+      border-radius: 10px !important;
+      font-size: 14px !important;
+      flex-shrink: 0;
+    }
+    html.dark .order-item-row button { background: rgba(220,38,38,0.2) !important; color: #fca5a5 !important; }
+    .lot-check-hint {
+      font-size: 10px;
+      margin-top: 4px;
+      margin-bottom: 4px;
+      font-weight: 700;
+    }
+    .lot-check-hint.ok { color: #16a34a; }
+    .lot-check-hint.warn { color: #eab308; }
+    .lot-check-hint.err { color: #dc2626; }
+
+    .totals-box {
+      margin-top: 14px;
+      padding: 14px;
+      background: var(--card-bg);
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .totals-box > div {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .totals-box > div b { color: var(--text); font-weight: 800; }
+    .totals-box .total-line {
+      padding-top: 10px;
+      border-top: 2px solid var(--border);
+      margin-top: 4px;
+      font-size: 16px;
+    }
+    .totals-box .total-line span { color: var(--text); font-weight: 900; }
+    .totals-box .total-line b { color: #16a34a; font-size: 20px; }
+
+    .order-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .order-actions button {
+      flex: 1;
+      min-width: 90px;
+      padding: 9px 12px !important;
+      font-size: 12px !important;
+      font-weight: 800 !important;
+      margin: 0 !important;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      gap: 12px;
+    }
+    .detail-row:last-child { border-bottom: 0; }
+    .detail-row span:first-child { color: var(--text-muted); font-weight: 700; }
+    .detail-row span:last-child { color: var(--text); font-weight: 800; text-align: right; word-break: break-word; }
+
+    .detail-items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 13px;
+    }
+    .detail-items-table th {
+      text-align: left;
+      padding: 8px 6px;
+      background: var(--bg-alt);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .detail-items-table td {
+      padding: 8px 6px;
+      border-bottom: 1px solid var(--border);
+      font-family: monospace;
+    }
+    .detail-items-table td:nth-child(2),
+    .detail-items-table th:nth-child(2) {
+      text-align: right;
+    }
+
+    @media (max-width: 480px) {
+      .modal-overlay { padding: 8px; }
+      .modal-box { max-height: calc(100vh - 16px); border-radius: 16px; }
+      .modal-header, .modal-body, .modal-footer { padding: 14px 16px; }
+      .order-item-row { grid-template-columns: 1.5fr 1fr auto; }
+    }
+  </style>
 </head>
 <body>
 
@@ -129,7 +493,6 @@
         <input id="quantity" type="number" min="1" max="10000" value="100" placeholder="Quantité *">
       </div>
 
-      <!-- ⚙️ Statut initial -->
       <div style="margin-top:20px;padding:16px;background:linear-gradient(160deg,#f8fafc,#eef2f7);border:1px solid #e2e8f0;border-radius:14px">
         <label style="display:block;font-size:11px;color:#64748b;font-weight:800;letter-spacing:1.5px;margin-bottom:10px">⚙️ STATUT INITIAL DE LA BATCH</label>
 
@@ -137,7 +500,7 @@
           <input type="radio" name="initial_status" value="PENDING" checked style="width:auto;margin-top:3px;accent-color:#f59e0b">
           <div>
             <div style="font-weight:800;font-size:13px;color:#0f172a">⏳ PENDING — أأمن (مُوصى به)</div>
-            <div style="font-size:11px;color:#64748b;margin-top:2px">Code inactif jusqu'à activation manuelle. Idéal contre le vol.</div>
+            <div style="font-size:11px;color:#64748b;margin-top:2px">Code inactif jusqu'à activation manuelle.</div>
           </div>
         </label>
 
@@ -145,7 +508,7 @@
           <input type="radio" name="initial_status" value="UNUSED" style="width:auto;margin-top:3px;accent-color:#16a34a">
           <div>
             <div style="font-weight:800;font-size:13px;color:#0f172a">✅ UNUSED — نشط فورًا</div>
-            <div style="font-size:11px;color:#64748b;margin-top:2px">Codes utilisables immédiatement après la création.</div>
+            <div style="font-size:11px;color:#64748b;margin-top:2px">Codes utilisables immédiatement.</div>
           </div>
         </label>
       </div>
@@ -176,41 +539,42 @@
     </section>
 
     <section class="panel" id="panel-adv-search">
-  <h2>🔎 Recherche avancée</h2>
-  <p class="muted">Filtrez les codes par marque, statut, date ou référence.</p>
+      <h2>🔎 Recherche avancée</h2>
+      <p class="muted">Filtrez les codes par marque, statut, date ou référence.</p>
 
-  <div class="form-grid" style="margin-top:16px">
-    <input id="advSearchText" placeholder="Marque, code, lot, référence..." class="full">
+      <div class="form-grid" style="margin-top:16px">
+        <input id="advSearchText" placeholder="Marque, code, lot, référence..." class="full">
 
-    <select id="advSearchStatus" style="margin-top:0">
-      <option value="">🏷️ Tous les statuts</option>
-      <option value="PENDING">⏳ PENDING</option>
-      <option value="UNUSED">🟢 UNUSED</option>
-      <option value="USED">🔵 USED</option>
-      <option value="DISABLED">🔴 DISABLED</option>
-      <option value="EXPIRED">⏰ EXPIRED</option>
-    </select>
+        <select id="advSearchStatus" style="margin-top:0">
+          <option value="">🏷️ Tous les statuts</option>
+          <option value="PENDING">⏳ PENDING</option>
+          <option value="UNUSED">🟢 UNUSED</option>
+          <option value="USED">🔵 USED</option>
+          <option value="DISABLED">🔴 DISABLED</option>
+          <option value="EXPIRED">⏰ EXPIRED</option>
+        </select>
 
-    <select id="advSearchLimit" style="margin-top:0">
-      <option value="50">50 résultats</option>
-      <option value="100" selected>100 résultats</option>
-      <option value="500">500 résultats</option>
-      <option value="1000">1000 résultats</option>
-    </select>
+        <select id="advSearchLimit" style="margin-top:0">
+          <option value="50">50 résultats</option>
+          <option value="100" selected>100 résultats</option>
+          <option value="500">500 résultats</option>
+          <option value="1000">1000 résultats</option>
+        </select>
 
-    <input id="advSearchDateFrom" type="date" placeholder="Du">
-    <input id="advSearchDateTo" type="date" placeholder="Au">
-  </div>
+        <input id="advSearchDateFrom" type="date" placeholder="Du">
+        <input id="advSearchDateTo" type="date" placeholder="Au">
+      </div>
 
-  <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
-    <button id="advSearchBtn" style="flex:1;min-width:130px">🔍 RECHERCHER</button>
-    <button id="advExportBtn" style="flex:1;min-width:130px;background:linear-gradient(135deg,#0ea5e9,#0284c7)">📊 EXCEL</button>
-    <button id="advResetBtn" style="flex:1;min-width:130px;background:#64748b">↺ RÉINITIALISER</button>
-  </div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <button id="advSearchBtn" style="flex:1;min-width:130px">🔍 RECHERCHER</button>
+        <button id="advExportBtn" style="flex:1;min-width:130px;background:linear-gradient(135deg,#0ea5e9,#0284c7)">📊 EXCEL</button>
+        <button id="advResetBtn" style="flex:1;min-width:130px;background:#64748b">↺ RÉINITIALISER</button>
+      </div>
 
-  <div id="advSearchStats" class="stats-grid" style="margin-top:22px;display:none"></div>
-  <div id="advSearchResults" style="margin-top:18px"></div>
+      <div id="advSearchStats" class="stats-grid" style="margin-top:22px;display:none"></div>
+      <div id="advSearchResults" style="margin-top:18px"></div>
     </section>
+
     <section class="panel" id="panel-manage">
       <h2>Gérer un lot</h2>
       <p class="muted">Chargez un lot par son numéro pour le visualiser, l'imprimer ou le modifier.</p>
@@ -220,13 +584,11 @@
 
       <div id="lotInfo" class="result hidden"></div>
 
-      <!-- Status de la Batch -->
       <div id="batchStatusBox" class="hidden" style="margin-top:14px;padding:16px;border-radius:14px;background:#f8fafc;border:1px solid #e2e8f0;text-align:center">
         <div style="font-size:10px;color:#64748b;letter-spacing:1.5px;font-weight:800;margin-bottom:6px">STATUT DE LA BATCH</div>
         <div id="batchStatusBadge" style="font-size:16px;font-weight:900">—</div>
       </div>
 
-      <!-- Actions -->
       <div id="batchActionsBox" class="hidden" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
         <button id="activateBatchBtn" style="flex:1;min-width:140px;background:linear-gradient(135deg,#16a34a,#22c55e);font-weight:800">✅ ACTIVER LA BATCH</button>
         <button id="disableBatchBtn" style="flex:1;min-width:140px;background:linear-gradient(135deg,#dc2626,#ef4444);font-weight:800">🛑 DÉSACTIVER</button>
@@ -256,172 +618,42 @@
       </div>
     </section>
 
-    <!-- ============================================================ -->
-<!-- ORDERS PANEL -->
-<!-- ============================================================ -->
-<section class="panel" id="panel-orders">
-  <h2>📋 Commandes & Factures</h2>
-  <p class="muted">Gérez les commandes et générez les factures.</p>
+    <section class="panel" id="panel-orders">
+      <h2>📋 Commandes & Factures</h2>
+      <p class="muted">Gérez les commandes et générez les factures.</p>
 
-  <button id="newOrderBtn" style="background:linear-gradient(135deg,#16a34a,#22c55e);font-weight:800;margin-bottom:20px">➕ NOUVELLE COMMANDE</button>
+      <button id="newOrderBtn" style="background:linear-gradient(135deg,#16a34a,#22c55e);font-weight:800;margin-bottom:20px">➕ NOUVELLE COMMANDE</button>
 
-  <!-- Stats -->
-  <div id="ordersStats" class="stats-grid" style="margin-bottom:20px"></div>
+      <div id="ordersStats" class="stats-grid" style="margin-bottom:20px"></div>
 
-  <!-- Filtres -->
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
-    <input id="ordersSearch" placeholder="🔍 Marque, N° facture, téléphone..." style="flex:2;min-width:180px;margin:0">
-    <select id="ordersStatus" style="flex:1;min-width:140px;margin:0">
-      <option value="">Tous les statuts</option>
-      <option value="IN_PRODUCTION">🟡 En production</option>
-      <option value="READY">📦 Prête</option>
-      <option value="HANDED_TO_CARRIER">🟣 Confiée transporteur</option>
-      <option value="SHIPPED">🚚 Expédiée</option>
-      <option value="AWAITING_PICKUP">🟠 En attente retrait</option>
-      <option value="AWAITING_HANDOVER">⏳ En attente remise</option>
-      <option value="DELIVERED">✅ Livrée</option>
-      <option value="PAID">💰 Payée</option>
-      <option value="CANCELLED">❌ Annulée</option>
-    </select>
-    <select id="ordersPayment" style="flex:1;min-width:140px;margin:0">
-      <option value="">Tous les paiements</option>
-      <option value="UNPAID">❌ Non payé</option>
-      <option value="PARTIAL">🟡 Partiel</option>
-      <option value="PAID">✅ Payé</option>
-    </select>
-  </div>
-
-  <button id="refreshOrdersBtn" style="background:#475569;margin-bottom:16px">🔄 ACTUALISER</button>
-
-  <div id="ordersList" style="margin-top:14px"></div>
-</section>
-
-<!-- ============================================================ -->
-<!-- MODAL: Nouvelle commande -->
-<!-- ============================================================ -->
-<div id="newOrderModal" class="modal-overlay hidden">
-  <div class="modal-box">
-    <div class="modal-header">
-      <h2>📋 Nouvelle commande</h2>
-      <button class="modal-close" id="closeNewOrderBtn">✕</button>
-    </div>
-
-    <div class="modal-body">
-
-      <!-- Section Client -->
-      <div class="form-section">
-        <h3>👤 Client</h3>
-        <input id="orderBrand" placeholder="Nom de la marque *" list="brandsList">
-        <datalist id="brandsList"></datalist>
-        <div id="brandHint" style="font-size:11px;margin-top:6px;color:#64748b"></div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
-          <input id="orderBrandPhone" placeholder="📱 Téléphone" type="tel">
-          <input id="orderBrandEmail" placeholder="📧 Email" type="email">
-        </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <input id="ordersSearch" placeholder="🔍 Marque, N° facture, téléphone..." style="flex:2;min-width:180px;margin:0">
+        <select id="ordersStatus" style="flex:1;min-width:140px;margin:0">
+          <option value="">Tous les statuts</option>
+          <option value="IN_PRODUCTION">🟡 En production</option>
+          <option value="READY">📦 Prête</option>
+          <option value="HANDED_TO_CARRIER">🟣 Confiée transporteur</option>
+          <option value="SHIPPED">🚚 Expédiée</option>
+          <option value="AWAITING_PICKUP">🟠 En attente retrait</option>
+          <option value="AWAITING_HANDOVER">⏳ En attente remise</option>
+          <option value="DELIVERED">✅ Livrée</option>
+          <option value="PAID">💰 Payée</option>
+          <option value="CANCELLED">❌ Annulée</option>
+        </select>
+        <select id="ordersPayment" style="flex:1;min-width:140px;margin:0">
+          <option value="">Tous les paiements</option>
+          <option value="UNPAID">❌ Non payé</option>
+          <option value="PARTIAL">🟡 Partiel</option>
+          <option value="PAID">✅ Payé</option>
+        </select>
       </div>
 
-      <!-- Section Articles -->
-      <div class="form-section">
-        <h3>📦 Articles (Lots)</h3>
-        <p class="muted" style="font-size:11px;margin:0 0 10px">Ajoutez les lots et leurs quantités.</p>
-        <div id="orderItemsList"></div>
-        <button id="addOrderItemBtn" style="background:#475569;font-size:12px;padding:10px;margin-top:10px">➕ Ajouter un lot</button>
-      </div>
+      <button id="refreshOrdersBtn" style="background:#475569;margin-bottom:16px">🔄 ACTUALISER</button>
 
-      <!-- Section Prix -->
-      <div class="form-section">
-        <h3>💰 Prix</h3>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div>
-            <label style="font-size:11px;font-weight:800;color:#64748b">Prix unitaire (DA) *</label>
-            <input id="orderUnitPrice" type="number" step="0.01" min="0" placeholder="15.00" value="15">
-          </div>
-          <div>
-            <label style="font-size:11px;font-weight:800;color:#64748b">Remise (%)</label>
-            <input id="orderDiscount" type="number" step="0.1" min="0" max="100" placeholder="0" value="0">
-          </div>
-          <div>
-            <label style="font-size:11px;font-weight:800;color:#64748b">Livraison (DA)</label>
-            <input id="orderDeliveryCost" type="number" step="0.01" min="0" placeholder="0" value="0">
-          </div>
-          <div>
-            <label style="font-size:11px;font-weight:800;color:#64748b">TVA (%)</label>
-            <input id="orderTva" type="number" step="0.1" min="0" max="100" placeholder="0" value="0">
-          </div>
-        </div>
-        <div id="orderTotalsBox" class="totals-box">
-          <div><span>Sous-total:</span><b id="orderSubtotal">0 DA</b></div>
-          <div><span>Remise:</span><b id="orderDiscountAmt">-0 DA</b></div>
-          <div><span>TVA:</span><b id="orderTvaAmt">0 DA</b></div>
-          <div><span>Livraison:</span><b id="orderDeliveryAmt">0 DA</b></div>
-          <div class="total-line"><span>TOTAL:</span><b id="orderTotalPrice">0 DA</b></div>
-        </div>
-      </div>
+      <div id="ordersList" style="margin-top:14px"></div>
+    </section>
 
-      <!-- Section Livraison -->
-      <div class="form-section">
-        <h3>🚚 Livraison</h3>
-        <div style="display:flex;gap:8px;margin-bottom:12px">
-          <label class="radio-card" style="flex:1">
-            <input type="radio" name="orderDeliveryMethod" value="delivery" checked>
-            <span>🚚 Livraison</span>
-          </label>
-          <label class="radio-card" style="flex:1">
-            <input type="radio" name="orderDeliveryMethod" value="hand_to_hand">
-            <span>🤝 Main à main</span>
-          </label>
-        </div>
-
-        <div id="deliveryFields">
-          <input id="orderDeliveryCompany" placeholder="🏢 Société de livraison" style="margin-bottom:10px">
-          <input id="orderTrackingNumber" placeholder="🔢 Numéro de suivi" style="margin-bottom:10px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-            <input id="orderWilaya" placeholder="📍 Wilaya">
-            <input id="orderBaladiya" placeholder="🏘️ Baladiya">
-          </div>
-          <input id="orderDeliveryAddress" placeholder="📫 Adresse complète" style="margin-bottom:10px">
-          <input id="orderRecipientPhone" placeholder="📱 Téléphone destinataire" type="tel" style="margin-bottom:10px">
-          <label style="font-size:11px;font-weight:800;color:#64748b">Date d'expédition</label>
-          <input id="orderShippingDate" type="date">
-        </div>
-      </div>
-
-      <!-- Notes -->
-      <div class="form-section">
-        <h3>📝 Notes</h3>
-        <textarea id="orderNotes" rows="3" placeholder="Notes internes..." style="width:100%"></textarea>
-      </div>
-
-      <div id="newOrderError" class="result danger hidden"></div>
-
-    </div>
-
-    <div class="modal-footer">
-      <button id="cancelNewOrderBtn" style="background:#64748b">✕ Annuler</button>
-      <button id="createOrderBtn" style="background:linear-gradient(135deg,#16a34a,#22c55e)">✓ Créer la commande</button>
-    </div>
-  </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- MODAL: Détails commande -->
-<!-- ============================================================ -->
-<div id="orderDetailsModal" class="modal-overlay hidden">
-  <div class="modal-box">
-    <div class="modal-header">
-      <h2 id="orderDetailsTitle">📄 Commande</h2>
-      <button class="modal-close" id="closeOrderDetailsBtn">✕</button>
-    </div>
-    <div class="modal-body" id="orderDetailsBody">
-      <!-- Contenu dynamique -->
-    </div>
-    <div class="modal-footer" id="orderDetailsFooter">
-      <!-- Boutons dynamiques -->
-    </div>
-  </div>
-</div>
-      <section class="panel" id="panel-log">
+    <section class="panel" id="panel-log">
       <h2>Journal des vérifications</h2>
       <p class="muted">Les 100 dernières tentatives de vérification.</p>
       <button id="refreshLogBtn" style="background:#475569">🔄 ACTUALISER</button>
@@ -605,11 +837,128 @@
   </main>
 </div>
 
+<!-- ============================================================ -->
+<!-- MODAL: Nouvelle commande -->
+<!-- ============================================================ -->
+<div id="newOrderModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>📋 Nouvelle commande</h2>
+      <button class="modal-close" id="closeNewOrderBtn">✕</button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="form-section">
+        <h3>👤 Client</h3>
+        <input id="orderBrand" placeholder="Nom de la marque *" list="brandsList">
+        <datalist id="brandsList"></datalist>
+        <div id="brandHint" style="font-size:11px;margin-top:6px;color:#64748b"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+          <input id="orderBrandPhone" placeholder="📱 Téléphone" type="tel">
+          <input id="orderBrandEmail" placeholder="📧 Email" type="email">
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>📦 Articles (Lots)</h3>
+        <p class="muted" style="font-size:11px;margin:0 0 10px">Ajoutez les lots et leurs quantités.</p>
+        <div id="orderItemsList"></div>
+        <button id="addOrderItemBtn" style="background:#475569;font-size:12px;padding:10px;margin-top:10px">➕ Ajouter un lot</button>
+      </div>
+
+      <div class="form-section">
+        <h3>💰 Prix</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label style="font-size:11px;font-weight:800;color:#64748b">Prix unitaire (DA) *</label>
+            <input id="orderUnitPrice" type="number" step="0.01" min="0" placeholder="15.00" value="15">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:800;color:#64748b">Remise (%)</label>
+            <input id="orderDiscount" type="number" step="0.1" min="0" max="100" placeholder="0" value="0">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:800;color:#64748b">Livraison (DA)</label>
+            <input id="orderDeliveryCost" type="number" step="0.01" min="0" placeholder="0" value="0">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:800;color:#64748b">TVA (%)</label>
+            <input id="orderTva" type="number" step="0.1" min="0" max="100" placeholder="0" value="0">
+          </div>
+        </div>
+        <div id="orderTotalsBox" class="totals-box">
+          <div><span>Sous-total:</span><b id="orderSubtotal">0 DA</b></div>
+          <div><span>Remise:</span><b id="orderDiscountAmt">-0 DA</b></div>
+          <div><span>TVA:</span><b id="orderTvaAmt">0 DA</b></div>
+          <div><span>Livraison:</span><b id="orderDeliveryAmt">0 DA</b></div>
+          <div class="total-line"><span>TOTAL:</span><b id="orderTotalPrice">0 DA</b></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>🚚 Livraison</h3>
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <label class="radio-card" style="flex:1">
+            <input type="radio" name="orderDeliveryMethod" value="delivery" checked>
+            <span>🚚 Livraison</span>
+          </label>
+          <label class="radio-card" style="flex:1">
+            <input type="radio" name="orderDeliveryMethod" value="hand_to_hand">
+            <span>🤝 Main à main</span>
+          </label>
+        </div>
+
+        <div id="deliveryFields">
+          <input id="orderDeliveryCompany" placeholder="🏢 Société de livraison" style="margin-bottom:10px">
+          <input id="orderTrackingNumber" placeholder="🔢 Numéro de suivi" style="margin-bottom:10px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+            <input id="orderWilaya" placeholder="📍 Wilaya">
+            <input id="orderBaladiya" placeholder="🏘️ Baladiya">
+          </div>
+          <input id="orderDeliveryAddress" placeholder="📫 Adresse complète" style="margin-bottom:10px">
+          <input id="orderRecipientPhone" placeholder="📱 Téléphone destinataire" type="tel" style="margin-bottom:10px">
+          <label style="font-size:11px;font-weight:800;color:#64748b">Date d'expédition</label>
+          <input id="orderShippingDate" type="date">
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>📝 Notes</h3>
+        <textarea id="orderNotes" rows="3" placeholder="Notes internes..." style="width:100%"></textarea>
+      </div>
+
+      <div id="newOrderError" class="result danger hidden"></div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button id="cancelNewOrderBtn" style="background:#64748b">✕ Annuler</button>
+      <button id="createOrderBtn" style="background:linear-gradient(135deg,#16a34a,#22c55e)">✓ Créer la commande</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MODAL: Détails commande -->
+<!-- ============================================================ -->
+<div id="orderDetailsModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 id="orderDetailsTitle">📄 Commande</h2>
+      <button class="modal-close" id="closeOrderDetailsBtn">✕</button>
+    </div>
+    <div class="modal-body" id="orderDetailsBody"></div>
+    <div class="modal-footer" id="orderDetailsFooter"></div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="/admin.js?v=3"></script>
+<script src="/admin.js"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
