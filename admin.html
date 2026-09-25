@@ -161,6 +161,20 @@
 
       <div id="lotInfo" class="result hidden"></div>
 
+      <!-- ============================================================ -->
+      <!-- Status de la Batch -->
+      <!-- ============================================================ -->
+      <div id="batchStatusBox" class="hidden" style="margin-top:14px;padding:16px;border-radius:14px;background:#f8fafc;border:1px solid #e2e8f0;text-align:center">
+        <div style="font-size:10px;color:#64748b;letter-spacing:1.5px;font-weight:800;margin-bottom:6px">STATUT DE LA BATCH</div>
+        <div id="batchStatusBadge" style="font-size:16px;font-weight:900">—</div>
+      </div>
+
+      <!-- Actions -->
+      <div id="batchActionsBox" class="hidden" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <button id="activateBatchBtn" style="flex:1;min-width:140px;background:linear-gradient(135deg,#16a34a,#22c55e);font-weight:800">✅ ACTIVER LA BATCH</button>
+        <button id="disableBatchBtn" style="flex:1;min-width:140px;background:linear-gradient(135deg,#dc2626,#ef4444);font-weight:800">🛑 DÉSACTIVER</button>
+      </div>
+
       <button id="printLotBtn" class="hidden" style="background:linear-gradient(135deg,#16a34a,#22c55e)">🖨 IMPRIMER CE LOT</button>
       <button id="exportLotCodesBtn" class="hidden" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);margin-top:10px">📊 EXPORTER EN EXCEL</button>
 
@@ -293,30 +307,29 @@
       <div id="faqList" style="margin-top:18px"></div>
     </section>
 
-    <!-- FAKES -->
-<section class="panel" id="panel-fakes">
-  <h2>🗺️ بلاغات التقليد</h2>
-  <p class="muted">Signalements de produits contrefaits par les clients.</p>
+    <section class="panel" id="panel-fakes">
+      <h2>🗺️ بلاغات التقليد</h2>
+      <p class="muted">Signalements de produits contrefaits par les clients.</p>
 
-  <div id="fakesStats" class="stats-grid" style="margin-top:18px;margin-bottom:18px"></div>
+      <div id="fakesStats" class="stats-grid" style="margin-top:18px;margin-bottom:18px"></div>
 
-  <div class="tabs" id="fakesTabs" style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">
-    <button class="tab active" data-tab="all" style="flex:1;background:#0f172a;color:#fff;padding:10px;border-radius:10px;border:0;font-weight:700;font-size:12px;cursor:pointer;min-width:70px">TOUT</button>
-    <button class="tab" data-tab="NEW" style="flex:1;background:#fff;color:#0f172a;padding:10px;border-radius:10px;border:1px solid #e2e8f0;font-weight:700;font-size:12px;cursor:pointer;min-width:70px">🔴 NOUVEAUX</button>
-    <button class="tab" data-tab="REVIEWED" style="flex:1;background:#fff;color:#0f172a;padding:10px;border-radius:10px;border:1px solid #e2e8f0;font-weight:700;font-size:12px;cursor:pointer;min-width:70px">✓ TRAITÉS</button>
-  </div>
+      <div class="tabs" id="fakesTabs" style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">
+        <button class="tab active" data-tab="all" style="flex:1;background:#0f172a;color:#fff;padding:10px;border-radius:10px;border:0;font-weight:700;font-size:12px;cursor:pointer;min-width:70px">TOUT</button>
+        <button class="tab" data-tab="NEW" style="flex:1;background:#fff;color:#0f172a;padding:10px;border-radius:10px;border:1px solid #e2e8f0;font-weight:700;font-size:12px;cursor:pointer;min-width:70px">🔴 NOUVEAUX</button>
+        <button class="tab" data-tab="REVIEWED" style="flex:1;background:#fff;color:#0f172a;padding:10px;border-radius:10px;border:1px solid #e2e8f0;font-weight:700;font-size:12px;cursor:pointer;min-width:70px">✓ TRAITÉS</button>
+      </div>
 
-  <div style="display:flex;gap:8px;flex-wrap:wrap">
-    <button id="refreshFakesBtn" style="background:#475569;flex:1;min-width:130px">🔄 ACTUALISER</button>
-    <button id="exportFakesBtn" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);flex:1;min-width:130px">📊 EXPORTER EXCEL</button>
-  </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button id="refreshFakesBtn" style="background:#475569;flex:1;min-width:130px">🔄 ACTUALISER</button>
+        <button id="exportFakesBtn" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);flex:1;min-width:130px">📊 EXPORTER EXCEL</button>
+      </div>
 
-  <h3 style="margin-top:32px;font-size:15px;font-weight:800;color:inherit">🗺️ الحرارية حسب الولايات</h3>
-  <div id="wilayaHeatmap" style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px"></div>
+      <h3 style="margin-top:32px;font-size:15px;font-weight:800;color:inherit">🗺️ الحرارية حسب الولايات</h3>
+      <div id="wilayaHeatmap" style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px"></div>
 
-  <h3 style="margin-top:32px;font-size:15px;font-weight:800;color:inherit">📋 آخر البلاغات</h3>
-  <div id="fakesList" style="margin-top:14px"></div>
-</section>
+      <h3 style="margin-top:32px;font-size:15px;font-weight:800;color:inherit">📋 آخر البلاغات</h3>
+      <div id="fakesList" style="margin-top:14px"></div>
+    </section>
 
     <section class="panel" id="panel-delete">
       <h2>🗑️ Suppression en masse</h2>
