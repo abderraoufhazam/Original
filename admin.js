@@ -1474,7 +1474,7 @@ if (_cb) _cb.onclick = async () => {
   const ar = $("adminResult"); if (ar) ar.className = "result hidden";
 
   try {
-    const res = await fetch("/api/create-batch", {
+    const res = await fetch("/api/batch-manager?action=create", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -1983,7 +1983,7 @@ if (_plb) _plb.onclick = async () => {
   btn.textContent = "🔓 Déchiffrement...";
 
   try {
-    const res = await fetch("/api/print-batch", {
+    const res = await fetch("/api/batch-manager?action=print", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -2084,7 +2084,7 @@ if (_elcb) _elcb.onclick = async () => {
       return;
     }
 
-    const res = await fetch("/api/print-batch", {
+    const res = await fetch("/api/batch-manager?action=print", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
