@@ -292,7 +292,7 @@ if (wilayaSubmit) {
         product_image: currentImageDataUrl || null
       };
 
-      const res = await fetch("/api/report-fake", {
+      const res = await fetch("/api/submit?type=report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -446,7 +446,7 @@ if (feedbackSubmit) {
     feedbackSubmit.disabled = true;
     feedbackSubmit.textContent = "...";
     try {
-      const res = await fetch("/api/feedback", {
+      const res = await fetch("/api/submit?type=feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
