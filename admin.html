@@ -127,6 +127,27 @@
         <input id="quantity" type="number" min="1" max="10000" value="100" placeholder="Quantité *">
       </div>
 
+      <!-- ⚙️ Statut initial -->
+      <div style="margin-top:20px;padding:16px;background:linear-gradient(160deg,#f8fafc,#eef2f7);border:1px solid #e2e8f0;border-radius:14px">
+        <label style="display:block;font-size:11px;color:#64748b;font-weight:800;letter-spacing:1.5px;margin-bottom:10px">⚙️ STATUT INITIAL DE LA BATCH</label>
+
+        <label style="display:flex;align-items:flex-start;gap:10px;padding:10px;border-radius:10px;cursor:pointer;margin-bottom:8px;background:#fff;border:2px solid #f59e0b">
+          <input type="radio" name="initial_status" value="PENDING" checked style="width:auto;margin-top:3px;accent-color:#f59e0b">
+          <div>
+            <div style="font-weight:800;font-size:13px;color:#0f172a">⏳ PENDING — أأمن (مُوصى به)</div>
+            <div style="font-size:11px;color:#64748b;margin-top:2px">Code inactif jusqu'à activation manuelle. Idéal contre le vol.</div>
+          </div>
+        </label>
+
+        <label style="display:flex;align-items:flex-start;gap:10px;padding:10px;border-radius:10px;cursor:pointer;background:#fff;border:2px solid #e2e8f0">
+          <input type="radio" name="initial_status" value="UNUSED" style="width:auto;margin-top:3px;accent-color:#16a34a">
+          <div>
+            <div style="font-weight:800;font-size:13px;color:#0f172a">✅ UNUSED — نشط فورًا</div>
+            <div style="font-size:11px;color:#64748b;margin-top:2px">Codes utilisables immédiatement après la création.</div>
+          </div>
+        </label>
+      </div>
+
       <h3 style="margin:22px 0 6px;font-size:14px;font-weight:800;color:inherit">📱 Réseaux sociaux (optionnel)</h3>
       <p class="muted" style="font-size:12px;margin:0 0 12px">Ces champs sont facultatifs.</p>
 
@@ -161,9 +182,7 @@
 
       <div id="lotInfo" class="result hidden"></div>
 
-      <!-- ============================================================ -->
       <!-- Status de la Batch -->
-      <!-- ============================================================ -->
       <div id="batchStatusBox" class="hidden" style="margin-top:14px;padding:16px;border-radius:14px;background:#f8fafc;border:1px solid #e2e8f0;text-align:center">
         <div style="font-size:10px;color:#64748b;letter-spacing:1.5px;font-weight:800;margin-bottom:6px">STATUT DE LA BATCH</div>
         <div id="batchStatusBadge" style="font-size:16px;font-weight:900">—</div>
