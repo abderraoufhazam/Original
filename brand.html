@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Mon Tableau de Bord — Produit dz ORG</title>
+  <link rel="icon" type="image/svg+xml" href="/icon.svg">
+  <link rel="stylesheet" href="/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    (function() {
+      const isDark = localStorage.getItem("theme") === "dark" ||
+        (!localStorage.getItem("theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
+      if (isDark) document.documentElement.classList.add("dark");
+    })();
+  </script>
+  <style>
+    .brand-page { max-width: 900px; margin: 0 auto; padding: 20px; }
+    .brand-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 20px; margin-bottom: 24px;
+      background: linear-gradient(135deg, #16a34a, #22c55e);
+      color: #fff; border-radius: 20px;
+    }
+    .brand-header h1 { margin: 0; font-size: 22px; }
+    .brand-header p { margin: 4px 0 0; opacity: 0.9; font-size: 13px; }
+    .brand-logo { width: 50px; height: 50px; border-radius: 12px; background: #fff; padding: 6px; }
+    .logout-btn {
+      margin-left: auto; padding: 8px 14px; border-radius: 10px;
+      background: rgba(255,255,255,0.2); color: #fff; border: 0;
+      cursor: pointer; font-weight: 700; font-size: 12px;
+    }
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+    .brand-stat {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px 14px; text-align: center;
+    }
+    .brand-stat-num { font-size: 26px; font-weight: 900; color: var(--text); line-height: 1; }
+    .brand-stat-label { font-size: 10px; color: var(--text-muted); letter-spacing: 1.2px; margin-top: 8px; text-transform: uppercase; font-weight: 700; }
+    .brand-section { margin-top: 28px; }
+    .brand-section h2 { font-size: 16px; font-weight: 800; margin: 0 0 14px; }
+    .brand-loading { text-align: center; padding: 40px 0; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+<div class="brand-page" id="brandApp" style="display:none">
+  <div class="brand-header">
+    <img src="/icon.svg" alt="" class="brand-logo">
+    <div>
+      <h1 id="brandName">—</h1>
+      <p>Tableau de bord marque</p>
+    </div>
+    <button class="logout-btn" id="logoutBtn">Déconnexion</button>
+  </div>
+
+  <div class="brand-section">
+    <h2>📊 Mes codes</h2>
+    <div class="stats-row">
+      <div class="brand-stat"><div class="brand-stat-num" id="sUnused">—</div><div class="brand-stat-label">🟢 Actifs</div></div>
+      <div class="brand-stat"><div class="brand-stat-num" id="sUsed">—</div><div class="brand-stat-label">🔵 Utilisés</div></div>
+      <div class="brand-stat"><div class="brand-stat-num" id="sPending">—</div><div class="brand-stat-label">🟡 En attente</div></div>
+      <div class="brand-stat"><div class="brand-stat-num" id="sDisabled">—</div><div class="brand-stat-label">🔴 Désactivés</div></div>
+    </div>
+  </div>
+
+  <div class="brand-section">
+    <h2>📦 Mes lots</h2>
+    <div class="stats-row">
+      <div class="brand-stat"><div class="brand-stat-num" id="sBatches">—</div><div class="brand-stat-label">Total lots</div></div>
+      <div class="brand-stat"><div class="brand-stat-num" id="sTotal">—</div><div class="brand-stat-label">Total codes</div></div>
+      <div class="brand-stat"><div class="brand-stat-num" id="sReports">—</div><div class="brand-stat-label">🚨 Rapports</div></div>
+      <div class="brand-stat"><div class="brand-stat-num" id="sRatings">—</div><div class="brand-stat-label">⭐ Avis</div></div>
+    </div>
+  </div>
+
+  <div class="brand-section">
+    <h2>ℹ️ Comment ça marche ?</h2>
+    <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:18px;font-size:13px;line-height:1.7;color:var(--text-muted)">
+      • Votre compte vous permet de <b>suivre l'état de vos codes</b>.<br>
+      • Pour activer un lot, contactez l'administrateur via WhatsApp.<br>
+      • Pour toute question, utilisez la page <a href="/contact" style="color:#16a34a;font-weight:700">Contact</a>.
+    </div>
+  </div>
+</div>
+
+<div class="brand-loading" id="brandLoading">Chargement...</div>
+
+<script>
+const SUPABASE_URL = "https://qfpmbbntxyrderjlejql.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const $ = id => document.getElementById(id);
+
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  
+  if (!session) {
+    window.location.href = "/signup";
+    return;
+  }
+
+  const meta = session.user.user_metadata || {};
+  const role = meta.role || "brand";
+  
+  // الأدمن لا يدخل هنا
+  if (role !== "brand") {
+    window.location.href = "/admin.html";
+    return;
+  }
+
+  $("brandLoading").style.display = "none";
+  $("brandApp").style.display = "block";
+  $("brandName").textContent = meta.brand_name || "Ma Marque";
+
+  try {
+    const { data, error } = await sb.rpc("brand_get_stats");
+    if (error) throw error;
+    if (data && data.error) throw new Error(data.error);
+
+    $("sUnused").textContent = data.unused ?? 0;
+    $("sUsed").textContent = data.used ?? 0;
+    $("sPending").textContent = data.pending ?? 0;
+    $("sDisabled").textContent = data.disabled ?? 0;
+    $("sBatches").textContent = data.total_batches ?? 0;
+    $("sTotal").textContent = data.total_codes ?? 0;
+    $("sReports").textContent = data.total_reports ?? 0;
+    $("sRatings").textContent = data.total_ratings ?? 0;
+  } catch (err) {
+    console.error(err);
+    $("brandLoading").textContent = "Erreur : " + err.message;
+    $("brandLoading").style.display = "block";
+  }
+}
+
+$("logoutBtn").onclick = async () => {
+  await sb.auth.signOut();
+  window.location.href = "/";
+};
+
+init();
+</script>
+
+<script src="/bot-guard.js"></script>
+</body>
+</html>
