@@ -16,7 +16,7 @@ export default async function handler(req, res) {
       brand, product_name, reference, lot,
       manufacture_date, expiry_date, product_image, logo_url,
       instagram_url, facebook_url, tiktok_url, description,
-      quantity, access_token
+      quantity, access_token, initial_status
     } = req.body || {};
 
     if (!brand || typeof brand !== 'string' || brand.trim() === '') {
@@ -51,6 +51,10 @@ export default async function handler(req, res) {
     const codes = [];
     const rows = [];
 
+    // ✨ حالة أولية للدفعة (PENDING أو UNUSED)
+    // الافتراضي: UNUSED (حالياً، سيتغير إلى PENDING في المرحلة 6)
+    const status = (initial_status === 'PENDING') ? 'PENDING' : 'UNUSED';
+
     for (let i = 0; i < qty; i++) {
       const code = generateSecretCode();
       codes.push(code);
@@ -58,7 +62,7 @@ export default async function handler(req, res) {
         secret_code: code,
         secret_code_hash: hashCode(code),
         secret_code_encrypted: encryptCode(code),
-        secret_status: 'UNUSED',
+        secret_status: status,
         brand: brand.trim(),
         product_name: product_name?.trim() || null,
         reference: reference?.trim() || null,
@@ -108,7 +112,8 @@ export default async function handler(req, res) {
       inserted: inserted,
       codes: codes,
       lot: lot || null,
-      brand: brand.trim()
+      brand: brand.trim(),
+      initial_status: status
     });
 
   } catch (error) {
