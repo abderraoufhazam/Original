@@ -14,6 +14,7 @@ function isAdminEmail(email) {
   if (!email) return false;
   return ADMIN_EMAILS.map(e => e.toLowerCase().trim()).includes(email.toLowerCase().trim());
 }
+
 const $ = id => document.getElementById(id);
 let lastCodes = [];
 let lastLogo = "";
@@ -670,7 +671,6 @@ async function loadFakes() {
       return;
     }
 
-    // Compte tous les rapports (sans filtre) pour les statistiques
     const { data: allData } = await sb
       .from("fake_reports")
       .select("wilaya, status, ai_analyzed")
@@ -702,7 +702,6 @@ async function loadFakes() {
       `;
     }
 
-    // Heatmap par wilaya
     const wilayaCounts = {};
     (allData || []).forEach(r => {
       if (r.wilaya) {
@@ -745,7 +744,6 @@ async function loadFakes() {
       heatmapBox.innerHTML = heatHtml;
     }
 
-    // Liste
     if (!data || data.length === 0) {
       container.innerHTML = `<p class="muted">Aucun signalement pour le moment.</p>`;
       return;
@@ -1337,16 +1335,11 @@ window.__reloadCharts = loadCharts;
 async function refresh() {
   const { data: { session } } = await sb.auth.getSession();
 
-  // لا جلسة → أبقِ شاشة تسجيل الدخول
   if (!session) return;
 
   const userEmail = (session.user.email || "").toLowerCase().trim();
 
-  // ============================================================
-  // 🔒 حماية: التحقق أن المستخدم أدمن
-  // ============================================================
   if (!isAdminEmail(userEmail)) {
-    // طرد فوري
     await sb.auth.signOut();
 
     const el = $("loginError");
@@ -1360,19 +1353,13 @@ async function refresh() {
       el.classList.remove("hidden");
     }
 
-    // امسح حقول كلمة السر
     const pwd = $("password"); if (pwd) pwd.value = "";
-
-    // تأكد أن اللوحة مخفية
     const aa = $("adminApp"); if (aa) aa.classList.add("hidden");
     const lp = $("loginPage"); if (lp) lp.classList.remove("hidden");
 
     return;
   }
 
-  // ============================================================
-  // ✅ المستخدم أدمن → اعرض اللوحة
-  // ============================================================
   const lp = $("loginPage"); if (lp) lp.classList.add("hidden");
   const aa = $("adminApp"); if (aa) aa.classList.remove("hidden");
 
@@ -1402,7 +1389,6 @@ if (_lf) _lf.addEventListener("submit", async (e) => {
   const passwordInput = $("password").value;
   const el = $("loginError");
 
-  // التحقق المبكر من الإيميل قبل إرسال الطلب
   if (!isAdminEmail(emailInput)) {
     if (el) {
       el.className = "result danger";
@@ -1434,6 +1420,7 @@ if (_lf) _lf.addEventListener("submit", async (e) => {
   if (el) el.classList.add("hidden");
   refresh();
 });
+
 const _lb = $("logoutBtn");
 if (_lb) _lb.onclick = async () => {
   await sb.auth.signOut();
@@ -1592,6 +1579,8 @@ if (_llb) _llb.onclick = async () => {
   const form = $("editForm");
   const printLotBtn = $("printLotBtn");
   const exportBtn = $("exportLotCodesBtn");
+  const statusBox = $("batchStatusBox");
+  const actionsBox2 = $("batchActionsBox");
 
   if (!info) return;
 
@@ -1601,6 +1590,8 @@ if (_llb) _llb.onclick = async () => {
     if (form) form.classList.add("hidden");
     if (printLotBtn) printLotBtn.classList.add("hidden");
     if (exportBtn) exportBtn.classList.add("hidden");
+    if (statusBox) statusBox.classList.add("hidden");
+    if (actionsBox2) actionsBox2.classList.add("hidden");
     return;
   }
 
@@ -1609,6 +1600,8 @@ if (_llb) _llb.onclick = async () => {
   if (form) form.classList.add("hidden");
   if (printLotBtn) printLotBtn.classList.add("hidden");
   if (exportBtn) exportBtn.classList.add("hidden");
+  if (statusBox) statusBox.classList.add("hidden");
+  if (actionsBox2) actionsBox2.classList.add("hidden");
   loadedLot = null;
   loadedLotCodes = [];
 
@@ -1652,6 +1645,9 @@ if (_llb) _llb.onclick = async () => {
       ${r.expiry_date ? `<div><b>Expiration</b><span>${escapeHtml(r.expiry_date)}</span></div>` : ""}
     </div>
   `;
+
+  // ✨ عرض حالة الدفعة
+  showBatchStatus(data.map(row => row.secret_status));
 
   if (printLotBtn) printLotBtn.classList.remove("hidden");
   if (exportBtn) exportBtn.classList.remove("hidden");
@@ -1734,6 +1730,121 @@ if (_ub) _ub.onclick = async () => {
     loadedLotLot = updates.lot;
     if ($("editLotSearch")) $("editLotSearch").value = updates.lot;
     if ($("editNewLot")) $("editNewLot").value = "";
+  }
+};
+
+// ============================================================
+// BATCH STATUS & ACTIONS
+// ============================================================
+function showBatchStatus(statuses) {
+  const box = $("batchStatusBox");
+  const badge = $("batchStatusBadge");
+  const actionsBox = $("batchActionsBox");
+  const activateBtn = $("activateBatchBtn");
+  const disableBtn = $("disableBatchBtn");
+
+  if (!box || !badge || !actionsBox) return;
+
+  const counts = { PENDING: 0, UNUSED: 0, USED: 0, DISABLED: 0, EXPIRED: 0 };
+  statuses.forEach(s => { if (counts[s] !== undefined) counts[s]++; });
+
+  let label = '';
+  let color = '#0f172a';
+  let bg = '#f1f5f9';
+
+  if (counts.PENDING > 0 && counts.UNUSED === 0 && counts.USED === 0) {
+    label = `⏳ EN ATTENTE — ${counts.PENDING} code(s)`;
+    color = '#a16207'; bg = '#fef3c7';
+  } else if (counts.UNUSED > 0) {
+    label = `🟢 ACTIF — ${counts.UNUSED} disponible(s)`;
+    color = '#166534'; bg = '#dcfce7';
+  } else if (counts.USED > 0 && counts.UNUSED === 0 && counts.PENDING === 0) {
+    label = `🔵 UTILISÉ — ${counts.USED} code(s) vérifié(s)`;
+    color = '#1e40af'; bg = '#dbeafe';
+  } else if (counts.DISABLED > 0) {
+    label = `🔴 DÉSACTIVÉ — ${counts.DISABLED} code(s)`;
+    color = '#991b1b'; bg = '#fee2e2';
+  } else {
+    label = '—';
+  }
+
+  badge.textContent = label;
+  badge.style.color = color;
+  box.style.background = bg;
+  box.style.borderColor = color + '40';
+  box.classList.remove("hidden");
+
+  if (activateBtn) activateBtn.style.display = counts.PENDING > 0 ? 'block' : 'none';
+  if (disableBtn) disableBtn.style.display = counts.UNUSED > 0 ? 'block' : 'none';
+
+  if (counts.PENDING === 0 && counts.UNUSED === 0) {
+    actionsBox.classList.add("hidden");
+  } else {
+    actionsBox.classList.remove("hidden");
+  }
+}
+
+const _actBtn = $("activateBatchBtn");
+if (_actBtn) _actBtn.onclick = async () => {
+  if (!loadedLot) return;
+  if (!confirm(`✅ Activer le lot "${loadedLot}" ?\n\nLes codes PENDING deviendront utilisables par les clients.`)) return;
+
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return alert("Connectez-vous.");
+
+  _actBtn.disabled = true;
+  _actBtn.textContent = "⏳ Activation...";
+
+  try {
+    const res = await fetch("/api/activate-batch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lot: loadedLot, access_token: session.access_token })
+    });
+    const result = await res.json();
+    if (result.status === "OK") {
+      alert(`✅ ${result.message}`);
+      $("loadLotBtn").click();
+    } else {
+      alert("Erreur : " + (result.message || ""));
+    }
+  } catch (e) {
+    alert("Erreur réseau : " + e.message);
+  } finally {
+    _actBtn.disabled = false;
+    _actBtn.textContent = "✅ ACTIVER LA BATCH";
+  }
+};
+
+const _disBtn = $("disableBatchBtn");
+if (_disBtn) _disBtn.onclick = async () => {
+  if (!loadedLot) return;
+  if (!confirm(`⚠️ DÉSACTIVER le lot "${loadedLot}" ?\n\nLes codes UNUSED seront désactivés.\nLes codes déjà utilisés resteront valides.\n\nCette action est irréversible !`)) return;
+
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return alert("Connectez-vous.");
+
+  _disBtn.disabled = true;
+  _disBtn.textContent = "⏳ Désactivation...";
+
+  try {
+    const res = await fetch("/api/disable-batch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lot: loadedLot, access_token: session.access_token })
+    });
+    const result = await res.json();
+    if (result.status === "OK") {
+      alert(`🛑 ${result.message}`);
+      $("loadLotBtn").click();
+    } else {
+      alert("Erreur : " + (result.message || ""));
+    }
+  } catch (e) {
+    alert("Erreur réseau : " + e.message);
+  } finally {
+    _disBtn.disabled = false;
+    _disBtn.textContent = "🛑 DÉSACTIVER";
   }
 };
 
@@ -2240,7 +2351,7 @@ if (_cdb) _cdb.onclick = async () => {
     if (deleteError) throw deleteError;
 
     try {
-      await sb.from("qr_delete_logs").insert({ lot: lot, count: count });
+      await sb.from("qr_delete_logs").insert({ lot: lot, count: count, action: 'DELETE' });
     } catch (logErr) {
       console.warn("Log insert failed:", logErr);
     }
