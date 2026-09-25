@@ -1,7 +1,7 @@
 // service-worker.js
 // Cache intelligent pour mode hors ligne
 
-const CACHE_NAME = "qr-auth-v3";
+const CACHE_NAME = "qr-auth-v4";
 const OFFLINE_CACHE = "qr-auth-offline-v1";
 
 const CORE_ASSETS = [
