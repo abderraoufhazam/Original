@@ -1337,31 +1337,21 @@ window.__reloadCharts = loadCharts;
 async function refresh() {
   const { data: { session } } = await sb.auth.getSession();
 
-  if (!session) return;
-
-  const userEmail = (session.user.email || "").toLowerCase().trim();
-
-  if (!isAdminEmail(userEmail)) {
-    await sb.auth.signOut();
-
-    const el = $("loginError");
-    if (el) {
-      el.className = "result danger";
-      el.innerHTML = `
-        <p style="margin:0;font-weight:800">⛔ ACCÈS REFUSÉ</p>
-        <p style="margin:6px 0 0;font-size:13px">Ce compte n'est pas un compte administrateur.</p>
-        <p style="margin:8px 0 0;font-size:11px;color:#64748b">${escapeHtml(userEmail)}</p>
-      `;
-      el.classList.remove("hidden");
-    }
-
-    const pwd = $("password"); if (pwd) pwd.value = "";
-    const aa = $("adminApp"); if (aa) aa.classList.add("hidden");
-    const lp = $("loginPage"); if (lp) lp.classList.remove("hidden");
-
+  // ❌ لا جلسة → اذهب لصفحة الدخول
+  if (!session) {
+    window.location.href = "/login";
     return;
   }
 
+  const userEmail = (session.user.email || "").toLowerCase().trim();
+
+  // ❌ ليست ماركة أدمن → اذهب لوحة الماركة
+  if (!isAdminEmail(userEmail)) {
+    window.location.href = "/brand";
+    return;
+  }
+
+  // ✅ أدمن → اعرض اللوحة
   const lp = $("loginPage"); if (lp) lp.classList.add("hidden");
   const aa = $("adminApp"); if (aa) aa.classList.remove("hidden");
 
@@ -1382,7 +1372,6 @@ async function refresh() {
 }
 
 refresh();
-
 const _lf = $("loginForm");
 if (_lf) _lf.addEventListener("submit", async (e) => {
   e.preventDefault();
