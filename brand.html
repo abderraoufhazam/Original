@@ -7,6 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="/icon.svg">
   <link rel="stylesheet" href="/style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script>
     (function() {
       const isDark = localStorage.getItem("theme") === "dark" ||
@@ -41,12 +42,48 @@
     .brand-section h2 { font-size: 16px; font-weight: 800; margin: 0 0 14px; }
     .brand-loading { text-align: center; padding: 40px 0; color: var(--text-muted); }
 
-    /* ============ BATCH CARDS ============ */
+    /* CHARTS */
+    .chart-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .chart-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      height: 280px;
+      display: flex;
+      flex-direction: column;
+    }
+    .chart-box h3 {
+      margin: 0 0 12px;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      flex-shrink: 0;
+    }
+    .chart-canvas-wrap {
+      flex: 1;
+      position: relative;
+      min-height: 0;
+    }
+    .chart-canvas-wrap canvas {
+      max-width: 100%;
+    }
+    @media (max-width: 640px) {
+      .chart-grid { grid-template-columns: 1fr; }
+    }
+
+    /* BATCH CARDS */
     .batch-card {
       background: var(--card-bg); border: 1px solid var(--border);
-      border-radius: 14px; padding: 16px; transition: all 200ms;
+      border-radius: 14px; padding: 16px;
     }
-    .batch-card:hover { box-shadow: 0 8px 20px -8px rgba(15,23,42,0.15); }
     .batch-header {
       display: flex; justify-content: space-between; align-items: center;
       margin-bottom: 10px; gap: 10px;
@@ -67,31 +104,20 @@
     html.dark .batch-pill.red { background: rgba(220,38,38,0.2); color: #fca5a5; }
     html.dark .batch-pill.gray { background: rgba(148,163,184,0.15); color: #cbd5e1; }
 
-    /* ============ WILAYA GROUPS ============ */
+    /* REPORT GROUPS */
     .wilaya-group {
       background: var(--card-bg); border: 1px solid var(--border);
       border-radius: 14px; margin-bottom: 10px; overflow: hidden;
-      transition: all 200ms;
     }
     .wilaya-group.has-new { border-left: 4px solid #dc2626; }
     .wilaya-group.all-reviewed { border-left: 4px solid #16a34a; }
-
     .wilaya-header {
       padding: 14px 16px; cursor: pointer;
       display: flex; align-items: center; gap: 10px;
-      user-select: none; transition: background 150ms;
     }
-    .wilaya-header:hover { background: var(--bg); }
-    html.dark .wilaya-header:hover { background: rgba(255,255,255,0.03); }
-
     .wilaya-header-icon { font-size: 18px; flex-shrink: 0; }
-    .wilaya-header-name {
-      font-weight: 800; font-size: 14px; color: var(--text);
-      flex: 1; min-width: 0;
-    }
-    .wilaya-header-counts {
-      display: flex; gap: 6px; flex-shrink: 0;
-    }
+    .wilaya-header-name { font-weight: 800; font-size: 14px; color: var(--text); flex: 1; }
+    .wilaya-header-counts { display: flex; gap: 6px; }
     .wilaya-count-pill {
       font-size: 11px; font-weight: 800; padding: 3px 9px;
       border-radius: 100px;
@@ -100,45 +126,31 @@
     .wilaya-count-pill.reviewed { background: #dcfce7; color: #166534; }
     html.dark .wilaya-count-pill.new { background: rgba(220,38,38,0.2); color: #fca5a5; }
     html.dark .wilaya-count-pill.reviewed { background: rgba(22,163,74,0.2); color: #86efac; }
-
-    .wilaya-arrow {
-      font-size: 12px; color: var(--text-muted);
-      transition: transform 300ms ease;
-      flex-shrink: 0;
-    }
+    .wilaya-arrow { font-size: 12px; color: var(--text-muted); transition: transform 300ms; }
     .wilaya-group.open .wilaya-arrow { transform: rotate(180deg); }
-
-    .wilaya-body {
-      max-height: 0; overflow: hidden;
-      transition: max-height 400ms cubic-bezier(0.16, 1, 0.3, 1);
-      background: var(--bg);
-    }
+    .wilaya-body { max-height: 0; overflow: hidden; transition: max-height 400ms; background: var(--bg); }
     html.dark .wilaya-body { background: rgba(0,0,0,0.15); }
     .wilaya-group.open .wilaya-body { max-height: 10000px; }
-
     .wilaya-body-inner { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
 
-    /* ============ REPORT CARDS (compact) ============ */
     .report-card {
       background: var(--card-bg); border: 1px solid var(--border);
       border-radius: 12px; padding: 12px;
     }
     .report-card.new { border-left: 3px solid #dc2626; }
     .report-card.reviewed { border-left: 3px solid #16a34a; }
-
     .report-header {
       display: flex; justify-content: space-between;
       align-items: center; margin-bottom: 8px; gap: 10px;
     }
     .report-status {
       font-size: 10px; font-weight: 800; padding: 3px 8px;
-      border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;
+      border-radius: 6px; text-transform: uppercase;
     }
     .report-status.new { background: #fee2e2; color: #991b1b; }
     .report-status.reviewed { background: #dcfce7; color: #166534; }
     html.dark .report-status.new { background: rgba(220,38,38,0.2); color: #fca5a5; }
     html.dark .report-status.reviewed { background: rgba(22,163,74,0.2); color: #86efac; }
-
     .report-date { font-size: 11px; color: var(--text-muted); }
     .report-product { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
     .report-image {
@@ -177,6 +189,30 @@
   </div>
 
   <div class="brand-section">
+    <h2>📈 Activité</h2>
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>Vérifications (30 jours)</h3>
+        <div class="chart-canvas-wrap">
+          <canvas id="chartDaily"></canvas>
+        </div>
+      </div>
+      <div class="chart-box">
+        <h3>Répartition</h3>
+        <div class="chart-canvas-wrap">
+          <canvas id="chartStatus"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="chart-box">
+      <h3>Top wilayas signalées</h3>
+      <div class="chart-canvas-wrap">
+        <canvas id="chartWilayas"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="brand-section">
     <h2>📦 Mes lots</h2>
     <div id="batchesList" style="display:flex;flex-direction:column;gap:10px">
       <div class="brand-loading" style="padding:20px 0">Chargement...</div>
@@ -200,15 +236,6 @@
       <div class="brand-stat"><div class="brand-stat-num" id="sRatings">—</div><div class="brand-stat-label">⭐ Avis</div></div>
     </div>
   </div>
-
-  <div class="brand-section">
-    <h2>ℹ️ Comment ça marche ?</h2>
-    <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:18px;font-size:13px;line-height:1.7;color:var(--text-muted)">
-      • Votre compte vous permet de <b>suivre l'état de vos codes</b>.<br>
-      • Pour activer un lot, contactez l'administrateur via WhatsApp.<br>
-      • Pour toute question, utilisez la page <a href="/contact" style="color:#16a34a;font-weight:700">Contact</a>.
-    </div>
-  </div>
 </div>
 
 <div class="brand-loading" id="brandLoading">Chargement...</div>
@@ -220,10 +247,180 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const $ = id => document.getElementById(id);
 
+let allReports = [];
+let chartDaily = null;
+let chartStatus = null;
+let chartWilayas = null;
+
 function escapeHtml(v = "") {
   return String(v).replace(/[&<>"']/g, c => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
   }[c]));
+}
+
+function getThemeColors() {
+  const isDark = document.documentElement.classList.contains("dark");
+  return {
+    text: isDark ? "#cbd5e1" : "#334155",
+    grid: isDark ? "rgba(255,255,255,0.08)" : "rgba(15,23,42,0.06)"
+  };
+}
+
+// ============================================================
+// CHARTS
+// ============================================================
+async function loadDailyChart() {
+  const ctx = $("chartDaily");
+  if (!ctx) return;
+
+  try {
+    const { data, error } = await sb.rpc("brand_get_daily_verifications");
+    if (error) throw error;
+
+    const labels = (data || []).map(d => d.label);
+    const counts = (data || []).map(d => d.count);
+
+    if (chartDaily) chartDaily.destroy();
+    const colors = getThemeColors();
+
+    chartDaily = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [{
+          label: "Vérifications",
+          data: counts,
+          borderColor: "#16a34a",
+          backgroundColor: "rgba(22,163,74,0.12)",
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 2,
+          pointHoverRadius: 5,
+          pointBackgroundColor: "#16a34a"
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { color: colors.text, precision: 0, font: { size: 10 } },
+            grid: { color: colors.grid }
+          },
+          x: {
+            ticks: { color: colors.text, font: { size: 9 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 },
+            grid: { display: false }
+          }
+        }
+      }
+    });
+  } catch (e) {
+    console.warn("chartDaily error:", e);
+  }
+}
+
+function renderStatusChart(stats) {
+  const ctx = $("chartStatus");
+  if (!ctx) return;
+
+  if (chartStatus) chartStatus.destroy();
+  const colors = getThemeColors();
+
+  chartStatus = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: ["Actifs", "Utilisés", "En attente", "Désactivés"],
+      datasets: [{
+        data: [
+          stats.unused || 0,
+          stats.used || 0,
+          stats.pending || 0,
+          stats.disabled || 0
+        ],
+        backgroundColor: ["#16a34a", "#2563eb", "#eab308", "#dc2626"],
+        borderWidth: 0,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: "62%",
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: {
+            color: colors.text,
+            padding: 10,
+            font: { size: 11 },
+            usePointStyle: true,
+            pointStyle: "circle",
+            boxWidth: 8
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderWilayaChart() {
+  const ctx = $("chartWilayas");
+  if (!ctx) return;
+
+  const counts = {};
+  allReports.forEach(r => {
+    if (r.wilaya) counts[r.wilaya] = (counts[r.wilaya] || 0) + 1;
+  });
+
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  if (sorted.length === 0) {
+    const parent = ctx.parentElement;
+    if (parent) {
+      parent.innerHTML = '<p style="text-align:center;padding:60px 0;color:var(--text-muted);font-size:13px;margin:0">Aucun signalement pour le moment</p>';
+    }
+    return;
+  }
+
+  const labels = sorted.map(x => x[0]);
+  const data = sorted.map(x => x[1]);
+
+  if (chartWilayas) chartWilayas.destroy();
+  const colors = getThemeColors();
+
+  chartWilayas = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "Signalements",
+        data,
+        backgroundColor: "rgba(220,38,38,0.85)",
+        borderRadius: 8,
+        barThickness: 32
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: "y",
+      plugins: { legend: { display: false } },
+      scales: {
+        x: {
+          beginAtZero: true,
+          ticks: { color: colors.text, precision: 0, font: { size: 10 } },
+          grid: { color: colors.grid }
+        },
+        y: {
+          ticks: { color: colors.text, font: { size: 11, weight: "600" } },
+          grid: { display: false }
+        }
+      }
+    }
+  });
 }
 
 // ============================================================
@@ -272,7 +469,7 @@ async function loadBatches() {
 }
 
 // ============================================================
-// REPORTS (GROUP BY WILAYA)
+// REPORTS
 // ============================================================
 function renderReportCard(r) {
   const isNew = r.status === "NEW";
@@ -300,7 +497,6 @@ function renderReports() {
     return;
   }
 
-  // 📊 تجميع حسب الولاية
   const groups = {};
   allReports.forEach(r => {
     const w = r.wilaya || "Wilaya inconnue";
@@ -310,17 +506,14 @@ function renderReports() {
     else groups[w].reviewedCount++;
   });
 
-  // 🔄 ترتيب المجموعات: الأكثر بلاغات → الأقل
   const sortedGroups = Object.values(groups).sort((a, b) => b.reports.length - a.reports.length);
 
-  // 🎨 إنشاء HTML
   let html = "";
   sortedGroups.forEach((group, idx) => {
     const hasNew = group.newCount > 0;
     const groupClass = hasNew ? "has-new" : "all-reviewed";
-    const isOpen = idx === 0; // أول ولاية مفتوحة افتراضياً
+    const isOpen = idx === 0;
 
-    // ترتيب بلاغات الولاية (الجديدة أولاً، ثم الأحدث)
     group.reports.sort((a, b) => {
       if (a.status === "NEW" && b.status !== "NEW") return -1;
       if (a.status !== "NEW" && b.status === "NEW") return 1;
@@ -332,7 +525,7 @@ function renderReports() {
     if (group.reviewedCount > 0) pills += `<span class="wilaya-count-pill reviewed">✓ ${group.reviewedCount}</span>`;
 
     html += `
-      <div class="wilaya-group ${groupClass} ${isOpen ? "open" : ""}" data-wilaya="${escapeHtml(group.wilaya)}">
+      <div class="wilaya-group ${groupClass} ${isOpen ? "open" : ""}">
         <div class="wilaya-header">
           <span class="wilaya-header-icon">📍</span>
           <span class="wilaya-header-name">${escapeHtml(group.wilaya)}</span>
@@ -349,12 +542,9 @@ function renderReports() {
 
   container.innerHTML = html;
 
-  // 🔘 ربط الأحداث
   container.querySelectorAll(".wilaya-group").forEach(el => {
     const header = el.querySelector(".wilaya-header");
-    header.onclick = () => {
-      el.classList.toggle("open");
-    };
+    header.onclick = () => el.classList.toggle("open");
   });
 }
 
@@ -370,6 +560,7 @@ async function loadReports() {
 
     allReports = data || [];
     renderReports();
+    renderWilayaChart();
 
   } catch (err) {
     console.error(err);
@@ -380,8 +571,6 @@ async function loadReports() {
 // ============================================================
 // INIT
 // ============================================================
-let allReports = [];
-
 async function init() {
   const { data: { session } } = await sb.auth.getSession();
 
@@ -416,6 +605,8 @@ async function init() {
     $("sReports").textContent = data.total_reports ?? 0;
     $("sRatings").textContent = data.total_ratings ?? 0;
 
+    renderStatusChart(data);
+    loadDailyChart();
     loadBatches();
     loadReports();
   } catch (err) {
