@@ -859,52 +859,123 @@ async function upsertBrandMeta(auth, brandName, userId, amount) {
   }
 }
 
-async function sendOrderNotification(auth, orderNumber, brandName, qty, price, status) {
+async function sendOrderNotification(auth, orderNumber, brandName, qty, price, status, options = {}) {
   try {
-    const phone = process.env.WHATSAPP_TO;
-    const apiUrl = process.env.GREEN_API_URL;
-    const idInstance = process.env.GREEN_ID_INSTANCE;
-    const apiToken = process.env.GREEN_API_TOKEN;
-
-    if (!phone || !apiUrl || !idInstance || !apiToken) return false;
-
-    const statusLabels = {
-      'CREATED': '🆕 Nouvelle commande',
-      'IN_PRODUCTION': '🟡 En production',
-      'READY': '📦 Prête',
-      'HANDED_TO_CARRIER': '🟣 Confiée au transporteur',
-      'SHIPPED': '🚚 Expédiée',
-      'AWAITING_PICKUP': '🟠 En attente de retrait',
-      'AWAITING_HANDOVER': '⏳ En attente de remise',
-      'DELIVERED': '✅ Livrée',
-      'PAID': '💰 Payée',
-      'CANCELLED': '❌ Annulée'
+    const statusMessages = {
+      'CREATED': {
+        title: '🆕 Commande créée',
+        brandMsg: `🆕 *Votre commande*\n\n🧾 ${orderNumber}\n📦 ${qty} codes\n💰 ${parseFloat(price).toLocaleString('fr-FR')} DA\n\nÉtat: 🟡 En production\n\n👉 Consultez /brand`
+      },
+      'IN_PRODUCTION': {
+        title: '🟡 En production',
+        brandMsg: `🟡 *Votre commande*\n\n🧾 ${orderNumber}\nÉtat: 🟡 En production\n\n👉 Consultez /brand`
+      },
+      'READY': {
+        title: '📦 Commande prête',
+        brandMsg: `📦 *Votre commande*\n\n🧾 ${orderNumber}\nÉtat: 📦 Prête\n\n👉 Consultez /brand`
+      },
+      'HANDED_TO_CARRIER': {
+        title: '🟣 Confiée au transporteur',
+        brandMsg: `🟣 *Votre commande*\n\n🧾 ${orderNumber}\nÉtat: 🟣 Confiée au transporteur\n\n👉 Consultez /brand`
+      },
+      'SHIPPED': {
+        title: '🚚 Commande expédiée',
+        brandMsg: `🚚 *Votre commande est expédiée*\n\n🧾 ${orderNumber}\nÉtat: 🚚 En route${options.tracking ? `\n\n🔢 Suivi: ${options.tracking}` : ''}${options.company ? `\n🏢 ${options.company}` : ''}\n\n👉 Consultez /brand`
+      },
+      'AWAITING_PICKUP': {
+        title: '🟠 En attente de retrait',
+        brandMsg: `🟠 *Votre commande*\n\n🧾 ${orderNumber}\n📍 Arrivée à votre wilaya\n\n👉 Rendez-vous au bureau pour retirer votre colis\n\n👉 Consultez /brand`
+      },
+      'AWAITING_HANDOVER': {
+        title: '⏳ En attente de remise',
+        brandMsg: `⏳ *Votre commande*\n\n🧾 ${orderNumber}\nÉtat: Prête pour remise\n\n👉 Consultez /brand`
+      },
+      'DELIVERED': {
+        title: '✅ Commande livrée',
+        brandMsg: `✅ *Votre commande est livrée*\n\n🧾 ${orderNumber}\n\nMerci pour votre confiance 🙏\n\n👉 Consultez /brand`
+      },
+      'PAID': {
+        title: '💰 Commande payée',
+        brandMsg: `💰 *Paiement reçu*\n\n🧾 ${orderNumber}\n\nMerci !\n\n👉 Consultez /brand`
+      },
+      'CANCELLED': {
+        title: '❌ Commande annulée',
+        brandMsg: `❌ *Votre commande a été annulée*\n\n🧾 ${orderNumber}\n\nContactez-nous pour plus d'informations.`
+      }
     };
 
-    const message = [
-      `📋 *${statusLabels[status] || status}*`,
-      '',
-      `🧾 Facture: ${orderNumber}`,
-      `🏢 Marque: ${brandName}`,
-      `📦 Quantité: ${qty} codes`,
-      `💰 Total: ${parseFloat(price).toLocaleString('fr-FR')} DA`,
-      '',
-      '👉 Consultez le dashboard admin.'
-    ].join('\n');
+    const statusInfo = statusMessages[status] || {
+      title: status,
+      brandMsg: `📋 *Votre commande*\n\n🧾 ${orderNumber}\nÉtat: ${status}`
+    };
 
-    const url = `${apiUrl}/waInstance${idInstance}/sendMessage/${apiToken}`;
-    await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chatId: `${phone}@c.us`,
-        message: message
-      })
-    });
+    // 🎯 فقط: إشعار الماركة (إن كان لها رقم)
+    if (options.brandPhone) {
+      const cleanPhone = String(options.brandPhone).replace(/[^0-9]/g, '');
+      if (cleanPhone.length >= 9) {
+        let intlPhone = cleanPhone;
+        if (cleanPhone.startsWith('0')) {
+          intlPhone = '213' + cleanPhone.slice(1);
+        } else if (!cleanPhone.startsWith('213')) {
+          intlPhone = '213' + cleanPhone;
+        }
+        await sendWhatsAppMessage(intlPhone, statusInfo.brandMsg);
+      }
+    }
+
+    // 💾 حفظ في قاعدة البيانات (تظهر في /brand)
+    try {
+      await fetch(`${auth.supabaseUrl}/rest/v1/brand_notifications`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': auth.serviceKey,
+          'Authorization': `Bearer ${auth.serviceKey}`,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          brand_name: brandName,
+          order_id: options.orderId || null,
+          order_number: orderNumber,
+          type: 'ORDER_STATUS',
+          title: statusInfo.title,
+          message: statusInfo.brandMsg,
+          is_read: false
+        })
+      });
+    } catch (e) {
+      console.warn('Save notification error:', e);
+    }
 
     return true;
   } catch (e) {
     console.warn('Notification error:', e);
+    return false;
+  }
+}
+
+// ============================================================
+// إرسال واتساب
+// ============================================================
+async function sendWhatsAppMessage(phone, message) {
+  try {
+    const apiUrl = process.env.GREEN_API_URL;
+    const idInstance = process.env.GREEN_ID_INSTANCE;
+    const apiToken = process.env.GREEN_API_TOKEN;
+
+    if (!apiUrl || !idInstance || !apiToken) return false;
+
+    const url = `${apiUrl}/waInstance${idInstance}/sendMessage/${apiToken}`;
+    const chatId = `${phone}@c.us`;
+
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chatId, message })
+    });
+
+    return r.ok;
+  } catch (e) {
     return false;
   }
 }
