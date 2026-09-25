@@ -1,35 +1,43 @@
 # 🛡️ Produit dz ORG
 
-نظام التحقق من أصالة المنتجات عبر QR + كود سري.
+نظام جزائري للتحقق من أصالة المنتجات عبر **QR ثابت + كود سري مخفي**.
 
-## 🚀 تشغيل المشروع
+---
 
-1. اربط GitHub بـ Vercel
-2. أضف متغيرات البيئة في Vercel:
-   - SUPABASE_URL
-   - SUPABASE_SERVICE_ROLE_KEY
-   - ENCRYPTION_KEY
-   - GEMINI_API_KEY
-   - CALLMEBOT_PHONE
-   - CALLMEBOT_API_KEY
-3. شغّل schema.sql في Supabase
-4. انشر: `vercel --prod`
+## 🎯 الفكرة
 
-## 🎯 المسارات
+كل منتج يحمل ملصقاً عليه:
+- 📱 **QR ثابت** — نفس الرمز لكل المنتجات (توفير طباعة)
+- 🔐 **كود سري فريد** — تحت طبقة خدش فضية/ذهبية
+- ✂️ **خط طي** — لحماية الكود قبل البيع
 
-- `/` = الصفحة الرئيسية
-- `/verify` = التحقق
-- `/signup` = تسجيل ماركة
-- `/admin.html` = لوحة الأدمن
+المستهلك يمسح QR → يخدش → يُدخل الكود → يعرف النتيجة.
 
-## 📊 حالات الكود
+---
 
-- `PENDING` = غير مفعّل
-- `UNUSED` = جاهز
-- `USED` = مستعمل
-- `DISABLED` = معطّل
+## 🚀 تشغيل المشروع (خطوات أولية)
 
-## ⚠️ مهم
+### 1. متغيرات البيئة في Vercel
 
-- حد Hobby: **12 ملف API** كحد أقصى
-- الأدمن: mepirf@gmail.com, abderraoufhazam@gmail.com
+| المتغير | الوصف |
+|---|---|
+| `SUPABASE_URL` | عنوان مشروع Supabase |
+| `SUPABASE_SERVICE_ROLE_KEY` | مفتاح الخدمة (سري) |
+| `ENCRYPTION_KEY` | مفتاح تشفير AES-256 (32 حرف+) |
+| `GEMINI_API_KEY` | مفتاح Google Gemini |
+| `CALLMEBOT_PHONE` | رقم واتساب الإشعارات |
+| `CALLMEBOT_API_KEY` | مفتاح CallMeBot |
+
+### 2. قاعدة البيانات
+
+افتح Supabase → SQL Editor → شغّل `schema.sql` كاملاً:
+- 9 جداول
+- فهارس
+- RLS + Policies
+- دالة `verify_code_v2`
+- bucket `fake-products`
+
+### 3. النشر
+
+```bash
+vercel --prod
