@@ -250,8 +250,7 @@ async function handleMessage(req, res) {
       return res.status(400).json({ status: 'ERROR', message: 'Données manquantes' });
     }
 
-    // 🔔 إشعار واتساب
-    await sendWhatsApp(buildMessageNotification({
+    const result = await sendWhatsApp(buildMessageNotification({
       brand_name,
       email,
       phone,
@@ -261,7 +260,8 @@ async function handleMessage(req, res) {
 
     return res.status(200).json({
       status: 'OK',
-      message: 'Notification envoyée'
+      message: 'Notification envoyée',
+      whatsapp_debug: result
     });
 
   } catch (error) {
@@ -285,8 +285,7 @@ async function handleSignup(req, res) {
       return res.status(400).json({ status: 'ERROR', message: 'Données manquantes' });
     }
 
-    // 🔔 إشعار واتساب
-    await sendWhatsApp(buildSignupMessage({
+    const result = await sendWhatsApp(buildSignupMessage({
       brand_name,
       email,
       phone
@@ -294,7 +293,8 @@ async function handleSignup(req, res) {
 
     return res.status(200).json({
       status: 'OK',
-      message: 'Notification envoyée'
+      message: 'Notification envoyée',
+      whatsapp_debug: result
     });
 
   } catch (error) {
@@ -308,22 +308,27 @@ async function handleSignup(req, res) {
 }
 
 // ============================================================
-// WHATSAPP HELPER — Green API
+// WHATSAPP HELPER — Green API (مع Debug)
 // ============================================================
 async function sendWhatsApp(message) {
-  const apiUrl = process.env.GREEN_API_URL || 'https://7107.api.greenapi.com';
-  const idInstance = process.env.GREEN_ID_INSTANCE || '7107';
+  const apiUrl = process.env.GREEN_API_URL;
+  const idInstance = process.env.GREEN_ID_INSTANCE;
   const apiToken = process.env.GREEN_API_TOKEN;
   const to = process.env.WHATSAPP_TO;
 
   if (!apiUrl || !idInstance || !apiToken || !to) {
-    console.warn('Green API not configured:', {
-      hasApiUrl: !!apiUrl,
-      hasIdInstance: !!idInstance,
-      hasApiToken: !!apiToken,
-      hasTo: !!to
-    });
-    return false;
+    return {
+      success: false,
+      error: 'Missing env vars',
+      debug: {
+        hasApiUrl: !!apiUrl,
+        hasIdInstance: !!idInstance,
+        hasApiToken: !!apiToken,
+        hasTo: !!to,
+        idInstance: idInstance || 'NOT SET',
+        to: to || 'NOT SET'
+      }
+    };
   }
 
   try {
@@ -343,22 +348,44 @@ async function sendWhatsApp(message) {
       })
     });
 
-    const data = await r.json();
-    
-    if (!r.ok) {
-      console.error('Green API error:', data);
-      return false;
+    let data;
+    try {
+      data = await r.json();
+    } catch (e) {
+      data = { parse_error: String(e), raw: 'non-JSON response' };
     }
 
-    console.log('Green API success:', data);
-    return true;
+    console.log('Green API response:', r.status, data);
+
+    if (!r.ok) {
+      return {
+        success: false,
+        status: r.status,
+        chatId: chatId,
+        url_used: url.replace(apiToken, '***TOKEN***'),
+        response: data
+      };
+    }
+
+    return {
+      success: true,
+      status: r.status,
+      chatId: chatId,
+      response: data
+    };
 
   } catch (e) {
-    console.warn('Green API send error:', e);
-    return false;
+    return {
+      success: false,
+      error: String(e),
+      stack: e.stack ? e.stack.slice(0, 200) : null
+    };
   }
 }
 
+// ============================================================
+// BUILDERS
+// ============================================================
 function buildReportMessage(body) {
   const { wilaya, product_brand, product_name, comment, ai_analyzed } = body;
 
