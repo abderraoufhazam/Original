@@ -186,7 +186,7 @@ async function analyzeImageWithAI(dataUrl) {
   if (wilayaAiResult) wilayaAiResult.classList.add("hidden");
 
   try {
-    const res = await fetch("/api/analyze-product", {
+    const res = await fetch("/api/ai?mode=analyze", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ image: dataUrl })
