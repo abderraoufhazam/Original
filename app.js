@@ -85,6 +85,7 @@ function loadOfflineHistory() {
       const statusMap = {
         "ORIGINAL": { class: "success", label: "أصلي", icon: "✅" },
         "USED": { class: "warning", label: "مستعمل", icon: "⚠️" },
+        "PENDING": { class: "warning", label: "غير مفعّل", icon: "⏳" },
         "NOT_FOUND": { class: "danger", label: "مقلد", icon: "❌" },
         "DISABLED": { class: "danger", label: "معطل", icon: "🚫" },
         "EXPIRED": { class: "warning", label: "منتهي", icon: "⏰" }
@@ -384,6 +385,10 @@ function renderResult(data) {
     window.__lastVerifiedProduct = null;
     show("warning", `<div class="icon">!</div><h2>${escapeHtml(t("usedTitle"))}</h2><p>${escapeHtml(t("usedMsg"))}</p>`);
     reportSection.classList.remove("hidden");
+
+  } else if (data.status === "PENDING") {
+    window.__lastVerifiedProduct = null;
+    show("warning", `<div class="icon">⏳</div><h2>${escapeHtml(t("pendingTitle"))}</h2><p>${escapeHtml(t("pendingMsg"))}</p>`);
 
   } else if (data.status === "DISABLED" || data.status === "EXPIRED") {
     window.__lastVerifiedProduct = null;
