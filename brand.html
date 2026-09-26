@@ -17,75 +17,28 @@
   </script>
   <style>
     .brand-page { max-width: 900px; margin: 0 auto; padding: 20px; }
-    .brand-header {
-      display: flex; align-items: center; gap: 12px;
-      padding: 20px; margin-bottom: 24px;
-      background: linear-gradient(135deg, #16a34a, #22c55e);
-      color: #fff; border-radius: 20px;
-    }
+    .brand-header { display: flex; align-items: center; gap: 12px; padding: 20px; margin-bottom: 24px; background: linear-gradient(135deg, #16a34a, #22c55e); color: #fff; border-radius: 20px; }
     .brand-header h1 { margin: 0; font-size: 22px; }
     .brand-header p { margin: 4px 0 0; opacity: 0.9; font-size: 13px; }
     .brand-logo { width: 50px; height: 50px; border-radius: 12px; background: #fff; padding: 6px; }
-    .logout-btn {
-      margin-left: auto; padding: 8px 14px; border-radius: 10px;
-      background: rgba(255,255,255,0.2); color: #fff; border: 0;
-      cursor: pointer; font-weight: 700; font-size: 12px;
-    }
+    .logout-btn { margin-left: auto; padding: 8px 14px; border-radius: 10px; background: rgba(255,255,255,0.2); color: #fff; border: 0; cursor: pointer; font-weight: 700; font-size: 12px; }
     .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
-    .brand-stat {
-      background: var(--card-bg); border: 1px solid var(--border);
-      border-radius: 14px; padding: 18px 14px; text-align: center;
-    }
+    .brand-stat { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 18px 14px; text-align: center; }
     .brand-stat-num { font-size: 26px; font-weight: 900; color: var(--text); line-height: 1; }
     .brand-stat-label { font-size: 10px; color: var(--text-muted); letter-spacing: 1.2px; margin-top: 8px; text-transform: uppercase; font-weight: 700; }
     .brand-section { margin-top: 28px; }
     .brand-section h2 { font-size: 16px; font-weight: 800; margin: 0 0 14px; }
     .brand-loading { text-align: center; padding: 40px 0; color: var(--text-muted); }
 
-    /* CHARTS */
-    .chart-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 14px;
-      margin-bottom: 14px;
-    }
-    .chart-box {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px;
-      height: 280px;
-      display: flex;
-      flex-direction: column;
-    }
-    .chart-box h3 {
-      margin: 0 0 12px;
-      font-size: 11px;
-      font-weight: 800;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-      flex-shrink: 0;
-    }
-    .chart-canvas-wrap {
-      flex: 1;
-      position: relative;
-      min-height: 0;
-    }
+    .chart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .chart-box { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 16px; height: 280px; display: flex; flex-direction: column; }
+    .chart-box h3 { margin: 0 0 12px; font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.2px; flex-shrink: 0; }
+    .chart-canvas-wrap { flex: 1; position: relative; min-height: 0; }
     .chart-canvas-wrap canvas { max-width: 100%; }
-    @media (max-width: 640px) {
-      .chart-grid { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 640px) { .chart-grid { grid-template-columns: 1fr; } }
 
-    /* BATCH CARDS */
-    .batch-card {
-      background: var(--card-bg); border: 1px solid var(--border);
-      border-radius: 14px; padding: 16px;
-    }
-    .batch-header {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 10px; gap: 10px;
-    }
+    .batch-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
+    .batch-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 10px; }
     .batch-lot { font-weight: 900; font-size: 16px; color: var(--text); }
     .batch-date { font-size: 11px; color: var(--text-muted); }
     .batch-product { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
@@ -102,15 +55,7 @@
     html.dark .batch-pill.red { background: rgba(220,38,38,0.2); color: #fca5a5; }
     html.dark .batch-pill.gray { background: rgba(148,163,184,0.15); color: #cbd5e1; }
 
-    /* ORDERS CARDS */
-    .brand-order-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-left: 4px solid var(--border);
-      border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 12px;
-    }
+    .brand-order-card { background: var(--card-bg); border: 1px solid var(--border); border-left: 4px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; }
     .brand-order-card.status-IN_PRODUCTION { border-left-color: #eab308; }
     .brand-order-card.status-READY { border-left-color: #3b82f6; }
     .brand-order-card.status-HANDED_TO_CARRIER { border-left-color: #a855f7; }
@@ -120,72 +65,15 @@
     .brand-order-card.status-DELIVERED { border-left-color: #16a34a; }
     .brand-order-card.status-PAID { border-left-color: #10b981; }
     .brand-order-card.status-CANCELLED { border-left-color: #dc2626; opacity: 0.7; }
-
-    .brand-order-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 10px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
-    .brand-order-number {
-      font-family: 'Courier New', monospace;
-      font-weight: 900;
-      font-size: 14px;
-      color: var(--text);
-    }
-    .brand-order-date {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-    .brand-order-items {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin: 10px 0;
-    }
-    .brand-order-pill {
-      padding: 3px 8px;
-      background: rgba(148,163,184,0.15);
-      border-radius: 100px;
-      font-family: monospace;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-muted);
-    }
-    .brand-order-total {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-top: 10px;
-      border-top: 1px solid var(--border);
-      margin-top: 10px;
-    }
-    .brand-order-amount {
-      font-size: 18px;
-      font-weight: 900;
-      color: #16a34a;
-    }
-    .brand-order-tracking {
-      font-size: 11px;
-      color: var(--text-muted);
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 8px;
-    }
-
-    .brand-status-pill {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 100px;
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
+    .brand-order-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+    .brand-order-number { font-family: 'Courier New', monospace; font-weight: 900; font-size: 14px; color: var(--text); }
+    .brand-order-date { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .brand-order-items { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+    .brand-order-pill { padding: 3px 8px; background: rgba(148,163,184,0.15); border-radius: 100px; font-family: monospace; font-size: 11px; font-weight: 700; color: var(--text-muted); }
+    .brand-order-total { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid var(--border); margin-top: 10px; }
+    .brand-order-amount { font-size: 18px; font-weight: 900; color: #16a34a; }
+    .brand-order-tracking { font-size: 11px; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+    .brand-status-pill { display: inline-block; padding: 4px 10px; border-radius: 100px; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
     .brand-status-pill.IN_PRODUCTION { background: #fef3c7; color: #a16207; }
     .brand-status-pill.READY { background: #dbeafe; color: #1e40af; }
     .brand-status-pill.HANDED_TO_CARRIER { background: #f3e8ff; color: #7c3aed; }
@@ -195,18 +83,35 @@
     .brand-status-pill.DELIVERED { background: #dcfce7; color: #166534; }
     .brand-status-pill.PAID { background: #d1fae5; color: #065f46; }
     .brand-status-pill.CANCELLED { background: #fee2e2; color: #991b1b; }
-
-    .brand-payment-pill {
-      display: inline-block;
-      padding: 3px 9px;
-      border-radius: 100px;
-      font-size: 10px;
-      font-weight: 800;
-      margin-left: 6px;
-    }
+    .brand-payment-pill { display: inline-block; padding: 3px 9px; border-radius: 100px; font-size: 10px; font-weight: 800; margin-left: 6px; }
     .brand-payment-pill.UNPAID { background: #fee2e2; color: #991b1b; }
     .brand-payment-pill.PARTIAL { background: #fef3c7; color: #a16207; }
     .brand-payment-pill.PAID { background: #dcfce7; color: #166534; }
+
+    .wilaya-group { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 10px; overflow: hidden; }
+    .wilaya-group.has-new { border-left: 4px solid #dc2626; }
+    .wilaya-group.all-reviewed { border-left: 4px solid #16a34a; }
+    .wilaya-header { padding: 14px 16px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .wilaya-header-name { font-weight: 800; font-size: 14px; color: var(--text); flex: 1; }
+    .wilaya-count-pill { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 100px; }
+    .wilaya-count-pill.new { background: #fee2e2; color: #991b1b; }
+    .wilaya-count-pill.reviewed { background: #dcfce7; color: #166534; }
+    .wilaya-arrow { font-size: 12px; color: var(--text-muted); transition: transform 300ms; }
+    .wilaya-group.open .wilaya-arrow { transform: rotate(180deg); }
+    .wilaya-body { max-height: 0; overflow: hidden; transition: max-height 400ms; background: var(--bg); }
+    .wilaya-group.open .wilaya-body { max-height: 10000px; }
+    .wilaya-body-inner { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+    .report-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
+    .report-card.new { border-left: 3px solid #dc2626; }
+    .report-card.reviewed { border-left: 3px solid #16a34a; }
+    .report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 10px; }
+    .report-status { font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; }
+    .report-status.new { background: #fee2e2; color: #991b1b; }
+    .report-status.reviewed { background: #dcfce7; color: #166534; }
+    .report-date { font-size: 11px; color: var(--text-muted); }
+    .report-product { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+    .report-image { max-width: 120px; max-height: 120px; border-radius: 10px; display: block; margin: 8px 0; border: 1px solid var(--border); }
+    .report-comment { font-size: 12px; color: var(--text-muted); line-height: 1.5; padding: 8px 10px; background: var(--bg); border-radius: 8px; margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -236,33 +141,23 @@
     <div class="chart-grid">
       <div class="chart-box">
         <h3>Vérifications (30 jours)</h3>
-        <div class="chart-canvas-wrap">
-          <canvas id="chartDaily"></canvas>
-        </div>
+        <div class="chart-canvas-wrap"><canvas id="chartDaily"></canvas></div>
       </div>
       <div class="chart-box">
         <h3>Répartition</h3>
-        <div class="chart-canvas-wrap">
-          <canvas id="chartStatus"></canvas>
-        </div>
+        <div class="chart-canvas-wrap"><canvas id="chartStatus"></canvas></div>
       </div>
     </div>
     <div class="chart-box">
       <h3>Top wilayas signalées</h3>
-      <div class="chart-canvas-wrap">
-        <canvas id="chartWilayas"></canvas>
-      </div>
+      <div class="chart-canvas-wrap"><canvas id="chartWilayas"></canvas></div>
     </div>
   </div>
 
   <div class="brand-section">
-    <h2>📋 Mes commandes</h2>
-    <p style="font-size:12px;color:var(--text-muted);margin:0 0 14px">
-      Suivez l'état de vos commandes et téléchargez vos factures.
-    </p>
-    <div id="ordersList">
-      <div class="brand-loading" style="padding:20px 0">Chargement...</div>
-    </div>
+    <h2>📋 Mes commandes <span id="ordersBadge" style="display:none;background:#dc2626;color:#fff;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:800;margin-left:8px">0</span></h2>
+    <p style="font-size:12px;color:var(--text-muted);margin:0 0 14px">Suivez l'état de vos commandes et téléchargez vos factures.</p>
+    <div id="ordersList"><div class="brand-loading" style="padding:20px 0">Chargement...</div></div>
   </div>
 
   <div class="brand-section">
@@ -274,9 +169,7 @@
 
   <div class="brand-section">
     <h2>🚨 Signalements de contrefaçon</h2>
-    <p style="font-size:12px;color:var(--text-muted);margin:0 0 14px">
-      Signalements groupés par wilaya. Cliquez pour voir les détails.
-    </p>
+    <p style="font-size:12px;color:var(--text-muted);margin:0 0 14px">Signalements groupés par wilaya.</p>
     <div id="reportsList"></div>
   </div>
 
@@ -294,6 +187,9 @@
 <div class="brand-loading" id="brandLoading">Chargement...</div>
 
 <script>
+// ⚠️⚠️⚠️ استبدل هذا بمفتاحك العام من vapidkeys.com ⚠️⚠️⚠️
+const VAPID_PUBLIC_KEY = "PASTE_YOUR_VAPID_PUBLIC_KEY_HERE";
+
 const SUPABASE_URL = "https://qfpmbbntxyrderjlejql.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -318,11 +214,140 @@ function formatMoney(amount) {
 
 function getThemeColors() {
   const isDark = document.documentElement.classList.contains("dark");
-  return {
-    text: isDark ? "#cbd5e1" : "#334155",
-    grid: isDark ? "rgba(255,255,255,0.08)" : "rgba(15,23,42,0.06)"
-  };
+  return { text: isDark ? "#cbd5e1" : "#334155", grid: isDark ? "rgba(255,255,255,0.08)" : "rgba(15,23,42,0.06)" };
 }
+
+// ============================================================
+// PUSH NOTIFICATIONS
+// ============================================================
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+async function subscribeToPush() {
+  try {
+    console.log("🚀 [1] Début souscription");
+
+    if (!("serviceWorker" in navigator)) {
+      alert("❌ Service Worker non supporté");
+      return false;
+    }
+    if (!("PushManager" in window)) {
+      alert("❌ PushManager non supporté (utilisez Chrome)");
+      return false;
+    }
+
+    if (VAPID_PUBLIC_KEY === "PASTE_YOUR_VAPID_PUBLIC_KEY_HERE") {
+      alert("❌ VAPID_PUBLIC_KEY n'est pas configurée dans brand.html");
+      return false;
+    }
+
+    console.log("🚀 [2] Attente Service Worker...");
+    const registration = await navigator.serviceWorker.ready;
+    console.log("🚀 [3] SW prêt");
+
+    console.log("🚀 [4] Demande permission...");
+    const permission = await Notification.requestPermission();
+    console.log("🚀 [5] Permission:", permission);
+
+    if (permission !== "granted") {
+      alert("❌ Permission refusée: " + permission);
+      return false;
+    }
+
+    console.log("🚀 [6] Vérification subscription existante...");
+    let subscription = await registration.pushManager.getSubscription();
+    console.log("🚀 [7] Existing:", subscription ? "OUI" : "NON");
+
+    if (!subscription) {
+      console.log("🚀 [8] Création nouvelle subscription...");
+      try {
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+        });
+        console.log("🚀 [9] Subscription créée");
+      } catch (subErr) {
+        alert("❌ Erreur création subscription:\n" + subErr.message);
+        console.error("Sub error:", subErr);
+        return false;
+      }
+    }
+
+    const subJson = subscription.toJSON();
+    console.log("🚀 [10] Endpoint:", subJson.endpoint?.slice(0, 50));
+
+    if (!subJson.endpoint) {
+      alert("❌ Endpoint manquant");
+      return false;
+    }
+
+    console.log("🚀 [11] Récupération session...");
+    const { data, error: sessionErr } = await sb.auth.getSession();
+    if (sessionErr) {
+      alert("❌ Erreur session:\n" + sessionErr.message);
+      return false;
+    }
+    if (!data.session) {
+      alert("❌ Pas de session");
+      return false;
+    }
+
+    const brandName = data.session.user.user_metadata?.brand_name || "";
+    console.log("🚀 [12] Brand:", brandName);
+
+    if (!brandName) {
+      alert("❌ Pas de brand_name dans user_metadata");
+      return false;
+    }
+
+    console.log("🚀 [13] Envoi à l'API...");
+    const res = await fetch("/api/push-subscribe?action=subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        brand_name: brandName,
+        user_id: data.session.user.id,
+        subscription: subJson
+      })
+    });
+
+    console.log("🚀 [14] Status:", res.status);
+    const responseText = await res.text();
+    console.log("🚀 [15] Response:", responseText.slice(0, 200));
+
+    let responseData;
+    try {
+      responseData = JSON.parse(responseText);
+    } catch (e) {
+      alert("❌ Réponse invalide:\n" + responseText.slice(0, 200));
+      return false;
+    }
+
+    if (responseData.status === "OK") {
+      alert("✅ Souscription enregistrée avec succès!");
+      localStorage.setItem("pushSubscribed", "1");
+      return true;
+    } else {
+      alert("❌ Erreur API:\n" + (responseData.message || "inconnue"));
+      return false;
+    }
+
+  } catch (e) {
+    alert("❌ Exception:\n" + e.message);
+    console.error("Push error:", e);
+    return false;
+  }
+}
+
+window.subscribeToPush = subscribeToPush;
 
 // ============================================================
 // CHARTS
@@ -330,43 +355,17 @@ function getThemeColors() {
 async function loadDailyChart() {
   const ctx = $("chartDaily");
   if (!ctx) return;
-
   try {
     const { data, error } = await sb.rpc("brand_get_daily_verifications");
     if (error) throw error;
-
     const labels = (data || []).map(d => d.label);
     const counts = (data || []).map(d => d.count);
-
     if (chartDaily) chartDaily.destroy();
     const colors = getThemeColors();
-
     chartDaily = new Chart(ctx, {
       type: "line",
-      data: {
-        labels,
-        datasets: [{
-          label: "Vérifications",
-          data: counts,
-          borderColor: "#16a34a",
-          backgroundColor: "rgba(22,163,74,0.12)",
-          borderWidth: 2,
-          fill: true,
-          tension: 0.4,
-          pointRadius: 2,
-          pointHoverRadius: 5,
-          pointBackgroundColor: "#16a34a"
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: { beginAtZero: true, ticks: { color: colors.text, precision: 0, font: { size: 10 } }, grid: { color: colors.grid } },
-          x: { ticks: { color: colors.text, font: { size: 9 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 }, grid: { display: false } }
-        }
-      }
+      data: { labels, datasets: [{ label: "Vérifications", data: counts, borderColor: "#16a34a", backgroundColor: "rgba(22,163,74,0.12)", borderWidth: 2, fill: true, tension: 0.4, pointRadius: 2, pointBackgroundColor: "#16a34a" }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: colors.text, precision: 0, font: { size: 10 } }, grid: { color: colors.grid } }, x: { ticks: { color: colors.text, font: { size: 9 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 }, grid: { display: false } } } }
     });
   } catch (e) { console.warn("chartDaily error:", e); }
 }
@@ -374,167 +373,65 @@ async function loadDailyChart() {
 function renderStatusChart(stats) {
   const ctx = $("chartStatus");
   if (!ctx) return;
-
   if (chartStatus) chartStatus.destroy();
   const colors = getThemeColors();
-
   chartStatus = new Chart(ctx, {
     type: "doughnut",
-    data: {
-      labels: ["Actifs", "Utilisés", "En attente", "Désactivés"],
-      datasets: [{
-        data: [stats.unused || 0, stats.used || 0, stats.pending || 0, stats.disabled || 0],
-        backgroundColor: ["#16a34a", "#2563eb", "#eab308", "#dc2626"],
-        borderWidth: 0,
-        hoverOffset: 6
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: "62%",
-      plugins: {
-        legend: {
-          position: "bottom",
-          labels: { color: colors.text, padding: 10, font: { size: 11 }, usePointStyle: true, pointStyle: "circle", boxWidth: 8 }
-        }
-      }
-    }
+    data: { labels: ["Actifs", "Utilisés", "En attente", "Désactivés"], datasets: [{ data: [stats.unused || 0, stats.used || 0, stats.pending || 0, stats.disabled || 0], backgroundColor: ["#16a34a", "#2563eb", "#eab308", "#dc2626"], borderWidth: 0, hoverOffset: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: "62%", plugins: { legend: { position: "bottom", labels: { color: colors.text, padding: 10, font: { size: 11 }, usePointStyle: true, pointStyle: "circle", boxWidth: 8 } } } }
   });
 }
 
 function renderWilayaChart() {
   const ctx = $("chartWilayas");
   if (!ctx) return;
-
   const counts = {};
-  allReports.forEach(r => {
-    if (r.wilaya) counts[r.wilaya] = (counts[r.wilaya] || 0) + 1;
-  });
-
+  allReports.forEach(r => { if (r.wilaya) counts[r.wilaya] = (counts[r.wilaya] || 0) + 1; });
   const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-
   if (sorted.length === 0) {
     const parent = ctx.parentElement;
-    if (parent) {
-      parent.innerHTML = '<p style="text-align:center;padding:60px 0;color:var(--text-muted);font-size:13px;margin:0">Aucun signalement</p>';
-    }
+    if (parent) parent.innerHTML = '<p style="text-align:center;padding:60px 0;color:var(--text-muted);font-size:13px;margin:0">Aucun signalement</p>';
     return;
   }
-
   const labels = sorted.map(x => x[0]);
   const data = sorted.map(x => x[1]);
-
   if (chartWilayas) chartWilayas.destroy();
   const colors = getThemeColors();
-
   chartWilayas = new Chart(ctx, {
     type: "bar",
-    data: {
-      labels,
-      datasets: [{
-        label: "Signalements",
-        data,
-        backgroundColor: "rgba(220,38,38,0.85)",
-        borderRadius: 8,
-        barThickness: 32
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      indexAxis: "y",
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { beginAtZero: true, ticks: { color: colors.text, precision: 0, font: { size: 10 } }, grid: { color: colors.grid } },
-        y: { ticks: { color: colors.text, font: { size: 11, weight: "600" } }, grid: { display: false } }
-      }
-    }
+    data: { labels, datasets: [{ label: "Signalements", data, backgroundColor: "rgba(220,38,38,0.85)", borderRadius: 8, barThickness: 32 }] },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: "y", plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { color: colors.text, precision: 0, font: { size: 10 } }, grid: { color: colors.grid } }, y: { ticks: { color: colors.text, font: { size: 11, weight: "600" } }, grid: { display: false } } } }
   });
 }
 
 // ============================================================
 // ORDERS
 // ============================================================
-const ORDER_STATUS_LABELS = {
-  IN_PRODUCTION: "🟡 En production",
-  READY: "📦 Prête",
-  HANDED_TO_CARRIER: "🟣 Confiée transporteur",
-  SHIPPED: "🚚 Expédiée",
-  AWAITING_PICKUP: "🟠 En attente retrait",
-  AWAITING_HANDOVER: "⏳ En attente remise",
-  DELIVERED: "✅ Livrée",
-  PAID: "💰 Payée",
-  CANCELLED: "❌ Annulée"
-};
-
-const PAYMENT_LABELS = {
-  UNPAID: "❌ Non payé",
-  PARTIAL: "🟡 Partiel",
-  PAID: "✅ Payé"
-};
+const ORDER_STATUS_LABELS = { IN_PRODUCTION: "🟡 En production", READY: "📦 Prête", HANDED_TO_CARRIER: "🟣 Confiée transporteur", SHIPPED: "🚚 Expédiée", AWAITING_PICKUP: "🟠 En attente retrait", AWAITING_HANDOVER: "⏳ En attente remise", DELIVERED: "✅ Livrée", PAID: "💰 Payée", CANCELLED: "❌ Annulée" };
+const PAYMENT_LABELS = { UNPAID: "❌ Non payé", PARTIAL: "🟡 Partiel", PAID: "✅ Payé" };
 
 async function loadBrandOrders() {
   const container = $("ordersList");
   if (!container) return;
-
   container.innerHTML = `<div class="brand-loading" style="padding:20px 0">Chargement...</div>`;
-
   try {
     const { data, error } = await sb.rpc("brand_get_orders");
     if (error) throw error;
-
     const orders = data || [];
-
     if (orders.length === 0) {
       container.innerHTML = `<div style="text-align:center;padding:30px;color:var(--text-muted);font-size:13px">Aucune commande pour le moment.</div>`;
       return;
     }
-
     let html = "";
     orders.forEach(o => {
       const date = o.created_at ? new Date(o.created_at).toLocaleDateString("fr-FR") : "—";
-
-      const itemsHtml = (o.items || []).map(it =>
-        `<span class="brand-order-pill">Lot ${escapeHtml(it.lot_number)} × ${it.quantity}</span>`
-      ).join("");
-
+      const itemsHtml = (o.items || []).map(it => `<span class="brand-order-pill">Lot ${escapeHtml(it.lot_number)} × ${it.quantity}</span>`).join("");
       let trackingHtml = "";
       if (o.delivery_company) trackingHtml += `<span>🚚 ${escapeHtml(o.delivery_company)}</span>`;
       if (o.tracking_number) trackingHtml += `<span>🔢 ${escapeHtml(o.tracking_number)}</span>`;
-
-      html += `
-        <div class="brand-order-card status-${o.order_status}">
-          <div class="brand-order-header">
-            <div>
-              <div class="brand-order-number">${escapeHtml(o.order_number)}</div>
-              <div class="brand-order-date">📅 ${escapeHtml(date)}</div>
-            </div>
-            <div style="text-align:right">
-              <span class="brand-status-pill ${o.order_status}">
-                ${ORDER_STATUS_LABELS[o.order_status] || o.order_status}
-              </span>
-              <div style="margin-top:6px">
-                <span class="brand-payment-pill ${o.payment_status}">
-                  ${PAYMENT_LABELS[o.payment_status] || o.payment_status}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          ${itemsHtml ? `<div class="brand-order-items">${itemsHtml}</div>` : ""}
-
-          ${trackingHtml ? `<div class="brand-order-tracking">${trackingHtml}</div>` : ""}
-
-          <div class="brand-order-total">
-            <div style="font-size:12px;color:var(--text-muted)">${o.total_quantity} codes</div>
-            <div class="brand-order-amount">${formatMoney(o.total_price)}</div>
-          </div>
-        </div>
-      `;
+      html += `<div class="brand-order-card status-${o.order_status}"><div class="brand-order-header"><div><div class="brand-order-number">${escapeHtml(o.order_number)}</div><div class="brand-order-date">📅 ${escapeHtml(date)}</div></div><div style="text-align:right"><span class="brand-status-pill ${o.order_status}">${ORDER_STATUS_LABELS[o.order_status] || o.order_status}</span><div style="margin-top:6px"><span class="brand-payment-pill ${o.payment_status}">${PAYMENT_LABELS[o.payment_status] || o.payment_status}</span></div></div></div>${itemsHtml ? `<div class="brand-order-items">${itemsHtml}</div>` : ""}${trackingHtml ? `<div class="brand-order-tracking">${trackingHtml}</div>` : ""}<div class="brand-order-total"><div style="font-size:12px;color:var(--text-muted)">${o.total_quantity} codes</div><div class="brand-order-amount">${formatMoney(o.total_price)}</div></div></div>`;
     });
     container.innerHTML = html;
-
   } catch (err) {
     console.error(err);
     container.innerHTML = `<div style="text-align:center;padding:20px;color:#dc2626;font-size:13px">Erreur : ${escapeHtml(err.message)}</div>`;
@@ -547,39 +444,25 @@ async function loadBrandOrders() {
 async function loadBatches() {
   const container = $("batchesList");
   if (!container) return;
-
   try {
     const { data, error } = await sb.rpc("brand_get_batches");
     if (error) throw error;
-
     if (!data || data.length === 0) {
       container.innerHTML = `<div style="text-align:center;padding:30px;color:var(--text-muted);font-size:13px">Aucun lot pour le moment.</div>`;
       return;
     }
-
     let html = "";
     data.forEach(b => {
       const date = b.created_at ? new Date(b.created_at).toLocaleDateString("fr-FR") : "—";
-
       let pills = "";
       if (b.pending > 0)  pills += `<span class="batch-pill yellow">⏳ ${b.pending} en attente</span>`;
       if (b.unused > 0)   pills += `<span class="batch-pill green">🟢 ${b.unused} actifs</span>`;
       if (b.used > 0)     pills += `<span class="batch-pill blue">🔵 ${b.used} utilisés</span>`;
       if (b.disabled > 0) pills += `<span class="batch-pill red">🔴 ${b.disabled} désactivés</span>`;
       if (b.expired > 0)  pills += `<span class="batch-pill gray">⏰ ${b.expired} expirés</span>`;
-
-      html += `
-        <div class="batch-card">
-          <div class="batch-header">
-            <div class="batch-lot">📦 ${escapeHtml(b.lot)}</div>
-            <div class="batch-date">${escapeHtml(date)}</div>
-          </div>
-          ${b.product_name ? `<div class="batch-product">${escapeHtml(b.product_name)}</div>` : ""}
-          <div class="batch-stats">${pills || `<span class="batch-pill gray">${b.total} codes</span>`}</div>
-        </div>`;
+      html += `<div class="batch-card"><div class="batch-header"><div class="batch-lot">📦 ${escapeHtml(b.lot)}</div><div class="batch-date">${escapeHtml(date)}</div></div>${b.product_name ? `<div class="batch-product">${escapeHtml(b.product_name)}</div>` : ""}<div class="batch-stats">${pills || `<span class="batch-pill gray">${b.total} codes</span>`}</div></div>`;
     });
     container.innerHTML = html;
-
   } catch (err) {
     console.error(err);
     container.innerHTML = `<div style="text-align:center;padding:20px;color:#dc2626;font-size:13px">Erreur : ${escapeHtml(err.message)}</div>`;
@@ -593,28 +476,16 @@ function renderReportCard(r) {
   const isNew = r.status === "NEW";
   const statusClass = isNew ? "new" : "reviewed";
   const date = r.created_at ? new Date(r.created_at).toLocaleDateString("fr-FR") : "—";
-
-  return `
-    <div class="report-card ${statusClass}">
-      <div class="report-header">
-        <span class="report-status ${statusClass}">${isNew ? "🔴 Nouveau" : "✓ Traité"}</span>
-        <span class="report-date">${escapeHtml(date)}</span>
-      </div>
-      ${r.product_name ? `<div class="report-product">📦 ${escapeHtml(r.product_name)}</div>` : ""}
-      ${r.product_image ? `<img src="${escapeHtml(r.product_image)}" class="report-image" alt="Produit" loading="lazy">` : ""}
-      ${r.comment ? `<div class="report-comment">💬 ${escapeHtml(r.comment)}</div>` : ""}
-    </div>`;
+  return `<div class="report-card ${statusClass}"><div class="report-header"><span class="report-status ${statusClass}">${isNew ? "🔴 Nouveau" : "✓ Traité"}</span><span class="report-date">${escapeHtml(date)}</span></div>${r.product_name ? `<div class="report-product">📦 ${escapeHtml(r.product_name)}</div>` : ""}${r.product_image ? `<img src="${escapeHtml(r.product_image)}" class="report-image" alt="Produit" loading="lazy">` : ""}${r.comment ? `<div class="report-comment">💬 ${escapeHtml(r.comment)}</div>` : ""}</div>`;
 }
 
 function renderReports() {
   const container = $("reportsList");
   if (!container) return;
-
   if (!allReports || allReports.length === 0) {
     container.innerHTML = `<div style="text-align:center;padding:30px;color:var(--text-muted);font-size:13px">Aucun signalement.</div>`;
     return;
   }
-
   const groups = {};
   allReports.forEach(r => {
     const w = r.wilaya || "Wilaya inconnue";
@@ -623,43 +494,23 @@ function renderReports() {
     if (r.status === "NEW") groups[w].newCount++;
     else groups[w].reviewedCount++;
   });
-
   const sortedGroups = Object.values(groups).sort((a, b) => b.reports.length - a.reports.length);
-
   let html = "";
   sortedGroups.forEach((group, idx) => {
     const hasNew = group.newCount > 0;
     const groupClass = hasNew ? "has-new" : "all-reviewed";
     const isOpen = idx === 0;
-
     group.reports.sort((a, b) => {
       if (a.status === "NEW" && b.status !== "NEW") return -1;
       if (a.status !== "NEW" && b.status === "NEW") return 1;
       return new Date(b.created_at) - new Date(a.created_at);
     });
-
     let pills = "";
     if (group.newCount > 0)      pills += `<span class="wilaya-count-pill new">🔴 ${group.newCount}</span>`;
     if (group.reviewedCount > 0) pills += `<span class="wilaya-count-pill reviewed">✓ ${group.reviewedCount}</span>`;
-
-    html += `
-      <div class="wilaya-group ${groupClass} ${isOpen ? "open" : ""}">
-        <div class="wilaya-header">
-          <span class="wilaya-header-icon">📍</span>
-          <span class="wilaya-header-name">${escapeHtml(group.wilaya)}</span>
-          <span class="wilaya-header-counts">${pills}</span>
-          <span class="wilaya-arrow">▼</span>
-        </div>
-        <div class="wilaya-body">
-          <div class="wilaya-body-inner">
-            ${group.reports.map(renderReportCard).join("")}
-          </div>
-        </div>
-      </div>`;
+    html += `<div class="wilaya-group ${groupClass} ${isOpen ? "open" : ""}"><div class="wilaya-header"><span style="font-size:18px">📍</span><span class="wilaya-header-name">${escapeHtml(group.wilaya)}</span><span>${pills}</span><span class="wilaya-arrow">▼</span></div><div class="wilaya-body"><div class="wilaya-body-inner">${group.reports.map(renderReportCard).join("")}</div></div></div>`;
   });
-
   container.innerHTML = html;
-
   container.querySelectorAll(".wilaya-group").forEach(el => {
     const header = el.querySelector(".wilaya-header");
     header.onclick = () => el.classList.toggle("open");
@@ -669,17 +520,13 @@ function renderReports() {
 async function loadReports() {
   const container = $("reportsList");
   if (!container) return;
-
   container.innerHTML = `<div class="brand-loading" style="padding:20px 0">Chargement...</div>`;
-
   try {
     const { data, error } = await sb.rpc("brand_get_reports");
     if (error) throw error;
-
     allReports = data || [];
     renderReports();
     renderWilayaChart();
-
   } catch (err) {
     console.error(err);
     container.innerHTML = `<div style="text-align:center;padding:20px;color:#dc2626;font-size:13px">Erreur : ${escapeHtml(err.message)}</div>`;
@@ -691,19 +538,11 @@ async function loadReports() {
 // ============================================================
 async function init() {
   const { data: { session } } = await sb.auth.getSession();
-
-  if (!session) {
-    window.location.href = "/login";
-    return;
-  }
+  if (!session) { window.location.href = "/login"; return; }
 
   const meta = session.user.user_metadata || {};
   const role = meta.role || "brand";
-
-  if (role !== "brand") {
-    window.location.href = "/admin.html";
-    return;
-  }
+  if (role !== "brand") { window.location.href = "/admin.html"; return; }
 
   $("brandLoading").style.display = "none";
   $("brandApp").style.display = "block";
@@ -741,108 +580,16 @@ $("logoutBtn").onclick = async () => {
 };
 
 init();
+
+// تشغيل الاشتراك بعد 5 ثواني
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    console.log("🎬 Triggering push subscription...");
+    subscribeToPush();
+  }, 5000);
+});
 </script>
 
- <script>
-// ============================================================
-// 🔔 PUSH NOTIFICATIONS SUBSCRIPTION
-// ============================================================
-(async function() {
-  // ⚠️ ضع VAPID Public Key هنا
-  const VAPID_PUBLIC_KEY = "BNAMLyLSgfMIPm9ihBNKssrrA3SQXjaw8XvQ_C_SyaYRqHzFwjrVvZETobZGRVacqLKWJ7QMDg10hLEAdgvTt_E";
-
-  function urlBase64ToUint8Array(base64String) {
-    const padding = "=".repeat((4 - base64String.length % 4) % 4);
-    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-    const rawData = atob(base64);
-    const outputArray = new Uint8Array(rawData.length);
-    for (let i = 0; i < rawData.length; ++i) {
-      outputArray[i] = rawData.charCodeAt(i);
-    }
-    return outputArray;
-  }
-
-  async function subscribeToPush() {
-    try {
-      if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-        console.warn("Push not supported");
-        return false;
-      }
-
-      const registration = await navigator.serviceWorker.ready;
-
-      const permission = await Notification.requestPermission();
-      if (permission !== "granted") {
-        console.warn("Notification permission denied");
-        return false;
-      }
-
-      let subscription = await registration.pushManager.getSubscription();
-
-      if (!subscription) {
-        subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-        });
-      }
-
-      const { data: { session } } = await sb.auth.getSession();
-      if (!session) return false;
-
-      const brandName = session.user.user_metadata?.brand_name || "";
-      if (!brandName) return false;
-
-      const res = await fetch("/api/push-subscribe?action=subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          brand_name: brandName,
-          user_id: session.user.id,
-          subscription: subscription.toJSON()
-        })
-      });
-
-      const data = await res.json();
-      if (data.status === "OK") {
-        console.log("✅ Push subscription registered");
-        localStorage.setItem("pushSubscribed", "1");
-        return true;
-      }
-      return false;
-    } catch (e) {
-      console.warn("Push subscription error:", e);
-      return false;
-    }
-  }
-
-  window.addEventListener("load", () => {
-    setTimeout(async () => {
-      if (localStorage.getItem("pushSubscribed") === "1") {
-        if (Notification.permission === "granted") {
-          const registration = await navigator.serviceWorker.ready;
-          const existing = await registration.pushManager.getSubscription();
-          if (existing) return;
-        }
-      }
-
-      const ok = await subscribeToPush();
-      if (ok && !localStorage.getItem("pushWelcomed")) {
-        setTimeout(() => {
-          new Notification("🔔 Alertes activées", {
-            body: "Vous recevrez les mises à jour de vos commandes en temps réel.",
-            icon: "/icon.svg",
-            tag: "welcome"
-          });
-          localStorage.setItem("pushWelcomed", "1");
-        }, 1000);
-      }
-    }, 3000);
-  });
-
-  window.subscribeToPush = subscribeToPush;
-})();
-</script>
- 
 <script src="/bot-guard.js"></script>
 </body>
 </html>
