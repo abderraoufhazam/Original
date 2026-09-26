@@ -2143,5 +2143,147 @@ window.openBrandDetails = async function(brandName) {
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px">
         <div style="text-align:center;padding:12px 8px;background:var(--bg-secondary);border-radius:12px">
-          <div style="font-size:20px;font-weight:900">${brand.codes_count || 0}</div>
-          <
+                <div style="font-size:9px;color:var(--text-secondary);font-weight:800">CODES</div>
+        </div>
+        <div style="text-align:center;padding:12px 8px;background:var(--bg-secondary);border-radius:12px">
+          <div style="font-size:20px;font-weight:900">${brand.total_orders || 0}</div>
+          <div style="font-size:9px;color:var(--text-secondary);font-weight:800">COMMANDES</div>
+        </div>
+        <div style="text-align:center;padding:12px 8px;background:var(--bg-secondary);border-radius:12px">
+          <div style="font-size:14px;font-weight:900;color:var(--success)">${formatMoney(brand.total_spent || 0)}</div>
+          <div style="font-size:9px;color:var(--text-secondary);font-weight:800">DÉPENSÉ</div>
+        </div>
+      </div>
+      <div class="details" style="margin-bottom:20px">
+        ${brand.email ? `<div><b>Email</b><span>${escapeHtml(brand.email)}</span></div>` : ""}
+        ${brand.phone ? `<div><b>Téléphone</b><span>${escapeHtml(brand.phone)}</span></div>` : ""}
+      </div>
+      <h3 style="margin:20px 0 10px;font-size:13px;font-weight:900">📋 Dernières commandes</h3>
+      ${ordersHtml}
+    `;
+
+    footer.innerHTML = `
+      <button id="brandDetailsNewOrderBtn" class="btn btn-gold">➕ Nouvelle commande</button>
+      ${brand.phone ? `<a href="https://wa.me/${encodeURIComponent(brand.phone.replace(/[^0-9]/g,''))}" target="_blank" class="btn btn-success" style="text-decoration:none">💬 WhatsApp</a>` : ""}
+    `;
+
+    const newOrderBtn = $("brandDetailsNewOrderBtn");
+    if (newOrderBtn) {
+      newOrderBtn.onclick = () => {
+        $("brandDetailsModal").classList.add("hidden");
+        openNewOrderModal().then(() => {
+          if ($("orderBrand")) $("orderBrand").value = brand.brand_name;
+          if ($("orderBrandPhone")) $("orderBrandPhone").value = brand.phone || "";
+          if ($("orderBrandEmail")) $("orderBrandEmail").value = brand.email || "";
+        });
+      };
+    }
+
+  } catch (e) {
+    body.innerHTML = `<p class="muted">Erreur : ${escapeHtml(e.message)}</p>`;
+  }
+};
+
+const _cbdb = $("closeBrandDetailsBtn");
+if (_cbdb) _cbdb.onclick = () => $("brandDetailsModal").classList.add("hidden");
+
+// ============================================================
+// EXPORT EXCEL BUTTONS
+// ============================================================
+const _edb = $("exportDebtsBtn");
+if (_edb) _edb.onclick = () => {
+  if (!debtsData || debtsData.length === 0) { window.toast("Aucune dette.", "error"); return; }
+  const rows = debtsData.map(d => ({
+    "Marque": d.brand_name,
+    "Téléphone": d.brand_phone || "",
+    "Email": d.brand_email || "",
+    "Factures": d.invoices_count || 0,
+    "Total dû": d.total_due || 0,
+    "Jours": d.days_old || 0
+  }));
+  downloadExcel(rows, "Dettes", "Dettes");
+};
+
+const _efb = $("exportFeedbackBtn");
+if (_efb) _efb.onclick = async () => {
+  try {
+    let query = sb.from("qr_feedback").select("*").order("created_at", { ascending: false }).limit(5000);
+    if (currentFeedbackFilter !== "all") query = query.eq("type", currentFeedbackFilter);
+    const { data, error } = await query;
+    if (error) throw error;
+    if (!data || data.length === 0) { window.toast("Aucune donnée.", "error"); return; }
+    const rows = data.map(r => ({
+      "Type": r.type || "",
+      "Note": r.rating || "",
+      "Commentaire": r.comment || "",
+      "Code": r.secret_code || "",
+      "IP": r.ip || "",
+      "Date": r.created_at || ""
+    }));
+    downloadExcel(rows, "Avis", "Avis");
+  } catch (e) { window.toast("Erreur : " + e.message, "error"); }
+};
+
+const _emb = $("exportMessagesBtn");
+if (_emb) _emb.onclick = async () => {
+  try {
+    let query = sb.from("brand_messages").select("*").order("created_at", { ascending: false }).limit(5000);
+    if (currentMessagesFilter !== "all") query = query.eq("status", currentMessagesFilter);
+    const { data, error } = await query;
+    if (error) throw error;
+    if (!data || data.length === 0) { window.toast("Aucune donnée.", "error"); return; }
+    const rows = data.map(m => ({
+      "Marque": m.brand_name || "",
+      "Email": m.email || "",
+      "Téléphone": m.phone || "",
+      "Sujet": m.subject || "",
+      "Message": m.message || "",
+      "Statut": m.status || "",
+      "Date": m.created_at || ""
+    }));
+    downloadExcel(rows, "Messages", "Messages");
+  } catch (e) { window.toast("Erreur : " + e.message, "error"); }
+};
+
+const _ebrb = $("exportBrandsBtn");
+if (_ebrb) _ebrb.onclick = () => {
+  if (!allBrandsCache || allBrandsCache.length === 0) { window.toast("Aucune marque.", "error"); return; }
+  const rows = allBrandsCache.map(b => ({
+    "Marque": b.brand_name,
+    "Inscrite": b.is_registered ? "Oui" : "Non",
+    "Email": b.email || "",
+    "Téléphone": b.phone || "",
+    "Codes": b.codes_count || 0,
+    "Commandes": b.total_orders || 0,
+    "Dépensé": b.total_spent || 0,
+    "Niveau": b.tier || "REGULAR"
+  }));
+  downloadExcel(rows, "Marques", "Marques");
+};
+
+const _efkb = $("exportFakesBtn");
+if (_efkb) _efkb.onclick = async () => {
+  try {
+    let query = sb.from("fake_reports").select("*").order("created_at", { ascending: false }).limit(5000);
+    if (currentFakesFilter !== "all") query = query.eq("status", currentFakesFilter);
+    const { data, error } = await query;
+    if (error) throw error;
+    if (!data || data.length === 0) { window.toast("Aucune donnée.", "error"); return; }
+    const rows = data.map(r => ({
+      "Wilaya": r.wilaya || "",
+      "Marque": r.brand || "",
+      "Produit": r.product_name || "",
+      "Code essayé": r.attempted_code || "",
+      "Commentaire": r.comment || "",
+      "Statut": r.status || "",
+      "Analysé IA": r.ai_analyzed ? "Oui" : "Non",
+      "IP": r.ip || "",
+      "Date": r.created_at || ""
+    }));
+    downloadExcel(rows, "Contrefacons", "Contrefaçons");
+  } catch (e) { window.toast("Erreur : " + e.message, "error"); }
+};
+
+// ============================================================
+// FIN DU FICHIER admin.js
+// ============================================================
