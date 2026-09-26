@@ -1,3 +1,56 @@
+// ============================================================
+// 🔔 TOAST NOTIFICATION SYSTEM
+// ============================================================
+function toast(message, type = "info") {
+  const container = document.getElementById("toastContainer");
+  if (!container) {
+    // Fallback إذا لم يوجد container
+    console.log(`[${type}] ${message}`);
+    return;
+  }
+  const icons = { success: "✅", error: "❌", info: "ℹ️", warning: "⚠️" };
+  const t = document.createElement("div");
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span>${icons[type] || "ℹ️"}</span><span>${String(message).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}</span>`;
+  container.appendChild(t);
+  setTimeout(() => {
+    t.style.opacity = "0";
+    t.style.transform = "translateY(-20px)";
+    t.style.transition = "all 300ms ease";
+    setTimeout(() => t.remove(), 300);
+  }, 3500);
+}
+
+// Auto-detect type from message content
+function detectToastType(msg) {
+  if (!msg || typeof msg !== "string") return "info";
+  const lower = msg.toLowerCase();
+
+  if (msg.startsWith("✅") || msg.startsWith("✓") || lower.includes("succès") ||
+      lower.includes("réussi") || lower.includes("activer") || lower.includes("activé") ||
+      lower.includes("enregistr") || lower.includes("supprim") && !lower.includes("erreur")) {
+    return "success";
+  }
+  if (msg.startsWith("❌") || msg.startsWith("⛔") || msg.startsWith("⚠️") ||
+      lower.includes("erreur") || lower.includes("impossible") ||
+      lower.includes("échoué") || lower.includes("incorrect")) {
+    return "error";
+  }
+  return "info";
+}
+
+// Override window.alert with toast
+const _originalAlert = window.alert;
+window.alert = function(message) {
+  // احتفظ بالـ alert الأصلي في حال احتجت له
+  if (window.__useOriginalAlert) {
+    return _originalAlert.call(window, message);
+  }
+  toast(message, detectToastType(message));
+};
+
+window.toast = toast;
+const SUPABASE_URL = "https://qfpmbbntxyrderjlejql.supabase.co";
 const SUPABASE_URL = "https://qfpmbbntxyrderjlejql.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
