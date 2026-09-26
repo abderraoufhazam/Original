@@ -34,9 +34,6 @@ const DATACENTER_PREFIXES = [
 
   // Google Cloud (نطاق محدود)
   '35.190.', '35.191.',
-
-  // Google DNS (خاص)
-  '8.8.8.', '8.8.4.',
 ];
 
 export function analyzeRequest(req) {
