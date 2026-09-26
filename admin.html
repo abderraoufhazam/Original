@@ -23,17 +23,8 @@
 
   <style>
     /* ============ ORDERS PANEL ============ */
-    .order-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-left: 4px solid var(--border);
-      border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 12px;
-      transition: all 200ms;
-    }
+    .order-card { background: var(--card-bg); border: 1px solid var(--border); border-left: 4px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; transition: all 200ms; }
     .order-card:hover { box-shadow: 0 8px 20px -8px rgba(15,23,42,0.15); }
-
     .order-card.status-IN_PRODUCTION { border-left-color: #eab308; }
     .order-card.status-READY { border-left-color: #3b82f6; }
     .order-card.status-HANDED_TO_CARRIER { border-left-color: #a855f7; }
@@ -43,74 +34,15 @@
     .order-card.status-DELIVERED { border-left-color: #16a34a; }
     .order-card.status-PAID { border-left-color: #10b981; }
     .order-card.status-CANCELLED { border-left-color: #dc2626; opacity: 0.7; }
-
-    .order-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 10px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
-    .order-number {
-      font-family: 'Courier New', monospace;
-      font-weight: 900;
-      font-size: 14px;
-      color: var(--text);
-    }
-    .order-brand {
-      font-weight: 800;
-      font-size: 15px;
-      margin: 4px 0;
-      color: var(--text);
-    }
-    .order-meta {
-      font-size: 11px;
-      color: var(--text-muted);
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
-    .order-items-list {
-      font-size: 12px;
-      color: var(--text-muted);
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin: 8px 0;
-    }
-    .order-item-pill {
-      padding: 3px 8px;
-      background: rgba(148,163,184,0.15);
-      border-radius: 100px;
-      font-family: monospace;
-      font-size: 11px;
-      font-weight: 700;
-    }
-    .order-total-box {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-top: 10px;
-      border-top: 1px solid var(--border);
-      margin-top: 10px;
-    }
-    .order-total-amount {
-      font-size: 18px;
-      font-weight: 900;
-      color: var(--text);
-    }
-
-    .status-pill {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 100px;
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
+    .order-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+    .order-number { font-family: 'Courier New', monospace; font-weight: 900; font-size: 14px; color: var(--text); }
+    .order-brand { font-weight: 800; font-size: 15px; margin: 4px 0; color: var(--text); }
+    .order-meta { font-size: 11px; color: var(--text-muted); display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+    .order-items-list { font-size: 12px; color: var(--text-muted); display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+    .order-item-pill { padding: 3px 8px; background: rgba(148,163,184,0.15); border-radius: 100px; font-family: monospace; font-size: 11px; font-weight: 700; }
+    .order-total-box { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid var(--border); margin-top: 10px; }
+    .order-total-amount { font-size: 18px; font-weight: 900; color: var(--text); }
+    .status-pill { display: inline-block; padding: 4px 10px; border-radius: 100px; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
     .status-pill.IN_PRODUCTION { background: #fef3c7; color: #a16207; }
     .status-pill.READY { background: #dbeafe; color: #1e40af; }
     .status-pill.HANDED_TO_CARRIER { background: #f3e8ff; color: #7c3aed; }
@@ -120,7 +52,6 @@
     .status-pill.DELIVERED { background: #dcfce7; color: #166534; }
     .status-pill.PAID { background: #d1fae5; color: #065f46; }
     .status-pill.CANCELLED { background: #fee2e2; color: #991b1b; }
-
     html.dark .status-pill.IN_PRODUCTION { background: rgba(234,179,8,0.2); color: #fde047; }
     html.dark .status-pill.READY { background: rgba(59,130,246,0.2); color: #93c5fd; }
     html.dark .status-pill.HANDED_TO_CARRIER { background: rgba(168,85,247,0.2); color: #d8b4fe; }
@@ -130,259 +61,90 @@
     html.dark .status-pill.DELIVERED { background: rgba(22,163,74,0.2); color: #86efac; }
     html.dark .status-pill.PAID { background: rgba(16,185,129,0.2); color: #6ee7b7; }
     html.dark .status-pill.CANCELLED { background: rgba(220,38,38,0.2); color: #fca5a5; }
-
-    .payment-pill {
-      display: inline-block;
-      padding: 3px 9px;
-      border-radius: 100px;
-      font-size: 10px;
-      font-weight: 800;
-    }
+    .payment-pill { display: inline-block; padding: 3px 9px; border-radius: 100px; font-size: 10px; font-weight: 800; }
     .payment-pill.UNPAID { background: #fee2e2; color: #991b1b; }
     .payment-pill.PARTIAL { background: #fef3c7; color: #a16207; }
     .payment-pill.PAID { background: #dcfce7; color: #166534; }
     html.dark .payment-pill.UNPAID { background: rgba(220,38,38,0.2); color: #fca5a5; }
     html.dark .payment-pill.PARTIAL { background: rgba(234,179,8,0.2); color: #fde047; }
     html.dark .payment-pill.PAID { background: rgba(22,163,74,0.2); color: #86efac; }
-
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15,23,42,0.7);
-      z-index: 10000;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 20px;
-      overflow-y: auto;
-    }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.7); z-index: 10000; display: flex; align-items: flex-start; justify-content: center; padding: 20px; overflow-y: auto; }
     .modal-overlay.hidden { display: none !important; }
-
-    .modal-box {
-      background: var(--card-bg);
-      border-radius: 20px;
-      width: 100%;
-      max-width: 640px;
-      margin: auto;
-      box-shadow: 0 30px 60px -12px rgba(15,23,42,0.5);
-      display: flex;
-      flex-direction: column;
-      max-height: calc(100vh - 40px);
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px 22px;
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-    .modal-header h2 {
-      margin: 0;
-      font-size: 17px;
-      font-weight: 900;
-      color: var(--text);
-    }
-    .modal-close {
-      width: 32px !important;
-      height: 32px !important;
-      padding: 0 !important;
-      margin: 0 !important;
-      background: #f1f5f9 !important;
-      color: #64748b !important;
-      border: 0 !important;
-      border-radius: 50% !important;
-      font-size: 14px !important;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: none !important;
-    }
+    .modal-box { background: var(--card-bg); border-radius: 20px; width: 100%; max-width: 640px; margin: auto; box-shadow: 0 30px 60px -12px rgba(15,23,42,0.5); display: flex; flex-direction: column; max-height: calc(100vh - 40px); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 22px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .modal-header h2 { margin: 0; font-size: 17px; font-weight: 900; color: var(--text); }
+    .modal-close { width: 32px !important; height: 32px !important; padding: 0 !important; margin: 0 !important; background: #f1f5f9 !important; color: #64748b !important; border: 0 !important; border-radius: 50% !important; font-size: 14px !important; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: none !important; }
     html.dark .modal-close { background: #1e293b !important; color: #94a3b8 !important; }
-
-    .modal-body {
-      padding: 20px 22px;
-      overflow-y: auto;
-      flex: 1;
-    }
-
-    .modal-footer {
-      padding: 16px 22px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      gap: 10px;
-      flex-shrink: 0;
-    }
-    .modal-footer button {
-      flex: 1;
-      margin: 0 !important;
-      font-weight: 800;
-    }
-
-    .form-section {
-      padding: 16px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      margin-bottom: 14px;
-    }
+    .modal-body { padding: 20px 22px; overflow-y: auto; flex: 1; }
+    .modal-footer { padding: 16px 22px; border-top: 1px solid var(--border); display: flex; gap: 10px; flex-shrink: 0; }
+    .modal-footer button { flex: 1; margin: 0 !important; font-weight: 800; }
+    .form-section { padding: 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 14px; }
     html.dark .form-section { background: rgba(255,255,255,0.03); }
-    .form-section h3 {
-      font-size: 12px;
-      font-weight: 900;
-      color: var(--text);
-      margin: 0 0 12px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-    .form-section input,
-    .form-section textarea,
-    .form-section select {
-      margin-bottom: 0;
-    }
-
-    .radio-card {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 14px;
-      border: 2px solid var(--border);
-      border-radius: 12px;
-      cursor: pointer;
-      background: var(--card-bg);
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text);
-      transition: all 180ms;
-    }
-    .radio-card:has(input:checked) {
-      border-color: #16a34a;
-      background: rgba(22,163,74,0.05);
-    }
-    .radio-card input {
-      width: auto !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      accent-color: #16a34a;
-    }
-
-    .order-item-row {
-      display: grid;
-      grid-template-columns: 2fr 1fr auto;
-      gap: 8px;
-      margin-bottom: 8px;
-      align-items: start;
-    }
+    .form-section h3 { font-size: 12px; font-weight: 900; color: var(--text); margin: 0 0 12px; letter-spacing: 1px; text-transform: uppercase; }
+    .radio-card { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border: 2px solid var(--border); border-radius: 12px; cursor: pointer; background: var(--card-bg); font-size: 13px; font-weight: 700; color: var(--text); transition: all 180ms; }
+    .radio-card:has(input:checked) { border-color: #16a34a; background: rgba(22,163,74,0.05); }
+    .radio-card input { width: auto !important; margin: 0 !important; padding: 0 !important; accent-color: #16a34a; }
+    .order-item-row { display: grid; grid-template-columns: 2fr 1fr auto; gap: 8px; margin-bottom: 8px; align-items: start; }
     .order-item-row input { margin: 0 !important; }
-    .order-item-row button {
-      width: 38px !important;
-      height: 38px !important;
-      padding: 0 !important;
-      margin: 0 !important;
-      background: #fee2e2 !important;
-      color: #dc2626 !important;
-      border-radius: 10px !important;
-      font-size: 14px !important;
-      flex-shrink: 0;
-    }
+    .order-item-row button { width: 38px !important; height: 38px !important; padding: 0 !important; margin: 0 !important; background: #fee2e2 !important; color: #dc2626 !important; border-radius: 10px !important; font-size: 14px !important; flex-shrink: 0; }
     html.dark .order-item-row button { background: rgba(220,38,38,0.2) !important; color: #fca5a5 !important; }
-    .lot-check-hint {
-      font-size: 10px;
-      margin-top: 4px;
-      margin-bottom: 4px;
-      font-weight: 700;
-    }
+    .lot-check-hint { font-size: 10px; margin-top: 4px; margin-bottom: 4px; font-weight: 700; }
     .lot-check-hint.ok { color: #16a34a; }
     .lot-check-hint.warn { color: #eab308; }
     .lot-check-hint.err { color: #dc2626; }
-
-    .totals-box {
-      margin-top: 14px;
-      padding: 14px;
-      background: var(--card-bg);
-      border: 1px dashed var(--border);
-      border-radius: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .totals-box > div {
-      display: flex;
-      justify-content: space-between;
-      font-size: 13px;
-      color: var(--text-muted);
-    }
+    .totals-box { margin-top: 14px; padding: 14px; background: var(--card-bg); border: 1px dashed var(--border); border-radius: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .totals-box > div { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); }
     .totals-box > div b { color: var(--text); font-weight: 800; }
-    .totals-box .total-line {
-      padding-top: 10px;
-      border-top: 2px solid var(--border);
-      margin-top: 4px;
-      font-size: 16px;
-    }
+    .totals-box .total-line { padding-top: 10px; border-top: 2px solid var(--border); margin-top: 4px; font-size: 16px; }
     .totals-box .total-line span { color: var(--text); font-weight: 900; }
     .totals-box .total-line b { color: #16a34a; font-size: 20px; }
-
-    .order-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 12px;
-    }
-    .order-actions button {
-      flex: 1;
-      min-width: 90px;
-      padding: 9px 12px !important;
-      font-size: 12px !important;
-      font-weight: 800 !important;
-      margin: 0 !important;
-    }
-
-    .detail-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 13px;
-      gap: 12px;
-    }
+    .order-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .order-actions button { flex: 1; min-width: 90px; padding: 9px 12px !important; font-size: 12px !important; font-weight: 800 !important; margin: 0 !important; }
+    .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; gap: 12px; }
     .detail-row:last-child { border-bottom: 0; }
     .detail-row span:first-child { color: var(--text-muted); font-weight: 700; }
     .detail-row span:last-child { color: var(--text); font-weight: 800; text-align: right; word-break: break-word; }
-
-    .detail-items-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 12px 0;
-      font-size: 13px;
-    }
-    .detail-items-table th {
-      text-align: left;
-      padding: 8px 6px;
-      background: var(--bg-alt);
-      font-size: 10px;
-      font-weight: 900;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
-    .detail-items-table td {
-      padding: 8px 6px;
-      border-bottom: 1px solid var(--border);
-      font-family: monospace;
-    }
-    .detail-items-table td:nth-child(2),
-    .detail-items-table th:nth-child(2) {
-      text-align: right;
-    }
-
+    .detail-items-table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+    .detail-items-table th { text-align: left; padding: 8px 6px; background: var(--bg-alt); font-size: 10px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); }
+    .detail-items-table td { padding: 8px 6px; border-bottom: 1px solid var(--border); font-family: monospace; }
+    .detail-items-table td:nth-child(2), .detail-items-table th:nth-child(2) { text-align: right; }
     @media (max-width: 480px) {
       .modal-overlay { padding: 8px; }
       .modal-box { max-height: calc(100vh - 16px); border-radius: 16px; }
       .modal-header, .modal-body, .modal-footer { padding: 14px 16px; }
       .order-item-row { grid-template-columns: 1.5fr 1fr auto; }
     }
+
+    /* ============ DEBTS ============ */
+    .debt-card { background: var(--card-bg); border: 1px solid var(--border); border-left: 4px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+    .debt-card.severity-low { border-left-color: #22c55e; }
+    .debt-card.severity-medium { border-left-color: #eab308; }
+    .debt-card.severity-high { border-left-color: #f97316; }
+    .debt-card.severity-critical { border-left-color: #dc2626; }
+    .debt-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    .debt-brand { font-weight: 900; font-size: 16px; color: var(--text); margin-bottom: 4px; }
+    .debt-badges { display: flex; gap: 6px; flex-wrap: wrap; font-size: 11px; }
+    .debt-days-badge { padding: 3px 9px; border-radius: 100px; font-weight: 800; }
+    .debt-days-badge.low { background: #dcfce7; color: #166534; }
+    .debt-days-badge.medium { background: #fef3c7; color: #a16207; }
+    .debt-days-badge.high { background: #ffedd5; color: #c2410c; }
+    .debt-days-badge.critical { background: #fee2e2; color: #991b1b; }
+    html.dark .debt-days-badge.low { background: rgba(22,163,74,0.2); color: #86efac; }
+    html.dark .debt-days-badge.medium { background: rgba(234,179,8,0.2); color: #fde047; }
+    html.dark .debt-days-badge.high { background: rgba(249,115,22,0.2); color: #fdba74; }
+    html.dark .debt-days-badge.critical { background: rgba(220,38,38,0.2); color: #fca5a5; }
+    .debt-amount { font-size: 22px; font-weight: 900; color: #dc2626; text-align: right; }
+    .debt-amount-label { font-size: 9px; color: var(--text-muted); font-weight: 800; letter-spacing: 1px; text-transform: uppercase; text-align: right; margin-top: 2px; }
+    .debt-info-row { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+    .debt-info-row span { display: inline-flex; align-items: center; gap: 4px; }
+    .debt-invoices { background: var(--bg); border: 1px dashed var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; }
+    html.dark .debt-invoices { background: rgba(255,255,255,0.03); }
+    .debt-invoice-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 12px; border-bottom: 1px solid var(--border); }
+    .debt-invoice-row:last-child { border-bottom: 0; }
+    .debt-invoice-number { font-family: monospace; font-weight: 800; color: var(--text); word-break: break-all; }
+    .debt-invoice-amount { font-weight: 900; color: #dc2626; white-space: nowrap; margin-left: 8px; }
+    .debt-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .debt-actions button, .debt-actions a { flex: 1; min-width: 110px; padding: 10px 12px; border-radius: 10px; font-weight: 800; font-size: 12px; cursor: pointer; border: 0; text-decoration: none; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 4px; margin: 0; }
   </style>
 </head>
 <body>
@@ -390,24 +152,20 @@
 <main class="page" id="loginPage">
   <section class="card">
     <button class="dark-toggle" id="darkToggleLogin" aria-label="Mode sombre">🌙</button>
-
     <div class="brand">ADMIN — Produit dz ORG</div>
     <img src="/admin-icon.svg" alt="" class="app-logo">
     <h1>Connexion</h1>
     <p class="muted">Accédez au panneau d'administration.</p>
-
     <form id="loginForm">
       <input id="email" type="email" placeholder="Email" autocomplete="email" required>
       <input id="password" type="password" placeholder="Mot de passe" autocomplete="current-password" style="margin-top:10px" required>
       <button id="loginBtn" type="submit">SE CONNECTER</button>
     </form>
-
     <div id="loginError" class="result danger hidden" style="margin-top:15px"></div>
   </section>
 </main>
 
 <div class="admin-layout hidden" id="adminApp">
-
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <img src="/admin-icon.svg" alt="" class="sidebar-logo">
@@ -416,7 +174,6 @@
         <div class="sidebar-sub">ADMIN PANEL</div>
       </div>
     </div>
-
     <nav class="sidebar-nav">
       <button data-panel="dashboard" class="active"><span class="ico">📊</span> Tableau de bord</button>
       <button data-panel="create"><span class="ico">➕</span> Créer un lot</button>
@@ -435,7 +192,6 @@
       <button data-panel="delete"><span class="ico">🗑️</span> Supprimer</button>
       <button data-panel="settings"><span class="ico">⚙️</span> Impression</button>
     </nav>
-
     <div class="sidebar-footer">
       <button id="installAdminBtn" style="background:linear-gradient(135deg,#fbbf24,#f59e0b) !important;color:#0f172a !important;margin-bottom:8px !important;font-weight:800;display:none">📱 INSTALLER L'ADMIN</button>
       <button id="logoutBtn">Déconnexion</button>
@@ -454,23 +210,18 @@
     <section class="panel active" id="panel-dashboard">
       <h2>Tableau de bord</h2>
       <p class="muted">Vue d'ensemble de vos codes d'authenticité.</p>
-
       <div id="stats" class="stats-grid">
         <div class="stat-card"><div class="stat-num" id="statUnused">—</div><div class="stat-label">UNUSED</div></div>
         <div class="stat-card"><div class="stat-num" id="statUsed">—</div><div class="stat-label">USED</div></div>
         <div class="stat-card"><div class="stat-num" id="statDisabled">—</div><div class="stat-label">DISABLED</div></div>
         <div class="stat-card"><div class="stat-num" id="statExpired">—</div><div class="stat-label">EXPIRED</div></div>
       </div>
-
       <h3 style="margin-top:32px;font-size:15px;font-weight:800;color:inherit">📈 Vérifications (14 derniers jours)</h3>
       <div class="chart-box"><canvas id="chartDaily"></canvas></div>
-
       <h3 style="margin-top:32px;font-size:15px;font-weight:800;color:inherit">🥧 Répartition des résultats</h3>
       <div class="chart-box"><canvas id="chartResults"></canvas></div>
-
       <h3 style="margin-top:32px;font-size:15px;font-weight:800;color:inherit">📊 Top 5 lots les plus vérifiés</h3>
       <div class="chart-box"><canvas id="chartTopLots"></canvas></div>
-
       <h3 style="margin-top:32px;font-size:15px;font-weight:800;color:inherit">QR commun</h3>
       <p class="muted">Ce QR est identique pour tous les autocollants.</p>
       <p id="publicUrl" class="muted" style="font-family:monospace;font-size:12px;word-break:break-all"></p>
@@ -480,7 +231,6 @@
     <section class="panel" id="panel-create">
       <h2>Créer un lot</h2>
       <p class="muted">Générez un nouveau lot de codes secrets chiffrés (AES-256).</p>
-
       <div class="form-grid">
         <input id="brand" placeholder="Marque *">
         <input id="product_name" placeholder="Nom du produit">
@@ -493,10 +243,8 @@
         <input id="description" placeholder="Description" class="full">
         <input id="quantity" type="number" min="1" max="10000" value="100" placeholder="Quantité *">
       </div>
-
       <div style="margin-top:20px;padding:16px;background:linear-gradient(160deg,#f8fafc,#eef2f7);border:1px solid #e2e8f0;border-radius:14px">
         <label style="display:block;font-size:11px;color:#64748b;font-weight:800;letter-spacing:1.5px;margin-bottom:10px">⚙️ STATUT INITIAL DE LA BATCH</label>
-
         <label style="display:flex;align-items:flex-start;gap:10px;padding:10px;border-radius:10px;cursor:pointer;margin-bottom:8px;background:#fff;border:2px solid #f59e0b">
           <input type="radio" name="initial_status" value="PENDING" checked style="width:auto;margin-top:3px;accent-color:#f59e0b">
           <div>
@@ -504,7 +252,6 @@
             <div style="font-size:11px;color:#64748b;margin-top:2px">Code inactif jusqu'à activation manuelle.</div>
           </div>
         </label>
-
         <label style="display:flex;align-items:flex-start;gap:10px;padding:10px;border-radius:10px;cursor:pointer;background:#fff;border:2px solid #e2e8f0">
           <input type="radio" name="initial_status" value="UNUSED" style="width:auto;margin-top:3px;accent-color:#16a34a">
           <div>
@@ -513,19 +260,14 @@
           </div>
         </label>
       </div>
-
       <h3 style="margin:22px 0 6px;font-size:14px;font-weight:800;color:inherit">📱 Réseaux sociaux (optionnel)</h3>
-      <p class="muted" style="font-size:12px;margin:0 0 12px">Ces champs sont facultatifs.</p>
-
       <div class="form-grid">
         <input id="instagram_url" placeholder="📷 Instagram (optionnel)">
         <input id="facebook_url" placeholder="📘 Facebook (optionnel)">
         <input id="tiktok_url" placeholder="🎵 TikTok (optionnel)">
       </div>
-
       <button id="createBtn" style="margin-top:18px">CRÉER LE LOT</button>
       <div id="adminResult" class="result hidden"></div>
-
       <button id="printBtn" class="hidden" style="background:linear-gradient(135deg,#16a34a,#22c55e);margin-top:15px">🖨 IMPRIMER CE LOT</button>
       <button id="exportNewLotBtn" class="hidden" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);margin-top:10px">📊 EXPORTER EN EXCEL</button>
     </section>
@@ -533,7 +275,6 @@
     <section class="panel" id="panel-search">
       <h2>Rechercher un code</h2>
       <p class="muted">Entrez un code secret pour voir son statut.</p>
-
       <input id="searchCode" placeholder="CODE SECRET" style="text-transform:uppercase;font-family:monospace;letter-spacing:3px;text-align:center;font-size:17px;font-weight:700">
       <button id="searchBtn" style="margin-top:12px">RECHERCHER</button>
       <div id="searchResult" class="result hidden"></div>
@@ -542,10 +283,8 @@
     <section class="panel" id="panel-adv-search">
       <h2>🔎 Recherche avancée</h2>
       <p class="muted">Filtrez les codes par marque, statut, date ou référence.</p>
-
       <div class="form-grid" style="margin-top:16px">
         <input id="advSearchText" placeholder="Marque, code, lot, référence..." class="full">
-
         <select id="advSearchStatus" style="margin-top:0">
           <option value="">🏷️ Tous les statuts</option>
           <option value="PENDING">⏳ PENDING</option>
@@ -554,24 +293,20 @@
           <option value="DISABLED">🔴 DISABLED</option>
           <option value="EXPIRED">⏰ EXPIRED</option>
         </select>
-
         <select id="advSearchLimit" style="margin-top:0">
           <option value="50">50 résultats</option>
           <option value="100" selected>100 résultats</option>
           <option value="500">500 résultats</option>
           <option value="1000">1000 résultats</option>
         </select>
-
         <input id="advSearchDateFrom" type="date" placeholder="Du">
         <input id="advSearchDateTo" type="date" placeholder="Au">
       </div>
-
       <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
         <button id="advSearchBtn" style="flex:1;min-width:130px">🔍 RECHERCHER</button>
         <button id="advExportBtn" style="flex:1;min-width:130px;background:linear-gradient(135deg,#0ea5e9,#0284c7)">📊 EXCEL</button>
         <button id="advResetBtn" style="flex:1;min-width:130px;background:#64748b">↺ RÉINITIALISER</button>
       </div>
-
       <div id="advSearchStats" class="stats-grid" style="margin-top:22px;display:none"></div>
       <div id="advSearchResults" style="margin-top:18px"></div>
     </section>
@@ -579,25 +314,19 @@
     <section class="panel" id="panel-manage">
       <h2>Gérer un lot</h2>
       <p class="muted">Chargez un lot par son numéro pour le visualiser, l'imprimer ou le modifier.</p>
-
       <input id="editLotSearch" placeholder="Numéro de lot (ex: 001)">
       <button id="loadLotBtn" style="background:#475569;margin-top:12px">CHARGER LE LOT</button>
-
       <div id="lotInfo" class="result hidden"></div>
-
       <div id="batchStatusBox" class="hidden" style="margin-top:14px;padding:16px;border-radius:14px;background:#f8fafc;border:1px solid #e2e8f0;text-align:center">
         <div style="font-size:10px;color:#64748b;letter-spacing:1.5px;font-weight:800;margin-bottom:6px">STATUT DE LA BATCH</div>
         <div id="batchStatusBadge" style="font-size:16px;font-weight:900">—</div>
       </div>
-
       <div id="batchActionsBox" class="hidden" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
         <button id="activateBatchBtn" style="flex:1;min-width:140px;background:linear-gradient(135deg,#16a34a,#22c55e);font-weight:800">✅ ACTIVER LA BATCH</button>
         <button id="disableBatchBtn" style="flex:1;min-width:140px;background:linear-gradient(135deg,#dc2626,#ef4444);font-weight:800">🛑 DÉSACTIVER</button>
       </div>
-
       <button id="printLotBtn" class="hidden" style="background:linear-gradient(135deg,#16a34a,#22c55e)">🖨 IMPRIMER CE LOT</button>
       <button id="exportLotCodesBtn" class="hidden" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);margin-top:10px">📊 EXPORTER EN EXCEL</button>
-
       <div id="editForm" class="hidden" style="margin-top:20px;padding:20px;background:linear-gradient(160deg,#f8fafc,#eef2f7);border-radius:16px;border:1px solid #e2e8f0">
         <h3 style="margin:0 0 6px;font-size:15px;font-weight:800;color:inherit">Modifier ce lot</h3>
         <p class="muted" style="font-size:12px;margin-bottom:14px">Les champs vides ne sont pas modifiés.</p>
@@ -622,11 +351,8 @@
     <section class="panel" id="panel-orders">
       <h2>📋 Commandes & Factures</h2>
       <p class="muted">Gérez les commandes et générez les factures.</p>
-
       <button id="newOrderBtn" style="background:linear-gradient(135deg,#16a34a,#22c55e);font-weight:800;margin-bottom:20px">➕ NOUVELLE COMMANDE</button>
-
       <div id="ordersStats" class="stats-grid" style="margin-bottom:20px"></div>
-
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
         <input id="ordersSearch" placeholder="🔍 Marque, N° facture, téléphone..." style="flex:2;min-width:180px;margin:0">
         <select id="ordersStatus" style="flex:1;min-width:140px;margin:0">
@@ -648,43 +374,35 @@
           <option value="PAID">✅ Payé</option>
         </select>
       </div>
-
       <button id="refreshOrdersBtn" style="background:#475569;margin-bottom:16px">🔄 ACTUALISER</button>
-
       <div id="ordersList" style="margin-top:14px"></div>
     </section>
 
-    <!-- ============================================================ -->
-<!-- DEBTS PANEL -->
-<!-- ============================================================ -->
-<section class="panel" id="panel-debts">
-  <h2>💰 Situation des dettes</h2>
-  <p class="muted">Marques avec des paiements en attente.</p>
+    <section class="panel" id="panel-debts">
+      <h2>💰 Situation des dettes</h2>
+      <p class="muted">Marques avec des paiements en attente.</p>
+      <div id="debtsStats" class="stats-grid" style="margin-top:18px;margin-bottom:20px"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <input id="debtsSearch" placeholder="🔍 Nom de marque..." style="flex:2;min-width:180px;margin:0">
+        <select id="debtsSort" style="flex:1;min-width:160px;margin:0">
+          <option value="days">📅 Plus anciens</option>
+          <option value="amount">💰 Montant élevé</option>
+          <option value="invoices">📋 Nb factures</option>
+        </select>
+        <select id="debtsAge" style="flex:1;min-width:140px;margin:0">
+          <option value="">Toutes les dettes</option>
+          <option value="30">+30 jours</option>
+          <option value="60">+60 jours</option>
+          <option value="90">+90 jours</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+        <button id="refreshDebtsBtn" style="background:#475569;flex:1;min-width:140px">🔄 ACTUALISER</button>
+        <button id="exportDebtsBtn" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);flex:1;min-width:140px">📊 EXPORTER EXCEL</button>
+      </div>
+      <div id="debtsList"></div>
+    </section>
 
-  <div id="debtsStats" class="stats-grid" style="margin-top:18px;margin-bottom:20px"></div>
-
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
-    <input id="debtsSearch" placeholder="🔍 Nom de marque..." style="flex:2;min-width:180px;margin:0">
-    <select id="debtsSort" style="flex:1;min-width:160px;margin:0">
-      <option value="days">📅 Plus anciens</option>
-      <option value="amount">💰 Montant élevé</option>
-      <option value="invoices">📋 Nb factures</option>
-    </select>
-    <select id="debtsAge" style="flex:1;min-width:140px;margin:0">
-      <option value="">Toutes les dettes</option>
-      <option value="30">+30 jours</option>
-      <option value="60">+60 jours</option>
-      <option value="90">+90 jours</option>
-    </select>
-  </div>
-
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-    <button id="refreshDebtsBtn" style="background:#475569;flex:1;min-width:140px">🔄 ACTUALISER</button>
-    <button id="exportDebtsBtn" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);flex:1;min-width:140px">📊 EXPORTER EXCEL</button>
-  </div>
-
-  <div id="debtsList"></div>
-</section>
     <section class="panel" id="panel-log">
       <h2>Journal des vérifications</h2>
       <p class="muted">Les 100 dernières tentatives de vérification.</p>
@@ -695,13 +413,11 @@
     <section class="panel" id="panel-feedback">
       <h2>Avis clients</h2>
       <p class="muted">Tous les avis et signalements des clients.</p>
-
       <div class="tabs" id="feedbackTabs" style="display:flex;gap:8px;margin-bottom:18px">
         <button class="tab active" data-tab="all" style="flex:1;background:#0f172a;color:#fff;padding:10px;border-radius:10px;border:0;font-weight:700;font-size:12px;cursor:pointer">TOUT</button>
         <button class="tab" data-tab="rating" style="flex:1;background:#fff;color:#0f172a;padding:10px;border-radius:10px;border:1px solid #e2e8f0;font-weight:700;font-size:12px;cursor:pointer">⭐ AVIS</button>
         <button class="tab" data-tab="report" style="flex:1;background:#fff;color:#0f172a;padding:10px;border-radius:10px;border:1px solid #e2e8f0;font-weight:700;font-size:12px;cursor:pointer">🚨 SIGNALEMENTS</button>
       </div>
-
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button id="refreshFeedbackBtn" style="background:#475569;flex:1;min-width:140px">🔄 ACTUALISER</button>
         <button id="exportFeedbackBtn" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);flex:1;min-width:140px">📊 EXPORTER EXCEL</button>
@@ -712,13 +428,11 @@
     <section class="panel" id="panel-messages">
       <h2>📩 Messages des marques</h2>
       <p class="muted">Messages reçus des marques inscrites.</p>
-
       <div class="tabs" id="messagesTabs" style="display:flex;gap:8px;margin-bottom:18px">
         <button class="tab active" data-tab="all" style="flex:1;background:#0f172a;color:#fff;padding:10px;border-radius:10px;border:0;font-weight:700;font-size:12px;cursor:pointer">TOUT</button>
         <button class="tab" data-tab="NEW" style="flex:1;background:#fff;color:#0f172a;padding:10px;border-radius:10px;border:1px solid #e2e8f0;font-weight:700;font-size:12px;cursor:pointer">🔴 NOUVEAUX</button>
         <button class="tab" data-tab="READ" style="flex:1;background:#fff;color:#0f172a;padding:10px;border-radius:10px;border:1px solid #e2e8f0;font-weight:700;font-size:12px;cursor:pointer">✓ LUS</button>
       </div>
-
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button id="refreshMessagesBtn" style="background:#475569;flex:1;min-width:140px">🔄 ACTUALISER</button>
         <button id="exportMessagesBtn" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);flex:1;min-width:140px">📊 EXPORTER EXCEL</button>
@@ -729,7 +443,6 @@
     <section class="panel" id="panel-brands">
       <h2>🏢 Marques inscrites</h2>
       <p class="muted">Toutes les marques qui ont créé un compte.</p>
-
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button id="refreshBrandsBtn" style="background:#475569;flex:1;min-width:140px">🔄 ACTUALISER</button>
         <button id="exportBrandsBtn" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);flex:1;min-width:140px">📊 EXPORTER EXCEL</button>
@@ -741,54 +454,43 @@
     <section class="panel" id="panel-visitors">
       <h2>👥 Visiteurs</h2>
       <p class="muted">Journal des visiteurs et détection automatique de bots.</p>
-
       <div id="visitorStats" class="stats-grid" style="margin-top:18px;margin-bottom:18px"></div>
-
       <div class="tabs" id="visitorTabs" style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">
         <button class="tab active" data-tab="all" style="flex:1;background:#0f172a;color:#fff;padding:10px;border-radius:10px;border:0;font-weight:700;font-size:12px;cursor:pointer;min-width:80px">TOUT</button>
         <button class="tab" data-tab="real" style="flex:1;background:#fff;color:#0f172a;padding:10px;border-radius:10px;border:1px solid #e2e8f0;font-weight:700;font-size:12px;cursor:pointer;min-width:80px">🟢 RÉELS</button>
         <button class="tab" data-tab="suspicious" style="flex:1;background:#fff;color:#0f172a;padding:10px;border-radius:10px;border:1px solid #e2e8f0;font-weight:700;font-size:12px;cursor:pointer;min-width:80px">🟡 SUSPECTS</button>
         <button class="tab" data-tab="bot" style="flex:1;background:#fff;color:#0f172a;padding:10px;border-radius:10px;border:1px solid #e2e8f0;font-weight:700;font-size:12px;cursor:pointer;min-width:80px">🔴 BOTS</button>
       </div>
-
       <button id="refreshVisitorsBtn" style="background:#475569">🔄 ACTUALISER</button>
       <div id="visitorsList" style="margin-top:18px"></div>
     </section>
 
     <section class="panel" id="panel-faq">
       <h2>📝 Questions fréquentes (FAQ)</h2>
-      <p class="muted">Gérez les questions affichées sur la page d'accueil. Les modifications sont appliquées immédiatement.</p>
-
+      <p class="muted">Gérez les questions affichées sur la page d'accueil.</p>
       <button id="addFaqBtn" style="background:linear-gradient(135deg,#16a34a,#22c55e);margin-bottom:20px">➕ AJOUTER UNE QUESTION</button>
-
       <div id="faqEditBox" class="hidden" style="margin-bottom:22px;padding:20px;background:linear-gradient(160deg,#f8fafc,#eef2f7);border-radius:16px;border:1px solid #e2e8f0">
         <h3 id="faqEditTitle" style="margin:0 0 14px;font-size:15px;font-weight:800;color:inherit">Ajouter une question</h3>
-
         <h4 style="margin:14px 0 6px;font-size:12px;font-weight:800;color:#16a34a;letter-spacing:1.5px">🇩🇿 العربية</h4>
         <input id="faqQuestionAr" placeholder="السؤال بالعربية *" class="full">
         <textarea id="faqAnswerAr" placeholder="الجواب بالعربية *" rows="3" style="margin-top:10px"></textarea>
-
         <h4 style="margin:14px 0 6px;font-size:12px;font-weight:800;color:#2563eb;letter-spacing:1.5px">🇫🇷 FRANÇAIS</h4>
         <input id="faqQuestionFr" placeholder="Question en français">
         <textarea id="faqAnswerFr" placeholder="Réponse en français" rows="3" style="margin-top:10px"></textarea>
-
         <h4 style="margin:14px 0 6px;font-size:12px;font-weight:800;color:#eab308;letter-spacing:1.5px">🇬🇧 ENGLISH</h4>
         <input id="faqQuestionEn" placeholder="Question in English">
         <textarea id="faqAnswerEn" placeholder="Answer in English" rows="3" style="margin-top:10px"></textarea>
-
         <h4 style="margin:14px 0 6px;font-size:12px;font-weight:800;color:#64748b;letter-spacing:1.5px">⚙️ OPTIONS</h4>
-        <input id="faqSortOrder" type="number" placeholder="Ordre d'affichage (0 = premier)" value="0" style="margin-top:10px">
+        <input id="faqSortOrder" type="number" placeholder="Ordre d'affichage" value="0" style="margin-top:10px">
         <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px;font-weight:600;color:inherit;cursor:pointer">
           <input id="faqIsActive" type="checkbox" checked style="width:auto;margin:0;padding:0">
-          <span>Activer (afficher sur le site)</span>
+          <span>Activer</span>
         </label>
-
         <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
           <button id="saveFaqBtn" style="flex:1;min-width:140px;background:#16a34a">💾 ENREGISTRER</button>
           <button id="cancelFaqBtn" style="flex:1;min-width:140px;background:#64748b">✕ ANNULER</button>
         </div>
       </div>
-
       <button id="refreshFaqBtn" style="background:#475569">🔄 ACTUALISER</button>
       <div id="faqList" style="margin-top:18px"></div>
     </section>
@@ -796,23 +498,18 @@
     <section class="panel" id="panel-fakes">
       <h2>🗺️ بلاغات التقليد</h2>
       <p class="muted">Signalements de produits contrefaits par les clients.</p>
-
       <div id="fakesStats" class="stats-grid" style="margin-top:18px;margin-bottom:18px"></div>
-
       <div class="tabs" id="fakesTabs" style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">
         <button class="tab active" data-tab="all" style="flex:1;background:#0f172a;color:#fff;padding:10px;border-radius:10px;border:0;font-weight:700;font-size:12px;cursor:pointer;min-width:70px">TOUT</button>
         <button class="tab" data-tab="NEW" style="flex:1;background:#fff;color:#0f172a;padding:10px;border-radius:10px;border:1px solid #e2e8f0;font-weight:700;font-size:12px;cursor:pointer;min-width:70px">🔴 NOUVEAUX</button>
         <button class="tab" data-tab="REVIEWED" style="flex:1;background:#fff;color:#0f172a;padding:10px;border-radius:10px;border:1px solid #e2e8f0;font-weight:700;font-size:12px;cursor:pointer;min-width:70px">✓ TRAITÉS</button>
       </div>
-
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button id="refreshFakesBtn" style="background:#475569;flex:1;min-width:130px">🔄 ACTUALISER</button>
         <button id="exportFakesBtn" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);flex:1;min-width:130px">📊 EXPORTER EXCEL</button>
       </div>
-
       <h3 style="margin-top:32px;font-size:15px;font-weight:800;color:inherit">🗺️ الحرارية حسب الولايات</h3>
       <div id="wilayaHeatmap" style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px"></div>
-
       <h3 style="margin-top:32px;font-size:15px;font-weight:800;color:inherit">📋 آخر البلاغات</h3>
       <div id="fakesList" style="margin-top:14px"></div>
     </section>
@@ -820,44 +517,35 @@
     <section class="panel" id="panel-delete">
       <h2>🗑️ Suppression en masse</h2>
       <p class="muted">Supprimez un lot entier. Cette action est <b style="color:#dc2626">irréversible</b>.</p>
-
       <div style="margin-top:20px;padding:16px;background:linear-gradient(160deg,#fef2f2,#fee2e2);border:1px solid #fecaca;border-radius:14px;font-size:13px;line-height:1.7;color:#991b1b">
-        <b>⚠️ ATTENTION :</b> La suppression efface définitivement les codes et leurs versions chiffrées.
+        <b>⚠️ ATTENTION :</b> La suppression efface définitivement les codes.
       </div>
-
       <h3 style="margin-top:28px;font-size:14px;font-weight:800;color:inherit">Sélectionnez le lot à supprimer</h3>
-
       <input id="deleteLotSearch" placeholder="Numéro de lot (ex: 001)" style="margin-top:10px">
       <button id="previewDeleteBtn" style="background:#dc2626;margin-top:12px">🔍 PRÉVISUALISER</button>
-
       <div id="deletePreview" class="result hidden" style="margin-top:16px"></div>
-
       <div id="deleteConfirmBox" class="hidden" style="margin-top:16px;padding:16px;background:#fff;border:2px solid #dc2626;border-radius:14px">
         <p style="font-size:13px;color:#991b1b;font-weight:700;margin:0 0 12px">Tapez <b>DELETE</b> pour confirmer :</p>
         <input id="deleteConfirmInput" placeholder="DELETE" style="border-color:#dc2626;text-align:center;font-weight:700;letter-spacing:2px">
         <button id="confirmDeleteBtn" style="background:linear-gradient(135deg,#dc2626,#b91c1c);margin-top:12px" disabled>🗑️ SUPPRIMER</button>
       </div>
-
       <div id="deleteResult" class="result hidden" style="margin-top:16px"></div>
     </section>
 
     <section class="panel" id="panel-settings">
       <h2>Options d'impression</h2>
       <p class="muted">Choisissez le mode et la taille d'impression.</p>
-
       <label style="display:block;font-size:11px;color:#64748b;font-weight:800;letter-spacing:1.5px;margin-bottom:8px">MODE D'IMPRESSION</label>
       <select id="printMode" style="margin-bottom:20px">
         <option value="labels">🏷️ Étiquettes pliées (code caché)</option>
         <option value="list">📋 Liste des codes (tout visible)</option>
       </select>
-
       <label style="display:block;font-size:11px;color:#64748b;font-weight:800;letter-spacing:1.5px;margin-bottom:8px">TAILLE DE L'ÉTIQUETTE</label>
       <select id="labelSize">
         <option value="60x90">60 × 90 mm — Étiquette longue (pliée)</option>
         <option value="50x50">50 × 50 mm — Carré compact</option>
         <option value="70x50">70 × 50 mm — Rectangle horizontal</option>
       </select>
-
       <div style="margin-top:24px;padding:18px;background:#fff8e1;border:1px solid #ffe082;border-radius:14px;font-size:13px;line-height:1.7;color:#333">
         <b style="color:#b26a00">📋 RAPPEL :</b><br>
         • Le QR est identique pour toutes les étiquettes.<br>
@@ -869,37 +557,30 @@
   </main>
 </div>
 
-<!-- ============================================================ -->
 <!-- MODAL: Nouvelle commande -->
-<!-- ============================================================ -->
 <div id="newOrderModal" class="modal-overlay hidden">
   <div class="modal-box">
     <div class="modal-header">
       <h2>📋 Nouvelle commande</h2>
       <button class="modal-close" id="closeNewOrderBtn">✕</button>
     </div>
-
     <div class="modal-body">
-
       <div class="form-section">
         <h3>👤 Client</h3>
         <input id="orderBrand" placeholder="Nom de la marque *" list="brandsList">
         <datalist id="brandsList"></datalist>
         <div id="brandHint" style="font-size:11px;margin-top:6px;color:#64748b"></div>
-
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
           <input id="orderBrandPhone" placeholder="📱 Téléphone" type="tel">
           <input id="orderBrandEmail" placeholder="📧 Email" type="email">
         </div>
       </div>
-
       <div class="form-section">
         <h3>📦 Articles (Lots)</h3>
         <p class="muted" style="font-size:11px;margin:0 0 10px">Ajoutez les lots et leurs quantités.</p>
         <div id="orderItemsList"></div>
         <button id="addOrderItemBtn" style="background:#475569;font-size:12px;padding:10px;margin-top:10px">➕ Ajouter un lot</button>
       </div>
-
       <div class="form-section">
         <h3>💰 Prix</h3>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -928,7 +609,6 @@
           <div class="total-line"><span>TOTAL:</span><b id="orderTotalPrice">0 DA</b></div>
         </div>
       </div>
-
       <div class="form-section">
         <h3>🚚 Livraison</h3>
         <div style="display:flex;gap:8px;margin-bottom:12px">
@@ -941,7 +621,6 @@
             <span>🤝 Main à main</span>
           </label>
         </div>
-
         <div id="deliveryFields">
           <input id="orderDeliveryCompany" placeholder="🏢 Société de livraison" style="margin-bottom:10px">
           <input id="orderTrackingNumber" placeholder="🔢 Numéro de suivi" style="margin-bottom:10px">
@@ -955,40 +634,20 @@
           <input id="orderShippingDate" type="date">
         </div>
       </div>
-
       <div class="form-section">
         <h3>📝 Notes</h3>
         <textarea id="orderNotes" rows="3" placeholder="Notes internes..." style="width:100%"></textarea>
       </div>
-
       <div id="newOrderError" class="result danger hidden"></div>
-
     </div>
-
     <div class="modal-footer">
       <button id="cancelNewOrderBtn" style="background:#64748b">✕ Annuler</button>
       <button id="createOrderBtn" style="background:linear-gradient(135deg,#16a34a,#22c55e)">✓ Créer la commande</button>
     </div>
   </div>
 </div>
-  
-<!-- ============================================================ -->
-<!-- MODAL: Détails Marque -->
-<!-- ============================================================ -->
-<div id="brandDetailsModal" class="modal-overlay hidden">
-  <div class="modal-box">
-    <div class="modal-header">
-      <h2 id="brandDetailsTitle">🏢 Marque</h2>
-      <button class="modal-close" id="closeBrandDetailsBtn">✕</button>
-    </div>
-    <div class="modal-body" id="brandDetailsBody"></div>
-    <div class="modal-footer" id="brandDetailsFooter"></div>
-  </div>
-</div>
-  
-<!-- ============================================================ -->
+
 <!-- MODAL: Détails commande -->
-<!-- ============================================================ -->
 <div id="orderDetailsModal" class="modal-overlay hidden">
   <div class="modal-box">
     <div class="modal-header">
@@ -997,6 +656,18 @@
     </div>
     <div class="modal-body" id="orderDetailsBody"></div>
     <div class="modal-footer" id="orderDetailsFooter"></div>
+  </div>
+</div>
+
+<!-- MODAL: Détails Marque -->
+<div id="brandDetailsModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 id="brandDetailsTitle">🏢 Marque</h2>
+      <button class="modal-close" id="closeBrandDetailsBtn">✕</button>
+    </div>
+    <div class="modal-body" id="brandDetailsBody"></div>
+    <div class="modal-footer" id="brandDetailsFooter"></div>
   </div>
 </div>
 
