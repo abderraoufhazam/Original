@@ -124,10 +124,9 @@ RÈGLES STRICTES :
               systemInstruction: { parts: [{ text: systemPrompt }] },
               contents: contents,
               generationConfig: {
-                temperature: 0.7,
-                maxOutputTokens: 500,
-                thinkingConfig: { thinkingBudget: 0 }
-              }
+               temperature: 0.7,
+               maxOutputTokens: 500
+             }
             })
           }
         );
