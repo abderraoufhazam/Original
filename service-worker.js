@@ -1,5 +1,4 @@
 // service-worker.js
-// Cache intelligent pour mode hors ligne
 
 const CACHE_NAME = "qr-auth-v4";
 const OFFLINE_CACHE = "qr-auth-offline-v1";
@@ -15,19 +14,14 @@ const CORE_ASSETS = [
   "/app.js",
   "/i18n.js",
   "/manifest.json",
-  "/icon.svg",
-  "/instagram.png",
-  "/facebook.png",
-  "/tiktok.png"
+  "/icon.svg"
 ];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return Promise.allSettled(
-        CORE_ASSETS.map(asset =>
-          cache.add(asset).catch(err => console.warn("Cache skip:", asset, err.message))
-        )
+        CORE_ASSETS.map(asset => cache.add(asset).catch(err => console.warn("Cache skip:", asset, err.message)))
       );
     })
   );
@@ -38,9 +32,7 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
-        keys
-          .filter((key) => key !== CACHE_NAME && key !== OFFLINE_CACHE)
-          .map((key) => caches.delete(key))
+        keys.filter((key) => key !== CACHE_NAME && key !== OFFLINE_CACHE).map((key) => caches.delete(key))
       );
     })
   );
@@ -49,7 +41,6 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
-
   if (url.pathname.startsWith("/api/")) return;
   if (event.request.method !== "GET") return;
   if (url.origin !== self.location.origin) return;
@@ -59,27 +50,67 @@ self.addEventListener("fetch", (event) => {
       .then((response) => {
         if (response && response.status === 200) {
           const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
         }
         return response;
       })
       .catch(async () => {
         const cached = await caches.match(event.request);
         if (cached) return cached;
-
         if (event.request.headers.get("accept")?.includes("text/html")) {
           const fallback = await caches.match("/verify.html");
           if (fallback) return fallback;
         }
-
-        return new Response("Hors ligne", {
-          status: 503,
-          statusText: "Offline",
-          headers: { "Content-Type": "text/plain" }
-        });
+        return new Response("Hors ligne", { status: 503, statusText: "Offline" });
       })
+  );
+});
+
+// ============================================================
+// 🔔 PUSH NOTIFICATIONS
+// ============================================================
+self.addEventListener("push", (event) => {
+  console.log("[SW] Push received");
+
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch (e) {
+    data = { title: "Produit dz ORG", body: event.data ? event.data.text() : "" };
+  }
+
+  const title = data.title || "📋 Notification";
+  const options = {
+    body: data.body || "",
+    icon: data.icon || "/icon.svg",
+    badge: data.badge || "/icon.svg",
+    tag: data.tag || "default",
+    data: { url: data.url || "/brand" },
+    requireInteraction: false,
+    silent: false,
+    vibrate: [200, 100, 200]
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  const url = event.notification.data?.url || "/brand";
+
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url.includes(self.location.origin) && "focus" in client) {
+          client.navigate(url);
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(url);
+      }
+    })
   );
 });
 
