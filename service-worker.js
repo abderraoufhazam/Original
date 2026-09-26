@@ -5,7 +5,6 @@ const OFFLINE_CACHE = "qr-auth-offline-v1";
 
 const CORE_ASSETS = [
   "/",
-  "/index.html",
   "/verify.html",
   "/landing.html",
   "/signup.html",
@@ -94,24 +93,26 @@ self.addEventListener("push", (event) => {
   event.waitUntil(self.registration.showNotification(title, options));
 });
 
-self.addEventListener("notificationclick", (event) => {
+self.addEventListener("notificationclick", async (event) => {
   event.notification.close();
 
   const url = event.notification.data?.url || "/brand";
 
-  event.waitUntil(
-    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if (client.url.includes(self.location.origin) && "focus" in client) {
-          client.navigate(url);
-          return client.focus();
-        }
-      }
-      if (clients.openWindow) {
-        return clients.openWindow(url);
-      }
-    })
-  );
+  const clientList = await clients.matchAll({
+    type: "window",
+    includeUncontrolled: true
+  });
+
+  for (const client of clientList) {
+    if (client.url.includes(self.location.origin) && "focus" in client) {
+      await client.navigate(url);
+      return client.focus();
+    }
+  }
+
+  if (clients.openWindow) {
+    return clients.openWindow(url);
+  }
 });
 
 self.addEventListener("message", (event) => {
