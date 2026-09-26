@@ -2920,6 +2920,7 @@ async function refresh() {
 }
 
 refresh();
+window.__adminRefresh = refresh;  // ← جديد
 
 const _lf = $("loginForm");
 if (_lf) _lf.addEventListener("submit", async (e) => {
