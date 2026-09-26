@@ -401,35 +401,31 @@ async function loadBrands() {
     }
 
     const brands = data.brands || [];
-    const now = new Date();
     const registeredCount = brands.filter(b => b.is_registered).length;
     const unregisteredCount = brands.filter(b => !b.is_registered).length;
     const withCodesCount = brands.filter(b => (b.codes_count || 0) > 0).length;
 
     if (statsBox) {
       statsBox.innerHTML = `
-        <div class="stat-card">
-          <div class="stat-num">${brands.length}</div>
-          <div class="stat-label">TOTAL</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" style="color:#16a34a">${registeredCount}</div>
-          <div class="stat-label">✅ INSCRITES</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" style="color:#eab308">${unregisteredCount}</div>
-          <div class="stat-label">⚠️ NON INSCRITES</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" style="color:#2563eb">${withCodesCount}</div>
-          <div class="stat-label">📦 AVEC CODES</div>
-        </div>
+        <div class="stat-card"><div class="stat-num">${brands.length}</div><div class="stat-label">TOTAL</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#16a34a">${registeredCount}</div><div class="stat-label">✅ INSCRITES</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#eab308">${unregisteredCount}</div><div class="stat-label">⚠️ NON INSCRITES</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#2563eb">${withCodesCount}</div><div class="stat-label">📦 AVEC CODES</div></div>
       `;
     }
 
     if (brands.length === 0) {
       container.innerHTML = `<p class="muted">Aucune marque pour le moment.</p>`;
       return;
+    }
+
+    allBrandsCache = brands;
+    window.__allBrands = brands;
+
+    // Populate datalist
+    const dl = $("brandsList");
+    if (dl) {
+      dl.innerHTML = brands.map(b => `<option value="${escapeHtml(b.brand_name)}">`).join("");
     }
 
     let html = "";
@@ -477,20 +473,24 @@ async function loadBrands() {
           </div>
 
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-            ${b.phone ? `<a href="https://wa.me/${encodeURIComponent(b.phone.replace(/[^0-9]/g,''))}?text=${encodeURIComponent('Bonjour ' + (b.brand_name || '') + ', bienvenue sur Produit dz ORG !')}" target="_blank" rel="noopener" style="flex:1;padding:8px 12px;background:#25D366;color:#fff;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none;text-align:center;min-width:110px;display:inline-flex;align-items:center;justify-content:center;gap:4px">💬 WhatsApp</a>` : ""}
-            ${b.email ? `<a href="mailto:${escapeHtml(b.email)}" style="flex:1;padding:8px 12px;background:#0f172a;color:#fff;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none;text-align:center;min-width:110px;display:inline-flex;align-items:center;justify-content:center;gap:4px">📧 Email</a>` : ""}
-            <button onclick="openBrandDetails('${escapeHtml(b.brand_name).replace(/'/g, "\\'")}')" style="flex:1;padding:8px 12px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;border:0;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;margin:0;min-width:110px">👁 Voir détails</button>
+            <button class="view-brand-details" data-brand-name="${escapeHtml(b.brand_name)}" style="flex:1;padding:8px 12px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;border:0;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;margin:0;min-width:110px">👁 Voir détails</button>
+            ${b.phone ? `<a href="https://wa.me/${encodeURIComponent(b.phone.replace(/[^0-9]/g,''))}?text=${encodeURIComponent('Bonjour ' + (b.brand_name || '') + ' 👋')}" target="_blank" rel="noopener" style="flex:1;padding:8px 12px;background:#25D366;color:#fff;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none;text-align:center;min-width:110px;display:inline-flex;align-items:center;justify-content:center;gap:4px">💬 WhatsApp</a>` : ""}
           </div>
         </div>`;
     });
     container.innerHTML = html;
-    allBrandsCache = brands;
 
-    // Populate datalist
-    const dl = $("brandsList");
-    if (dl) {
-      dl.innerHTML = brands.map(b => `<option value="${escapeHtml(b.brand_name)}">`).join("");
-    }
+    // ✅ ربط أزرار "Voir détails"
+    container.querySelectorAll(".view-brand-details").forEach(btn => {
+      btn.onclick = () => {
+        const brandName = btn.dataset.brandName;
+        if (typeof window.openBrandDetails === "function") {
+          window.openBrandDetails(brandName);
+        } else {
+          alert("Fonction openBrandDetails non chargée. Rechargez la page.");
+        }
+      };
+    });
 
   } catch (err) {
     container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(err.message)}</p>`;
