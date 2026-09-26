@@ -2264,26 +2264,6 @@
 
   updateDarkIcon();
 
-  // ============================================================
-  // SIDEBAR MOBILE
-  // ============================================================
-  const menuToggle = document.getElementById('menuToggle');
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('overlay');
-
-  if (menuToggle) {
-    menuToggle.addEventListener('click', () => {
-      sidebar.classList.toggle('open');
-      overlay.classList.toggle('show');
-    });
-  }
-
-  if (overlay) {
-    overlay.addEventListener('click', () => {
-      sidebar.classList.remove('open');
-      overlay.classList.remove('show');
-    });
-  }
 </script>
 <script src="/bot-guard.js"></script>
 </body>
