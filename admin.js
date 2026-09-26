@@ -2012,7 +2012,7 @@ async function loadDebts() {
           </div>`;
       }).join("");
 
-      const whatsappMsg = encodeURIComponent(`Bonjour ${d.brand_name} 👋\n\nNous vous rappelons qu'il reste un solde impayé de ${formatMoney(d.total_due)} concernant ${d.invoices_count} facture(s).\n\nMerci de régulariser votre situation.\n\nProduit dz ORG`);
+      const whatsappMsg = encodeURIComponent(`Bonjour ${d.brand_name} 👋\n\nNous vous rappelons qu'il reste un solde impayé de ${formatMoney(d.total_due)} concernant ${d.invoices_count} facture(s).\n\nMerci de régulariser votre situation.\n\nOriginal`);
 
       html += `
         <div class="debt-card severity-${severity}">
@@ -2368,7 +2368,7 @@ window.printOrderInvoice = async function(orderId) {
     <div class="toolbar"><button onclick="window.print()">🖨 IMPRIMER LA FACTURE</button></div>
     <div class="invoice">
       <div class="header">
-        <div class="brand-info"><h1>🛡️ Produit dz ORG</h1><p>+213 556 339 415</p><p>mepirf@gmail.com</p></div>
+        <div class="brand-info"><h1>🛡️ Original</h1><p>+213 556 339 415</p><p>mepirf@gmail.com</p></div>
         <div class="invoice-meta"><h2>${escapeHtml(o.order_number)}</h2><p><b>Date:</b> ${escapeHtml(date)}</p></div>
       </div>
       <div class="client-info"><h3>👤 Client</h3><p><b>${escapeHtml(o.brand_name)}</b></p>${o.brand_phone ? `<p>📱 ${escapeHtml(o.brand_phone)}</p>` : ""}${o.brand_email ? `<p>📧 ${escapeHtml(o.brand_email)}</p>` : ""}</div>
@@ -2379,7 +2379,7 @@ window.printOrderInvoice = async function(orderId) {
         ${parseFloat(o.delivery_cost || 0) > 0 ? `<div class="totals-row"><span>Livraison</span><b>${formatMoney(o.delivery_cost)}</b></div>` : ""}
         <div class="totals-row grand-total"><span>TOTAL</span><b>${formatMoney(o.total_price)}</b></div>
       </div>
-      <div class="footer-info"><p>Merci pour votre confiance 🙏</p><p>Produit dz ORG — Protection contre la contrefaçon</p></div>
+      <div class="footer-info"><p>Merci pour votre confiance 🙏</p><p>Original — Protection contre la contrefaçon</p></div>
     </div></body></html>`;
 
     w.document.write(html); w.document.close();
