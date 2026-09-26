@@ -1,6 +1,6 @@
 {
-  "name": "Produit dz ORG — Vérification de produit",
-  "short_name": "QR Auth",
+  "name": "Original — Vérification de produit",
+  "short_name": "Original",
   "description": "Vérifiez l'authenticité d'un produit en scannant le QR code et en saisissant le code de sécurité.",
   "start_url": "/verify",
   "scope": "/",
@@ -12,9 +12,15 @@
   "dir": "ltr",
   "icons": [
     {
-      "src": "/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
