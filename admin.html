@@ -22,7 +22,6 @@
   </script>
 
   <style>
-    /* ============ ORDERS PANEL ============ */
     .order-card { background: var(--card-bg); border: 1px solid var(--border); border-left: 4px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; transition: all 200ms; }
     .order-card:hover { box-shadow: 0 8px 20px -8px rgba(15,23,42,0.15); }
     .order-card.status-IN_PRODUCTION { border-left-color: #eab308; }
@@ -115,7 +114,7 @@
       .order-item-row { grid-template-columns: 1.5fr 1fr auto; }
     }
 
-    /* ============ DEBTS ============ */
+    /* DEBTS */
     .debt-card { background: var(--card-bg); border: 1px solid var(--border); border-left: 4px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; }
     .debt-card.severity-low { border-left-color: #22c55e; }
     .debt-card.severity-medium { border-left-color: #eab308; }
@@ -145,6 +144,19 @@
     .debt-invoice-amount { font-weight: 900; color: #dc2626; white-space: nowrap; margin-left: 8px; }
     .debt-actions { display: flex; gap: 8px; flex-wrap: wrap; }
     .debt-actions button, .debt-actions a { flex: 1; min-width: 110px; padding: 10px 12px; border-radius: 10px; font-weight: 800; font-size: 12px; cursor: pointer; border: 0; text-decoration: none; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 4px; margin: 0; }
+
+    /* INVENTORY */
+    .inv-movement { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: var(--card-bg); border: 1px solid var(--border); border-left: 4px solid var(--border); border-radius: 12px; margin-bottom: 8px; gap: 10px; }
+    .inv-movement.IN { border-left-color: #16a34a; }
+    .inv-movement.OUT { border-left-color: #dc2626; }
+    .inv-movement.ADJUST { border-left-color: #eab308; }
+    .inv-movement-info { flex: 1; min-width: 0; }
+    .inv-movement-reason { font-weight: 800; font-size: 13px; color: var(--text); margin-bottom: 4px; }
+    .inv-movement-meta { font-size: 11px; color: var(--text-muted); display: flex; gap: 10px; flex-wrap: wrap; }
+    .inv-movement-qty { font-size: 18px; font-weight: 900; white-space: nowrap; }
+    .inv-movement-qty.IN { color: #16a34a; }
+    .inv-movement-qty.OUT { color: #dc2626; }
+    .inv-movement-qty.ADJUST { color: #eab308; }
   </style>
 </head>
 <body>
@@ -182,6 +194,7 @@
       <button data-panel="manage"><span class="ico">📦</span> Gérer un lot</button>
       <button data-panel="orders"><span class="ico">📋</span> Commandes</button>
       <button data-panel="debts"><span class="ico">💰</span> Dettes <span id="debtsBadge" style="margin-right:auto;background:#dc2626;color:#fff;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:800;display:none">0</span></button>
+      <button data-panel="inventory"><span class="ico">📦</span> Stock <span id="inventoryBadge" style="margin-right:auto;background:#dc2626;color:#fff;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:800;display:none">!</span></button>
       <button data-panel="log"><span class="ico">📋</span> Journal</button>
       <button data-panel="feedback"><span class="ico">⭐</span> Avis clients</button>
       <button data-panel="messages"><span class="ico">📩</span> Messages <span id="messagesBadge" style="margin-right:auto;background:#dc2626;color:#fff;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:800;display:none">0</span></button>
@@ -401,6 +414,28 @@
         <button id="exportDebtsBtn" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);flex:1;min-width:140px">📊 EXPORTER EXCEL</button>
       </div>
       <div id="debtsList"></div>
+    </section>
+
+    <section class="panel" id="panel-inventory">
+      <h2>📦 Stock</h2>
+      <p class="muted">Gérez votre stock d'étiquettes vierges.</p>
+
+      <div id="inventoryAlert" class="hidden" style="margin-top:16px;padding:14px 16px;background:linear-gradient(160deg,#fef2f2,#fee2e2);border:1px solid #fecaca;border-radius:14px;color:#991b1b;font-weight:800;font-size:13px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:22px">🚨</span>
+        <span id="inventoryAlertText">Stock bas ! Commandez de nouvelles étiquettes.</span>
+      </div>
+
+      <div id="inventoryStats" class="stats-grid" style="margin-top:18px;margin-bottom:22px"></div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+        <button id="addStockBtn" style="flex:1;min-width:130px;background:linear-gradient(135deg,#16a34a,#22c55e)">➕ Ajouter stock</button>
+        <button id="adjustStockBtn" style="flex:1;min-width:130px;background:#475569">⚙️ Ajuster</button>
+        <button id="settingsStockBtn" style="flex:1;min-width:130px;background:#64748b">🔧 Seuil</button>
+      </div>
+
+      <h3 style="font-size:14px;font-weight:800;color:inherit;margin:24px 0 14px">📜 Historique des mouvements</h3>
+      <button id="refreshInventoryBtn" style="background:#475569;margin-bottom:14px">🔄 ACTUALISER</button>
+      <div id="inventoryMovements"></div>
     </section>
 
     <section class="panel" id="panel-log">
