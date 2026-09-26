@@ -1252,7 +1252,7 @@
     <form id="loginForm">
       <input id="email" type="email" placeholder="Email administrateur" autocomplete="email" required>
       <input id="password" type="password" placeholder="Mot de passe" autocomplete="current-password" required>
-      <button id="loginBtn" type="submit">SE CONNECTER</button>
+      <button id="loginBtn" type="button" onclick="doAdminLogin()">SE CONNECTER</button>
     </form>
 
     <div id="loginError" class="result danger hidden" style="margin-top:16px"></div>
@@ -2264,6 +2264,99 @@
 
   updateDarkIcon();
 
+</script>
+  <script>
+    
+// ============================================================
+// 🔐 ADMIN LOGIN — Direct Function
+// ============================================================
+window.doAdminLogin = async function() {
+  console.log("🎯 doAdminLogin called");
+
+  const emailEl = document.getElementById("email");
+  const passwordEl = document.getElementById("password");
+  const btnEl = document.getElementById("loginBtn");
+  const errEl = document.getElementById("loginError");
+
+  const email = (emailEl?.value || "").trim().toLowerCase();
+  const password = passwordEl?.value || "";
+
+  if (!email || !password) {
+    if (errEl) {
+      errEl.className = "result danger";
+      errEl.innerHTML = "<p style='margin:0'>Veuillez remplir tous les champs.</p>";
+      errEl.classList.remove("hidden");
+    }
+    return;
+  }
+
+  // ✅ فحص الإيميل
+  const ADMIN_EMAILS = ["mepirf@gmail.com", "abderraoufhazam@gmail.com"];
+  if (!ADMIN_EMAILS.map(e => e.toLowerCase()).includes(email)) {
+    if (errEl) {
+      errEl.className = "result danger";
+      errEl.innerHTML = "<p style='margin:0'>⛔ Ce compte n'est pas autorisé.</p>";
+      errEl.classList.remove("hidden");
+    }
+    return;
+  }
+
+  if (errEl) errEl.classList.add("hidden");
+  if (btnEl) { btnEl.disabled = true; btnEl.textContent = "CONNEXION..."; }
+
+  try {
+    const _sb = supabase.createClient(
+      "https://qfpmbbntxyrderjlejql.supabase.co",
+      "sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m"
+    );
+
+    const { data, error } = await _sb.auth.signInWithPassword({
+      email: email,
+      password: password
+    });
+
+    if (error) {
+      console.log("❌ Login error:", error.message);
+      if (errEl) {
+        errEl.className = "result danger";
+        errEl.innerHTML = "<p style='margin:0'>" + error.message + "</p>";
+        errEl.classList.remove("hidden");
+      }
+      if (btnEl) { btnEl.disabled = false; btnEl.textContent = "SE CONNECTER"; }
+      return;
+    }
+
+    console.log("✅ Login success:", data.user.email);
+
+    // ✅ أظهر اللوحة
+    const lp = document.getElementById("loginPage");
+    const aa = document.getElementById("adminApp");
+    if (lp) lp.classList.add("hidden");
+    if (aa) aa.classList.remove("hidden");
+
+    // 🔄 Reload بعد لحظة ليعمل admin.js بالجلسة
+    setTimeout(() => window.location.reload(), 400);
+
+  } catch (err) {
+    console.log("❌ Exception:", err);
+    if (errEl) {
+      errEl.className = "result danger";
+      errEl.innerHTML = "<p style='margin:0'>" + (err.message || "Erreur") + "</p>";
+      errEl.classList.remove("hidden");
+    }
+    if (btnEl) { btnEl.disabled = false; btnEl.textContent = "SE CONNECTER"; }
+  }
+};
+
+// ✅ أيضاً: اضغط Enter داخل الحقول → دخول
+document.getElementById("email")?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { e.preventDefault(); window.doAdminLogin(); }
+});
+document.getElementById("password")?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { e.preventDefault(); window.doAdminLogin(); }
+});
+
+console.log("✅ Admin login handler ready");
 </script>
 <script src="/bot-guard.js"></script>
 </body>
