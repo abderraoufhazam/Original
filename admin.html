@@ -2335,7 +2335,10 @@ window.doAdminLogin = async function() {
     if (aa) aa.classList.remove("hidden");
 
     // 🔄 Reload بعد لحظة ليعمل admin.js بالجلسة
-    setTimeout(() => window.location.reload(), 400);
+    // ✅ تشغيل refresh مباشرة (بدون reload)
+if (typeof window.__adminRefresh === "function") {
+  window.__adminRefresh();
+}
 
   } catch (err) {
     console.log("❌ Exception:", err);
