@@ -923,6 +923,27 @@ async function sendOrderNotification(auth, orderNumber, brandName, qty, price, s
       }
     }
 
+// 🔔 إرسال Push للماركة (حتى والمتصفح مغلق)
+try {
+  const siteUrl = process.env.SITE_URL || 'https://original-indol.vercel.app';
+  const pushRes = await fetch(`${siteUrl}/api/push-send`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      brand_name: brandName,
+      title: statusInfo.title,
+      body: `🧾 ${orderNumber}`,
+      url: '/brand',
+      tag: `order-${orderNumber}`
+    })
+  });
+  const pushData = await pushRes.json();
+  console.log('Push result:', pushData);
+} catch (pushErr) {
+  console.warn('Push error:', pushErr);
+}
+
+    
     // 💾 حفظ في قاعدة البيانات (تظهر في /brand)
     try {
       await fetch(`${auth.supabaseUrl}/rest/v1/brand_notifications`, {
