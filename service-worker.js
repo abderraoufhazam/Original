@@ -14,7 +14,7 @@ const CORE_ASSETS = [
   "/app.js",
   "/i18n.js",
   "/manifest.json",
-  "/icon.svg"
+  "/icon.png"
 ];
 
 self.addEventListener("install", (event) => {
@@ -76,14 +76,14 @@ self.addEventListener("push", (event) => {
   try {
     data = event.data ? event.data.json() : {};
   } catch (e) {
-    data = { title: "Produit dz ORG", body: event.data ? event.data.text() : "" };
+    data = { title: "Original", body: event.data ? event.data.text() : "" };
   }
 
   const title = data.title || "📋 Notification";
   const options = {
     body: data.body || "",
-    icon: data.icon || "/icon.svg",
-    badge: data.badge || "/icon.svg",
+    icon: data.icon || "/icon.png",
+    badge: data.badge || "/icon.png",
     tag: data.tag || "default",
     data: { url: data.url || "/brand" },
     requireInteraction: false,
