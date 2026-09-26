@@ -2883,11 +2883,23 @@ if (_cdb) _cdb.onclick = async () => {
 // ============================================================
 async function refresh() {
   const { data: { session } } = await sb.auth.getSession();
-  if (!session) { window.location.href = "/login"; return; }
+
+  // ✅ لا جلسة → اعرض نموذج الدخول على هذه الصفحة (لا تحوّل)
+  if (!session) {
+    const lp = $("loginPage"); if (lp) lp.classList.remove("hidden");
+    const aa = $("adminApp"); if (aa) aa.classList.add("hidden");
+    return;
+  }
 
   const userEmail = (session.user.email || "").toLowerCase().trim();
-  if (!isAdminEmail(userEmail)) { window.location.href = "/brand"; return; }
 
+  // ❌ ليس أدمن → اذهب إلى /brand
+  if (!isAdminEmail(userEmail)) {
+    window.location.href = "/brand";
+    return;
+  }
+
+  // ✅ أدمن → اعرض اللوحة
   const lp = $("loginPage"); if (lp) lp.classList.add("hidden");
   const aa = $("adminApp"); if (aa) aa.classList.remove("hidden");
 
@@ -2895,7 +2907,9 @@ async function refresh() {
   const pu = $("publicUrl"); if (pu) pu.textContent = url;
 
   const qr = $("qr");
-  if (qr && qr.innerHTML.trim() === "") { new QRCode(qr, { text: url, width: 180, height: 180 }); }
+  if (qr && qr.innerHTML.trim() === "") {
+    new QRCode(qr, { text: url, width: 180, height: 180 });
+  }
 
   loadStats();
   loadLog();
