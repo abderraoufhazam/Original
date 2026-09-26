@@ -424,6 +424,7 @@
       <button data-panel="adv-search"><span class="ico">🔎</span> Recherche avancée</button>
       <button data-panel="manage"><span class="ico">📦</span> Gérer un lot</button>
       <button data-panel="orders"><span class="ico">📋</span> Commandes</button>
+      <button data-panel="debts"><span class="ico">💰</span> Dettes <span id="debtsBadge" style="margin-right:auto;background:#dc2626;color:#fff;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:800;display:none">0</span></button>
       <button data-panel="log"><span class="ico">📋</span> Journal</button>
       <button data-panel="feedback"><span class="ico">⭐</span> Avis clients</button>
       <button data-panel="messages"><span class="ico">📩</span> Messages <span id="messagesBadge" style="margin-right:auto;background:#dc2626;color:#fff;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:800;display:none">0</span></button>
@@ -653,6 +654,37 @@
       <div id="ordersList" style="margin-top:14px"></div>
     </section>
 
+    <!-- ============================================================ -->
+<!-- DEBTS PANEL -->
+<!-- ============================================================ -->
+<section class="panel" id="panel-debts">
+  <h2>💰 Situation des dettes</h2>
+  <p class="muted">Marques avec des paiements en attente.</p>
+
+  <div id="debtsStats" class="stats-grid" style="margin-top:18px;margin-bottom:20px"></div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+    <input id="debtsSearch" placeholder="🔍 Nom de marque..." style="flex:2;min-width:180px;margin:0">
+    <select id="debtsSort" style="flex:1;min-width:160px;margin:0">
+      <option value="days">📅 Plus anciens</option>
+      <option value="amount">💰 Montant élevé</option>
+      <option value="invoices">📋 Nb factures</option>
+    </select>
+    <select id="debtsAge" style="flex:1;min-width:140px;margin:0">
+      <option value="">Toutes les dettes</option>
+      <option value="30">+30 jours</option>
+      <option value="60">+60 jours</option>
+      <option value="90">+90 jours</option>
+    </select>
+  </div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button id="refreshDebtsBtn" style="background:#475569;flex:1;min-width:140px">🔄 ACTUALISER</button>
+    <button id="exportDebtsBtn" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);flex:1;min-width:140px">📊 EXPORTER EXCEL</button>
+  </div>
+
+  <div id="debtsList"></div>
+</section>
     <section class="panel" id="panel-log">
       <h2>Journal des vérifications</h2>
       <p class="muted">Les 100 dernières tentatives de vérification.</p>
