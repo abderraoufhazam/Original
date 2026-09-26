@@ -15,9 +15,6 @@
     })();
   </script>
   <style>
-    /* ============================================================
-       ORIGINAL ADMIN — Modern SaaS Dashboard
-       ============================================================ */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -30,15 +27,12 @@
       --text: #0a0e1a;
       --text-secondary: #64748b;
       --text-tertiary: #94a3b8;
-
       --primary: #1e40af;
       --primary-light: #3b82f6;
       --primary-soft: rgba(30, 64, 175, 0.08);
-
       --gold: #d4af37;
       --gold-light: #fbbf24;
       --gold-soft: rgba(212, 175, 55, 0.1);
-
       --success: #10b981;
       --success-soft: rgba(16, 185, 129, 0.1);
       --warning: #f59e0b;
@@ -46,16 +40,13 @@
       --danger: #ef4444;
       --danger-soft: rgba(239, 68, 68, 0.1);
       --info: #0ea5e9;
-
       --radius-sm: 10px;
       --radius: 14px;
       --radius-lg: 20px;
-
       --shadow-xs: 0 1px 2px rgba(10, 14, 26, 0.04);
       --shadow-sm: 0 2px 8px rgba(10, 14, 26, 0.06);
       --shadow-md: 0 8px 24px rgba(10, 14, 26, 0.08);
       --shadow-lg: 0 20px 50px rgba(10, 14, 26, 0.12);
-
       --header-h: 72px;
       --sidebar-w: 280px;
     }
@@ -70,15 +61,12 @@
       --text: #f9fafb;
       --text-secondary: #94a3b8;
       --text-tertiary: #64748b;
-
       --primary: #3b82f6;
       --primary-light: #60a5fa;
       --primary-soft: rgba(59, 130, 246, 0.12);
-
       --gold: #d4af37;
       --gold-light: #fbbf24;
       --gold-soft: rgba(212, 175, 55, 0.12);
-
       --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
       --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
       --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
@@ -98,9 +86,9 @@
     button { font-family: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
     a { color: inherit; text-decoration: none; }
 
-    /* ============================================================
-       LOGIN PAGE
-       ============================================================ */
+    /* ============================================================ */
+    /* LOGIN PAGE */
+    /* ============================================================ */
     #loginPage {
       position: fixed;
       inset: 0;
@@ -212,34 +200,32 @@
       box-shadow: 0 14px 32px -8px var(--primary);
     }
 
-    #loginBtn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+    #loginBtn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    /* ============================================================
-       APP LAYOUT
-       ============================================================ */
+    /* ============================================================ */
+    /* APP LAYOUT */
+    /* ============================================================ */
     .app {
       display: flex;
       min-height: 100vh;
       flex-direction: row;
     }
 
-    /* ============================================================
-       SIDEBAR
-       ============================================================ */
+    /* ============================================================ */
+    /* SIDEBAR — LEFT */
+    /* ============================================================ */
     .sidebar {
-  width: var(--sidebar-w);
-  background: var(--card);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  top: 0; left: 0; bottom: 0;
-  z-index: 100;
-  transition: transform 280ms cubic-bezier(0.4, 0, 0.2, 1);
-}
+      width: var(--sidebar-w);
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+      transition: transform 280ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
     .sidebar-header {
       padding: 20px 22px;
       border-bottom: 1px solid var(--border);
@@ -258,10 +244,7 @@
       background: linear-gradient(135deg, var(--gold), var(--gold-light));
     }
 
-    .sidebar-logo img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-    }
+    .sidebar-logo img { width: 100%; height: 100%; object-fit: cover; }
 
     .sidebar-brand { flex: 1; min-width: 0; }
 
@@ -290,11 +273,7 @@
       gap: 18px;
     }
 
-    .nav-group {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
+    .nav-group { display: flex; flex-direction: column; gap: 3px; }
 
     .nav-group-label {
       font-size: 10px;
@@ -306,21 +285,21 @@
       opacity: 0.7;
     }
 
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  color: var(--text-secondary);
-  font-size: 13.5px;
-  font-weight: 600;
-  transition: all 160ms ease;
-  position: relative;
-  cursor: pointer;
-  width: 100%;
-  text-align: left;
-}
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      color: var(--text-secondary);
+      font-size: 13.5px;
+      font-weight: 600;
+      transition: all 160ms ease;
+      position: relative;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+    }
 
     .nav-item:hover {
       background: var(--bg-secondary);
@@ -333,17 +312,17 @@
       font-weight: 700;
     }
 
-.nav-item.active::before {
-  content: '';
-  position: absolute;
-  left: -12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 20px;
-  background: var(--primary);
-  border-radius: 3px 0 0 3px;
-}
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: -12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 20px;
+      background: var(--primary);
+      border-radius: 3px 0 0 3px;
+    }
 
     .nav-icon {
       width: 18px; height: 18px;
@@ -428,17 +407,16 @@
       color: var(--danger);
     }
 
-    /* ============================================================
-       MAIN
-       ============================================================ */
+    /* ============================================================ */
+    /* MAIN */
+    /* ============================================================ */
     .main {
-  flex: 1;
-  margin-left: var(--sidebar-w);
-  margin-right: 0;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+      flex: 1;
+      margin-left: var(--sidebar-w);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
     .topbar {
       height: var(--header-h);
@@ -471,7 +449,6 @@
     }
 
     .topbar-spacer { flex: 1; }
-
     .topbar-actions { display: flex; align-items: center; gap: 8px; }
 
     .icon-btn {
@@ -484,31 +461,11 @@
       justify-content: center;
       font-size: 16px;
       transition: all 180ms ease;
-      position: relative;
     }
 
     .icon-btn:hover {
       background: var(--bg-secondary);
       color: var(--text);
-    }
-
-    .icon-btn.has-badge::after {
-      content: attr(data-badge);
-      position: absolute;
-      top: 4px;
-      right: 4px;
-      min-width: 16px;
-      height: 16px;
-      padding: 0 4px;
-      background: var(--danger);
-      color: #fff;
-      font-size: 10px;
-      font-weight: 800;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid var(--card);
     }
 
     .menu-toggle { display: none; }
@@ -521,9 +478,9 @@
       margin: 0 auto;
     }
 
-    /* ============================================================
-       PANEL SYSTEM
-       ============================================================ */
+    /* ============================================================ */
+    /* PANEL SYSTEM */
+    /* ============================================================ */
     .panel { display: none; animation: panelIn 300ms ease; }
     .panel.active { display: block; }
 
@@ -568,9 +525,9 @@
       line-height: 1.6;
     }
 
-    /* ============================================================
-       BUTTONS
-       ============================================================ */
+    /* ============================================================ */
+    /* BUTTONS */
+    /* ============================================================ */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -603,8 +560,8 @@
     .btn-gold {
       background: linear-gradient(135deg, var(--gold), var(--gold-light));
       color: #0a0e1a;
-      box-shadow: 0 6px 16px -4px rgba(212, 175, 55, 0.5);
       font-weight: 800;
+      box-shadow: 0 6px 16px -4px rgba(212, 175, 55, 0.5);
     }
 
     .btn-gold:hover:not(:disabled) {
@@ -638,10 +595,9 @@
 
     .btn-block { width: 100%; }
 
-    /* ============================================================
-       INPUTS
-       ============================================================ */
-    .input,
+    /* ============================================================ */
+    /* INPUTS */
+    /* ============================================================ */
     input:not([type="checkbox"]):not([type="radio"]),
     select,
     textarea {
@@ -664,10 +620,8 @@
     }
 
     input::placeholder, textarea::placeholder { color: var(--text-tertiary); }
-
     textarea { resize: vertical; min-height: 80px; }
 
-    /* Form Grid */
     .form-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -680,9 +634,9 @@
       .form-grid { grid-template-columns: 1fr; }
     }
 
-    /* ============================================================
-       CARDS
-       ============================================================ */
+    /* ============================================================ */
+    /* CARDS */
+    /* ============================================================ */
     .card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -690,19 +644,9 @@
       padding: 20px;
     }
 
-    .card-hover {
-      transition: all 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .card-hover:hover {
-      transform: translateY(-3px);
-      box-shadow: var(--shadow-md);
-      border-color: var(--primary);
-    }
-
-    /* ============================================================
-       STATS GRID
-       ============================================================ */
+    /* ============================================================ */
+    /* STATS */
+    /* ============================================================ */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -766,9 +710,9 @@
       text-transform: uppercase;
     }
 
-    /* ============================================================
-       CHART BOX
-       ============================================================ */
+    /* ============================================================ */
+    /* CHARTS */
+    /* ============================================================ */
     .chart-box {
       background: var(--card);
       border: 1px solid var(--border);
@@ -786,32 +730,25 @@
       font-weight: 800;
       color: var(--text);
       margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
     }
 
-    /* ============================================================
-       LOG ROWS
-       ============================================================ */
+    /* ============================================================ */
+    /* LOG ROWS */
+    /* ============================================================ */
     .log-row {
       background: var(--card);
       border: 1px solid var(--border);
-      border-right: 4px solid var(--border);
+      border-left: 4px solid var(--border);
       border-radius: var(--radius);
       padding: 14px 16px;
       margin-bottom: 10px;
       transition: all 200ms;
     }
 
-    .log-row:hover {
-      transform: translateX(-2px);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .log-row.log-success { border-right-color: var(--success); }
-    .log-row.log-warning { border-right-color: var(--warning); }
-    .log-row.log-danger  { border-right-color: var(--danger); }
+    .log-row:hover { box-shadow: var(--shadow-sm); }
+    .log-row.log-success { border-left-color: var(--success); }
+    .log-row.log-warning { border-left-color: var(--warning); }
+    .log-row.log-danger  { border-left-color: var(--danger); }
 
     .log-top {
       display: flex;
@@ -834,11 +771,7 @@
     .log-result-warning { background: var(--warning-soft); color: var(--warning); }
     .log-result-danger { background: var(--danger-soft); color: var(--danger); }
 
-    .log-date {
-      font-size: 11px;
-      color: var(--text-tertiary);
-      font-weight: 600;
-    }
+    .log-date { font-size: 11px; color: var(--text-tertiary); font-weight: 600; }
 
     .log-code {
       font-family: 'SF Mono', 'Courier New', monospace;
@@ -858,24 +791,24 @@
       color: var(--text-secondary);
     }
 
-    /* ============================================================
-       RESULT BOX
-       ============================================================ */
+    /* ============================================================ */
+    /* RESULT */
+    /* ============================================================ */
     .result {
       margin: 18px 0;
       padding: 20px;
       border-radius: var(--radius);
       border: 1.5px solid var(--border);
       background: var(--card);
-      animation: resultIn 400ms cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    @keyframes resultIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
     }
 
     .result.hidden { display: none; }
+    .result.success { background: var(--success-soft); border-color: var(--success); }
+    .result.success h2 { color: var(--success); }
+    .result.warning { background: var(--warning-soft); border-color: var(--warning); }
+    .result.warning h2 { color: var(--warning); }
+    .result.danger { background: var(--danger-soft); border-color: var(--danger); }
+    .result.danger h2 { color: var(--danger); }
 
     .result h2 {
       font-size: 18px;
@@ -885,24 +818,6 @@
       align-items: center;
       gap: 10px;
     }
-
-    .result.success {
-      background: var(--success-soft);
-      border-color: var(--success);
-    }
-    .result.success h2 { color: var(--success); }
-
-    .result.warning {
-      background: var(--warning-soft);
-      border-color: var(--warning);
-    }
-    .result.warning h2 { color: var(--warning); }
-
-    .result.danger {
-      background: var(--danger-soft);
-      border-color: var(--danger);
-    }
-    .result.danger h2 { color: var(--danger); }
 
     .result p { font-size: 13px; color: var(--text-secondary); margin: 6px 0; }
 
@@ -929,7 +844,6 @@
       font-weight: 700;
       font-size: 11px;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
       flex-shrink: 0;
     }
 
@@ -940,9 +854,9 @@
       word-break: break-word;
     }
 
-    /* ============================================================
-       QR BOX
-       ============================================================ */
+    /* ============================================================ */
+    /* QR BOX */
+    /* ============================================================ */
     .qr-box {
       padding: 20px;
       background: var(--bg-secondary);
@@ -955,9 +869,9 @@
 
     .qr-box img { border-radius: 8px; }
 
-    /* ============================================================
-       MODAL
-       ============================================================ */
+    /* ============================================================ */
+    /* MODAL */
+    /* ============================================================ */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -969,12 +883,6 @@
       justify-content: center;
       padding: 20px;
       overflow-y: auto;
-      animation: modalIn 200ms ease;
-    }
-
-    @keyframes modalIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
     }
 
     .modal-overlay.hidden { display: none !important; }
@@ -990,12 +898,6 @@
       flex-direction: column;
       max-height: calc(100vh - 40px);
       border: 1px solid var(--border);
-      animation: modalBoxIn 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    @keyframes modalBoxIn {
-      from { transform: scale(0.9) translateY(20px); opacity: 0; }
-      to { transform: scale(1) translateY(0); opacity: 1; }
     }
 
     .modal-header {
@@ -1012,7 +914,6 @@
       font-size: 18px;
       font-weight: 800;
       color: var(--text);
-      letter-spacing: -0.3px;
     }
 
     .modal-close {
@@ -1064,9 +965,6 @@
       gap: 6px;
     }
 
-    /* ============================================================
-       FORM SECTIONS (inside modal)
-       ============================================================ */
     .form-section {
       padding: 16px;
       background: var(--bg-secondary);
@@ -1088,7 +986,6 @@
     .form-section textarea,
     .form-section select { margin-bottom: 8px; }
 
-    /* Radio cards */
     .radio-card {
       display: flex;
       align-items: center;
@@ -1116,9 +1013,41 @@
       accent-color: var(--primary);
     }
 
-    /* ============================================================
-       TOAST
-       ============================================================ */
+    .order-item-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr auto;
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: start;
+    }
+
+    .order-item-row input { margin: 0 !important; }
+
+    .order-item-row button {
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      margin: 0;
+      background: var(--danger-soft);
+      color: var(--danger);
+      border-radius: 10px;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .lot-check-hint {
+      font-size: 10px;
+      margin-top: 4px;
+      font-weight: 700;
+    }
+
+    .lot-check-hint.ok { color: var(--success); }
+    .lot-check-hint.warn { color: var(--warning); }
+    .lot-check-hint.err { color: var(--danger); }
+
+    /* ============================================================ */
+    /* TOAST */
+    /* ============================================================ */
     .toast-container {
       position: fixed;
       top: 20px;
@@ -1146,20 +1075,20 @@
       pointer-events: auto;
       animation: toastIn 400ms cubic-bezier(0.16, 1, 0.3, 1);
       max-width: 400px;
+      border-left: 4px solid var(--primary);
     }
 
-    .toast.success { border-right: 4px solid var(--success); }
-    .toast.error { border-right: 4px solid var(--danger); }
-    .toast.info { border-right: 4px solid var(--primary); }
+    .toast.success { border-left-color: var(--success); }
+    .toast.error { border-left-color: var(--danger); }
 
     @keyframes toastIn {
       from { opacity: 0; transform: translateY(-20px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* ============================================================
-       TABS
-       ============================================================ */
+    /* ============================================================ */
+    /* TABS */
+    /* ============================================================ */
     .tabs {
       display: flex;
       gap: 6px;
@@ -1190,9 +1119,9 @@
       box-shadow: var(--shadow-sm);
     }
 
-    /* ============================================================
-       RESPONSIVE
-       ============================================================ */
+    /* ============================================================ */
+    /* RESPONSIVE */
+    /* ============================================================ */
     .mobile-overlay {
       display: none;
       position: fixed;
@@ -1203,15 +1132,15 @@
     }
 
     @media (max-width: 1024px) {
-  .sidebar { transform: translateX(-100%); }
-  .sidebar.open { transform: translateX(0); }
-  .main { margin-left: 0; }
-  .menu-toggle { display: flex; }
-  .mobile-overlay.show { display: block; }
-  .content { padding: 20px 16px 80px; }
-  .panel-title { font-size: 20px; }
-  .panel-title-icon { width: 38px; height: 38px; font-size: 18px; }
-}
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .menu-toggle { display: flex; }
+      .mobile-overlay.show { display: block; }
+      .content { padding: 20px 16px 80px; }
+      .panel-title { font-size: 20px; }
+      .panel-title-icon { width: 38px; height: 38px; font-size: 18px; }
+    }
 
     @media (max-width: 640px) {
       .topbar { padding: 0 14px; }
@@ -1222,17 +1151,11 @@
       .stat-value { font-size: 22px; }
     }
 
-    /* ============================================================
-       SCROLLBAR
-       ============================================================ */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
 
-    /* ============================================================
-       UTILS
-       ============================================================ */
     .hidden { display: none !important; }
     .muted { color: var(--text-secondary); font-size: 13.5px; line-height: 1.6; }
   </style>
@@ -1240,7 +1163,7 @@
 <body>
 
 <!-- ============================================================ -->
-<!-- LOGIN PAGE -->
+<!-- LOGIN -->
 <!-- ============================================================ -->
 <main id="loginPage">
   <section class="login-card">
@@ -1252,7 +1175,7 @@
     <form id="loginForm">
       <input id="email" type="email" placeholder="Email administrateur" autocomplete="email" required>
       <input id="password" type="password" placeholder="Mot de passe" autocomplete="current-password" required>
-      <button id="loginBtn" type="button" onclick="doAdminLogin()">SE CONNECTER</button>
+      <button id="loginBtn" type="submit">SE CONNECTER</button>
     </form>
 
     <div id="loginError" class="result danger hidden" style="margin-top:16px"></div>
@@ -1264,12 +1187,9 @@
 <!-- ============================================================ -->
 <div class="app hidden" id="adminApp">
 
-  <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <div class="sidebar-logo">
-        <img src="/admin-icon.png" alt="Original">
-      </div>
+      <div class="sidebar-logo"><img src="/admin-icon.png" alt="Original"></div>
       <div class="sidebar-brand">
         <div class="sidebar-title">Original</div>
         <div class="sidebar-sub">ADMIN PANEL</div>
@@ -1277,120 +1197,52 @@
     </div>
 
     <nav class="sidebar-nav">
-
       <div class="nav-group">
         <div class="nav-group-label">Principal</div>
-        <button class="nav-item active" data-panel="dashboard">
-          <span class="nav-icon">📊</span>
-          <span>Tableau de bord</span>
-        </button>
+        <button class="nav-item active" data-panel="dashboard"><span class="nav-icon">📊</span><span>Tableau de bord</span></button>
       </div>
-
       <div class="nav-group">
         <div class="nav-group-label">Codes</div>
-        <button class="nav-item" data-panel="create">
-          <span class="nav-icon">➕</span>
-          <span>Créer un lot</span>
-        </button>
-        <button class="nav-item" data-panel="search">
-          <span class="nav-icon">🔍</span>
-          <span>Rechercher un code</span>
-        </button>
-        <button class="nav-item" data-panel="adv-search">
-          <span class="nav-icon">🔎</span>
-          <span>Recherche avancée</span>
-        </button>
-        <button class="nav-item" data-panel="manage">
-          <span class="nav-icon">📦</span>
-          <span>Gérer un lot</span>
-        </button>
-        <button class="nav-item" data-panel="delete">
-          <span class="nav-icon">🗑️</span>
-          <span>Suppression</span>
-        </button>
+        <button class="nav-item" data-panel="create"><span class="nav-icon">➕</span><span>Créer un lot</span></button>
+        <button class="nav-item" data-panel="search"><span class="nav-icon">🔍</span><span>Rechercher un code</span></button>
+        <button class="nav-item" data-panel="adv-search"><span class="nav-icon">🔎</span><span>Recherche avancée</span></button>
+        <button class="nav-item" data-panel="manage"><span class="nav-icon">📦</span><span>Gérer un lot</span></button>
+        <button class="nav-item" data-panel="delete"><span class="nav-icon">🗑️</span><span>Suppression</span></button>
       </div>
-
       <div class="nav-group">
         <div class="nav-group-label">Commerce</div>
-        <button class="nav-item" data-panel="orders">
-          <span class="nav-icon">📋</span>
-          <span>Commandes</span>
-        </button>
-        <button class="nav-item" data-panel="debts">
-          <span class="nav-icon">💰</span>
-          <span>Dettes</span>
-          <span class="nav-badge hidden" id="debtsBadge">0</span>
-        </button>
-        <button class="nav-item" data-panel="inventory">
-          <span class="nav-icon">📦</span>
-          <span>Stock</span>
-          <span class="nav-badge hidden" id="inventoryBadge">!</span>
-        </button>
+        <button class="nav-item" data-panel="orders"><span class="nav-icon">📋</span><span>Commandes</span></button>
+        <button class="nav-item" data-panel="debts"><span class="nav-icon">💰</span><span>Dettes</span><span class="nav-badge hidden" id="debtsBadge">0</span></button>
+        <button class="nav-item" data-panel="inventory"><span class="nav-icon">📦</span><span>Stock</span><span class="nav-badge hidden" id="inventoryBadge">!</span></button>
       </div>
-
       <div class="nav-group">
         <div class="nav-group-label">Utilisateurs</div>
-        <button class="nav-item" data-panel="brands">
-          <span class="nav-icon">🏢</span>
-          <span>Marques</span>
-        </button>
-        <button class="nav-item" data-panel="messages">
-          <span class="nav-icon">📩</span>
-          <span>Messages</span>
-          <span class="nav-badge hidden" id="messagesBadge">0</span>
-        </button>
-        <button class="nav-item" data-panel="feedback">
-          <span class="nav-icon">⭐</span>
-          <span>Avis clients</span>
-        </button>
+        <button class="nav-item" data-panel="brands"><span class="nav-icon">🏢</span><span>Marques</span></button>
+        <button class="nav-item" data-panel="messages"><span class="nav-icon">📩</span><span>Messages</span><span class="nav-badge hidden" id="messagesBadge">0</span></button>
+        <button class="nav-item" data-panel="feedback"><span class="nav-icon">⭐</span><span>Avis clients</span></button>
       </div>
-
       <div class="nav-group">
         <div class="nav-group-label">Sécurité</div>
-        <button class="nav-item" data-panel="visitors">
-          <span class="nav-icon">👥</span>
-          <span>Visiteurs</span>
-        </button>
-        <button class="nav-item" data-panel="fakes">
-          <span class="nav-icon">🚨</span>
-          <span>Contrefaçons</span>
-          <span class="nav-badge hidden" id="fakesBadge">0</span>
-        </button>
-        <button class="nav-item" data-panel="log">
-          <span class="nav-icon">📜</span>
-          <span>Journal</span>
-        </button>
+        <button class="nav-item" data-panel="visitors"><span class="nav-icon">👥</span><span>Visiteurs</span></button>
+        <button class="nav-item" data-panel="fakes"><span class="nav-icon">🚨</span><span>Contrefaçons</span><span class="nav-badge hidden" id="fakesBadge">0</span></button>
+        <button class="nav-item" data-panel="log"><span class="nav-icon">📜</span><span>Journal</span></button>
       </div>
-
       <div class="nav-group">
         <div class="nav-group-label">Contenu</div>
-        <button class="nav-item" data-panel="faq">
-          <span class="nav-icon">📝</span>
-          <span>FAQ</span>
-        </button>
-        <button class="nav-item" data-panel="settings">
-          <span class="nav-icon">⚙️</span>
-          <span>Impression</span>
-        </button>
+        <button class="nav-item" data-panel="faq"><span class="nav-icon">📝</span><span>FAQ</span></button>
+        <button class="nav-item" data-panel="settings"><span class="nav-icon">⚙️</span><span>Impression</span></button>
       </div>
-
     </nav>
 
     <div class="sidebar-footer">
       <div class="sidebar-user">
-        <div class="user-avatar">
-          <img src="/admin-icon.png" alt="">
-        </div>
+        <div class="user-avatar"><img src="/admin-icon.png" alt=""></div>
         <div class="user-info">
           <div class="user-name">Original</div>
           <div class="user-role">SUPER ADMIN</div>
         </div>
         <button class="logout-mini" id="logoutBtn" title="Déconnexion">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-            <polyline points="16 17 21 12 16 7"></polyline>
-            <line x1="21" y1="12" x2="9" y2="12"></line>
-          </svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
         </button>
       </div>
     </div>
@@ -1398,114 +1250,58 @@
 
   <div class="mobile-overlay" id="overlay"></div>
 
-  <!-- MAIN -->
   <main class="main">
     <header class="topbar">
       <button class="icon-btn menu-toggle" id="menuToggle" aria-label="Menu">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <line x1="3" y1="12" x2="21" y2="12"></line>
-          <line x1="3" y1="6" x2="21" y2="6"></line>
-          <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
       </button>
-
       <div class="topbar-title" id="mobileTitle">Tableau de bord</div>
-
       <div class="topbar-spacer"></div>
-
       <div class="topbar-actions">
         <a href="/" class="icon-btn" title="Retour au site" target="_blank">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-          </svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
         </a>
         <button class="icon-btn" id="installAdminBtn" title="Installer" style="display:none">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
         </button>
         <button class="icon-btn" id="darkToggle" title="Mode sombre">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="darkIcon">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-          </svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="darkIcon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
         </button>
       </div>
     </header>
 
     <div class="content" id="contentArea">
-            <!-- ============================================================ -->
-      <!-- PANEL: DASHBOARD -->
-      <!-- ============================================================ -->
+
+      <!-- DASHBOARD -->
       <section class="panel active" id="panel-dashboard">
         <div class="panel-header">
-          <h1 class="panel-title">
-            <span class="panel-title-icon">📊</span>
-            <span>Tableau de bord</span>
-          </h1>
+          <h1 class="panel-title"><span class="panel-title-icon">📊</span><span>Tableau de bord</span></h1>
           <p class="panel-sub">Vue d'ensemble de votre activité et statistiques en temps réel.</p>
         </div>
 
         <div id="stats" class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-header"><div class="stat-icon success">🟢</div></div>
-            <div class="stat-value" id="statUnused">—</div>
-            <div class="stat-label">UNUSED</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-header"><div class="stat-icon primary">🔵</div></div>
-            <div class="stat-value" id="statUsed">—</div>
-            <div class="stat-label">USED</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-header"><div class="stat-icon danger">🔴</div></div>
-            <div class="stat-value" id="statDisabled">—</div>
-            <div class="stat-label">DISABLED</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-header"><div class="stat-icon warning">⏰</div></div>
-            <div class="stat-value" id="statExpired">—</div>
-            <div class="stat-label">EXPIRED</div>
-          </div>
+          <div class="stat-card"><div class="stat-header"><div class="stat-icon success">🟢</div></div><div class="stat-value" id="statUnused">—</div><div class="stat-label">UNUSED</div></div>
+          <div class="stat-card"><div class="stat-header"><div class="stat-icon primary">🔵</div></div><div class="stat-value" id="statUsed">—</div><div class="stat-label">USED</div></div>
+          <div class="stat-card"><div class="stat-header"><div class="stat-icon danger">🔴</div></div><div class="stat-value" id="statDisabled">—</div><div class="stat-label">DISABLED</div></div>
+          <div class="stat-card"><div class="stat-header"><div class="stat-icon warning">⏰</div></div><div class="stat-value" id="statExpired">—</div><div class="stat-label">EXPIRED</div></div>
         </div>
 
-        <div class="chart-box">
-          <div class="chart-title">📈 Vérifications — 14 derniers jours</div>
-          <canvas id="chartDaily" style="max-height: 240px;"></canvas>
-        </div>
+        <div class="chart-box"><div class="chart-title">📈 Vérifications — 14 derniers jours</div><canvas id="chartDaily" style="max-height:240px;"></canvas></div>
+        <div class="chart-box"><div class="chart-title">🥧 Répartition des résultats</div><canvas id="chartResults" style="max-height:240px;"></canvas></div>
+        <div class="chart-box"><div class="chart-title">📊 Top 5 lots les plus vérifiés</div><canvas id="chartTopLots" style="max-height:240px;"></canvas></div>
 
-        <div class="chart-box">
-          <div class="chart-title">🥧 Répartition des résultats</div>
-          <canvas id="chartResults" style="max-height: 240px;"></canvas>
-        </div>
-
-        <div class="chart-box">
-          <div class="chart-title">📊 Top 5 lots les plus vérifiés</div>
-          <canvas id="chartTopLots" style="max-height: 240px;"></canvas>
-        </div>
-
-        <div class="card" style="margin-top: 24px;">
-          <div style="font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-            <span>🔗</span>
-            <span>QR Commun</span>
-          </div>
-          <p class="muted" style="margin: 0 0 12px;">Ce QR est identique pour tous les autocollants.</p>
-          <p id="publicUrl" class="muted" style="font-family: 'SF Mono', 'Courier New', monospace; font-size: 12px; word-break: break-all; padding: 10px 14px; background: var(--bg-secondary); border-radius: 10px; margin-bottom: 16px;"></p>
+        <div class="card" style="margin-top:24px;">
+          <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:12px;">🔗 QR Commun</div>
+          <p class="muted" style="margin:0 0 12px;">Ce QR est identique pour tous les autocollants.</p>
+          <p id="publicUrl" class="muted" style="font-family:'SF Mono','Courier New',monospace;font-size:12px;word-break:break-all;padding:10px 14px;background:var(--bg-secondary);border-radius:10px;margin-bottom:16px;"></p>
           <div id="qr" class="qr-box"></div>
         </div>
       </section>
 
-      <!-- ============================================================ -->
-      <!-- PANEL: CREATE -->
-      <!-- ============================================================ -->
+      <!-- CREATE -->
       <section class="panel" id="panel-create">
         <div class="panel-header">
-          <h1 class="panel-title">
-            <span class="panel-title-icon">➕</span>
-            <span>Créer un lot</span>
-          </h1>
+          <h1 class="panel-title"><span class="panel-title-icon">➕</span><span>Créer un lot</span></h1>
           <p class="panel-sub">Générez un nouveau lot de codes secrets chiffrés (AES-256).</p>
         </div>
 
@@ -1523,72 +1319,57 @@
             <input id="quantity" type="number" min="1" max="10000" value="100" placeholder="Quantité *">
           </div>
 
-          <div style="margin-top: 20px; padding: 16px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 14px;">
-            <label style="display: block; font-size: 11px; font-weight: 900; color: var(--text-secondary); letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 12px;">⚙️ Statut initial de la batch</label>
-
-            <label style="display: flex; align-items: flex-start; gap: 10px; padding: 12px; border-radius: 10px; cursor: pointer; margin-bottom: 8px; background: var(--card); border: 2px solid var(--gold);">
-              <input type="radio" name="initial_status" value="PENDING" checked style="width: auto; margin-top: 3px; accent-color: var(--gold);">
+          <div style="margin-top:20px;padding:16px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:14px;">
+            <label style="display:block;font-size:11px;font-weight:900;color:var(--text-secondary);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:12px;">⚙️ Statut initial</label>
+            <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:10px;cursor:pointer;margin-bottom:8px;background:var(--card);border:2px solid var(--gold);">
+              <input type="radio" name="initial_status" value="PENDING" checked style="width:auto;margin-top:3px;accent-color:var(--gold);">
               <div>
-                <div style="font-weight: 800; font-size: 13px; color: var(--text);">⏳ PENDING — Plus sécurisé (recommandé)</div>
-                <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 2px;">Code inactif jusqu'à activation manuelle.</div>
+                <div style="font-weight:800;font-size:13px;color:var(--text);">⏳ PENDING — Plus sécurisé (recommandé)</div>
+                <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px;">Code inactif jusqu'à activation manuelle.</div>
               </div>
             </label>
-
-            <label style="display: flex; align-items: flex-start; gap: 10px; padding: 12px; border-radius: 10px; cursor: pointer; background: var(--card); border: 2px solid var(--border);">
-              <input type="radio" name="initial_status" value="UNUSED" style="width: auto; margin-top: 3px; accent-color: var(--success);">
+            <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:10px;cursor:pointer;background:var(--card);border:2px solid var(--border);">
+              <input type="radio" name="initial_status" value="UNUSED" style="width:auto;margin-top:3px;accent-color:var(--success);">
               <div>
-                <div style="font-weight: 800; font-size: 13px; color: var(--text);">✅ UNUSED — Actif immédiatement</div>
-                <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 2px;">Codes utilisables immédiatement.</div>
+                <div style="font-weight:800;font-size:13px;color:var(--text);">✅ UNUSED — Actif immédiatement</div>
+                <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px;">Codes utilisables immédiatement.</div>
               </div>
             </label>
           </div>
 
-          <h3 style="margin: 22px 0 10px; font-size: 14px; font-weight: 800; color: var(--text);">📱 Réseaux sociaux (optionnel)</h3>
+          <h3 style="margin:22px 0 10px;font-size:14px;font-weight:800;color:var(--text);">📱 Réseaux sociaux (optionnel)</h3>
           <div class="form-grid">
             <input id="instagram_url" placeholder="📷 Instagram">
             <input id="facebook_url" placeholder="📘 Facebook">
             <input id="tiktok_url" placeholder="🎵 TikTok" class="full">
           </div>
 
-          <button id="createBtn" class="btn btn-primary btn-block" style="margin-top: 20px;">CRÉER LE LOT</button>
+          <button id="createBtn" class="btn btn-primary btn-block" style="margin-top:20px;">CRÉER LE LOT</button>
           <div id="adminResult" class="result hidden"></div>
-
-          <button id="printBtn" class="btn btn-success btn-block hidden" style="margin-top: 14px;">🖨 IMPRIMER CE LOT</button>
-          <button id="exportNewLotBtn" class="btn btn-ghost btn-block hidden" style="margin-top: 10px;">📊 EXPORTER EN EXCEL</button>
+          <button id="printBtn" class="btn btn-success btn-block hidden" style="margin-top:14px;">🖨 IMPRIMER CE LOT</button>
+          <button id="exportNewLotBtn" class="btn btn-ghost btn-block hidden" style="margin-top:10px;">📊 EXPORTER EN EXCEL</button>
         </div>
       </section>
 
-      <!-- ============================================================ -->
-      <!-- PANEL: SEARCH -->
-      <!-- ============================================================ -->
+      <!-- SEARCH -->
       <section class="panel" id="panel-search">
         <div class="panel-header">
-          <h1 class="panel-title">
-            <span class="panel-title-icon">🔍</span>
-            <span>Rechercher un code</span>
-          </h1>
+          <h1 class="panel-title"><span class="panel-title-icon">🔍</span><span>Rechercher un code</span></h1>
           <p class="panel-sub">Entrez un code secret pour voir son statut.</p>
         </div>
-
         <div class="card">
-          <input id="searchCode" placeholder="CODE SECRET" style="text-transform: uppercase; font-family: 'SF Mono', 'Courier New', monospace; letter-spacing: 4px; text-align: center; font-size: 18px; font-weight: 800; padding: 18px;">
-          <button id="searchBtn" class="btn btn-primary btn-block" style="margin-top: 14px;">RECHERCHER</button>
+          <input id="searchCode" placeholder="CODE SECRET" style="text-transform:uppercase;font-family:'SF Mono','Courier New',monospace;letter-spacing:4px;text-align:center;font-size:18px;font-weight:800;padding:18px;">
+          <button id="searchBtn" class="btn btn-primary btn-block" style="margin-top:14px;">RECHERCHER</button>
           <div id="searchResult" class="result hidden"></div>
         </div>
       </section>
 
-      <!-- ============================================================ -->
-      <!-- PANEL: ADV SEARCH -->
-      <!-- ============================================================ -->
+      <!-- ADV SEARCH -->
       <section class="panel" id="panel-adv-search">
         <div class="panel-header">
-          <h1 class="panel-title">
-            <span class="panel-title-icon">🔎</span>
-            <span>Recherche avancée</span>
-          </h1>
+          <h1 class="panel-title"><span class="panel-title-icon">🔎</span><span>Recherche avancée</span></h1>
           <p class="panel-sub">Filtrez les codes par marque, statut, date ou référence.</p>
         </div>
-
         <div class="card">
           <div class="form-grid">
             <input id="advSearchText" placeholder="Marque, code, lot, référence..." class="full">
@@ -1609,53 +1390,40 @@
             <input id="advSearchDateFrom" type="date" placeholder="Du">
             <input id="advSearchDateTo" type="date" placeholder="Au">
           </div>
-
-          <div style="display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap;">
-            <button id="advSearchBtn" class="btn btn-primary" style="flex: 1; min-width: 140px;">🔍 RECHERCHER</button>
-            <button id="advExportBtn" class="btn btn-ghost" style="flex: 1; min-width: 140px;">📊 EXCEL</button>
-            <button id="advResetBtn" class="btn btn-ghost" style="flex: 1; min-width: 140px;">↺ RÉINITIALISER</button>
+          <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+            <button id="advSearchBtn" class="btn btn-primary" style="flex:1;min-width:140px;">🔍 RECHERCHER</button>
+            <button id="advExportBtn" class="btn btn-ghost" style="flex:1;min-width:140px;">📊 EXCEL</button>
+            <button id="advResetBtn" class="btn btn-ghost" style="flex:1;min-width:140px;">↺ RÉINITIALISER</button>
           </div>
         </div>
-
-        <div id="advSearchStats" class="stats-grid" style="margin-top: 22px; display: none;"></div>
-        <div id="advSearchResults" style="margin-top: 18px;"></div>
+        <div id="advSearchStats" class="stats-grid" style="margin-top:22px;display:none;"></div>
+        <div id="advSearchResults" style="margin-top:18px;"></div>
       </section>
 
-      <!-- ============================================================ -->
-      <!-- PANEL: MANAGE -->
-      <!-- ============================================================ -->
+      <!-- MANAGE -->
       <section class="panel" id="panel-manage">
         <div class="panel-header">
-          <h1 class="panel-title">
-            <span class="panel-title-icon">📦</span>
-            <span>Gérer un lot</span>
-          </h1>
+          <h1 class="panel-title"><span class="panel-title-icon">📦</span><span>Gérer un lot</span></h1>
           <p class="panel-sub">Chargez un lot par son numéro pour le visualiser, l'imprimer ou le modifier.</p>
         </div>
-
         <div class="card">
           <input id="editLotSearch" placeholder="Numéro de lot (ex: 001)">
-          <button id="loadLotBtn" class="btn btn-ghost btn-block" style="margin-top: 12px;">CHARGER LE LOT</button>
-
+          <button id="loadLotBtn" class="btn btn-ghost btn-block" style="margin-top:12px;">CHARGER LE LOT</button>
           <div id="lotInfo" class="result hidden"></div>
-
-          <div id="batchStatusBox" class="hidden" style="margin-top: 14px; padding: 16px; border-radius: 14px; background: var(--bg-secondary); border: 1px solid var(--border); text-align: center;">
-            <div style="font-size: 10px; color: var(--text-tertiary); letter-spacing: 1.5px; font-weight: 800; margin-bottom: 6px;">STATUT DE LA BATCH</div>
-            <div id="batchStatusBadge" style="font-size: 16px; font-weight: 900;">—</div>
+          <div id="batchStatusBox" class="hidden" style="margin-top:14px;padding:16px;border-radius:14px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center;">
+            <div style="font-size:10px;color:var(--text-tertiary);letter-spacing:1.5px;font-weight:800;margin-bottom:6px;">STATUT DE LA BATCH</div>
+            <div id="batchStatusBadge" style="font-size:16px;font-weight:900;">—</div>
           </div>
-
-          <div id="batchActionsBox" class="hidden" style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
-            <button id="activateBatchBtn" class="btn btn-success" style="flex: 1; min-width: 140px;">✅ ACTIVER LA BATCH</button>
-            <button id="disableBatchBtn" class="btn btn-danger" style="flex: 1; min-width: 140px;">🛑 DÉSACTIVER</button>
+          <div id="batchActionsBox" class="hidden" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+            <button id="activateBatchBtn" class="btn btn-success" style="flex:1;min-width:140px;">✅ ACTIVER LA BATCH</button>
+            <button id="disableBatchBtn" class="btn btn-danger" style="flex:1;min-width:140px;">🛑 DÉSACTIVER</button>
           </div>
-
-          <button id="printLotBtn" class="btn btn-success btn-block hidden" style="margin-top: 14px;">🖨 IMPRIMER CE LOT</button>
-          <button id="exportLotCodesBtn" class="btn btn-ghost btn-block hidden" style="margin-top: 10px;">📊 EXPORTER EN EXCEL</button>
+          <button id="printLotBtn" class="btn btn-success btn-block hidden" style="margin-top:14px;">🖨 IMPRIMER CE LOT</button>
+          <button id="exportLotCodesBtn" class="btn btn-ghost btn-block hidden" style="margin-top:10px;">📊 EXPORTER EN EXCEL</button>
         </div>
-
-        <div id="editForm" class="hidden card" style="margin-top: 20px;">
-          <h3 style="margin: 0 0 6px; font-size: 15px; font-weight: 800; color: var(--text);">Modifier ce lot</h3>
-          <p class="muted" style="font-size: 12px; margin-bottom: 14px;">Les champs vides ne sont pas modifiés.</p>
+        <div id="editForm" class="hidden card" style="margin-top:20px;">
+          <h3 style="margin:0 0 6px;font-size:15px;font-weight:800;color:var(--text);">Modifier ce lot</h3>
+          <p class="muted" style="font-size:12px;margin-bottom:14px;">Les champs vides ne sont pas modifiés.</p>
           <div class="form-grid">
             <input id="editBrand" placeholder="Marque">
             <input id="editProductName" placeholder="Nom du produit">
@@ -1670,30 +1438,22 @@
             <input id="editFacebookUrl" placeholder="📘 Facebook" class="full">
             <input id="editTiktokUrl" placeholder="🎵 TikTok" class="full">
           </div>
-          <button id="updateBatchBtn" class="btn btn-primary btn-block" style="margin-top: 16px;">METTRE À JOUR LE LOT</button>
+          <button id="updateBatchBtn" class="btn btn-primary btn-block" style="margin-top:16px;">METTRE À JOUR LE LOT</button>
         </div>
       </section>
 
-      <!-- ============================================================ -->
-      <!-- PANEL: ORDERS -->
-      <!-- ============================================================ -->
+      <!-- ORDERS -->
       <section class="panel" id="panel-orders">
         <div class="panel-header">
-          <h1 class="panel-title">
-            <span class="panel-title-icon">📋</span>
-            <span>Commandes & Factures</span>
-          </h1>
+          <h1 class="panel-title"><span class="panel-title-icon">📋</span><span>Commandes & Factures</span></h1>
           <p class="panel-sub">Gérez les commandes et générez les factures.</p>
         </div>
-
-        <button id="newOrderBtn" class="btn btn-gold btn-block" style="margin-bottom: 20px;">➕ NOUVELLE COMMANDE</button>
-
+        <button id="newOrderBtn" class="btn btn-gold btn-block" style="margin-bottom:20px;">➕ NOUVELLE COMMANDE</button>
         <div id="ordersStats" class="stats-grid"></div>
-
-        <div class="card" style="margin-bottom: 16px;">
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <input id="ordersSearch" placeholder="🔍 Marque, N° facture, téléphone..." style="flex: 2; min-width: 180px;">
-            <select id="ordersStatus" style="flex: 1; min-width: 140px;">
+        <div class="card" style="margin-bottom:16px;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input id="ordersSearch" placeholder="🔍 Marque, N° facture, téléphone..." style="flex:2;min-width:180px;">
+            <select id="ordersStatus" style="flex:1;min-width:140px;">
               <option value="">Tous les statuts</option>
               <option value="IN_PRODUCTION">🟡 En production</option>
               <option value="READY">📦 Prête</option>
@@ -1705,452 +1465,315 @@
               <option value="PAID">💰 Payée</option>
               <option value="CANCELLED">❌ Annulée</option>
             </select>
-            <select id="ordersPayment" style="flex: 1; min-width: 140px;">
+            <select id="ordersPayment" style="flex:1;min-width:140px;">
               <option value="">Tous les paiements</option>
               <option value="UNPAID">❌ Non payé</option>
               <option value="PARTIAL">🟡 Partiel</option>
               <option value="PAID">✅ Payé</option>
             </select>
           </div>
-          <button id="refreshOrdersBtn" class="btn btn-ghost btn-block" style="margin-top: 12px;">🔄 ACTUALISER</button>
+          <button id="refreshOrdersBtn" class="btn btn-ghost btn-block" style="margin-top:12px;">🔄 ACTUALISER</button>
         </div>
-
         <div id="ordersList"></div>
       </section>
 
-      <!-- ============================================================ -->
-      <!-- PANEL: DEBTS -->
-      <!-- ============================================================ -->
+      <!-- DEBTS -->
       <section class="panel" id="panel-debts">
         <div class="panel-header">
-          <h1 class="panel-title">
-            <span class="panel-title-icon">💰</span>
-            <span>Situation des dettes</span>
-          </h1>
+          <h1 class="panel-title"><span class="panel-title-icon">💰</span><span>Situation des dettes</span></h1>
           <p class="panel-sub">Marques avec des paiements en attente.</p>
         </div>
-
         <div id="debtsStats" class="stats-grid"></div>
-
-        <div class="card" style="margin-bottom: 16px;">
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <input id="debtsSearch" placeholder="🔍 Nom de marque..." style="flex: 2; min-width: 180px;">
-            <select id="debtsSort" style="flex: 1; min-width: 160px;">
+        <div class="card" style="margin-bottom:16px;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input id="debtsSearch" placeholder="🔍 Nom de marque..." style="flex:2;min-width:180px;">
+            <select id="debtsSort" style="flex:1;min-width:160px;">
               <option value="days">📅 Plus anciens</option>
               <option value="amount">💰 Montant élevé</option>
               <option value="invoices">📋 Nb factures</option>
             </select>
-            <select id="debtsAge" style="flex: 1; min-width: 140px;">
+            <select id="debtsAge" style="flex:1;min-width:140px;">
               <option value="">Toutes les dettes</option>
               <option value="30">+30 jours</option>
               <option value="60">+60 jours</option>
               <option value="90">+90 jours</option>
             </select>
           </div>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;">
-            <button id="refreshDebtsBtn" class="btn btn-ghost" style="flex: 1; min-width: 140px;">🔄 ACTUALISER</button>
-            <button id="exportDebtsBtn" class="btn btn-ghost" style="flex: 1; min-width: 140px;">📊 EXPORTER EXCEL</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+            <button id="refreshDebtsBtn" class="btn btn-ghost" style="flex:1;min-width:140px;">🔄 ACTUALISER</button>
+            <button id="exportDebtsBtn" class="btn btn-ghost" style="flex:1;min-width:140px;">📊 EXPORTER EXCEL</button>
           </div>
         </div>
-
         <div id="debtsList"></div>
       </section>
 
-      <!-- ============================================================ -->
-      <!-- PANEL: INVENTORY -->
-      <!-- ============================================================ -->
+      <!-- INVENTORY -->
       <section class="panel" id="panel-inventory">
         <div class="panel-header">
-          <h1 class="panel-title">
-            <span class="panel-title-icon">📦</span>
-            <span>Stock</span>
-          </h1>
+          <h1 class="panel-title"><span class="panel-title-icon">📦</span><span>Stock</span></h1>
           <p class="panel-sub">Gérez votre stock d'étiquettes vierges.</p>
         </div>
-
-        <div id="inventoryAlert" class="hidden" style="padding: 16px; background: var(--danger-soft); border: 1px solid var(--danger); border-radius: 14px; color: var(--danger); font-weight: 800; font-size: 13px; margin-bottom: 18px; display: flex; align-items: center; gap: 12px;">
-          <span style="font-size: 24px;">🚨</span>
+        <div id="inventoryAlert" class="hidden" style="padding:16px;background:var(--danger-soft);border:1px solid var(--danger);border-radius:14px;color:var(--danger);font-weight:800;font-size:13px;margin-bottom:18px;display:flex;align-items:center;gap:12px;">
+          <span style="font-size:24px;">🚨</span>
           <span id="inventoryAlertText">Stock bas ! Commandez de nouvelles étiquettes.</span>
         </div>
-
         <div id="inventoryStats" class="stats-grid"></div>
-
-        <div class="card" style="margin-bottom: 20px;">
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button id="addStockBtn" class="btn btn-success" style="flex: 1; min-width: 130px;">➕ Ajouter stock</button>
-            <button id="adjustStockBtn" class="btn btn-ghost" style="flex: 1; min-width: 130px;">⚙️ Ajuster</button>
-            <button id="settingsStockBtn" class="btn btn-ghost" style="flex: 1; min-width: 130px;">🔧 Seuil</button>
+        <div class="card" style="margin-bottom:20px;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button id="addStockBtn" class="btn btn-success" style="flex:1;min-width:130px;">➕ Ajouter stock</button>
+            <button id="adjustStockBtn" class="btn btn-ghost" style="flex:1;min-width:130px;">⚙️ Ajuster</button>
+            <button id="settingsStockBtn" class="btn btn-ghost" style="flex:1;min-width:130px;">🔧 Seuil</button>
           </div>
         </div>
-
-        <h3 style="font-size: 14px; font-weight: 800; color: var(--text); margin: 24px 0 14px;">📜 Historique des mouvements</h3>
-        <button id="refreshInventoryBtn" class="btn btn-ghost btn-block" style="margin-bottom: 14px;">🔄 ACTUALISER</button>
+        <h3 style="font-size:14px;font-weight:800;color:var(--text);margin:24px 0 14px;">📜 Historique des mouvements</h3>
+        <button id="refreshInventoryBtn" class="btn btn-ghost btn-block" style="margin-bottom:14px;">🔄 ACTUALISER</button>
         <div id="inventoryMovements"></div>
       </section>
 
-      <!-- ============================================================ -->
-      <!-- PANEL: LOG -->
-      <!-- ============================================================ -->
+      <!-- LOG -->
       <section class="panel" id="panel-log">
         <div class="panel-header">
-          <h1 class="panel-title">
-            <span class="panel-title-icon">📜</span>
-            <span>Journal des vérifications</span>
-          </h1>
+          <h1 class="panel-title"><span class="panel-title-icon">📜</span><span>Journal des vérifications</span></h1>
           <p class="panel-sub">Les 100 dernières tentatives de vérification.</p>
         </div>
-
-        <button id="refreshLogBtn" class="btn btn-ghost btn-block" style="margin-bottom: 14px;">🔄 ACTUALISER</button>
+        <button id="refreshLogBtn" class="btn btn-ghost btn-block" style="margin-bottom:14px;">🔄 ACTUALISER</button>
         <div id="logList"></div>
       </section>
 
-      <!-- ============================================================ -->
-      <!-- PANEL: FEEDBACK -->
-      <!-- ============================================================ -->
+      <!-- FEEDBACK -->
       <section class="panel" id="panel-feedback">
         <div class="panel-header">
-          <h1 class="panel-title">
-            <span class="panel-title-icon">⭐</span>
-            <span>Avis clients</span>
-          </h1>
+          <h1 class="panel-title"><span class="panel-title-icon">⭐</span><span>Avis clients</span></h1>
           <p class="panel-sub">Tous les avis et signalements des clients.</p>
         </div>
-
         <div class="tabs" id="feedbackTabs">
           <button class="tab active" data-tab="all">TOUT</button>
           <button class="tab" data-tab="rating">⭐ AVIS</button>
           <button class="tab" data-tab="report">🚨 SIGNALEMENTS</button>
         </div>
-
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
-          <button id="refreshFeedbackBtn" class="btn btn-ghost" style="flex: 1; min-width: 140px;">🔄 ACTUALISER</button>
-          <button id="exportFeedbackBtn" class="btn btn-ghost" style="flex: 1; min-width: 140px;">📊 EXPORTER EXCEL</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+          <button id="refreshFeedbackBtn" class="btn btn-ghost" style="flex:1;min-width:140px;">🔄 ACTUALISER</button>
+          <button id="exportFeedbackBtn" class="btn btn-ghost" style="flex:1;min-width:140px;">📊 EXPORTER EXCEL</button>
         </div>
-
         <div id="feedbackList"></div>
       </section>
 
-      <!-- ============================================================ -->
-      <!-- PANEL: MESSAGES -->
-      <!-- ============================================================ -->
+      <!-- MESSAGES -->
       <section class="panel" id="panel-messages">
         <div class="panel-header">
-          <h1 class="panel-title">
-            <span class="panel-title-icon">📩</span>
-            <span>Messages des marques</span>
-          </h1>
+          <h1 class="panel-title"><span class="panel-title-icon">📩</span><span>Messages des marques</span></h1>
           <p class="panel-sub">Messages reçus des marques inscrites.</p>
         </div>
-
         <div class="tabs" id="messagesTabs">
           <button class="tab active" data-tab="all">TOUT</button>
           <button class="tab" data-tab="NEW">🔴 NOUVEAUX</button>
           <button class="tab" data-tab="READ">✓ LUS</button>
         </div>
-
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
-          <button id="refreshMessagesBtn" class="btn btn-ghost" style="flex: 1; min-width: 140px;">🔄 ACTUALISER</button>
-          <button id="exportMessagesBtn" class="btn btn-ghost" style="flex: 1; min-width: 140px;">📊 EXPORTER EXCEL</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+          <button id="refreshMessagesBtn" class="btn btn-ghost" style="flex:1;min-width:140px;">🔄 ACTUALISER</button>
+          <button id="exportMessagesBtn" class="btn btn-ghost" style="flex:1;min-width:140px;">📊 EXPORTER EXCEL</button>
         </div>
-
         <div id="messagesList"></div>
       </section>
 
-      <!-- ============================================================ -->
-      <!-- PANEL: BRANDS -->
-      <!-- ============================================================ -->
+      <!-- BRANDS -->
       <section class="panel" id="panel-brands">
         <div class="panel-header">
-          <h1 class="panel-title">
-            <span class="panel-title-icon">🏢</span>
-            <span>Marques</span>
-          </h1>
+          <h1 class="panel-title"><span class="panel-title-icon">🏢</span><span>Marques</span></h1>
           <p class="panel-sub">Toutes les marques inscrites et leurs statistiques.</p>
         </div>
-
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
-          <button id="refreshBrandsBtn" class="btn btn-ghost" style="flex: 1; min-width: 140px;">🔄 ACTUALISER</button>
-          <button id="exportBrandsBtn" class="btn btn-ghost" style="flex: 1; min-width: 140px;">📊 EXPORTER EXCEL</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+          <button id="refreshBrandsBtn" class="btn btn-ghost" style="flex:1;min-width:140px;">🔄 ACTUALISER</button>
+          <button id="exportBrandsBtn" class="btn btn-ghost" style="flex:1;min-width:140px;">📊 EXPORTER EXCEL</button>
         </div>
-
         <div id="brandsStats" class="stats-grid"></div>
         <div id="brandsList"></div>
       </section>
 
-      <!-- ============================================================ -->
-      <!-- PANEL: VISITORS -->
-      <!-- ============================================================ -->
+      <!-- VISITORS -->
       <section class="panel" id="panel-visitors">
         <div class="panel-header">
-          <h1 class="panel-title">
-            <span class="panel-title-icon">👥</span>
-            <span>Visiteurs</span>
-          </h1>
+          <h1 class="panel-title"><span class="panel-title-icon">👥</span><span>Visiteurs</span></h1>
           <p class="panel-sub">Journal des visiteurs et détection automatique de bots.</p>
         </div>
-
         <div id="visitorStats" class="stats-grid"></div>
-
         <div class="tabs" id="visitorTabs">
           <button class="tab active" data-tab="all">TOUT</button>
           <button class="tab" data-tab="real">🟢 RÉELS</button>
           <button class="tab" data-tab="suspicious">🟡 SUSPECTS</button>
           <button class="tab" data-tab="bot">🔴 BOTS</button>
         </div>
-
-        <button id="refreshVisitorsBtn" class="btn btn-ghost btn-block" style="margin-bottom: 14px;">🔄 ACTUALISER</button>
+        <button id="refreshVisitorsBtn" class="btn btn-ghost btn-block" style="margin-bottom:14px;">🔄 ACTUALISER</button>
         <div id="visitorsList"></div>
       </section>
 
-      <!-- ============================================================ -->
-      <!-- PANEL: FAQ -->
-      <!-- ============================================================ -->
+      <!-- FAQ -->
       <section class="panel" id="panel-faq">
         <div class="panel-header">
-          <h1 class="panel-title">
-            <span class="panel-title-icon">📝</span>
-            <span>FAQ</span>
-          </h1>
+          <h1 class="panel-title"><span class="panel-title-icon">📝</span><span>FAQ</span></h1>
           <p class="panel-sub">Gérez les questions affichées sur la page d'accueil.</p>
         </div>
-
-        <button id="addFaqBtn" class="btn btn-success btn-block" style="margin-bottom: 20px;">➕ AJOUTER UNE QUESTION</button>
-
-        <div id="faqEditBox" class="hidden card" style="margin-bottom: 22px;">
-          <h3 id="faqEditTitle" style="margin: 0 0 16px; font-size: 15px; font-weight: 800;">Ajouter une question</h3>
-
-          <h4 style="margin: 14px 0 6px; font-size: 12px; font-weight: 800; color: var(--success); letter-spacing: 1.5px;">🇩🇿 العربية</h4>
-          <input id="faqQuestionAr" placeholder="السؤال بالعربية *" class="full">
-          <textarea id="faqAnswerAr" placeholder="الجواب بالعربية *" rows="3" style="margin-top: 10px;"></textarea>
-
-          <h4 style="margin: 14px 0 6px; font-size: 12px; font-weight: 800; color: var(--primary); letter-spacing: 1.5px;">🇫🇷 FRANÇAIS</h4>
+        <button id="addFaqBtn" class="btn btn-success btn-block" style="margin-bottom:20px;">➕ AJOUTER UNE QUESTION</button>
+        <div id="faqEditBox" class="hidden card" style="margin-bottom:22px;">
+          <h3 id="faqEditTitle" style="margin:0 0 16px;font-size:15px;font-weight:800;">Ajouter une question</h3>
+          <h4 style="margin:14px 0 6px;font-size:12px;font-weight:800;color:var(--success);letter-spacing:1.5px;">🇩🇿 العربية</h4>
+          <input id="faqQuestionAr" placeholder="السؤال بالعربية *">
+          <textarea id="faqAnswerAr" placeholder="الجواب بالعربية *" rows="3" style="margin-top:10px;"></textarea>
+          <h4 style="margin:14px 0 6px;font-size:12px;font-weight:800;color:var(--primary);letter-spacing:1.5px;">🇫🇷 FRANÇAIS</h4>
           <input id="faqQuestionFr" placeholder="Question en français">
-          <textarea id="faqAnswerFr" placeholder="Réponse en français" rows="3" style="margin-top: 10px;"></textarea>
-
-          <h4 style="margin: 14px 0 6px; font-size: 12px; font-weight: 800; color: var(--gold); letter-spacing: 1.5px;">🇬🇧 ENGLISH</h4>
+          <textarea id="faqAnswerFr" placeholder="Réponse en français" rows="3" style="margin-top:10px;"></textarea>
+          <h4 style="margin:14px 0 6px;font-size:12px;font-weight:800;color:var(--gold);letter-spacing:1.5px;">🇬🇧 ENGLISH</h4>
           <input id="faqQuestionEn" placeholder="Question in English">
-          <textarea id="faqAnswerEn" placeholder="Answer in English" rows="3" style="margin-top: 10px;"></textarea>
-
-          <h4 style="margin: 14px 0 6px; font-size: 12px; font-weight: 800; color: var(--text-secondary); letter-spacing: 1.5px;">⚙️ OPTIONS</h4>
-          <input id="faqSortOrder" type="number" placeholder="Ordre d'affichage (0 = premier)" value="0" style="margin-top: 10px;">
-          <label style="display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 14px; font-weight: 600; color: var(--text); cursor: pointer;">
-            <input id="faqIsActive" type="checkbox" checked style="width: auto; margin: 0;">
+          <textarea id="faqAnswerEn" placeholder="Answer in English" rows="3" style="margin-top:10px;"></textarea>
+          <h4 style="margin:14px 0 6px;font-size:12px;font-weight:800;color:var(--text-secondary);letter-spacing:1.5px;">⚙️ OPTIONS</h4>
+          <input id="faqSortOrder" type="number" placeholder="Ordre d'affichage" value="0" style="margin-top:10px;">
+          <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px;font-weight:600;color:var(--text);cursor:pointer;">
+            <input id="faqIsActive" type="checkbox" checked style="width:auto;margin:0;">
             <span>Activer (afficher sur le site)</span>
           </label>
-
-          <div style="display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap;">
-            <button id="saveFaqBtn" class="btn btn-success" style="flex: 1; min-width: 140px;">💾 ENREGISTRER</button>
-            <button id="cancelFaqBtn" class="btn btn-ghost" style="flex: 1; min-width: 140px;">✕ ANNULER</button>
+          <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">
+            <button id="saveFaqBtn" class="btn btn-success" style="flex:1;min-width:140px;">💾 ENREGISTRER</button>
+            <button id="cancelFaqBtn" class="btn btn-ghost" style="flex:1;min-width:140px;">✕ ANNULER</button>
           </div>
         </div>
-
-        <button id="refreshFaqBtn" class="btn btn-ghost btn-block" style="margin-bottom: 14px;">🔄 ACTUALISER</button>
+        <button id="refreshFaqBtn" class="btn btn-ghost btn-block" style="margin-bottom:14px;">🔄 ACTUALISER</button>
         <div id="faqList"></div>
       </section>
 
-      <!-- ============================================================ -->
-      <!-- PANEL: FAKES -->
-      <!-- ============================================================ -->
+      <!-- FAKES -->
       <section class="panel" id="panel-fakes">
         <div class="panel-header">
-          <h1 class="panel-title">
-            <span class="panel-title-icon">🚨</span>
-            <span>Contrefaçons</span>
-          </h1>
+          <h1 class="panel-title"><span class="panel-title-icon">🚨</span><span>Contrefaçons</span></h1>
           <p class="panel-sub">Signalements de produits contrefaits par les clients.</p>
         </div>
-
         <div id="fakesStats" class="stats-grid"></div>
-
         <div class="tabs" id="fakesTabs">
           <button class="tab active" data-tab="all">TOUT</button>
           <button class="tab" data-tab="NEW">🔴 NOUVEAUX</button>
           <button class="tab" data-tab="REVIEWED">✓ TRAITÉS</button>
         </div>
-
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
-          <button id="refreshFakesBtn" class="btn btn-ghost" style="flex: 1; min-width: 130px;">🔄 ACTUALISER</button>
-          <button id="exportFakesBtn" class="btn btn-ghost" style="flex: 1; min-width: 130px;">📊 EXPORTER EXCEL</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+          <button id="refreshFakesBtn" class="btn btn-ghost" style="flex:1;min-width:130px;">🔄 ACTUALISER</button>
+          <button id="exportFakesBtn" class="btn btn-ghost" style="flex:1;min-width:130px;">📊 EXPORTER EXCEL</button>
         </div>
-
-        <h3 style="font-size: 15px; font-weight: 800; color: var(--text); margin: 32px 0 14px;">🗺️ Carte thermique — 58 wilayas</h3>
-        <div id="wilayaHeatmap" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px;"></div>
-
-        <h3 style="font-size: 15px; font-weight: 800; color: var(--text); margin: 32px 0 14px;">📋 Derniers signalements</h3>
+        <h3 style="font-size:15px;font-weight:800;color:var(--text);margin:32px 0 14px;">🗺️ Carte thermique — 58 wilayas</h3>
+        <div id="wilayaHeatmap" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;"></div>
+        <h3 style="font-size:15px;font-weight:800;color:var(--text);margin:32px 0 14px;">📋 Derniers signalements</h3>
         <div id="fakesList"></div>
       </section>
 
-      <!-- ============================================================ -->
-      <!-- PANEL: DELETE -->
-      <!-- ============================================================ -->
+      <!-- DELETE -->
       <section class="panel" id="panel-delete">
         <div class="panel-header">
-          <h1 class="panel-title">
-            <span class="panel-title-icon">🗑️</span>
-            <span>Suppression en masse</span>
-          </h1>
-          <p class="panel-sub">Supprimez un lot entier. Cette action est <b style="color: var(--danger);">irréversible</b>.</p>
+          <h1 class="panel-title"><span class="panel-title-icon">🗑️</span><span>Suppression en masse</span></h1>
+          <p class="panel-sub">Supprimez un lot entier. Cette action est <b style="color:var(--danger);">irréversible</b>.</p>
         </div>
-
-        <div class="card" style="background: var(--danger-soft); border-color: var(--danger);">
-          <div style="font-size: 13px; line-height: 1.7; color: var(--danger); font-weight: 700;">
-            ⚠️ ATTENTION : La suppression efface définitivement les codes et leurs versions chiffrées.
+        <div class="card" style="background:var(--danger-soft);border-color:var(--danger);">
+          <div style="font-size:13px;line-height:1.7;color:var(--danger);font-weight:700;">
+            ⚠️ ATTENTION : La suppression efface définitivement les codes.
           </div>
         </div>
-
-        <h3 style="font-size: 14px; font-weight: 800; color: var(--text); margin: 24px 0 12px;">Sélectionnez le lot à supprimer</h3>
-
+        <h3 style="font-size:14px;font-weight:800;color:var(--text);margin:24px 0 12px;">Sélectionnez le lot à supprimer</h3>
         <input id="deleteLotSearch" placeholder="Numéro de lot (ex: 001)">
-        <button id="previewDeleteBtn" class="btn btn-danger btn-block" style="margin-top: 12px;">🔍 PRÉVISUALISER</button>
-
-        <div id="deletePreview" class="result hidden" style="margin-top: 16px;"></div>
-
-        <div id="deleteConfirmBox" class="hidden card" style="margin-top: 16px; border: 2px solid var(--danger);">
-          <p style="font-size: 13px; color: var(--danger); font-weight: 700; margin: 0 0 12px;">Tapez <b>DELETE</b> pour confirmer :</p>
-          <input id="deleteConfirmInput" placeholder="DELETE" style="border-color: var(--danger); text-align: center; font-weight: 800; letter-spacing: 2px;">
-          <button id="confirmDeleteBtn" class="btn btn-danger btn-block" style="margin-top: 12px;" disabled>🗑️ SUPPRIMER</button>
+        <button id="previewDeleteBtn" class="btn btn-danger btn-block" style="margin-top:12px;">🔍 PRÉVISUALISER</button>
+        <div id="deletePreview" class="result hidden" style="margin-top:16px;"></div>
+        <div id="deleteConfirmBox" class="hidden card" style="margin-top:16px;border:2px solid var(--danger);">
+          <p style="font-size:13px;color:var(--danger);font-weight:700;margin:0 0 12px;">Tapez <b>DELETE</b> pour confirmer :</p>
+          <input id="deleteConfirmInput" placeholder="DELETE" style="border-color:var(--danger);text-align:center;font-weight:800;letter-spacing:2px;">
+          <button id="confirmDeleteBtn" class="btn btn-danger btn-block" style="margin-top:12px;" disabled>🗑️ SUPPRIMER</button>
         </div>
-
-        <div id="deleteResult" class="result hidden" style="margin-top: 16px;"></div>
-
-        <h3 style="font-size: 14px; font-weight: 800; color: var(--text); margin: 32px 0 12px;">Historique des suppressions</h3>
-        <div id="deleteLogList"></div>
+        <div id="deleteResult" class="result hidden" style="margin-top:16px;"></div>
       </section>
 
-      <!-- ============================================================ -->
-      <!-- PANEL: SETTINGS -->
-      <!-- ============================================================ -->
+      <!-- SETTINGS -->
       <section class="panel" id="panel-settings">
         <div class="panel-header">
-          <h1 class="panel-title">
-            <span class="panel-title-icon">⚙️</span>
-            <span>Options d'impression</span>
-          </h1>
+          <h1 class="panel-title"><span class="panel-title-icon">⚙️</span><span>Options d'impression</span></h1>
           <p class="panel-sub">Choisissez le mode et la taille d'impression.</p>
         </div>
-
         <div class="card">
-          <label style="display: block; font-size: 11px; color: var(--text-secondary); font-weight: 800; letter-spacing: 1.5px; margin-bottom: 8px;">MODE D'IMPRESSION</label>
-          <select id="printMode" style="margin-bottom: 20px;">
+          <label style="display:block;font-size:11px;color:var(--text-secondary);font-weight:800;letter-spacing:1.5px;margin-bottom:8px;">MODE D'IMPRESSION</label>
+          <select id="printMode" style="margin-bottom:20px;">
             <option value="labels">🏷️ Étiquettes pliées (code caché)</option>
             <option value="list">📋 Liste des codes (tout visible)</option>
           </select>
-
-          <label style="display: block; font-size: 11px; color: var(--text-secondary); font-weight: 800; letter-spacing: 1.5px; margin-bottom: 8px;">TAILLE DE L'ÉTIQUETTE</label>
+          <label style="display:block;font-size:11px;color:var(--text-secondary);font-weight:800;letter-spacing:1.5px;margin-bottom:8px;">TAILLE DE L'ÉTIQUETTE</label>
           <select id="labelSize">
             <option value="60x90">60 × 90 mm — Étiquette longue (pliée)</option>
             <option value="50x50">50 × 50 mm — Carré compact</option>
             <option value="70x50">70 × 50 mm — Rectangle horizontal</option>
           </select>
         </div>
-
-        <div class="card" style="background: var(--gold-soft); border-color: var(--gold); margin-top: 20px;">
-          <div style="font-size: 13px; line-height: 1.7; color: var(--text);">
-            <b style="color: var(--gold);">📋 RAPPEL :</b><br>
-            • Le QR est identique pour toutes les étiquettes.<br>
-            • Le code de sécurité est unique par étiquette.<br>
-            • Pliez l'étiquette le long de la ligne pointillée.<br>
-            • Le client scanne le QR puis déplie pour lire le code.
-          </div>
-        </div>
       </section>
 
     </div>
   </main>
 </div>
-<!-- ============================================================ -->
-<!-- MODAL: Nouvelle commande -->
-<!-- ============================================================ -->
+
+<!-- MODALS -->
 <div id="newOrderModal" class="modal-overlay hidden">
   <div class="modal-box">
     <div class="modal-header">
       <h2>📋 Nouvelle commande</h2>
       <button class="modal-close" id="closeNewOrderBtn">✕</button>
     </div>
-
     <div class="modal-body">
       <div class="form-section">
         <h3>👤 Client</h3>
         <input id="orderBrand" placeholder="Nom de la marque *" list="brandsList">
         <datalist id="brandsList"></datalist>
-        <div id="brandHint" style="font-size: 11px; margin-top: 6px; color: var(--text-secondary);"></div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+        <div id="brandHint" style="font-size:11px;margin-top:6px;color:var(--text-secondary);"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
           <input id="orderBrandPhone" placeholder="📱 Téléphone" type="tel">
           <input id="orderBrandEmail" placeholder="📧 Email" type="email">
         </div>
       </div>
-
       <div class="form-section">
         <h3>📦 Articles (Lots)</h3>
         <div id="orderItemsList"></div>
-        <button id="addOrderItemBtn" class="btn btn-ghost btn-block" style="font-size: 12px; padding: 10px; margin-top: 8px;">➕ Ajouter un lot</button>
+        <button id="addOrderItemBtn" class="btn btn-ghost btn-block" style="font-size:12px;padding:10px;margin-top:8px;">➕ Ajouter un lot</button>
       </div>
-
       <div class="form-section">
         <h3>💰 Prix</h3>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-          <div>
-            <label style="font-size: 11px; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 4px;">Prix unitaire (DA) *</label>
-            <input id="orderUnitPrice" type="number" step="0.01" min="0" placeholder="15.00" value="15">
-          </div>
-          <div>
-            <label style="font-size: 11px; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 4px;">Remise (%)</label>
-            <input id="orderDiscount" type="number" step="0.1" min="0" max="100" placeholder="0" value="0">
-          </div>
-          <div>
-            <label style="font-size: 11px; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 4px;">Livraison (DA)</label>
-            <input id="orderDeliveryCost" type="number" step="0.01" min="0" placeholder="0" value="0">
-          </div>
-          <div>
-            <label style="font-size: 11px; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 4px;">TVA (%)</label>
-            <input id="orderTva" type="number" step="0.1" min="0" max="100" placeholder="0" value="0">
-          </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div><label style="font-size:11px;font-weight:800;color:var(--text-secondary);display:block;margin-bottom:4px;">Prix unitaire (DA) *</label><input id="orderUnitPrice" type="number" step="0.01" min="0" placeholder="15.00" value="15"></div>
+          <div><label style="font-size:11px;font-weight:800;color:var(--text-secondary);display:block;margin-bottom:4px;">Remise (%)</label><input id="orderDiscount" type="number" step="0.1" min="0" max="100" placeholder="0" value="0"></div>
+          <div><label style="font-size:11px;font-weight:800;color:var(--text-secondary);display:block;margin-bottom:4px;">Livraison (DA)</label><input id="orderDeliveryCost" type="number" step="0.01" min="0" placeholder="0" value="0"></div>
+          <div><label style="font-size:11px;font-weight:800;color:var(--text-secondary);display:block;margin-bottom:4px;">TVA (%)</label><input id="orderTva" type="number" step="0.1" min="0" max="100" placeholder="0" value="0"></div>
         </div>
-
-        <div id="orderTotalsBox" style="margin-top: 14px; padding: 14px; background: var(--card); border: 1px dashed var(--border); border-radius: 10px; display: flex; flex-direction: column; gap: 8px;">
-          <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text-secondary);"><span>Sous-total:</span><b id="orderSubtotal" style="color: var(--text);">0 DA</b></div>
-          <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text-secondary);"><span>Remise:</span><b id="orderDiscountAmt" style="color: var(--text);">-0 DA</b></div>
-          <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text-secondary);"><span>TVA:</span><b id="orderTvaAmt" style="color: var(--text);">0 DA</b></div>
-          <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text-secondary);"><span>Livraison:</span><b id="orderDeliveryAmt" style="color: var(--text);">0 DA</b></div>
-          <div style="display: flex; justify-content: space-between; font-size: 16px; color: var(--text); padding-top: 10px; border-top: 2px solid var(--border); margin-top: 4px;"><span style="font-weight: 900;">TOTAL:</span><b id="orderTotalPrice" style="color: var(--gold); font-size: 20px; font-weight: 900;">0 DA</b></div>
+        <div style="margin-top:14px;padding:14px;background:var(--card);border:1px dashed var(--border);border-radius:10px;display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text-secondary);"><span>Sous-total:</span><b id="orderSubtotal" style="color:var(--text);">0 DA</b></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text-secondary);"><span>Remise:</span><b id="orderDiscountAmt" style="color:var(--text);">-0 DA</b></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text-secondary);"><span>TVA:</span><b id="orderTvaAmt" style="color:var(--text);">0 DA</b></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text-secondary);"><span>Livraison:</span><b id="orderDeliveryAmt" style="color:var(--text);">0 DA</b></div>
+          <div style="display:flex;justify-content:space-between;font-size:16px;color:var(--text);padding-top:10px;border-top:2px solid var(--border);margin-top:4px;"><span style="font-weight:900;">TOTAL:</span><b id="orderTotalPrice" style="color:var(--gold);font-size:20px;font-weight:900;">0 DA</b></div>
         </div>
       </div>
-
       <div class="form-section">
         <h3>🚚 Livraison</h3>
-        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-          <label class="radio-card" style="flex: 1;">
-            <input type="radio" name="orderDeliveryMethod" value="delivery" checked>
-            <span>🚚 Livraison</span>
-          </label>
-          <label class="radio-card" style="flex: 1;">
-            <input type="radio" name="orderDeliveryMethod" value="hand_to_hand">
-            <span>🤝 Main à main</span>
-          </label>
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <label class="radio-card" style="flex:1;"><input type="radio" name="orderDeliveryMethod" value="delivery" checked><span>🚚 Livraison</span></label>
+          <label class="radio-card" style="flex:1;"><input type="radio" name="orderDeliveryMethod" value="hand_to_hand"><span>🤝 Main à main</span></label>
         </div>
-
         <div id="deliveryFields">
           <input id="orderDeliveryCompany" placeholder="🏢 Société de livraison">
           <input id="orderTrackingNumber" placeholder="🔢 Numéro de suivi">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
             <input id="orderWilaya" placeholder="📍 Wilaya">
             <input id="orderBaladiya" placeholder="🏘️ Baladiya">
           </div>
           <input id="orderDeliveryAddress" placeholder="📫 Adresse complète">
           <input id="orderRecipientPhone" placeholder="📱 Téléphone destinataire" type="tel">
-          <label style="font-size: 11px; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 4px;">Date d'expédition</label>
+          <label style="font-size:11px;font-weight:800;color:var(--text-secondary);display:block;margin-bottom:4px;">Date d'expédition</label>
           <input id="orderShippingDate" type="date">
         </div>
       </div>
-
       <div class="form-section">
         <h3>📝 Notes</h3>
-        <textarea id="orderNotes" rows="3" placeholder="Notes internes..." style="width: 100%;"></textarea>
+        <textarea id="orderNotes" rows="3" placeholder="Notes internes..."></textarea>
       </div>
-
       <div id="newOrderError" class="result danger hidden"></div>
     </div>
-
     <div class="modal-footer">
       <button id="cancelNewOrderBtn" class="btn btn-ghost">✕ Annuler</button>
       <button id="createOrderBtn" class="btn btn-primary">✓ Créer la commande</button>
@@ -2158,9 +1781,6 @@
   </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- MODAL: Détails commande -->
-<!-- ============================================================ -->
 <div id="orderDetailsModal" class="modal-overlay hidden">
   <div class="modal-box">
     <div class="modal-header">
@@ -2172,9 +1792,6 @@
   </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- MODAL: Détails Marque -->
-<!-- ============================================================ -->
 <div id="brandDetailsModal" class="modal-overlay hidden">
   <div class="modal-box">
     <div class="modal-header">
@@ -2186,14 +1803,9 @@
   </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- TOAST CONTAINER -->
-<!-- ============================================================ -->
 <div class="toast-container" id="toastContainer"></div>
 
-<!-- ============================================================ -->
 <!-- SCRIPTS -->
-<!-- ============================================================ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -2223,10 +1835,7 @@
 
   if (installBtn) {
     installBtn.addEventListener('click', async () => {
-      if (!deferredPrompt) {
-        alert("Pour installer : menu du navigateur (⋮) → « Installer l'application »");
-        return;
-      }
+      if (!deferredPrompt) { alert("Menu navigateur → « Installer l'application »"); return; }
       deferredPrompt.prompt();
       await deferredPrompt.userChoice;
       deferredPrompt = null;
@@ -2256,110 +1865,10 @@
       const isDark = document.documentElement.classList.toggle('dark');
       localStorage.setItem('theme', isDark ? 'dark' : 'light');
       updateDarkIcon();
-      if (typeof window.__reloadCharts === 'function') {
-        setTimeout(window.__reloadCharts, 100);
-      }
+      if (typeof window.__reloadCharts === 'function') setTimeout(window.__reloadCharts, 100);
     });
   }
-
   updateDarkIcon();
-
-</script>
-  <script>
-    
-// ============================================================
-// 🔐 ADMIN LOGIN — Direct Function
-// ============================================================
-window.doAdminLogin = async function() {
-  console.log("🎯 doAdminLogin called");
-
-  const emailEl = document.getElementById("email");
-  const passwordEl = document.getElementById("password");
-  const btnEl = document.getElementById("loginBtn");
-  const errEl = document.getElementById("loginError");
-
-  const email = (emailEl?.value || "").trim().toLowerCase();
-  const password = passwordEl?.value || "";
-
-  if (!email || !password) {
-    if (errEl) {
-      errEl.className = "result danger";
-      errEl.innerHTML = "<p style='margin:0'>Veuillez remplir tous les champs.</p>";
-      errEl.classList.remove("hidden");
-    }
-    return;
-  }
-
-  // ✅ فحص الإيميل
-  const ADMIN_EMAILS = ["mepirf@gmail.com", "abderraoufhazam@gmail.com"];
-  if (!ADMIN_EMAILS.map(e => e.toLowerCase()).includes(email)) {
-    if (errEl) {
-      errEl.className = "result danger";
-      errEl.innerHTML = "<p style='margin:0'>⛔ Ce compte n'est pas autorisé.</p>";
-      errEl.classList.remove("hidden");
-    }
-    return;
-  }
-
-  if (errEl) errEl.classList.add("hidden");
-  if (btnEl) { btnEl.disabled = true; btnEl.textContent = "CONNEXION..."; }
-
-  try {
-    const _sb = supabase.createClient(
-      "https://qfpmbbntxyrderjlejql.supabase.co",
-      "sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m"
-    );
-
-    const { data, error } = await _sb.auth.signInWithPassword({
-      email: email,
-      password: password
-    });
-
-    if (error) {
-      console.log("❌ Login error:", error.message);
-      if (errEl) {
-        errEl.className = "result danger";
-        errEl.innerHTML = "<p style='margin:0'>" + error.message + "</p>";
-        errEl.classList.remove("hidden");
-      }
-      if (btnEl) { btnEl.disabled = false; btnEl.textContent = "SE CONNECTER"; }
-      return;
-    }
-
-    console.log("✅ Login success:", data.user.email);
-
-    // ✅ أظهر اللوحة
-    const lp = document.getElementById("loginPage");
-    const aa = document.getElementById("adminApp");
-    if (lp) lp.classList.add("hidden");
-    if (aa) aa.classList.remove("hidden");
-
-    // 🔄 Reload بعد لحظة ليعمل admin.js بالجلسة
-    // ✅ تشغيل refresh مباشرة (بدون reload)
-if (typeof window.__adminRefresh === "function") {
-  window.__adminRefresh();
-}
-
-  } catch (err) {
-    console.log("❌ Exception:", err);
-    if (errEl) {
-      errEl.className = "result danger";
-      errEl.innerHTML = "<p style='margin:0'>" + (err.message || "Erreur") + "</p>";
-      errEl.classList.remove("hidden");
-    }
-    if (btnEl) { btnEl.disabled = false; btnEl.textContent = "SE CONNECTER"; }
-  }
-};
-
-// ✅ أيضاً: اضغط Enter داخل الحقول → دخول
-document.getElementById("email")?.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") { e.preventDefault(); window.doAdminLogin(); }
-});
-document.getElementById("password")?.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") { e.preventDefault(); window.doAdminLogin(); }
-});
-
-console.log("✅ Admin login handler ready");
 </script>
 <script src="/bot-guard.js"></script>
 </body>
