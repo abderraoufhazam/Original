@@ -24,7 +24,6 @@
 
     :root {
       --bg: #f4f6fb;
-      --bg-gradient: linear-gradient(135deg, #eef2f9 0%, #f7f9fc 50%, #e8edf5 100%);
       --card-bg: #ffffff;
       --text: #0f172a;
       --text-muted: #64748b;
@@ -188,6 +187,119 @@
       box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.12);
     }
 
+    input:disabled {
+      background: var(--bg);
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+
+    /* Email + Send Button */
+    .email-row {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+    }
+
+    .email-row input {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .send-code-btn {
+      padding: 0 16px;
+      background: linear-gradient(135deg, #16a34a, #22c55e);
+      color: #fff;
+      border: 0;
+      border-radius: var(--radius);
+      font-weight: 800;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: inherit;
+      margin: 0;
+      min-width: 110px;
+    }
+
+    .send-code-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Verification code section */
+    .verify-section {
+      padding: 16px;
+      background: linear-gradient(160deg, #f0fdf4, #dcfce7);
+      border: 2px solid #22c55e;
+      border-radius: var(--radius);
+      margin: 12px 0;
+    }
+
+    html.dark .verify-section {
+      background: linear-gradient(160deg, rgba(22,163,74,0.1), rgba(34,197,94,0.05));
+      border-color: rgba(22,163,74,0.4);
+    }
+
+    .verify-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #166534;
+      margin: 0 0 6px;
+    }
+
+    html.dark .verify-title { color: #86efac; }
+
+    .verify-hint {
+      font-size: 11px;
+      color: #166534;
+      opacity: 0.8;
+      margin: 0 0 12px;
+      line-height: 1.5;
+    }
+
+    .code-input {
+      text-align: center;
+      font-family: 'Courier New', monospace;
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: 8px;
+      padding: 14px !important;
+    }
+
+    .verify-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #fff;
+      border: 0;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+      margin-top: 10px;
+    }
+
+    .verify-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Verified badge */
+    .verified-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: #dcfce7;
+      border: 1px solid #22c55e;
+      color: #166534;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 800;
+      margin-top: 6px;
+    }
+
+    /* Main submit */
     button[type="submit"] {
       width: 100%;
       padding: 14px 22px;
@@ -208,7 +320,11 @@
       gap: 8px;
     }
 
-    button[type="submit"]:disabled { opacity: 0.6; cursor: not-allowed; }
+    button[type="submit"]:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
 
     .msg {
       padding: 12px 14px;
@@ -259,15 +375,34 @@
       line-height: 1.7;
     }
 
-    .perks b { color: var(--text); display: block; margin-bottom: 6px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+    .perks b {
+      color: var(--text);
+      display: block;
+      margin-bottom: 6px;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
 
-    .perks ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+    .perks ul {
+      list-style: none;
+      padding: 0; margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
 
-    .perks li::before { content: "✓ "; color: var(--primary); font-weight: bold; }
+    .perks li::before {
+      content: "✓ ";
+      color: var(--primary);
+      font-weight: bold;
+    }
 
     @media (max-width: 480px) {
       .card { padding: 30px 22px 26px; }
       h1 { font-size: 21px; }
+      .email-row { flex-direction: column; }
+      .send-code-btn { padding: 12px; width: 100%; }
     }
   </style>
 </head>
@@ -299,7 +434,23 @@
 
       <div class="field">
         <label for="email" data-i18n="emailLabel">البريد الإلكتروني <span class="req">*</span></label>
-        <input id="email" type="email" placeholder="email@example.com" required autocomplete="email">
+        <div class="email-row">
+          <input id="email" type="email" placeholder="email@example.com" required autocomplete="email">
+          <button type="button" id="sendCodeBtn" class="send-code-btn" data-i18n="sendCodeBtn">📧 إرسال الكود</button>
+        </div>
+      </div>
+
+      <!-- كود التحقق -->
+      <div id="verifySection" class="verify-section hidden">
+        <h4 class="verify-title" data-i18n="verifyTitle">📬 تفقّد بريدك الإلكتروني</h4>
+        <p class="verify-hint" data-i18n="verifyHint">أدخل الكود المكوّن من 6 أرقام الذي أرسلناه إلى بريدك.</p>
+        <input id="verifyCode" type="text" inputmode="numeric" maxlength="6" class="code-input" placeholder="000000">
+        <button type="button" id="verifyBtn" class="verify-btn" data-i18n="verifyBtn">✓ تحقق من الكود</button>
+      </div>
+
+      <div id="verifiedBadge" class="verified-badge hidden">
+        <span>✓</span>
+        <span data-i18n="verifiedText">تم تأكيد البريد الإلكتروني</span>
       </div>
 
       <div class="field">
@@ -317,7 +468,7 @@
         <input id="password_confirm" type="password" placeholder="أعد كتابة كلمة المرور" required minlength="6" autocomplete="new-password">
       </div>
 
-      <button type="submit" id="submitBtn">
+      <button type="submit" id="submitBtn" disabled>
         <span>🚀</span>
         <span data-i18n="submitBtn">إنشاء حساب</span>
       </button>
@@ -350,6 +501,9 @@
 
   const $ = id => document.getElementById(id);
 
+  let emailVerified = false;
+  let verifiedEmail = "";
+
   const TRANSLATIONS = {
     ar: {
       backLink: "← الرئيسية",
@@ -357,10 +511,17 @@
       subtitle: "سجّل مجانًا وابدأ بحماية منتجاتك.",
       brandNameLabel: "اسم العلامة التجارية",
       emailLabel: "البريد الإلكتروني",
+      sendCodeBtn: "📧 إرسال الكود",
+      sending: "⏳...",
+      resend: "🔄 إعادة إرسال",
       phoneLabel: "رقم الهاتف (اختياري)",
       passwordLabel: "كلمة المرور",
       confirmLabel: "تأكيد كلمة المرور",
       submitBtn: "إنشاء حساب",
+      verifyTitle: "📬 تفقّد بريدك الإلكتروني",
+      verifyHint: "أدخل الكود المكوّن من 6 أرقام الذي أرسلناه إلى بريدك.",
+      verifyBtn: "✓ تحقق من الكود",
+      verifiedText: "تم تأكيد البريد الإلكتروني",
       perksTitle: "ما ستحصل عليه:",
       perk1: "لوحة تحكم كاملة لإدارة أكوادك",
       perk2: "تشفير AES-256 لحماية أكوادك",
@@ -373,10 +534,17 @@
       errPhone: "رقم الهاتف غير صالح.",
       errPassword: "كلمة المرور يجب أن تكون 6 أحرف على الأقل.",
       errPasswordMatch: "كلمتا المرور غير متطابقتين.",
+      errVerifyFirst: "⚠️ يجب تأكيد بريدك الإلكتروني أولاً.",
       errExists: "هذا البريد مستعمل بالفعل. جرّب تسجيل الدخول.",
       errGeneric: "حدث خطأ. الرجاء المحاولة مجددًا.",
       successMsg: "✓ تم إنشاء الحساب بنجاح! جارٍ التحويل...",
-      creating: "جارٍ الإنشاء..."
+      creating: "جارٍ الإنشاء...",
+      codeSent: "✓ تم إرسال الكود إلى بريدك",
+      codeRequired: "الرجاء إدخال الكود.",
+      codeInvalid: "الكود يجب أن يكون 6 أرقام.",
+      codeCorrect: "✅ تم تأكيد البريد بنجاح!",
+      errCodeSend: "فشل إرسال الكود.",
+      errCodeCheck: "الكود خاطئ. حاول مجدداً."
     },
     fr: {
       backLink: "← Accueil",
@@ -384,10 +552,17 @@
       subtitle: "Inscrivez-vous gratuitement et protégez vos produits.",
       brandNameLabel: "Nom de la marque",
       emailLabel: "Adresse e-mail",
+      sendCodeBtn: "📧 Envoyer",
+      sending: "⏳...",
+      resend: "🔄 Renvoyer",
       phoneLabel: "Téléphone (optionnel)",
       passwordLabel: "Mot de passe",
       confirmLabel: "Confirmer le mot de passe",
       submitBtn: "Créer un compte",
+      verifyTitle: "📬 Vérifiez votre email",
+      verifyHint: "Entrez le code à 6 chiffres envoyé à votre adresse.",
+      verifyBtn: "✓ Vérifier le code",
+      verifiedText: "Email vérifié",
       perksTitle: "Ce que vous obtiendrez :",
       perk1: "Tableau de bord complet",
       perk2: "Chiffrement AES-256",
@@ -400,10 +575,17 @@
       errPhone: "Numéro de téléphone invalide.",
       errPassword: "Le mot de passe doit faire au moins 6 caractères.",
       errPasswordMatch: "Les mots de passe ne correspondent pas.",
+      errVerifyFirst: "⚠️ Vérifiez d'abord votre email.",
       errExists: "Cet email est déjà utilisé. Connectez-vous.",
       errGeneric: "Une erreur est survenue. Réessayez.",
       successMsg: "✓ Compte créé avec succès ! Redirection...",
-      creating: "Création..."
+      creating: "Création...",
+      codeSent: "✓ Code envoyé à votre email",
+      codeRequired: "Veuillez saisir le code.",
+      codeInvalid: "Le code doit contenir 6 chiffres.",
+      codeCorrect: "✅ Email vérifié avec succès !",
+      errCodeSend: "Échec de l'envoi du code.",
+      errCodeCheck: "Code incorrect. Réessayez."
     },
     en: {
       backLink: "← Home",
@@ -411,10 +593,17 @@
       subtitle: "Sign up for free and protect your products.",
       brandNameLabel: "Brand name",
       emailLabel: "Email",
+      sendCodeBtn: "📧 Send",
+      sending: "⏳...",
+      resend: "🔄 Resend",
       phoneLabel: "Phone (optional)",
       passwordLabel: "Password",
       confirmLabel: "Confirm password",
       submitBtn: "Create account",
+      verifyTitle: "📬 Check your email",
+      verifyHint: "Enter the 6-digit code sent to your address.",
+      verifyBtn: "✓ Verify code",
+      verifiedText: "Email verified",
       perksTitle: "What you'll get:",
       perk1: "Full dashboard",
       perk2: "AES-256 encryption",
@@ -427,10 +616,17 @@
       errPhone: "Invalid phone number.",
       errPassword: "Password must be at least 6 characters.",
       errPasswordMatch: "Passwords do not match.",
+      errVerifyFirst: "⚠️ Please verify your email first.",
       errExists: "This email is already registered. Try logging in.",
       errGeneric: "An error occurred. Please try again.",
       successMsg: "✓ Account created successfully! Redirecting...",
-      creating: "Creating..."
+      creating: "Creating...",
+      codeSent: "✓ Code sent to your email",
+      codeRequired: "Please enter the code.",
+      codeInvalid: "Code must be 6 digits.",
+      codeCorrect: "✅ Email verified successfully!",
+      errCodeSend: "Failed to send code.",
+      errCodeCheck: "Incorrect code. Try again."
     }
   };
 
@@ -474,46 +670,182 @@
 
   applyTranslations();
 
+  // ============================================================
+  // الرسائل
+  // ============================================================
   function showMsg(text, type) {
     const el = $("msg");
     el.className = "msg " + type;
     el.textContent = text;
     el.classList.remove("hidden");
   }
+  function hideMsg() { $("msg").classList.add("hidden"); }
 
-  function hideMsg() {
-    $("msg").classList.add("hidden");
-  }
+  // ============================================================
+  // إرسال كود التحقق
+  // ============================================================
+  const sendCodeBtn = $("sendCodeBtn");
+  const verifySection = $("verifySection");
+  const verifiedBadge = $("verifiedBadge");
+  const verifyCodeInput = $("verifyCode");
+  const verifyBtn = $("verifyBtn");
+  const emailInput = $("email");
+  const brandInput = $("brand_name");
+  const submitBtn = $("submitBtn");
 
+  sendCodeBtn.addEventListener("click", async () => {
+    hideMsg();
+    const email = emailInput.value.trim().toLowerCase();
+    const brandName = brandInput.value.trim();
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return showMsg(t("errEmail"), "error");
+    }
+
+    sendCodeBtn.disabled = true;
+    sendCodeBtn.textContent = t("sending");
+
+    try {
+      const res = await fetch("/api/verify-email?action=send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email,
+          brand_name: brandName || "Client"
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.status === "OK") {
+        showMsg(t("codeSent"), "success");
+        verifySection.classList.remove("hidden");
+        verifyCodeInput.value = "";
+        verifyCodeInput.focus();
+        emailInput.disabled = true;
+
+        sendCodeBtn.textContent = t("resend");
+        sendCodeBtn.disabled = false;
+
+        // عداد 60 ثانية
+        let seconds = 60;
+        sendCodeBtn.disabled = true;
+        const interval = setInterval(() => {
+          seconds--;
+          if (seconds <= 0) {
+            clearInterval(interval);
+            sendCodeBtn.disabled = false;
+            sendCodeBtn.textContent = t("resend");
+          } else {
+            sendCodeBtn.textContent = `⏱ ${seconds}s`;
+          }
+        }, 1000);
+
+      } else {
+        showMsg(data.message || t("errCodeSend"), "error");
+        sendCodeBtn.disabled = false;
+        sendCodeBtn.textContent = t("sendCodeBtn");
+      }
+    } catch (err) {
+      showMsg("Erreur réseau : " + err.message, "error");
+      sendCodeBtn.disabled = false;
+      sendCodeBtn.textContent = t("sendCodeBtn");
+    }
+  });
+
+  // ============================================================
+  // التحقق من الكود
+  // ============================================================
+  verifyBtn.addEventListener("click", async () => {
+    hideMsg();
+    const email = emailInput.value.trim().toLowerCase();
+    const code = verifyCodeInput.value.trim();
+
+    if (!code) return showMsg(t("codeRequired"), "error");
+    if (!/^\d{6}$/.test(code)) return showMsg(t("codeInvalid"), "error");
+
+    verifyBtn.disabled = true;
+    verifyBtn.textContent = "⏳...";
+
+    try {
+      const res = await fetch("/api/verify-email?action=check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email, code: code })
+      });
+
+      const data = await res.json();
+
+      if (data.status === "OK") {
+        showMsg(t("codeCorrect"), "success");
+        verifySection.classList.add("hidden");
+        verifiedBadge.classList.remove("hidden");
+        emailVerified = true;
+        verifiedEmail = email;
+
+        // فعّل زر التسجيل
+        submitBtn.disabled = false;
+
+        // اقفل حقول البريد
+        sendCodeBtn.disabled = true;
+        sendCodeBtn.style.display = "none";
+      } else {
+        showMsg(data.message || t("errCodeCheck"), "error");
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = t("verifyBtn");
+      }
+    } catch (err) {
+      showMsg("Erreur réseau : " + err.message, "error");
+      verifyBtn.disabled = false;
+      verifyBtn.textContent = t("verifyBtn");
+    }
+  });
+
+  // إدخال الأرقام فقط
+  verifyCodeInput.addEventListener("input", (e) => {
+    e.target.value = e.target.value.replace(/[^0-9]/g, "").slice(0, 6);
+  });
+
+  // إعادة تعيين الحالة عند تغيير الإيميل
+  emailInput.addEventListener("input", () => {
+    if (emailVerified && emailInput.value.trim().toLowerCase() !== verifiedEmail) {
+      emailVerified = false;
+      verifiedEmail = "";
+      verifiedBadge.classList.add("hidden");
+      verifySection.classList.add("hidden");
+      submitBtn.disabled = true;
+      sendCodeBtn.style.display = "block";
+      sendCodeBtn.disabled = false;
+      sendCodeBtn.textContent = t("sendCodeBtn");
+      emailInput.disabled = false;
+    }
+  });
+
+  // ============================================================
+  // إنشاء الحساب
+  // ============================================================
   $("signupForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     hideMsg();
 
-    const brandName = $("brand_name").value.trim();
-    const email = $("email").value.trim().toLowerCase();
+    if (!emailVerified) {
+      return showMsg(t("errVerifyFirst"), "error");
+    }
+
+    const brandName = brandInput.value.trim();
+    const email = emailInput.value.trim().toLowerCase();
     const phone = $("phone").value.trim();
     const password = $("password").value;
     const passwordConfirm = $("password_confirm").value;
 
-    if (!brandName || brandName.length < 2) {
-      return showMsg(t("errBrand"), "error");
-    }
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return showMsg(t("errEmail"), "error");
-    }
-    if (phone && !/^[\+\d\s\-\(\)]{6,20}$/.test(phone)) {
-      return showMsg(t("errPhone"), "error");
-    }
-    if (!password || password.length < 6) {
-      return showMsg(t("errPassword"), "error");
-    }
-    if (password !== passwordConfirm) {
-      return showMsg(t("errPasswordMatch"), "error");
-    }
+    if (!brandName || brandName.length < 2) return showMsg(t("errBrand"), "error");
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMsg(t("errEmail"), "error");
+    if (phone && !/^[\+\d\s\-\(\)]{6,20}$/.test(phone)) return showMsg(t("errPhone"), "error");
+    if (!password || password.length < 6) return showMsg(t("errPassword"), "error");
+    if (password !== passwordConfirm) return showMsg(t("errPasswordMatch"), "error");
 
-    const btn = $("submitBtn");
-    btn.disabled = true;
-    btn.innerHTML = `<span>⏳</span><span>${t("creating")}</span>`;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<span>⏳</span><span>${t("creating")}</span>`;
 
     try {
       const { data, error } = await sb.auth.signUp({
@@ -523,7 +855,8 @@
           data: {
             role: "brand",
             brand_name: brandName,
-            phone: phone || null
+            phone: phone || null,
+            email_verified: true
           }
         }
       });
@@ -535,12 +868,12 @@
         } else {
           showMsg(error.message, "error");
         }
-        btn.disabled = false;
-        btn.innerHTML = `<span>🚀</span><span>${t("submitBtn")}</span>`;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<span>🚀</span><span>${t("submitBtn")}</span>`;
         return;
       }
 
-      // Insert brand message automatiquement (premier contact)
+      // رسالة ترحيب
       try {
         await sb.from("brand_messages").insert({
           user_id: data.user.id,
@@ -554,7 +887,7 @@
         console.warn("Message auto non envoyé:", msgErr);
       }
 
-      // 🔔 إشعار واتساب للأدمن (non-bloquant)
+      // إشعار واتساب للأدمن
       try {
         fetch("/api/submit?type=signup", {
           method: "POST",
@@ -570,7 +903,7 @@
       }
 
       showMsg(t("successMsg"), "success");
-      btn.innerHTML = `<span>✓</span><span>${t("submitBtn")}</span>`;
+      submitBtn.innerHTML = `<span>✓</span><span>${t("submitBtn")}</span>`;
 
       setTimeout(() => {
         window.location.href = "/brand";
@@ -579,8 +912,8 @@
     } catch (err) {
       console.error(err);
       showMsg(t("errGeneric"), "error");
-      btn.disabled = false;
-      btn.innerHTML = `<span>🚀</span><span>${t("submitBtn")}</span>`;
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `<span>🚀</span><span>${t("submitBtn")}</span>`;
     }
   });
 </script>
