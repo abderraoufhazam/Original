@@ -479,7 +479,7 @@ async function loadBrands() {
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
             ${b.phone ? `<a href="https://wa.me/${encodeURIComponent(b.phone.replace(/[^0-9]/g,''))}?text=${encodeURIComponent('Bonjour ' + (b.brand_name || '') + ', bienvenue sur Produit dz ORG !')}" target="_blank" rel="noopener" style="flex:1;padding:8px 12px;background:#25D366;color:#fff;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none;text-align:center;min-width:110px;display:inline-flex;align-items:center;justify-content:center;gap:4px">💬 WhatsApp</a>` : ""}
             ${b.email ? `<a href="mailto:${escapeHtml(b.email)}" style="flex:1;padding:8px 12px;background:#0f172a;color:#fff;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none;text-align:center;min-width:110px;display:inline-flex;align-items:center;justify-content:center;gap:4px">📧 Email</a>` : ""}
-            <button onclick="openOrderForBrand('${escapeHtml(b.brand_name).replace(/'/g, "\\'")}','${escapeHtml(b.phone || '').replace(/'/g, "\\'")}','${escapeHtml(b.email || '').replace(/'/g, "\\'")}')" style="flex:1;padding:8px 12px;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border:0;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;margin:0;min-width:110px">📋 Commander</button>
+            <button onclick="openBrandDetails('${escapeHtml(b.brand_name).replace(/'/g, "\\'")}')" style="flex:1;padding:8px 12px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;border:0;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;margin:0;min-width:110px">👁 Voir détails</button>
           </div>
         </div>`;
     });
@@ -3083,3 +3083,208 @@ document.querySelectorAll("#feedbackTabs .tab").forEach(t => {
     loadFeedback();
   });
 });
+
+
+// ============================================================
+// BRAND DETAILS MODAL
+// ============================================================
+window.openBrandDetails = async function(brandName) {
+  const modal = $("brandDetailsModal");
+  const body = $("brandDetailsBody");
+  const footer = $("brandDetailsFooter");
+  const title = $("brandDetailsTitle");
+
+  if (!modal) return;
+
+  modal.classList.remove("hidden");
+  body.innerHTML = `<p class="muted" style="text-align:center;padding:30px 0">Chargement...</p>`;
+  footer.innerHTML = "";
+  title.textContent = `🏢 ${brandName}`;
+
+  try {
+    // 1. جلب معلومات الماركة من القائمة المحفوظة
+    const brand = (window.__allBrands || allBrandsCache || []).find(b =>
+      b.brand_name.toLowerCase() === brandName.toLowerCase()
+    );
+
+    if (!brand) {
+      body.innerHTML = `<p class="muted">Marque introuvable.</p>`;
+      return;
+    }
+
+    // 2. جلب طلبات هذه الماركة
+    const token = await getAdminToken();
+    let orders = [];
+    if (token) {
+      try {
+        const res = await fetch("/api/orders?action=list", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            access_token: token,
+            search: brandName,
+            limit: 10
+          })
+        });
+        const data = await res.json();
+        if (data.status === "OK") {
+          orders = (data.orders || []).filter(o =>
+            o.brand_name.toLowerCase() === brandName.toLowerCase()
+          );
+        }
+      } catch (e) {
+        console.warn("orders fetch:", e);
+      }
+    }
+
+    // 3. بناء المحتوى
+    const tierIcons = { 'VIP': '💎', 'GOLD': '🥇', 'SILVER': '🥈', 'REGULAR': '👤' };
+    const tier = brand.tier || 'REGULAR';
+
+    let ordersHtml = "";
+    if (orders.length === 0) {
+      ordersHtml = `<p style="text-align:center;padding:16px 0;color:var(--text-muted);font-size:12px">Aucune commande</p>`;
+    } else {
+      const statusLabels = {
+        IN_PRODUCTION: "🟡",
+        READY: "📦",
+        HANDED_TO_CARRIER: "🟣",
+        SHIPPED: "🚚",
+        AWAITING_PICKUP: "🟠",
+        AWAITING_HANDOVER: "⏳",
+        DELIVERED: "✅",
+        PAID: "💰",
+        CANCELLED: "❌"
+      };
+
+      orders.slice(0, 5).forEach(o => {
+        const date = o.created_at ? new Date(o.created_at).toLocaleDateString("fr-FR") : "—";
+        const payIcon = o.payment_status === "PAID" ? "✅" : o.payment_status === "PARTIAL" ? "🟡" : "❌";
+
+        ordersHtml += `
+          <div style="padding:10px 12px;background:var(--bg);border-radius:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px">
+            <div style="min-width:0;flex:1">
+              <div style="font-family:monospace;font-weight:800;font-size:12px;color:var(--text);word-break:break-all">${escapeHtml(o.order_number)}</div>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:4px">📅 ${escapeHtml(date)} ${statusLabels[o.order_status] || ""} ${payIcon}</div>
+            </div>
+            <div style="font-weight:900;font-size:13px;color:#16a34a;white-space:nowrap">${formatMoney(o.total_price)}</div>
+          </div>
+        `;
+      });
+    }
+
+    const html = `
+      <div style="text-align:center;padding:16px 0 20px">
+        <div style="font-size:48px;margin-bottom:8px">🏢</div>
+        <h2 style="margin:0 0 6px;font-size:22px;font-weight:900">${escapeHtml(brand.brand_name)}</h2>
+        <div style="display:inline-flex;gap:6px;align-items:center;padding:4px 12px;background:var(--bg);border-radius:100px;font-size:11px;font-weight:800">
+          ${brand.is_registered ? '✅ Inscrite' : '⚠️ Non inscrite'} · ${tierIcons[tier]} ${tier}
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px">
+        <div style="text-align:center;padding:12px 8px;background:var(--bg);border-radius:12px">
+          <div style="font-size:20px;font-weight:900;color:var(--text)">${brand.codes_count || 0}</div>
+          <div style="font-size:9px;color:var(--text-muted);font-weight:800;letter-spacing:0.5px;margin-top:4px">📦 CODES</div>
+        </div>
+        <div style="text-align:center;padding:12px 8px;background:var(--bg);border-radius:12px">
+          <div style="font-size:20px;font-weight:900;color:var(--text)">${brand.total_orders || 0}</div>
+          <div style="font-size:9px;color:var(--text-muted);font-weight:800;letter-spacing:0.5px;margin-top:4px">📋 COMMANDES</div>
+        </div>
+        <div style="text-align:center;padding:12px 8px;background:var(--bg);border-radius:12px">
+          <div style="font-size:14px;font-weight:900;color:#16a34a">${formatMoney(brand.total_spent || 0)}</div>
+          <div style="font-size:9px;color:var(--text-muted);font-weight:800;letter-spacing:0.5px;margin-top:4px">💰 DÉPENSÉ</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <h3 style="font-size:12px;font-weight:900;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin:0 0 10px">📞 Contact</h3>
+        <div style="padding:12px 14px;background:var(--bg);border-radius:12px;font-size:13px">
+          ${brand.phone ? `<div style="margin-bottom:6px">📱 <b>${escapeHtml(brand.phone)}</b></div>` : '<div style="color:var(--text-muted);margin-bottom:6px">📱 Non renseigné</div>'}
+          ${brand.email ? `<div>📧 <b>${escapeHtml(brand.email)}</b></div>` : '<div style="color:var(--text-muted)">📧 Non renseigné</div>'}
+        </div>
+      </div>
+
+      <div>
+        <h3 style="font-size:12px;font-weight:900;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin:0 0 10px">📋 Commandes récentes</h3>
+        ${ordersHtml}
+      </div>
+    `;
+
+    body.innerHTML = html;
+
+    footer.innerHTML = `
+      <button id="addOrderFromBrand" style="background:linear-gradient(135deg,#16a34a,#22c55e);font-weight:800">➕ Nouvelle commande</button>
+      ${brand.phone ? `<a href="https://wa.me/${encodeURIComponent(brand.phone.replace(/[^0-9]/g,''))}?text=${encodeURIComponent('Bonjour ' + brand.brand_name + ' 👋')}" target="_blank" rel="noopener" style="flex:1;padding:14px 22px;background:#25D366;color:#fff;border-radius:14px;font-weight:800;text-decoration:none;text-align:center;display:inline-flex;align-items:center;justify-content:center;font-size:14px">💬 WhatsApp</a>` : ""}
+    `;
+
+    $("addOrderFromBrand").onclick = () => {
+      modal.classList.add("hidden");
+      openNewOrderWithBrand(brand);
+    };
+
+  } catch (e) {
+    body.innerHTML = `<p class="muted">Erreur : ${escapeHtml(e.message)}</p>`;
+  }
+};
+
+// فتح نموذج الطلب مع تعبئة تلقائية
+async function openNewOrderWithBrand(brand) {
+  const modal = $("newOrderModal");
+  if (!modal) return;
+
+  modal.classList.remove("hidden");
+  const errBox = $("newOrderError");
+  if (errBox) errBox.classList.add("hidden");
+
+  // تفريغ الحقول
+  if ($("orderBrand")) $("orderBrand").value = brand.brand_name || "";
+  if ($("orderBrandPhone")) $("orderBrandPhone").value = brand.phone || "";
+  if ($("orderBrandEmail")) $("orderBrandEmail").value = brand.email || "";
+  if ($("orderUnitPrice")) $("orderUnitPrice").value = "15";
+  if ($("orderDiscount")) $("orderDiscount").value = "0";
+  if ($("orderDeliveryCost")) $("orderDeliveryCost").value = "0";
+  if ($("orderTva")) $("orderTva").value = "0";
+  if ($("orderNotes")) $("orderNotes").value = "";
+  if ($("orderDeliveryCompany")) $("orderDeliveryCompany").value = "";
+  if ($("orderTrackingNumber")) $("orderTrackingNumber").value = "";
+  if ($("orderWilaya")) $("orderWilaya").value = "";
+  if ($("orderBaladiya")) $("orderBaladiya").value = "";
+  if ($("orderDeliveryAddress")) $("orderDeliveryAddress").value = "";
+  if ($("orderRecipientPhone")) $("orderRecipientPhone").value = "";
+  if ($("orderShippingDate")) $("orderShippingDate").value = "";
+
+  // تحديث hint
+  const hint = $("brandHint");
+  if (hint) {
+    if (brand.is_registered) {
+      hint.textContent = `✅ Marque inscrite — ${brand.codes_count || 0} codes — ${brand.tier || 'REGULAR'}`;
+      hint.style.color = "#16a34a";
+    } else {
+      hint.textContent = `⚠️ Marque non inscrite — ${brand.codes_count || 0} codes existants`;
+      hint.style.color = "#eab308";
+    }
+  }
+
+  const deliveryRadio = document.querySelector('input[name="orderDeliveryMethod"][value="delivery"]');
+  if (deliveryRadio) deliveryRadio.checked = true;
+  const df = $("deliveryFields");
+  if (df) df.style.display = "block";
+
+  currentOrderItems = [{ lot_number: "", quantity: 0 }];
+  renderOrderItems();
+  updateOrderTotals();
+  await loadBrandsForDatalist();
+}
+
+// إغلاق modal الماركة
+const _cbdb = $("closeBrandDetailsBtn");
+if (_cbdb) _cbdb.onclick = () => $("brandDetailsModal").classList.add("hidden");
+
+// إغلاق عند الضغط خارج
+const _bdm = $("brandDetailsModal");
+if (_bdm) {
+  _bdm.addEventListener("click", (e) => {
+    if (e.target === _bdm) _bdm.classList.add("hidden");
+  });
+}
