@@ -52,17 +52,7 @@ const SUPABASE_URL = "https://qfpmbbntxyrderjlejql.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const ADMIN_EMAILS = [
-  "mepirf@gmail.com",
-  "abderraoufhazam@gmail.com"
-];
-
 const $ = id => document.getElementById(id);
-
-function isAdminEmail(email) {
-  if (!email) return false;
-  return ADMIN_EMAILS.map(e => e.toLowerCase().trim()).includes(email.toLowerCase().trim());
-}
 
 function showMsg(text, type = "danger") {
   const el = $("loginMsg");
@@ -71,17 +61,29 @@ function showMsg(text, type = "danger") {
   el.classList.remove("hidden");
 }
 
+// ✅ استدعاء السيرفر للتحقق من صلاحية الأدمن
+async function checkAdminServer(token) {
+  try {
+    const res = await fetch("/api/check-admin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ access_token: token })
+    });
+    const data = await res.json();
+    return data.isAdmin === true;
+  } catch (e) {
+    console.warn("check-admin error:", e);
+    return false;
+  }
+}
+
 // إذا كان المستخدم مسجّل دخول بالفعل → وجّهه حسب دوره
 async function checkExistingSession() {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) return;
 
-  const email = (session.user.email || "").toLowerCase().trim();
-  if (isAdminEmail(email)) {
-    window.location.href = "/admin.html";
-  } else {
-    window.location.href = "/brand";
-  }
+  const isAdmin = await checkAdminServer(session.access_token);
+  window.location.href = isAdmin ? "/admin.html" : "/brand";
 }
 
 checkExistingSession();
@@ -110,14 +112,9 @@ $("loginForm").addEventListener("submit", async (e) => {
     return;
   }
 
-  // ✅ نجح الدخول → وجّه حسب الدور
-  const userEmail = (data.user.email || "").toLowerCase().trim();
-
-  if (isAdminEmail(userEmail)) {
-    window.location.href = "/admin.html";
-  } else {
-    window.location.href = "/brand";
-  }
+  // ✅ اسأل السيرفر: هل هذا أدمن؟
+  const isAdmin = await checkAdminServer(data.session.access_token);
+  window.location.href = isAdmin ? "/admin.html" : "/brand";
 });
 
 const darkToggle = $("darkToggle");
