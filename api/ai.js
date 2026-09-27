@@ -48,11 +48,11 @@ async function handleChat(req, res) {
     let systemPrompt = `Tu es l'assistant virtuel officiel de "Produit dz ORG", un service algérien de vérification d'authenticité de produits par QR code.
 Aide les clients avec la vérification d'authenticité, le scan du QR, la zone à gratter, et les résultats (PRODUIT ORIGINAL, CODE DÉJÀ UTILISÉ, PRODUIT NON ORIGINAL).
 
-RÈGLES STRICTES :
+RÈGLES ABSOLUES :
 - Réponds UNIQUEMENT avec la réponse finale pour le client.
-- N'affiche JAMAIS ton raisonnement, tes brouillons, tes notes, ton "thinking" ou des préfixes comme "* User question:", "* Intent:", "* Draft:", "* Language:" etc.
-- Pas de listes numérotées internes ni de meta-commentaires.
-- Réponds en 2-3 phrases maximum, directement et clairement.
+- N'affiche JAMAIS ton raisonnement, tes brouillons, tes notes, ton "thinking", tes préfixes ou tes listes internes.
+- Pas de "* Role:", "* Goal:", "* User says:", "* Constraints:", "* Draft:", etc.
+- Réponds en 2-3 phrases maximum.
 - Adapte-toi à la langue du client (français, arabe ou anglais).
 - Sois chaleureux et professionnel.`;
 
@@ -94,12 +94,20 @@ RÈGLES STRICTES :
         'gemini-2.0-flash-001',
         'gemini-2.5-flash',
         'gemini-1.5-flash',
-        'gemini-1.5-flash-latest',
-        'gemini-1.5-pro'
+        'gemini-1.5-flash-latest'
       ];
     }
 
-    const preferred = ['gemini-2.0-flash', 'gemini-2.0-flash-001', 'gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-2.5-flash'];
+    // 🔥 الأولوية: 2.0 قبل 2.5 (لأن 2.0 لا يفكر)
+    const preferred = [
+      'gemini-2.0-flash',
+      'gemini-2.0-flash-001',
+      'gemini-2.0-flash-lite',
+      'gemini-1.5-flash',
+      'gemini-1.5-flash-latest',
+      'gemini-2.5-flash',
+      'gemini-2.5-flash-lite'
+    ];
     availableModels.sort((a, b) => {
       const ai = preferred.indexOf(a);
       const bi = preferred.indexOf(b);
@@ -115,6 +123,17 @@ RÈGLES STRICTES :
 
     for (const model of availableModels) {
       try {
+        const is25 = model.includes('2.5');
+
+        // ✅ thinkingConfig فقط لموديلات 2.5
+        const generationConfig = {
+          temperature: 0.7,
+          maxOutputTokens: 500
+        };
+        if (is25) {
+          generationConfig.thinkingConfig = { thinkingBudget: 0 };
+        }
+
         const r = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
           {
@@ -123,10 +142,7 @@ RÈGLES STRICTES :
             body: JSON.stringify({
               systemInstruction: { parts: [{ text: systemPrompt }] },
               contents: contents,
-              generationConfig: {
-               temperature: 0.7,
-               maxOutputTokens: 500
-             }
+              generationConfig
             })
           }
         );
@@ -134,9 +150,11 @@ RÈGLES STRICTES :
         if (r.ok) {
           geminiData = JSON.parse(text);
           usedModel = model;
+          console.log('✅ Chat success with model:', model);
           break;
         } else {
           lastError = { status: r.status, model: model, body: text.slice(0, 200) };
+          console.warn(`⚠️ Model ${model} failed:`, r.status);
         }
       } catch (e) {
         lastError = { status: 'exception', model: model, body: String(e).slice(0, 200) };
@@ -147,19 +165,21 @@ RÈGLES STRICTES :
       return res.status(500).json({
         status: 'ERROR',
         message: 'Gemini error',
-        detail: JSON.stringify(lastError),
-        availableModels: availableModels
+        detail: JSON.stringify(lastError)
       });
     }
 
     let reply = '';
     try {
       const candidate = geminiData.candidates[0];
-      const parts = candidate.content.parts || [];
-      const fullText = parts.map(p => p.text || '').join('').trim();
+      const allParts = candidate.content.parts || [];
+
+      // 🔥 إزالة أجزاء "التفكير" الداخلي
+      const realParts = allParts.filter(p => !p.thought);
+      const fullText = realParts.map(p => p.text || '').join('').trim();
 
       reply = fullText
-        .replace(/^\*\s*(User question|Language|Intent|Draft\s*\d*|Brief|Refining|Acknowledge|Explain|Mention)[^\n]*\n?/gim, '')
+        .replace(/^\*\s*(User says|Role|Goal|Constraints|The user|I need|Language|Draft\s*\d*|Brief|Refining|Acknowledge|Explain|Mention|Max\s+\d)[^\n]*\n?/gim, '')
         .replace(/\*\s*Draft\s*\d*\s*\([^)]*\):?\*?\s*/gi, '')
         .replace(/^\*+\s*/gm, '')
         .replace(/\n{3,}/g, '\n\n')
@@ -262,16 +282,16 @@ Ne mets AUCUN texte avant ou après le JSON.`;
         if (geminiRes.ok) {
           geminiData = await geminiRes.json();
           usedModel = model;
-          console.log('✅ Success with model:', model);
+          console.log('✅ Analyze success with model:', model);
           break;
         } else {
           const errText = await geminiRes.text();
           lastError = { status: geminiRes.status, model, body: errText.slice(0, 250) };
-          console.warn(`⚠️ Model ${model} failed:`, geminiRes.status);
+          console.warn(`⚠️ Analyze model ${model} failed:`, geminiRes.status);
         }
       } catch (err) {
         lastError = { status: 'exception', model, body: String(err).slice(0, 250) };
-        console.warn(`❌ Model ${model} exception:`, err);
+        console.warn(`❌ Analyze model ${model} exception:`, err);
       }
     }
 
@@ -288,7 +308,11 @@ Ne mets AUCUN texte avant ou après le JSON.`;
 
     let result = null;
     try {
-      const text = geminiData.candidates[0].content.parts[0].text;
+      const candidate = geminiData.candidates[0];
+      const allParts = candidate.content.parts || [];
+      // فلترة أجزاء التفكير إن وجدت
+      const realParts = allParts.filter(p => !p.thought);
+      const text = realParts.map(p => p.text || '').join('');
       const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
       result = JSON.parse(cleaned);
     } catch (e) {
