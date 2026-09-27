@@ -11,6 +11,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
   <script>
     (function() {
@@ -244,6 +245,14 @@
       box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.12);
     }
 
+    /* Turnstile */
+    .turnstile-wrap {
+      display: flex;
+      justify-content: center;
+      margin: 8px 0;
+      min-height: 65px;
+    }
+
     button[type="submit"] {
       width: 100%;
       padding: 14px 22px;
@@ -376,6 +385,14 @@
         <textarea id="message" placeholder="اكتب رسالتك هنا..." required maxlength="2000"></textarea>
       </div>
 
+      <!-- Turnstile Widget -->
+      <div class="turnstile-wrap">
+        <div class="cf-turnstile"
+             data-sitekey="0x4AAAAAAFFX92wdV_tKDjqB"
+             data-theme="auto"
+             data-size="normal"></div>
+      </div>
+
       <button type="submit" id="submitBtn">
         <span>📨</span>
         <span data-i18n="submitBtn">إرسال الرسالة</span>
@@ -429,6 +446,7 @@
       sending: "جارٍ الإرسال...",
       errSubject: "الرجاء إدخال موضوع الرسالة.",
       errMessage: "الرجاء إدخال الرسالة (10 أحرف على الأقل).",
+      errTurnstile: "⚠️ الرجاء إكمال التحقق من الأمان.",
       errNotLogged: "يجب تسجيل الدخول أولًا.",
       errGeneric: "حدث خطأ. الرجاء المحاولة مجددًا.",
       successMsg: "✓ تم إرسال رسالتك بنجاح! سنرد عليك قريبًا.",
@@ -450,6 +468,7 @@
       sending: "Envoi...",
       errSubject: "Veuillez saisir un sujet.",
       errMessage: "Veuillez saisir un message (10 caractères min).",
+      errTurnstile: "⚠️ Veuillez compléter la vérification de sécurité.",
       errNotLogged: "Vous devez vous connecter d'abord.",
       errGeneric: "Une erreur est survenue. Réessayez.",
       successMsg: "✓ Message envoyé avec succès !",
@@ -471,6 +490,7 @@
       sending: "Sending...",
       errSubject: "Please enter a subject.",
       errMessage: "Please enter a message (min 10 characters).",
+      errTurnstile: "⚠️ Please complete the security verification.",
       errNotLogged: "You must be logged in first.",
       errGeneric: "An error occurred. Please try again.",
       successMsg: "✓ Message sent successfully!",
@@ -563,6 +583,12 @@
       return showMsg(t("errMessage"), "error");
     }
 
+    // 🔒 التحقق من Turnstile
+    const turnstileToken = document.querySelector('[name="cf-turnstile-response"]')?.value || '';
+    if (!turnstileToken) {
+      return showMsg(t("errTurnstile"), "error");
+    }
+
     const btn = $("submitBtn");
     btn.disabled = true;
     btn.innerHTML = `<span>⏳</span><span>${t("sending")}</span>`;
@@ -586,7 +612,7 @@
         return;
       }
 
-      // 🔔 إشعار واتساب للأدمن (non-bloquant)
+      // 🔔 إشعار واتساب للأدمن + Turnstile
       try {
         fetch("/api/submit?type=message", {
           method: "POST",
@@ -596,7 +622,8 @@
             email: currentUser.email,
             phone: userMeta.phone || null,
             subject: subject,
-            message: message
+            message: message,
+            turnstile_token: turnstileToken
           })
         }).catch(e => console.warn("Notify error:", e));
       } catch (e) {
