@@ -10,6 +10,7 @@
   <link rel="apple-touch-icon" href="/icon.png">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
   <script>
     (function() {
@@ -299,6 +300,14 @@
       margin-top: 6px;
     }
 
+    /* Turnstile */
+    .turnstile-wrap {
+      display: flex;
+      justify-content: center;
+      margin: 16px 0;
+      min-height: 65px;
+    }
+
     /* Main submit */
     button[type="submit"] {
       width: 100%;
@@ -440,6 +449,14 @@
         </div>
       </div>
 
+      <!-- Turnstile Widget -->
+      <div class="turnstile-wrap">
+        <div class="cf-turnstile"
+             data-sitekey="0x4AAAAAAFFX92wdV_tKDjqB"
+             data-theme="auto"
+             data-size="normal"></div>
+      </div>
+
       <!-- كود التحقق من البريد -->
       <div id="verifySection" class="verify-section hidden">
         <h4 class="verify-title" data-i18n="verifyTitle">📬 تفقّد بريدك الإلكتروني</h4>
@@ -536,6 +553,7 @@
       errPassword: "كلمة المرور يجب أن تكون 6 أحرف على الأقل.",
       errPasswordMatch: "كلمتا المرور غير متطابقتين.",
       errVerifyFirst: "⚠️ يجب تأكيد بريدك الإلكتروني أولاً.",
+      errTurnstile: "⚠️ الرجاء إكمال التحقق من الأمان.",
       errExists: "هذا البريد مستعمل بالفعل. جرّب تسجيل الدخول.",
       errGeneric: "حدث خطأ. الرجاء المحاولة مجددًا.",
       successMsg: "✓ تم إنشاء الحساب بنجاح! جارٍ التحويل...",
@@ -545,7 +563,8 @@
       codeInvalid: "الكود يجب أن يكون 6 أرقام.",
       codeCorrect: "✅ تم تأكيد البريد بنجاح!",
       errCodeSend: "فشل إرسال الكود.",
-      errCodeCheck: "الكود خاطئ. حاول مجدداً."
+      errCodeCheck: "الكود خاطئ. حاول مجدداً.",
+      turnstileWaiting: "الرجاء انتظار التحقق من الأمان..."
     },
     fr: {
       backLink: "← Accueil",
@@ -578,6 +597,7 @@
       errPassword: "Le mot de passe doit faire au moins 6 caractères.",
       errPasswordMatch: "Les mots de passe ne correspondent pas.",
       errVerifyFirst: "⚠️ Vérifiez d'abord votre email.",
+      errTurnstile: "⚠️ Veuillez compléter la vérification de sécurité.",
       errExists: "Cet email est déjà utilisé. Connectez-vous.",
       errGeneric: "Une erreur est survenue. Réessayez.",
       successMsg: "✓ Compte créé avec succès ! Redirection...",
@@ -587,7 +607,8 @@
       codeInvalid: "Le code doit contenir 6 chiffres.",
       codeCorrect: "✅ Email vérifié avec succès !",
       errCodeSend: "Échec de l'envoi du code.",
-      errCodeCheck: "Code incorrect. Réessayez."
+      errCodeCheck: "Code incorrect. Réessayez.",
+      turnstileWaiting: "Veuillez patienter pour la vérification..."
     },
     en: {
       backLink: "← Home",
@@ -620,6 +641,7 @@
       errPassword: "Password must be at least 6 characters.",
       errPasswordMatch: "Passwords do not match.",
       errVerifyFirst: "⚠️ Please verify your email first.",
+      errTurnstile: "⚠️ Please complete the security verification.",
       errExists: "This email is already registered. Try logging in.",
       errGeneric: "An error occurred. Please try again.",
       successMsg: "✓ Account created successfully! Redirecting...",
@@ -629,7 +651,8 @@
       codeInvalid: "Code must be 6 digits.",
       codeCorrect: "✅ Email verified successfully!",
       errCodeSend: "Failed to send code.",
-      errCodeCheck: "Incorrect code. Try again."
+      errCodeCheck: "Incorrect code. Try again.",
+      turnstileWaiting: "Please wait for security verification..."
     }
   };
 
@@ -674,7 +697,7 @@
   applyTranslations();
 
   // ============================================================
-  // الرسائل
+  // Helpers
   // ============================================================
   function showMsg(text, type) {
     const el = $("msg");
@@ -683,6 +706,10 @@
     el.classList.remove("hidden");
   }
   function hideMsg() { $("msg").classList.add("hidden"); }
+
+  function getTurnstileToken() {
+    return document.querySelector('[name="cf-turnstile-response"]')?.value || '';
+  }
 
   // ============================================================
   // إرسال كود التحقق
@@ -705,6 +732,11 @@
       return showMsg(t("errEmail"), "error");
     }
 
+    const turnstileToken = getTurnstileToken();
+    if (!turnstileToken) {
+      return showMsg(t("errTurnstile"), "error");
+    }
+
     sendCodeBtn.disabled = true;
     sendCodeBtn.textContent = t("sending");
 
@@ -714,7 +746,8 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: email,
-          brand_name: brandName || "Client"
+          brand_name: brandName || "Client",
+          turnstile_token: turnstileToken
         })
       });
 
@@ -767,6 +800,11 @@
     if (!code) return showMsg(t("codeRequired"), "error");
     if (!/^\d{6}$/.test(code)) return showMsg(t("codeInvalid"), "error");
 
+    const turnstileToken = getTurnstileToken();
+    if (!turnstileToken) {
+      return showMsg(t("errTurnstile"), "error");
+    }
+
     verifyBtn.disabled = true;
     verifyBtn.textContent = "⏳...";
 
@@ -774,7 +812,11 @@
       const res = await fetch("/api/verify-email?action=check", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email, code: code })
+        body: JSON.stringify({
+          email: email,
+          code: code,
+          turnstile_token: turnstileToken
+        })
       });
 
       const data = await res.json();
@@ -786,10 +828,8 @@
         emailVerified = true;
         verifiedEmail = email;
 
-        // فعّل زر التسجيل
         submitBtn.disabled = false;
 
-        // اقفل حقول البريد
         sendCodeBtn.disabled = true;
         sendCodeBtn.style.display = "none";
       } else {
@@ -841,20 +881,15 @@
     const password = $("password").value;
     const passwordConfirm = $("password_confirm").value;
 
-    // ✅ تحقق من اسم الماركة
     if (!brandName || brandName.length < 2) return showMsg(t("errBrand"), "error");
-
-    // ✅ تحقق من البريد
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMsg(t("errEmail"), "error");
 
-    // ✅ تحقق من الهاتف (إجباري الآن)
     if (!phone) return showMsg(t("errPhoneRequired"), "error");
     const cleanPhone = phone.replace(/[^\d]/g, '');
     if (cleanPhone.length < 9 || cleanPhone.length > 15) {
       return showMsg(t("errPhone"), "error");
     }
 
-    // ✅ تحقق من كلمة المرور
     if (!password || password.length < 6) return showMsg(t("errPassword"), "error");
     if (password !== passwordConfirm) return showMsg(t("errPasswordMatch"), "error");
 
