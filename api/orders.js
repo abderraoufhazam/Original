@@ -1,14 +1,5 @@
 // api/orders.js
 // API موحّد لإدارة الطلبات والفواتير
-// الاستخدام:
-//   POST /api/orders?action=create       ← إنشاء طلب
-//   POST /api/orders?action=list         ← قائمة الطلبات (Admin)
-//   POST /api/orders?action=get          ← طلب واحد
-//   POST /api/orders?action=update       ← تحديث
-//   POST /api/orders?action=delete       ← حذف
-//   POST /api/orders?action=check-lots   ← التحقق من اللوتات
-//   POST /api/orders?action=save-contact ← حفظ جهة اتصال
-//   POST /api/orders?action=list-brands  ← قائمة كل الماركات
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -22,7 +13,6 @@ export default async function handler(req, res) {
 
   const action = (req.query && req.query.action) || (req.body && req.body.action);
 
-  // التحقق من الأدمن لكل العمليات
   const auth = await verifyAdmin(req);
   if (!auth.ok) {
     return res.status(auth.status).json({ status: 'ERROR', message: auth.message });
@@ -50,7 +40,7 @@ export default async function handler(req, res) {
 // ============================================================
 async function verifyAdmin(req) {
   try {
-    const access_token = (req.body && req.body.access_token) || 
+    const access_token = (req.body && req.body.access_token) ||
                         (req.headers.authorization && req.headers.authorization.replace('Bearer ', ''));
 
     if (!access_token) {
@@ -77,44 +67,93 @@ async function verifyAdmin(req) {
 
     const caller = await userRes.json();
 
-// ✅ التحقق من جدول admins عبر service_role (يتجاوز RLS)
-const adminRes = await fetch(
-  `${SUPABASE_URL}/rest/v1/admins?user_id=eq.${encodeURIComponent(caller.id)}&select=user_id&limit=1`,
-  {
-    headers: {
-      'apikey': SUPABASE_SERVICE_ROLE_KEY,
-      'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+    // ✅ التحقق من جدول admins
+    let isAdmin = false;
+    try {
+      const adminRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/admins?user_id=eq.${encodeURIComponent(caller.id)}&select=user_id&limit=1`,
+        {
+          headers: {
+            'apikey': SUPABASE_SERVICE_ROLE_KEY,
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      if (adminRes.ok) {
+        const rows = await adminRes.json();
+        isAdmin = Array.isArray(rows) && rows.length > 0;
+      }
+    } catch (e) { console.warn('admins check failed:', e); }
+
+    // Fallback مؤقت
+    if (!isAdmin) {
+      const FALLBACK = ['mepirf@gmail.com', 'abderraoufhazam@gmail.com'];
+      const callerEmail = (caller.email || '').toLowerCase().trim();
+      if (FALLBACK.includes(callerEmail)) isAdmin = true;
     }
-  }
-);
 
-let isAdmin = false;
-if (adminRes.ok) {
-  const rows = await adminRes.json();
-  isAdmin = Array.isArray(rows) && rows.length > 0;
-}
+    if (!isAdmin) {
+      return { ok: false, status: 403, message: 'Accès refusé' };
+    }
 
-// Fallback للإيميل مؤقتًا (نفس منطق check-admin)
-if (!isAdmin) {
-  const FALLBACK = ['mepirf@gmail.com', 'abderraoufhazam@gmail.com'];
-  const callerEmail = (caller.email || '').toLowerCase().trim();
-  if (FALLBACK.includes(callerEmail)) isAdmin = true;
-}
+    return {
+      ok: true,
+      supabaseUrl: SUPABASE_URL,
+      serviceKey: SUPABASE_SERVICE_ROLE_KEY,
+      adminId: caller.id,
+      adminEmail: caller.email
+    };
 
-if (!isAdmin) {
-  return { ok: false, status: 403, message: 'Accès refusé' };
-}
-
-return {
-  ok: true,
-  supabaseUrl: SUPABASE_URL,
-  serviceKey: SUPABASE_SERVICE_ROLE_KEY,
-  adminId: caller.id,
-  adminEmail: caller.email
-};
   } catch (error) {
     return { ok: false, status: 500, message: 'Erreur auth: ' + String(error).slice(0, 100) };
   }
+}
+
+// ============================================================
+// 📥 جلب كل المستخدمين مع Pagination
+// ============================================================
+async function fetchAllUsers(supabaseUrl, serviceKey) {
+  const allUsers = [];
+  const perPage = 1000;
+  let page = 1;
+  const MAX_PAGES = 50; // حماية من حلقة لا نهائية
+
+  while (page <= MAX_PAGES) {
+    try {
+      const res = await fetch(
+        `${supabaseUrl}/auth/v1/admin/users?page=${page}&per_page=${perPage}`,
+        {
+          headers: {
+            'apikey': serviceKey,
+            'Authorization': `Bearer ${serviceKey}`
+          }
+        }
+      );
+
+      if (!res.ok) {
+        console.warn(`fetchAllUsers: page ${page} failed with status ${res.status}`);
+        break;
+      }
+
+      const data = await res.json();
+      const users = data.users || [];
+
+      if (users.length === 0) break;
+
+      allUsers.push(...users);
+
+      if (users.length < perPage) break;
+
+      page++;
+
+    } catch (e) {
+      console.warn(`fetchAllUsers: page ${page} exception:`, e.message);
+      break;
+    }
+  }
+
+  console.log(`fetchAllUsers: loaded ${allUsers.length} users in ${page} page(s)`);
+  return allUsers;
 }
 
 // ============================================================
@@ -127,12 +166,12 @@ async function handleCreate(req, res, auth) {
       brand_email,
       brand_phone,
       brand_user_id,
-      items,                    // [{ lot_number, quantity }]
+      items,
       unit_price,
       discount_percent,
       delivery_cost,
       tva,
-      delivery_method,          // 'delivery' | 'hand_to_hand'
+      delivery_method,
       payment_method,
       delivery_company,
       tracking_number,
@@ -144,7 +183,6 @@ async function handleCreate(req, res, auth) {
       notes
     } = req.body || {};
 
-    // ✅ التحقق
     if (!brand_name || brand_name.trim() === '') {
       return res.status(400).json({ status: 'ERROR', message: 'Nom de marque obligatoire' });
     }
@@ -158,7 +196,6 @@ async function handleCreate(req, res, auth) {
       return res.status(400).json({ status: 'ERROR', message: 'Méthode de livraison invalide' });
     }
 
-    // ✅ التحقق من صحة الأصناف
     let totalQty = 0;
     for (const item of items) {
       if (!item.lot_number || !item.quantity || item.quantity <= 0) {
@@ -167,7 +204,6 @@ async function handleCreate(req, res, auth) {
       totalQty += parseInt(item.quantity, 10);
     }
 
-    // ✅ الحسابات
     const unitPrice = parseFloat(unit_price);
     const discountPct = parseFloat(discount_percent || 0);
     const deliveryCost = parseFloat(delivery_cost || 0);
@@ -179,7 +215,6 @@ async function handleCreate(req, res, auth) {
     const tvaAmount = afterDiscount * (tvaPct / 100);
     const totalPrice = afterDiscount + tvaAmount + deliveryCost;
 
-    // ✅ توليد رقم الفاتورة
     const numRes = await fetch(
       `${auth.supabaseUrl}/rest/v1/rpc/generate_order_number`,
       {
@@ -200,39 +235,25 @@ async function handleCreate(req, res, auth) {
 
     const orderNumber = await numRes.json();
 
-    // ✅ التحقق من التسجيل
     let isRegistered = false;
     let finalUserId = brand_user_id || null;
 
     if (!finalUserId) {
-      // ابحث عن المستخدم بالاسم
-      const usersRes = await fetch(
-        `${auth.supabaseUrl}/auth/v1/admin/users?per_page=1000`,
-        {
-          headers: {
-            'apikey': auth.serviceKey,
-            'Authorization': `Bearer ${auth.serviceKey}`
-          }
-        }
+      // ✅ استخدام الدالة الجديدة مع pagination
+      const users = await fetchAllUsers(auth.supabaseUrl, auth.serviceKey);
+      const foundUser = users.find(u =>
+        (u.user_metadata?.brand_name || '').toLowerCase() === brand_name.toLowerCase().trim()
       );
-      if (usersRes.ok) {
-        const usersData = await usersRes.json();
-        const foundUser = (usersData.users || []).find(u =>
-          (u.user_metadata?.brand_name || '').toLowerCase() === brand_name.toLowerCase().trim()
-        );
-        if (foundUser) {
-          isRegistered = true;
-          finalUserId = foundUser.id;
-        }
+      if (foundUser) {
+        isRegistered = true;
+        finalUserId = foundUser.id;
       }
     } else {
       isRegistered = true;
     }
 
-    // ✅ الحالة الأولية
     const initialStatus = 'IN_PRODUCTION';
 
-    // ✅ إدراج الطلب
     const orderPayload = {
       order_number: orderNumber,
       brand_name: brand_name.trim(),
@@ -283,7 +304,6 @@ async function handleCreate(req, res, auth) {
     const orderData = await insertRes.json();
     const order = Array.isArray(orderData) ? orderData[0] : orderData;
 
-    // ✅ إدراج الأصناف
     const itemsPayload = items.map(it => ({
       order_id: order.id,
       lot_number: String(it.lot_number).trim(),
@@ -303,7 +323,6 @@ async function handleCreate(req, res, auth) {
 
     if (!itemsRes.ok) {
       const err = await itemsRes.text();
-      // حاول حذف الطلب
       await fetch(`${auth.supabaseUrl}/rest/v1/orders?id=eq.${order.id}`, {
         method: 'DELETE',
         headers: {
@@ -314,10 +333,8 @@ async function handleCreate(req, res, auth) {
       return res.status(500).json({ status: 'ERROR', message: 'Erreur insertion items', detail: err.slice(0, 200) });
     }
 
-    // ✅ تحديث brands_meta
     await upsertBrandMeta(auth, brand_name.trim(), finalUserId, totalPrice);
 
-    // ✅ إشعار واتساب (اختياري)
     sendOrderNotification(auth, orderNumber, brand_name, totalQty, totalPrice, 'CREATED');
 
     return res.status(200).json({
@@ -376,7 +393,6 @@ async function handleList(req, res, auth) {
 
     let orders = await queryRes.json();
 
-    // فلترة إضافية بـ payment_status
     if (paymentStatus && Array.isArray(orders)) {
       orders = orders.filter(o => o.payment_status === paymentStatus);
     }
@@ -423,7 +439,6 @@ async function handleGet(req, res, auth) {
 
     const order = orders[0];
 
-    // الأصناف
     const itemsRes = await fetch(
       `${auth.supabaseUrl}/rest/v1/order_items?order_id=eq.${orderId}&select=*&order=id.asc`,
       {
@@ -474,7 +489,6 @@ async function handleUpdate(req, res, auth) {
       return res.status(400).json({ status: 'ERROR', message: 'Aucun champ à modifier' });
     }
 
-    // معالجة الحالات الخاصة
     if (updates.order_status === 'PAID') {
       updates.payment_status = 'PAID';
       updates.paid_date = new Date().toISOString().split('T')[0];
@@ -510,7 +524,6 @@ async function handleUpdate(req, res, auth) {
     const updated = await updateRes.json();
     const order = Array.isArray(updated) ? updated[0] : updated;
 
-    // إشعار عند تغيير الحالة
     if (updates.order_status) {
       sendOrderNotification(auth, order.order_number, order.brand_name, order.total_quantity, order.total_price, updates.order_status);
     }
@@ -532,7 +545,6 @@ async function handleDelete(req, res, auth) {
       return res.status(400).json({ status: 'ERROR', message: 'order_id obligatoire' });
     }
 
-    // حذف الأصناف أولاً
     await fetch(`${auth.supabaseUrl}/rest/v1/order_items?order_id=eq.${orderId}`, {
       method: 'DELETE',
       headers: {
@@ -541,7 +553,6 @@ async function handleDelete(req, res, auth) {
       }
     });
 
-    // حذف الطلب
     const deleteRes = await fetch(`${auth.supabaseUrl}/rest/v1/orders?id=eq.${orderId}`, {
       method: 'DELETE',
       headers: {
@@ -577,7 +588,6 @@ async function handleCheckLots(req, res, auth) {
       const lotNum = String(lot).trim();
       if (!lotNum) continue;
 
-      // جلب أكواد اللوت
       const lotRes = await fetch(
         `${auth.supabaseUrl}/rest/v1/qr_codes?lot=eq.${encodeURIComponent(lotNum)}&select=brand,product_name,secret_status`,
         {
@@ -626,7 +636,7 @@ async function handleCheckLots(req, res, auth) {
 }
 
 // ============================================================
-// 📞 حفظ جهة اتصال (ماركة غير مسجلة)
+// 📞 حفظ جهة اتصال
 // ============================================================
 async function handleSaveContact(req, res, auth) {
   try {
@@ -643,7 +653,6 @@ async function handleSaveContact(req, res, auth) {
       notes: notes || null
     };
 
-    // UPSERT
     const saveRes = await fetch(
       `${auth.supabaseUrl}/rest/v1/brand_contacts?on_conflict=brand_name`,
       {
@@ -676,7 +685,7 @@ async function handleSaveContact(req, res, auth) {
 // ============================================================
 async function handleListBrands(req, res, auth) {
   try {
-    // الماركات المسجلة (من qr_codes)
+    // 1. الماركات من qr_codes
     const codesRes = await fetch(
       `${auth.supabaseUrl}/rest/v1/qr_codes?select=brand&limit=10000`,
       {
@@ -695,7 +704,7 @@ async function handleListBrands(req, res, auth) {
       }
     });
 
-    // جهات الاتصال المسجلة يدوياً
+    // 2. جهات الاتصال
     const contactsRes = await fetch(
       `${auth.supabaseUrl}/rest/v1/brand_contacts?select=*&order=created_at.desc`,
       {
@@ -707,19 +716,10 @@ async function handleListBrands(req, res, auth) {
     );
     const contacts = contactsRes.ok ? await contactsRes.json() : [];
 
-    // الماركات المسجلة (users)
-    const usersRes = await fetch(
-      `${auth.supabaseUrl}/auth/v1/admin/users?per_page=1000`,
-      {
-        headers: {
-          'apikey': auth.serviceKey,
-          'Authorization': `Bearer ${auth.serviceKey}`
-        }
-      }
-    );
+    // 3. ✅ استخدام pagination
+    const allUsers = await fetchAllUsers(auth.supabaseUrl, auth.serviceKey);
 
-    const usersData = usersRes.ok ? await usersRes.json() : { users: [] };
-    const registeredBrands = (usersData.users || [])
+    const registeredBrands = allUsers
       .filter(u => u.user_metadata?.role === 'brand')
       .map(u => ({
         user_id: u.id,
@@ -729,7 +729,7 @@ async function handleListBrands(req, res, auth) {
       }))
       .filter(b => b.brand_name);
 
-    // brands_meta
+    // 4. brands_meta
     const metaRes = await fetch(
       `${auth.supabaseUrl}/rest/v1/brands_meta?select=*`,
       {
@@ -741,10 +741,9 @@ async function handleListBrands(req, res, auth) {
     );
     const meta = metaRes.ok ? await metaRes.json() : [];
 
-    // 🔗 دمج الكل
+    // 5. دمج الكل
     const allBrands = {};
 
-    // 1. الماركات المسجلة
     registeredBrands.forEach(b => {
       const key = b.brand_name.toLowerCase().trim();
       const m = meta.find(x => x.brand_name.toLowerCase() === key);
@@ -761,7 +760,6 @@ async function handleListBrands(req, res, auth) {
       };
     });
 
-    // 2. الماركات من الأكواد (بدون تسجيل)
     Object.keys(brandsFromCodes).forEach(name => {
       const key = name.toLowerCase().trim();
       if (!allBrands[key]) {
@@ -781,7 +779,6 @@ async function handleListBrands(req, res, auth) {
       }
     });
 
-    // 3. الماركات من جهات الاتصال فقط (بدون أكواد)
     contacts.forEach(c => {
       const key = c.brand_name.toLowerCase().trim();
       if (!allBrands[key]) {
@@ -799,7 +796,7 @@ async function handleListBrands(req, res, auth) {
       }
     });
 
-    const result = Object.values(allBrands).sort((a, b) => 
+    const result = Object.values(allBrands).sort((a, b) =>
       b.total_spent - a.total_spent || a.brand_name.localeCompare(b.brand_name)
     );
 
@@ -831,7 +828,6 @@ async function upsertBrandMeta(auth, brandName, userId, amount) {
       const newTotalSpent = parseFloat(current.total_spent || 0) + parseFloat(amount || 0);
       const newTotalOrders = (current.total_orders || 0) + 1;
 
-      // تحديد الشريحة تلقائياً
       let tier = 'REGULAR';
       if (newTotalSpent >= 100000) tier = 'VIP';
       else if (newTotalSpent >= 50000) tier = 'GOLD';
@@ -929,7 +925,6 @@ async function sendOrderNotification(auth, orderNumber, brandName, qty, price, s
       brandMsg: `📋 *Votre commande*\n\n🧾 ${orderNumber}\nÉtat: ${status}`
     };
 
-    // 🎯 فقط: إشعار الماركة (إن كان لها رقم)
     if (options.brandPhone) {
       const cleanPhone = String(options.brandPhone).replace(/[^0-9]/g, '');
       if (cleanPhone.length >= 9) {
@@ -943,28 +938,25 @@ async function sendOrderNotification(auth, orderNumber, brandName, qty, price, s
       }
     }
 
-// 🔔 إرسال Push للماركة (حتى والمتصفح مغلق)
-try {
-  const siteUrl = process.env.SITE_URL || 'https://original-indol.vercel.app';
-  const pushRes = await fetch(`${siteUrl}/api/push-send`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      brand_name: brandName,
-      title: statusInfo.title,
-      body: `🧾 ${orderNumber}`,
-      url: '/brand',
-      tag: `order-${orderNumber}`
-    })
-  });
-  const pushData = await pushRes.json();
-  console.log('Push result:', pushData);
-} catch (pushErr) {
-  console.warn('Push error:', pushErr);
-}
+    try {
+      const siteUrl = process.env.SITE_URL || 'https://original-indol.vercel.app';
+      const pushRes = await fetch(`${siteUrl}/api/push-send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          brand_name: brandName,
+          title: statusInfo.title,
+          body: `🧾 ${orderNumber}`,
+          url: '/brand',
+          tag: `order-${orderNumber}`
+        })
+      });
+      const pushData = await pushRes.json();
+      console.log('Push result:', pushData);
+    } catch (pushErr) {
+      console.warn('Push error:', pushErr);
+    }
 
-    
-    // 💾 حفظ في قاعدة البيانات (تظهر في /brand)
     try {
       await fetch(`${auth.supabaseUrl}/rest/v1/brand_notifications`, {
         method: 'POST',
@@ -995,9 +987,6 @@ try {
   }
 }
 
-// ============================================================
-// إرسال واتساب
-// ============================================================
 async function sendWhatsAppMessage(phone, message) {
   try {
     const apiUrl = process.env.GREEN_API_URL;
