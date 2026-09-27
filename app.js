@@ -547,10 +547,9 @@ if (typeof applyTranslations === "function") {
 }
 
 // ============================================================
-// ONLINE / OFFLINE DETECTION
+// ONLINE / OFFLINE DETECTION (بدون setInterval)
 // ============================================================
 let isOfflineMode = false;
-let checkInterval = null;
 
 async function checkRealInternet() {
   try {
@@ -593,7 +592,6 @@ async function updateOnlineStatus() {
 window.addEventListener("online", () => setTimeout(updateOnlineStatus, 500));
 window.addEventListener("offline", () => setTimeout(updateOnlineStatus, 500));
 setTimeout(updateOnlineStatus, 500);
-checkInterval = setInterval(updateOnlineStatus, 10000);
 
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) setTimeout(updateOnlineStatus, 300);
