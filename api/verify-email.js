@@ -1,7 +1,8 @@
-import crypto from 'crypto';
 // api/verify-email.js
 // ?action=send  → إرسال كود
 // ?action=check → التحقق من الكود
+
+import crypto from 'crypto';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -63,7 +64,7 @@ async function handleSend(req, res) {
       });
     }
 
-    // 🎲 كود 6 أرقام
+    // 🔐 كود 6 أرقام آمن تشفيريًا
     const code = String(crypto.randomInt(100000, 1000000));
 
     // ⏰ صلاحية 10 دقائق
@@ -147,7 +148,7 @@ async function handleSend(req, res) {
 }
 
 // ============================================================
-// ✅ التحقق من الكود
+// ✅ التحقق من الكود — ذرّي (Atomic via RPC)
 // ============================================================
 async function handleCheck(req, res) {
   try {
@@ -171,77 +172,33 @@ async function handleCheck(req, res) {
       return res.status(500).json({ status: 'ERROR', message: 'Config manquante' });
     }
 
-    const checkRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/email_verifications?email=eq.${encodeURIComponent(cleanEmail)}&used=eq.false&order=created_at.desc&limit=1`,
+    // 🔐 استدعاء الدالة الذرّية — يقفل السجل، يفحص، يحدّث
+    const rpcRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/rpc/verify_email_code`,
       {
+        method: 'POST',
         headers: {
           'apikey': SUPABASE_SERVICE_ROLE_KEY,
-          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-        }
+          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          p_email: cleanEmail,
+          p_code: cleanCode
+        })
       }
     );
 
-    if (!checkRes.ok) {
+    if (!rpcRes.ok) {
+      const err = await rpcRes.text();
+      console.error('RPC error:', err);
       return res.status(500).json({ status: 'ERROR', message: 'Erreur serveur' });
     }
 
-    const rows = await checkRes.json();
+    const result = await rpcRes.json();
 
-    if (!rows || rows.length === 0) {
-      return res.status(400).json({ status: 'ERROR', message: 'Aucun code actif. Demandez un nouveau code.' });
-    }
-
-    const v = rows[0];
-
-    if (new Date(v.expires_at) < new Date()) {
-      return res.status(400).json({ status: 'ERROR', message: 'Code expiré. Demandez un nouveau code.' });
-    }
-
-    if (v.attempts >= 5) {
-      return res.status(400).json({ status: 'ERROR', message: 'Trop de tentatives. Demandez un nouveau code.' });
-    }
-
-    if (v.code !== cleanCode) {
-      await fetch(
-        `${SUPABASE_URL}/rest/v1/email_verifications?id=eq.${v.id}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': SUPABASE_SERVICE_ROLE_KEY,
-            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-            'Prefer': 'return=minimal'
-          },
-          body: JSON.stringify({ attempts: v.attempts + 1 })
-        }
-      );
-      const remaining = 4 - v.attempts;
-      return res.status(400).json({
-        status: 'ERROR',
-        message: `Code incorrect. ${remaining} tentative(s) restante(s).`
-      });
-    }
-
-    // ✅ صحيح → علّمه كمستعمل
-    await fetch(
-      `${SUPABASE_URL}/rest/v1/email_verifications?id=eq.${v.id}`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': SUPABASE_SERVICE_ROLE_KEY,
-          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({ used: true })
-      }
-    );
-
-    return res.status(200).json({
-      status: 'OK',
-      message: 'Code vérifié',
-      email: cleanEmail
-    });
+    // الدالة ترجع { status: 'OK' | 'ERROR', message, email? }
+    return res.status(result.status === 'OK' ? 200 : 400).json(result);
 
   } catch (e) {
     console.error('handleCheck error:', e);
