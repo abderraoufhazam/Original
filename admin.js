@@ -1,11 +1,9 @@
 // ============================================================
-// ORIGINAL — ADMIN.JS (v2)
+// ORIGINAL — ADMIN.JS (v3 — secure)
 // ============================================================
 const SUPABASE_URL = "https://qfpmbbntxyrderjlejql.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-const ADMIN_EMAILS = ["mepirf@gmail.com", "abderraoufhazam@gmail.com"];
 
 const $ = id => document.getElementById(id);
 
@@ -49,9 +47,20 @@ function formatMoney(amount) {
   return num.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + " DA";
 }
 
-function isAdminEmail(email) {
-  if (!email) return false;
-  return ADMIN_EMAILS.map(e => e.toLowerCase().trim()).includes(email.toLowerCase().trim());
+// ✅ NEW: التحقق من الأدمن عبر السيرفر
+async function checkAdminServer(token) {
+  try {
+    const res = await fetch("/api/check-admin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ access_token: token })
+    });
+    const data = await res.json();
+    return data.isAdmin === true;
+  } catch (e) {
+    console.warn("check-admin error:", e);
+    return false;
+  }
 }
 
 // ============================================================
@@ -920,7 +929,6 @@ async function loadOrders() {
     container.innerHTML = html;
   } catch (err) { container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(err.message)}</p>`; }
 }
-
 // ============================================================
 // DEBTS
 // ============================================================
@@ -1207,8 +1215,10 @@ async function refresh() {
     return;
   }
 
-  const userEmail = (session.user.email || "").toLowerCase().trim();
-  if (!isAdminEmail(userEmail)) {
+  // ✅ اسأل السيرفر: هل هذا أدمن؟
+  const isAdmin = await checkAdminServer(session.access_token);
+
+  if (!isAdmin) {
     await sb.auth.signOut();
     const lp = $("loginPage"); if (lp) lp.classList.remove("hidden");
     const aa = $("adminApp"); if (aa) aa.classList.add("hidden");
@@ -1246,19 +1256,24 @@ if (_lfb) _lfb.addEventListener("submit", async (e) => {
   const passwordInput = $("password").value;
   const el = $("loginError");
 
-  if (!isAdminEmail(emailInput)) {
-    if (el) { el.className = "result danger"; el.innerHTML = `<p style="margin:0">⛔ Non autorisé.</p>`; el.classList.remove("hidden"); }
-    return;
-  }
-
   const lb = $("loginBtn");
   if (lb) { lb.disabled = true; lb.textContent = "CONNEXION..."; }
 
-  const { error } = await sb.auth.signInWithPassword({ email: emailInput, password: passwordInput });
+  const { data, error } = await sb.auth.signInWithPassword({ email: emailInput, password: passwordInput });
 
   if (error) {
     if (lb) { lb.disabled = false; lb.textContent = "SE CONNECTER"; }
     if (el) { el.className = "result danger"; el.innerHTML = `<p style="margin:0">${escapeHtml(error.message)}</p>`; el.classList.remove("hidden"); }
+    return;
+  }
+
+  // ✅ اسأل السيرفر: هل هذا أدمن؟
+  const isAdmin = await checkAdminServer(data.session.access_token);
+
+  if (!isAdmin) {
+    await sb.auth.signOut();
+    if (lb) { lb.disabled = false; lb.textContent = "SE CONNECTER"; }
+    if (el) { el.className = "result danger"; el.innerHTML = `<p style="margin:0">⛔ Ce compte n'est pas autorisé.</p>`; el.classList.remove("hidden"); }
     return;
   }
 
@@ -1964,7 +1979,7 @@ if (_cob) _cob.onclick = async () => {
     } else {
       if (errBox) { errBox.innerHTML = `<p style='margin:0'>${escapeHtml(data.message || "Erreur")}</p>`; errBox.classList.remove("hidden"); }
     }
-  } catch (e) { if (errBox) { errBox.innerHTML = `<p style='margin:0'>Erreur réseau</p>`; errBox.classList.remove("hidden"); } }
+  } catch (e) { if (errBox) { errBox.innerHTML = "<p style='margin:0'>Erreur réseau</p>"; errBox.classList.remove("hidden"); } }
   finally { _cob.disabled = false; _cob.textContent = "✓ Créer la commande"; }
 };
 
@@ -2143,7 +2158,8 @@ window.openBrandDetails = async function(brandName) {
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px">
         <div style="text-align:center;padding:12px 8px;background:var(--bg-secondary);border-radius:12px">
-                <div style="font-size:9px;color:var(--text-secondary);font-weight:800">CODES</div>
+          <div style="font-size:20px;font-weight:900">${brand.codes_count || 0}</div>
+          <div style="font-size:9px;color:var(--text-secondary);font-weight:800">CODES</div>
         </div>
         <div style="text-align:center;padding:12px 8px;background:var(--bg-secondary);border-radius:12px">
           <div style="font-size:20px;font-weight:900">${brand.total_orders || 0}</div>
@@ -2271,7 +2287,7 @@ if (_efkb) _efkb.onclick = async () => {
     if (!data || data.length === 0) { window.toast("Aucune donnée.", "error"); return; }
     const rows = data.map(r => ({
       "Wilaya": r.wilaya || "",
-      "Marque": r.brand || "",
+      "Marque": r.product_brand || "",
       "Produit": r.product_name || "",
       "Code essayé": r.attempted_code || "",
       "Commentaire": r.comment || "",
@@ -2285,5 +2301,5 @@ if (_efkb) _efkb.onclick = async () => {
 };
 
 // ============================================================
-// FIN DU FICHIER admin.js
+// FIN DU FICHIER admin.js (v3 — secure)
 // ============================================================
