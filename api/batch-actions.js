@@ -1,6 +1,5 @@
 // api/batch-actions.js
-// API موحّد: تفعيل (activate) + إيقاف (disable) الدفعات
-// الاستخدام: POST /api/batch-actions?action=activate
+// API موحّد: تفعيل (activate) + إيقاف (disable) + قائمة الماركات
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -25,10 +24,9 @@ export default async function handler(req, res) {
 }
 
 // ============================================================
-// 🔐 التحقق من الأدمن (مشترك بين كل الدوال)
+// 🔐 التحقق من الأدمن (مشترك)
 // ============================================================
 async function verifyAdmin(supabaseUrl, serviceKey, accessToken) {
-  // 1. الحصول على المستخدم
   const userRes = await fetch(`${supabaseUrl}/auth/v1/user`, {
     headers: {
       'apikey': serviceKey,
@@ -42,7 +40,6 @@ async function verifyAdmin(supabaseUrl, serviceKey, accessToken) {
 
   const caller = await userRes.json();
 
-  // 2. ✅ التحقق من جدول admins
   let isAdmin = false;
   try {
     const adminRes = await fetch(
@@ -60,7 +57,6 @@ async function verifyAdmin(supabaseUrl, serviceKey, accessToken) {
     }
   } catch (e) { console.warn('admins check failed:', e); }
 
-  // 3. Fallback مؤقت (سيُزال لاحقًا)
   if (!isAdmin) {
     const FALLBACK = ['mepirf@gmail.com', 'abderraoufhazam@gmail.com'];
     const callerEmail = (caller.email || '').toLowerCase().trim();
@@ -75,7 +71,53 @@ async function verifyAdmin(supabaseUrl, serviceKey, accessToken) {
 }
 
 // ============================================================
-// ACTIVATE — يحوّل PENDING → UNUSED
+// 📥 جلب كل المستخدمين مع Pagination
+// ============================================================
+async function fetchAllUsers(supabaseUrl, serviceKey) {
+  const allUsers = [];
+  const perPage = 1000;
+  let page = 1;
+  const MAX_PAGES = 50;
+
+  while (page <= MAX_PAGES) {
+    try {
+      const res = await fetch(
+        `${supabaseUrl}/auth/v1/admin/users?page=${page}&per_page=${perPage}`,
+        {
+          headers: {
+            'apikey': serviceKey,
+            'Authorization': `Bearer ${serviceKey}`
+          }
+        }
+      );
+
+      if (!res.ok) {
+        console.warn(`fetchAllUsers page ${page} failed:`, res.status);
+        break;
+      }
+
+      const data = await res.json();
+      const users = data.users || [];
+
+      if (users.length === 0) break;
+
+      allUsers.push(...users);
+
+      if (users.length < perPage) break;
+
+      page++;
+    } catch (e) {
+      console.warn(`fetchAllUsers page ${page} exception:`, e.message);
+      break;
+    }
+  }
+
+  console.log(`fetchAllUsers: loaded ${allUsers.length} users`);
+  return allUsers;
+}
+
+// ============================================================
+// ACTIVATE — PENDING → UNUSED
 // ============================================================
 async function handleActivate(req, res) {
   try {
@@ -95,7 +137,6 @@ async function handleActivate(req, res) {
       return res.status(500).json({ status: 'ERROR', message: 'Configuration manquante' });
     }
 
-    // ✅ التحقق من الأدمن
     const auth = await verifyAdmin(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, access_token);
     if (!auth.ok) {
       return res.status(auth.status).json({ status: 'ERROR', message: auth.message });
@@ -140,7 +181,6 @@ async function handleActivate(req, res) {
 
     if (!updateRes.ok) {
       const err = await updateRes.text();
-      console.error('Update error:', err);
       return res.status(500).json({
         status: 'ERROR',
         message: 'Erreur activation',
@@ -181,7 +221,7 @@ async function handleActivate(req, res) {
 }
 
 // ============================================================
-// DISABLE — يحوّل UNUSED → DISABLED
+// DISABLE — UNUSED → DISABLED
 // ============================================================
 async function handleDisable(req, res) {
   try {
@@ -201,7 +241,6 @@ async function handleDisable(req, res) {
       return res.status(500).json({ status: 'ERROR', message: 'Configuration manquante' });
     }
 
-    // ✅ التحقق من الأدمن
     const auth = await verifyAdmin(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, access_token);
     if (!auth.ok) {
       return res.status(auth.status).json({ status: 'ERROR', message: auth.message });
@@ -246,7 +285,6 @@ async function handleDisable(req, res) {
 
     if (!updateRes.ok) {
       const err = await updateRes.text();
-      console.error('Update error:', err);
       return res.status(500).json({
         status: 'ERROR',
         message: 'Erreur désactivation',
@@ -287,7 +325,7 @@ async function handleDisable(req, res) {
 }
 
 // ============================================================
-// LIST-BRANDS — قائمة الماركات (admin فقط)
+// LIST-BRANDS — قائمة الماركات
 // ============================================================
 async function handleListBrands(req, res) {
   try {
@@ -304,30 +342,14 @@ async function handleListBrands(req, res) {
       return res.status(500).json({ status: 'ERROR', message: 'Configuration manquante' });
     }
 
-    // ✅ التحقق من الأدمن
     const auth = await verifyAdmin(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, access_token);
     if (!auth.ok) {
       return res.status(auth.status).json({ status: 'ERROR', message: auth.message });
     }
 
-    // جلب كل المستخدمين
-    const listRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?per_page=1000`, {
-      headers: {
-        'apikey': SUPABASE_SERVICE_ROLE_KEY,
-        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-      }
-    });
+    // ✅ استخدام pagination
+    const users = await fetchAllUsers(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    if (!listRes.ok) {
-      const err = await listRes.text();
-      console.error('List users error:', err);
-      return res.status(500).json({ status: 'ERROR', message: 'Erreur récupération' });
-    }
-
-    const listData = await listRes.json();
-    const users = listData.users || [];
-
-    // فلترة الماركات فقط (استثناء الأدمن)
     const FALLBACK = ['mepirf@gmail.com', 'abderraoufhazam@gmail.com'];
     const brands = users
       .filter(u => {
