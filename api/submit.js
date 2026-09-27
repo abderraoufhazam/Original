@@ -2,6 +2,8 @@
 // API موحّد: feedback + report + message + signup
 // + إشعارات واتساب تلقائية للأدمن عبر Green API
 
+import { verifyTurnstile, getClientIp } from './_turnstile.js';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -55,10 +57,7 @@ async function handleFeedback(req, res) {
       return res.status(500).json({ status: 'ERROR', message: 'Configuration serveur manquante' });
     }
 
-    const forwarded = req.headers['x-forwarded-for'];
-    const ip = (Array.isArray(forwarded) ? forwarded[0] : (forwarded || '').split(',')[0]).trim()
-      || req.headers['x-real-ip']
-      || 'unknown';
+    const ip = getClientIp(req) || 'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
 
     const row = {
@@ -131,10 +130,7 @@ async function handleReport(req, res) {
       return res.status(500).json({ status: 'ERROR', message: 'Configuration manquante' });
     }
 
-    const forwarded = req.headers['x-forwarded-for'];
-    const ip = (Array.isArray(forwarded) ? forwarded[0] : (forwarded || '').split(',')[0]).trim()
-      || req.headers['x-real-ip']
-      || 'unknown';
+    const ip = getClientIp(req) || 'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
 
     // رفع الصورة
@@ -215,13 +211,13 @@ async function handleReport(req, res) {
     }
 
     // 🔔 إشعار واتساب
-await sendWhatsApp(buildReportMessage({
-  wilaya: cleanWilaya,
-  product_brand: cleanBrand,
-  product_name: cleanProductName,
-  comment: cleanComment,
-  ai_analyzed: !!(cleanBrand || cleanProductName)
-}));
+    await sendWhatsApp(buildReportMessage({
+      wilaya: cleanWilaya,
+      product_brand: cleanBrand,
+      product_name: cleanProductName,
+      comment: cleanComment,
+      ai_analyzed: !!(cleanBrand || cleanProductName)
+    }));
 
     return res.status(200).json({
       status: 'OK',
@@ -240,14 +236,24 @@ await sendWhatsApp(buildReportMessage({
 }
 
 // ============================================================
-// TYPE 3: MESSAGE — رسائل الماركات + إشعار واتساب
+// TYPE 3: MESSAGE — رسائل الماركات + Turnstile
 // ============================================================
 async function handleMessage(req, res) {
   try {
-    const { brand_name, email, phone, subject, message } = req.body || {};
+    const { brand_name, email, phone, subject, message, turnstile_token } = req.body || {};
 
     if (!brand_name || !email) {
       return res.status(400).json({ status: 'ERROR', message: 'Données manquantes' });
+    }
+
+    // 🔒 التحقق من Turnstile
+    const ip = getClientIp(req);
+    const turnstileResult = await verifyTurnstile(turnstile_token, ip);
+    if (!turnstileResult.success) {
+      return res.status(403).json({
+        status: 'ERROR',
+        message: 'Vérification anti-bot échouée. Rechargez la page.'
+      });
     }
 
     const result = await sendWhatsApp(buildMessageNotification({
@@ -308,7 +314,7 @@ async function handleSignup(req, res) {
 }
 
 // ============================================================
-// WHATSAPP HELPER — Green API (مع Debug)
+// WHATSAPP HELPER — Green API
 // ============================================================
 async function sendWhatsApp(message) {
   const apiUrl = process.env.GREEN_API_URL;
