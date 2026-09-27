@@ -1,5 +1,5 @@
 // api/check-admin.js
-// يتحقق إن كان المستخدم الحالي أدمن — بدون كشف الإيميلات
+// يتحقق إن كان المستخدم الحالي أدمن
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -27,7 +27,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ status: 'ERROR', isAdmin: false, message: 'Config manquante' });
     }
 
-    // 1. التحقق من صحة التوكن
+    // 1. التحقق من صحة التوكن والحصول على user.id
     const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
       headers: {
         'apikey': SUPABASE_SERVICE_ROLE_KEY,
@@ -41,19 +41,22 @@ export default async function handler(req, res) {
 
     const user = await userRes.json();
 
-    // 2. استدعاء دالة is_admin() بتوكن المستخدم
-    const rpcRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/is_admin`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_SERVICE_ROLE_KEY,
-        'Authorization': `Bearer ${access_token}`,
-        'Content-Type': 'application/json'
+    // 2. ✅ التحقق مباشرة من جدول admins
+    //    نستخدم service_role_key للقراءة (يتجاوز RLS)
+    const adminRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/admins?user_id=eq.${encodeURIComponent(user.id)}&select=user_id&limit=1`,
+      {
+        headers: {
+          'apikey': SUPABASE_SERVICE_ROLE_KEY,
+          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
       }
-    });
+    );
 
     let isAdmin = false;
-    if (rpcRes.ok) {
-      isAdmin = await rpcRes.json();
+    if (adminRes.ok) {
+      const rows = await adminRes.json();
+      isAdmin = Array.isArray(rows) && rows.length > 0;
     }
 
     return res.status(200).json({
