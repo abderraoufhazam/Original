@@ -10,8 +10,6 @@
 //   POST /api/orders?action=save-contact ← حفظ جهة اتصال
 //   POST /api/orders?action=list-brands  ← قائمة كل الماركات
 
-const ADMIN_EMAILS = ['mepirf@gmail.com', 'abderraoufhazam@gmail.com'];
-
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -78,20 +76,42 @@ async function verifyAdmin(req) {
     }
 
     const caller = await userRes.json();
-    const callerEmail = (caller.email || '').toLowerCase().trim();
 
-    if (!ADMIN_EMAILS.map(e => e.toLowerCase()).includes(callerEmail)) {
-      return { ok: false, status: 403, message: 'Accès refusé' };
+// ✅ التحقق من جدول admins عبر service_role (يتجاوز RLS)
+const adminRes = await fetch(
+  `${SUPABASE_URL}/rest/v1/admins?user_id=eq.${encodeURIComponent(caller.id)}&select=user_id&limit=1`,
+  {
+    headers: {
+      'apikey': SUPABASE_SERVICE_ROLE_KEY,
+      'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
     }
+  }
+);
 
-    return {
-      ok: true,
-      supabaseUrl: SUPABASE_URL,
-      serviceKey: SUPABASE_SERVICE_ROLE_KEY,
-      adminId: caller.id,
-      adminEmail: callerEmail
-    };
+let isAdmin = false;
+if (adminRes.ok) {
+  const rows = await adminRes.json();
+  isAdmin = Array.isArray(rows) && rows.length > 0;
+}
 
+// Fallback للإيميل مؤقتًا (نفس منطق check-admin)
+if (!isAdmin) {
+  const FALLBACK = ['mepirf@gmail.com', 'abderraoufhazam@gmail.com'];
+  const callerEmail = (caller.email || '').toLowerCase().trim();
+  if (FALLBACK.includes(callerEmail)) isAdmin = true;
+}
+
+if (!isAdmin) {
+  return { ok: false, status: 403, message: 'Accès refusé' };
+}
+
+return {
+  ok: true,
+  supabaseUrl: SUPABASE_URL,
+  serviceKey: SUPABASE_SERVICE_ROLE_KEY,
+  adminId: caller.id,
+  adminEmail: caller.email
+};
   } catch (error) {
     return { ok: false, status: 500, message: 'Erreur auth: ' + String(error).slice(0, 100) };
   }
