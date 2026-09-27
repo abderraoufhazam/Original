@@ -1,5 +1,7 @@
 // api/check-admin.js
-// يتحقق إن كان المستخدم الحالي أدمن
+// نسخة مضمونة — تتحقق من الجدول + fallback
+
+const FALLBACK_ADMIN_EMAILS = ['mepirf@gmail.com', 'abderraoufhazam@gmail.com'];
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -27,7 +29,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ status: 'ERROR', isAdmin: false, message: 'Config manquante' });
     }
 
-    // 1. التحقق من صحة التوكن والحصول على user.id
+    // 1. الحصول على المستخدم
     const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
       headers: {
         'apikey': SUPABASE_SERVICE_ROLE_KEY,
@@ -40,28 +42,42 @@ export default async function handler(req, res) {
     }
 
     const user = await userRes.json();
-
-    // 2. ✅ التحقق مباشرة من جدول admins
-    //    نستخدم service_role_key للقراءة (يتجاوز RLS)
-    const adminRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/admins?user_id=eq.${encodeURIComponent(user.id)}&select=user_id&limit=1`,
-      {
-        headers: {
-          'apikey': SUPABASE_SERVICE_ROLE_KEY,
-          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-        }
-      }
-    );
+    const userEmail = (user.email || '').toLowerCase().trim();
 
     let isAdmin = false;
-    if (adminRes.ok) {
-      const rows = await adminRes.json();
-      isAdmin = Array.isArray(rows) && rows.length > 0;
+    let source = 'none';
+
+    // 2. حاول من الجدول
+    try {
+      const adminRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/admins?user_id=eq.${encodeURIComponent(user.id)}&select=user_id`,
+        {
+          headers: {
+            'apikey': SUPABASE_SERVICE_ROLE_KEY,
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      if (adminRes.ok) {
+        const rows = await adminRes.json();
+        if (Array.isArray(rows) && rows.length > 0) {
+          isAdmin = true;
+          source = 'table';
+        }
+      }
+    } catch (e) { console.warn('table check failed:', e); }
+
+    // 3. Fallback: تحقق من الإيميل
+    if (!isAdmin && FALLBACK_ADMIN_EMAILS.includes(userEmail)) {
+      isAdmin = true;
+      source = 'fallback';
+      console.warn('⚠️ Admin via fallback:', userEmail);
     }
 
     return res.status(200).json({
       status: 'OK',
-      isAdmin: !!isAdmin,
+      isAdmin: isAdmin,
+      source: source,
       user_id: user.id,
       email: user.email
     });
