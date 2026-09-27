@@ -3,6 +3,7 @@
 // ?action=check → التحقق من الكود
 
 import crypto from 'crypto';
+import { verifyTurnstile, getClientIp } from './_turnstile.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -27,10 +28,20 @@ export default async function handler(req, res) {
 // ============================================================
 async function handleSend(req, res) {
   try {
-    const { email, brand_name } = req.body || {};
+    const { email, brand_name, turnstile_token } = req.body || {};
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ status: 'ERROR', message: 'Email invalide' });
+    }
+
+    // 🔒 التحقق من Turnstile
+    const ip = getClientIp(req);
+    const turnstileResult = await verifyTurnstile(turnstile_token, ip);
+    if (!turnstileResult.success) {
+      return res.status(403).json({
+        status: 'ERROR',
+        message: 'Vérification anti-bot échouée. Rechargez la page.'
+      });
     }
 
     const cleanEmail = email.trim().toLowerCase();
@@ -64,17 +75,9 @@ async function handleSend(req, res) {
       });
     }
 
-    // 🔐 كود 6 أرقام آمن تشفيريًا
+    // 🔐 كود 6 أرقام آمن
     const code = String(crypto.randomInt(100000, 1000000));
-
-    // ⏰ صلاحية 10 دقائق
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-
-    // IP
-    const forwarded = req.headers['x-forwarded-for'];
-    const ip = (Array.isArray(forwarded) ? forwarded[0] : (forwarded || '').split(',')[0]).trim()
-      || req.headers['x-real-ip']
-      || 'unknown';
 
     // 💾 حفظ الكود
     const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/email_verifications`, {
@@ -89,7 +92,7 @@ async function handleSend(req, res) {
         email: cleanEmail,
         code: code,
         expires_at: expiresAt,
-        ip: ip
+        ip: ip || 'unknown'
       })
     });
 
@@ -152,10 +155,20 @@ async function handleSend(req, res) {
 // ============================================================
 async function handleCheck(req, res) {
   try {
-    const { email, code } = req.body || {};
+    const { email, code, turnstile_token } = req.body || {};
 
     if (!email || !code) {
       return res.status(400).json({ status: 'ERROR', message: 'Email + code obligatoires' });
+    }
+
+    // 🔒 التحقق من Turnstile
+    const ip = getClientIp(req);
+    const turnstileResult = await verifyTurnstile(turnstile_token, ip);
+    if (!turnstileResult.success) {
+      return res.status(403).json({
+        status: 'ERROR',
+        message: 'Vérification anti-bot échouée. Rechargez la page.'
+      });
     }
 
     const cleanEmail = email.trim().toLowerCase();
@@ -172,7 +185,7 @@ async function handleCheck(req, res) {
       return res.status(500).json({ status: 'ERROR', message: 'Config manquante' });
     }
 
-    // 🔐 استدعاء الدالة الذرّية — يقفل السجل، يفحص، يحدّث
+    // 🔐 استدعاء الدالة الذرّية
     const rpcRes = await fetch(
       `${SUPABASE_URL}/rest/v1/rpc/verify_email_code`,
       {
@@ -196,8 +209,6 @@ async function handleCheck(req, res) {
     }
 
     const result = await rpcRes.json();
-
-    // الدالة ترجع { status: 'OK' | 'ERROR', message, email? }
     return res.status(result.status === 'OK' ? 200 : 400).json(result);
 
   } catch (e) {
