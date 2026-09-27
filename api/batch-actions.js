@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ status: 'ERROR', message: 'Method not allowed' });
   }
 
-    const action = (req.query && req.query.action) || (req.body && req.body.action);
+  const action = (req.query && req.query.action) || (req.body && req.body.action);
 
   if (action === 'activate')    return handleActivate(req, res);
   if (action === 'disable')     return handleDisable(req, res);
@@ -22,6 +22,56 @@ export default async function handler(req, res) {
     status: 'ERROR',
     message: 'Action invalide. Utilisez ?action=activate, ?action=disable ou ?action=list-brands'
   });
+}
+
+// ============================================================
+// 🔐 التحقق من الأدمن (مشترك بين كل الدوال)
+// ============================================================
+async function verifyAdmin(supabaseUrl, serviceKey, accessToken) {
+  // 1. الحصول على المستخدم
+  const userRes = await fetch(`${supabaseUrl}/auth/v1/user`, {
+    headers: {
+      'apikey': serviceKey,
+      'Authorization': `Bearer ${accessToken}`
+    }
+  });
+
+  if (!userRes.ok) {
+    return { ok: false, status: 401, message: 'Token invalide' };
+  }
+
+  const caller = await userRes.json();
+
+  // 2. ✅ التحقق من جدول admins
+  let isAdmin = false;
+  try {
+    const adminRes = await fetch(
+      `${supabaseUrl}/rest/v1/admins?user_id=eq.${encodeURIComponent(caller.id)}&select=user_id&limit=1`,
+      {
+        headers: {
+          'apikey': serviceKey,
+          'Authorization': `Bearer ${serviceKey}`
+        }
+      }
+    );
+    if (adminRes.ok) {
+      const rows = await adminRes.json();
+      isAdmin = Array.isArray(rows) && rows.length > 0;
+    }
+  } catch (e) { console.warn('admins check failed:', e); }
+
+  // 3. Fallback مؤقت (سيُزال لاحقًا)
+  if (!isAdmin) {
+    const FALLBACK = ['mepirf@gmail.com', 'abderraoufhazam@gmail.com'];
+    const callerEmail = (caller.email || '').toLowerCase().trim();
+    if (FALLBACK.includes(callerEmail)) isAdmin = true;
+  }
+
+  if (!isAdmin) {
+    return { ok: false, status: 403, message: 'Accès refusé' };
+  }
+
+  return { ok: true, caller };
 }
 
 // ============================================================
@@ -45,23 +95,10 @@ async function handleActivate(req, res) {
       return res.status(500).json({ status: 'ERROR', message: 'Configuration manquante' });
     }
 
-    const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-      headers: {
-        'apikey': SUPABASE_SERVICE_ROLE_KEY,
-        'Authorization': `Bearer ${access_token}`
-      }
-    });
-
-    if (!userRes.ok) {
-      return res.status(401).json({ status: 'ERROR', message: 'Token invalide' });
-    }
-
-    const caller = await userRes.json();
-
-    const ADMIN_EMAILS = ['mepirf@gmail.com', 'abderraoufhazam@gmail.com'];
-    const callerEmail = (caller.email || '').toLowerCase().trim();
-    if (!ADMIN_EMAILS.map(e => e.toLowerCase()).includes(callerEmail)) {
-      return res.status(403).json({ status: 'ERROR', message: 'Accès refusé' });
+    // ✅ التحقق من الأدمن
+    const auth = await verifyAdmin(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, access_token);
+    if (!auth.ok) {
+      return res.status(auth.status).json({ status: 'ERROR', message: auth.message });
     }
 
     const cleanLot = lot.trim();
@@ -164,23 +201,10 @@ async function handleDisable(req, res) {
       return res.status(500).json({ status: 'ERROR', message: 'Configuration manquante' });
     }
 
-    const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-      headers: {
-        'apikey': SUPABASE_SERVICE_ROLE_KEY,
-        'Authorization': `Bearer ${access_token}`
-      }
-    });
-
-    if (!userRes.ok) {
-      return res.status(401).json({ status: 'ERROR', message: 'Token invalide' });
-    }
-
-    const caller = await userRes.json();
-
-    const ADMIN_EMAILS = ['mepirf@gmail.com', 'abderraoufhazam@gmail.com'];
-    const callerEmail = (caller.email || '').toLowerCase().trim();
-    if (!ADMIN_EMAILS.map(e => e.toLowerCase()).includes(callerEmail)) {
-      return res.status(403).json({ status: 'ERROR', message: 'Accès refusé' });
+    // ✅ التحقق من الأدمن
+    const auth = await verifyAdmin(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, access_token);
+    if (!auth.ok) {
+      return res.status(auth.status).json({ status: 'ERROR', message: auth.message });
     }
 
     const cleanLot = lot.trim();
@@ -280,31 +304,10 @@ async function handleListBrands(req, res) {
       return res.status(500).json({ status: 'ERROR', message: 'Configuration manquante' });
     }
 
-    // التحقق من المستخدم
-    const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-      headers: {
-        'apikey': SUPABASE_SERVICE_ROLE_KEY,
-        'Authorization': `Bearer ${access_token}`
-      }
-    });
-
-    if (!userRes.ok) {
-      return res.status(401).json({ status: 'ERROR', message: 'Token invalide' });
-    }
-
-    const caller = await userRes.json();
-
-    // التحقق من الأدمن
-    const ADMIN_EMAILS = ['mepirf@gmail.com', 'abderraoufhazam@gmail.com'];
-    const callerEmail = (caller.email || '').toLowerCase().trim();
-    const isAdmin = ADMIN_EMAILS.map(e => e.toLowerCase()).includes(callerEmail);
-
-    if (!isAdmin) {
-      return res.status(403).json({
-        status: 'ERROR',
-        message: 'Accès refusé',
-        detail: 'Email non autorisé : ' + callerEmail
-      });
+    // ✅ التحقق من الأدمن
+    const auth = await verifyAdmin(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, access_token);
+    if (!auth.ok) {
+      return res.status(auth.status).json({ status: 'ERROR', message: auth.message });
     }
 
     // جلب كل المستخدمين
@@ -325,11 +328,12 @@ async function handleListBrands(req, res) {
     const users = listData.users || [];
 
     // فلترة الماركات فقط (استثناء الأدمن)
+    const FALLBACK = ['mepirf@gmail.com', 'abderraoufhazam@gmail.com'];
     const brands = users
       .filter(u => {
         const email = (u.email || '').toLowerCase();
         const role = u.user_metadata?.role || 'brand';
-        return role === 'brand' && !ADMIN_EMAILS.map(e => e.toLowerCase()).includes(email);
+        return role === 'brand' && !FALLBACK.includes(email);
       })
       .map(u => ({
         id: u.id,
