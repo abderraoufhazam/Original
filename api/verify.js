@@ -1,7 +1,8 @@
 // api/verify.js
-// Vérification via hash (nouveau) + plaintext (fallback)
+// Vérification via hash (nouveau) + plaintext (fallback) + rate limiting
 
 import { hashCode } from './_crypto.js';
+import { getClientIp } from './_turnstile.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -24,17 +25,46 @@ export default async function handler(req, res) {
       return res.status(500).json({ status: 'ERROR', message: 'Configuration manquante' });
     }
 
-    // IP + user-agent
-    const forwarded = req.headers['x-forwarded-for'];
-    const ip = (Array.isArray(forwarded) ? forwarded[0] : (forwarded || '').split(',')[0]).trim()
-      || req.headers['x-real-ip']
-      || 'unknown';
+    // 🔒 Rate Limiting
+    const ip = getClientIp(req) || 'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
+
+    try {
+      const rlRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/rpc/check_rate_limit`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_SERVICE_ROLE_KEY,
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          },
+          body: JSON.stringify({
+            p_key: 'verify:' + ip,
+            p_limit: 20,
+            p_window_seconds: 60
+          })
+        }
+      );
+
+      if (rlRes.ok) {
+        const allowed = await rlRes.json();
+        if (allowed === false) {
+          return res.status(429).json({
+            status: 'ERROR',
+            message: 'Trop de tentatives. Réessayez dans une minute.'
+          });
+        }
+      }
+    } catch (rlErr) {
+      // لا نُفشل الطلب إذا فشل فحص rate limit — نكمل بحذر
+      console.warn('Rate limit check failed:', rlErr);
+    }
 
     // Calculer le hash SHA-256
     const codeHash = hashCode(cleanCode);
 
-    // Appeler verify_code_v2 (hash + fallback plaintext)
+    // Appeler verify_code_v2
     const rpcResponse = await fetch(
       `${SUPABASE_URL}/rest/v1/rpc/verify_code_v2`,
       {
@@ -62,7 +92,7 @@ export default async function handler(req, res) {
 
     const data = await rpcResponse.json();
 
-    // Journaliser la tentative
+    // Journaliser la tentative (fire-and-forget)
     const logRow = {
       secret_code: cleanCode,
       result: data.status || 'UNKNOWN',
