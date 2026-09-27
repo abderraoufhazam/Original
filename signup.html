@@ -440,7 +440,7 @@
         </div>
       </div>
 
-      <!-- كود التحقق -->
+      <!-- كود التحقق من البريد -->
       <div id="verifySection" class="verify-section hidden">
         <h4 class="verify-title" data-i18n="verifyTitle">📬 تفقّد بريدك الإلكتروني</h4>
         <p class="verify-hint" data-i18n="verifyHint">أدخل الكود المكوّن من 6 أرقام الذي أرسلناه إلى بريدك.</p>
@@ -454,8 +454,8 @@
       </div>
 
       <div class="field">
-        <label for="phone" data-i18n="phoneLabel">رقم الهاتف (اختياري)</label>
-        <input id="phone" type="tel" placeholder="+213 xxx xxx xxx" autocomplete="tel">
+        <label for="phone" data-i18n="phoneLabel">رقم الهاتف <span class="req">*</span></label>
+        <input id="phone" type="tel" placeholder="+213 xxx xxx xxx" autocomplete="tel" required minlength="9" maxlength="20">
       </div>
 
       <div class="field">
@@ -514,7 +514,7 @@
       sendCodeBtn: "📧 إرسال الكود",
       sending: "⏳...",
       resend: "🔄 إعادة إرسال",
-      phoneLabel: "رقم الهاتف (اختياري)",
+      phoneLabel: "رقم الهاتف",
       passwordLabel: "كلمة المرور",
       confirmLabel: "تأكيد كلمة المرور",
       submitBtn: "إنشاء حساب",
@@ -531,6 +531,7 @@
       loginNow: "سجّل الدخول",
       errBrand: "الرجاء إدخال اسم العلامة التجارية.",
       errEmail: "الرجاء إدخال بريد إلكتروني صالح.",
+      errPhoneRequired: "⚠️ رقم الهاتف إجباري.",
       errPhone: "رقم الهاتف غير صالح.",
       errPassword: "كلمة المرور يجب أن تكون 6 أحرف على الأقل.",
       errPasswordMatch: "كلمتا المرور غير متطابقتين.",
@@ -555,7 +556,7 @@
       sendCodeBtn: "📧 Envoyer",
       sending: "⏳...",
       resend: "🔄 Renvoyer",
-      phoneLabel: "Téléphone (optionnel)",
+      phoneLabel: "Téléphone",
       passwordLabel: "Mot de passe",
       confirmLabel: "Confirmer le mot de passe",
       submitBtn: "Créer un compte",
@@ -572,6 +573,7 @@
       loginNow: "Se connecter",
       errBrand: "Veuillez saisir le nom de la marque.",
       errEmail: "Veuillez saisir un email valide.",
+      errPhoneRequired: "⚠️ Le numéro de téléphone est obligatoire.",
       errPhone: "Numéro de téléphone invalide.",
       errPassword: "Le mot de passe doit faire au moins 6 caractères.",
       errPasswordMatch: "Les mots de passe ne correspondent pas.",
@@ -596,7 +598,7 @@
       sendCodeBtn: "📧 Send",
       sending: "⏳...",
       resend: "🔄 Resend",
-      phoneLabel: "Phone (optional)",
+      phoneLabel: "Phone",
       passwordLabel: "Password",
       confirmLabel: "Confirm password",
       submitBtn: "Create account",
@@ -613,6 +615,7 @@
       loginNow: "Sign in",
       errBrand: "Please enter the brand name.",
       errEmail: "Please enter a valid email.",
+      errPhoneRequired: "⚠️ Phone number is required.",
       errPhone: "Invalid phone number.",
       errPassword: "Password must be at least 6 characters.",
       errPasswordMatch: "Passwords do not match.",
@@ -838,9 +841,20 @@
     const password = $("password").value;
     const passwordConfirm = $("password_confirm").value;
 
+    // ✅ تحقق من اسم الماركة
     if (!brandName || brandName.length < 2) return showMsg(t("errBrand"), "error");
+
+    // ✅ تحقق من البريد
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMsg(t("errEmail"), "error");
-    if (phone && !/^[\+\d\s\-\(\)]{6,20}$/.test(phone)) return showMsg(t("errPhone"), "error");
+
+    // ✅ تحقق من الهاتف (إجباري الآن)
+    if (!phone) return showMsg(t("errPhoneRequired"), "error");
+    const cleanPhone = phone.replace(/[^\d]/g, '');
+    if (cleanPhone.length < 9 || cleanPhone.length > 15) {
+      return showMsg(t("errPhone"), "error");
+    }
+
+    // ✅ تحقق من كلمة المرور
     if (!password || password.length < 6) return showMsg(t("errPassword"), "error");
     if (password !== passwordConfirm) return showMsg(t("errPasswordMatch"), "error");
 
@@ -855,7 +869,7 @@
           data: {
             role: "brand",
             brand_name: brandName,
-            phone: phone || null,
+            phone: phone,
             email_verified: true
           }
         }
@@ -879,7 +893,7 @@
           user_id: data.user.id,
           brand_name: brandName,
           email: email,
-          phone: phone || null,
+          phone: phone,
           subject: "Nouvelle inscription",
           message: "Bonjour, je viens de créer mon compte marque. Merci de m'accompagner dans la configuration."
         });
@@ -895,7 +909,7 @@
           body: JSON.stringify({
             brand_name: brandName,
             email: email,
-            phone: phone || null
+            phone: phone
           })
         }).catch(e => console.warn("Notify error:", e));
       } catch (e) {
