@@ -1,8 +1,0 @@
-[{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "online.originaldz.twa",
-    "sha256_cert_fingerprints": ["97:F9:98:FE:4B:94:EA:B9:84:7A:DB:63:27:85:7D:90:14:61:62:02:5A:A2:50:B5:C1:74:C8:70:88:86:73:1A"]
-  }
-}]
