@@ -186,8 +186,22 @@
       transform: translateY(-2px);
       border-color: var(--primary);
     }
+    .btn-android {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #fff;
+      box-shadow: 0 8px 20px -6px rgba(15, 23, 42, 0.5);
+    }
+    .btn-android:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px -8px rgba(15, 23, 42, 0.6);
+    }
+    .btn-android .android-icon {
+      width: 18px;
+      height: 18px;
+      display: inline-block;
+    }
 
-    /* ============ HERO VISUAL (بسيط) ============ */
+    /* ============ HERO VISUAL ============ */
     .hero-visual {
       margin-top: 50px;
       display: flex; justify-content: center;
@@ -638,9 +652,7 @@
       .btn { justify-content: center; }
     }
 
-    /* ============ 🚀 PERFORMANCE ============ */
-
-    /* تعطيل الأنيميشن الثقيلة على الجوال */
+    /* ============ PERFORMANCE ============ */
     @media (max-width: 768px) {
       .feature:hover,
       .step:hover {
@@ -648,7 +660,6 @@
       }
     }
 
-    /* تقليل الحركة حسب تفضيل المستخدم */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 0.01ms !important;
@@ -657,7 +668,6 @@
       .reveal { opacity: 1; transform: none; }
     }
 
-    /* تسريع الرسم */
     .phone-mockup,
     .feature,
     .step,
@@ -667,7 +677,6 @@
   </style>
 </head>
 <body>
-
 <!-- ==================== HEADER ==================== -->
 <header class="header">
   <div class="container header-inner">
@@ -715,9 +724,11 @@
           <span>🔍</span>
           <span data-i18n="ctaVerify">تحقق من منتج</span>
         </a>
-        <a href="#for-brands" class="btn btn-secondary">
-          <span>🏢</span>
-          <span data-i18n="ctaBrands">للعلامات التجارية</span>
+        <a href="/downloads/OriginalDz.apk"
+           download="OriginalDz.apk"
+           class="btn btn-android">
+          <span class="android-icon">📱</span>
+          <span data-i18n="ctaDownload">حمّل التطبيق</span>
         </a>
       </div>
 
@@ -985,6 +996,7 @@
         <ul>
           <li><a href="/contact" data-i18n="footContact">اتصل بنا</a></li>
           <li><a href="/login" data-i18n="footLogin">دخول</a></li>
+          <li><a href="/downloads/OriginalDz.apk" download="OriginalDz.apk" data-i18n="footDownload">تحميل التطبيق</a></li>
         </ul>
       </div>
 
@@ -1020,13 +1032,12 @@
   }
 
   // ============================================================
-  // 🚀 SCROLL REVEAL (Optimized)
+  // 🚀 SCROLL REVEAL
   // ============================================================
   function initReveal() {
     const elements = document.querySelectorAll(".reveal");
     if (!elements.length) return;
 
-    // كشف فوري لأول 3 عناصر (فوق الشاشة)
     const aboveFold = document.querySelectorAll(".hero .reveal");
     aboveFold.forEach(el => el.classList.add("visible"));
 
@@ -1044,7 +1055,6 @@
         if (!el.classList.contains("visible")) observer.observe(el);
       });
     } else {
-      // Fallback للمتصفحات القديمة
       elements.forEach(el => el.classList.add("visible"));
     }
   }
@@ -1156,6 +1166,7 @@
       heroLead: "نظام احترافي للتحقق من أصالة المنتجات عبر QR وكود سري مخفي. تقنية تشفير AES-256، كشف فوري للتقليد، وإحصائيات في الوقت الحقيقي.",
       ctaVerify: "تحقق من منتج",
       ctaBrands: "للعلامات التجارية",
+      ctaDownload: "حمّل التطبيق",
       phoneSub: "أدخل الكود السري",
       phoneBtn: "تحقق",
       phoneOriginal: "منتج أصلي",
@@ -1226,6 +1237,7 @@
       footSignup: "التسجيل",
       footContact: "اتصل بنا",
       footLogin: "دخول",
+      footDownload: "تحميل التطبيق",
       footRights: "جميع الحقوق محفوظة"
     },
     fr: {
@@ -1236,6 +1248,7 @@
       heroLead: "Système professionnel de vérification d'authenticité via QR fixe et code secret caché. Chiffrement AES-256, détection instantanée.",
       ctaVerify: "Vérifier un produit",
       ctaBrands: "Pour les marques",
+      ctaDownload: "Télécharger l'app",
       phoneSub: "Entrez le code secret",
       phoneBtn: "Vérifier",
       phoneOriginal: "Produit original",
@@ -1306,6 +1319,7 @@
       footSignup: "Inscription",
       footContact: "Contact",
       footLogin: "Connexion",
+      footDownload: "Télécharger l'app",
       footRights: "Tous droits réservés"
     },
     en: {
@@ -1316,6 +1330,7 @@
       heroLead: "Professional authentication system with fixed QR code and hidden secret code. AES-256 encryption, instant counterfeit detection.",
       ctaVerify: "Verify a product",
       ctaBrands: "For brands",
+      ctaDownload: "Download app",
       phoneSub: "Enter secret code",
       phoneBtn: "Verify",
       phoneOriginal: "Original product",
@@ -1386,6 +1401,7 @@
       footSignup: "Sign up",
       footContact: "Contact",
       footLogin: "Login",
+      footDownload: "Download app",
       footRights: "All rights reserved"
     }
   };
