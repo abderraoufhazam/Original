@@ -843,7 +843,7 @@ async function loadAdvancedSearch() {
       const date = r.created_at ? new Date(r.created_at).toLocaleString() : "—";
       html += `<div class="log-row log-${cls}" style="padding:14px">
         <div class="log-top"><span class="log-result log-result-${cls}">${escapeHtml(r.secret_status)}</span><span class="log-date">${escapeHtml(date)}</span></div>
-        <div class="log-code" style="font-size:14px">${escapeHtml(r.secret_code || "—")}</div>
+        <div class="log-code" style="font-size:14px">${escapeHtml(formatDisplayCode(r.secret_code) || "—")}</div>
         <div class="log-meta">${r.brand ? `<span>🏷 ${escapeHtml(r.brand)}</span>` : ""}${r.lot ? `<span>📦 ${escapeHtml(r.lot)}</span>` : ""}</div>
       </div>`;
     });
@@ -1113,6 +1113,14 @@ async function loadInventory() {
 // ============================================================
 // PRINT (Labels + Invoice)
 // ============================================================
+// ✅ عرض الأكواد (يدعم 7 و 12 حرفاً)
+function formatDisplayCode(code) {
+  if (!code) return '';
+  const s = String(code).trim().toUpperCase();
+  if (s.length === 7) return s.slice(0, 3) + '-' + s.slice(3);
+  if (s.length === 12) return s.match(/.{1,4}/g).join(' ');
+  return s;
+}
 function printLabels(codes, brand, lot, logoUrl) {
   if (!codes || !codes.length) { window.toast("Aucun code.", "error"); return; }
   const mode = ($("printMode") && $("printMode").value) || "labels";
@@ -1125,7 +1133,7 @@ function printLabels(codes, brand, lot, logoUrl) {
       <div class="toolbar"><button onclick="window.print()">🖨 IMPRIMER</button></div>
       <div class="header">${logoUrl ? `<img src="${escapeHtml(logoUrl)}" style="max-height:50px;margin-bottom:10px">` : ""}<h1>${escapeHtml(brand)}</h1><p>Lot: ${escapeHtml(lot)} — Total: ${codes.length}</p></div>
       <table><thead><tr><th>#</th><th>Code</th></tr></thead><tbody>`;
-    codes.forEach((code, i) => { html += `<tr><td>${i + 1}</td><td class="code-cell">${code.match(/.{1,4}/g).join(" ")}</td></tr>`; });
+    codes.forEach((code, i) => { html += `<tr><td>${i + 1}</td><td class="code-cell">${formatDisplayCode(code)}</td></tr>`; });
     html += `</tbody></table></body></html>`;
     w.document.write(html); w.document.close(); return;
   }
@@ -1141,7 +1149,7 @@ function printLabels(codes, brand, lot, logoUrl) {
   <div class="sheet">`;
 
   codes.forEach(code => {
-    html += `<div class="label"><div class="label-top">${logoUrl ? `<img class="label-logo" src="${escapeHtml(logoUrl)}">` : ""}<div class="label-brand">${escapeHtml(brand)}</div><img class="label-qr" src="${qrUrl}"><div class="label-inst">Scannez puis entrez le code</div></div><div class="label-fold">✂ - - - PLIEZ ICI - - - ✂</div><div class="label-bottom"><div class="label-code">${code.match(/.{1,4}/g).join(" ")}</div><div class="label-hint">Ne pas révéler avant l'achat</div></div></div>`;
+    html += `<div class="label"><div class="label-top">${logoUrl ? `<img class="label-logo" src="${escapeHtml(logoUrl)}">` : ""}<div class="label-brand">${escapeHtml(brand)}</div><img class="label-qr" src="${qrUrl}"><div class="label-inst">Scannez puis entrez le code</div></div><div class="label-fold">✂ - - - PLIEZ ICI - - - ✂</div><div class="label-bottom"><div class="label-code">${formatDisplayCode(code)}</div><div class="label-hint">Ne pas révéler avant l'achat</div></div></div>`;
   });
   html += `</div></body></html>`;
   w.document.write(html); w.document.close();
