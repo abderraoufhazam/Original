@@ -4,31 +4,25 @@
 import crypto from 'crypto';
 
 const ALGORITHM = 'aes-256-gcm';
-const IV_LENGTH = 12;       // 96 bits pour GCM
-const AUTH_TAG_LENGTH = 16; // 128 bits
+const IV_LENGTH = 12;
+const AUTH_TAG_LENGTH = 16;
 
-/**
- * Dérive une clé 32-byte (256-bit) à partir de la variable ENCRYPTION_KEY
- */
+// 🔐 7 caractères (32^7 = 34 milliards de combinaisons)
+// Sécurisé avec rate limiting
+const CODE_LENGTH = 7;
+
 function getKey() {
   const key = process.env.ENCRYPTION_KEY;
   if (!key) throw new Error('ENCRYPTION_KEY not configured');
   return crypto.createHash('sha256').update(key).digest();
 }
 
-/**
- * Hash SHA-256 d'un code (pour la recherche rapide + vérification)
- */
 export function hashCode(code) {
   return crypto.createHash('sha256')
     .update(code.trim().toUpperCase())
     .digest('hex');
 }
 
-/**
- * Chiffre un code avec AES-256-GCM.
- * Format de sortie : base64( IV (12) + AuthTag (16) + Ciphertext )
- */
 export function encryptCode(code) {
   const key = getKey();
   const iv = crypto.randomBytes(IV_LENGTH);
@@ -41,9 +35,6 @@ export function encryptCode(code) {
   return Buffer.concat([iv, authTag, encrypted]).toString('base64');
 }
 
-/**
- * Déchiffre un code précédemment chiffré avec encryptCode()
- */
 export function decryptCode(encryptedBase64) {
   const key = getKey();
   const data = Buffer.from(encryptedBase64, 'base64');
@@ -59,16 +50,25 @@ export function decryptCode(encryptedBase64) {
   return decrypted.toString('utf8');
 }
 
-/**
- * Génère un code secret aléatoire de 12 caractères
- * (Sans caractères ambigus : 0/O, 1/I/L)
- */
+// ✅ 7 caractères — sans 0/O, 1/I/L
 export function generateSecretCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const bytes = crypto.randomBytes(12);
+  const bytes = crypto.randomBytes(CODE_LENGTH);
   let s = '';
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < CODE_LENGTH; i++) {
     s += chars[bytes[i] % chars.length];
   }
+  return s;
+}
+
+// ✅ Formatage pour affichage
+export function formatDisplayCode(code) {
+  if (!code) return '';
+  const s = String(code).trim().toUpperCase();
+  // 7 → XXX-XXXX
+  if (s.length === 7) return s.slice(0, 3) + '-' + s.slice(3);
+  // 12 (ancien) → XXXX XXXX XXXX
+  if (s.length === 12) return s.match(/.{1,4}/g).join(' ');
+  // autres → tel quel
   return s;
 }
