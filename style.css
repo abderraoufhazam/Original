@@ -196,9 +196,9 @@ input:focus, select:focus, textarea:focus {
 #code {
   text-align: center;
   font-family: "SF Mono", "Courier New", monospace;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 3px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 4px;
   text-transform: uppercase;
   padding: 16px;
 }
