@@ -1,72 +1,136 @@
 // service-worker.js
+// Original — Service Worker v5
 
-const CACHE_NAME = "qr-auth-v4";
-const OFFLINE_CACHE = "qr-auth-offline-v1";
+const CACHE_VERSION = "v5";
+const CACHE_NAME = `original-${CACHE_VERSION}`;
+const OFFLINE_CACHE = `original-offline-${CACHE_VERSION}`;
+const RUNTIME_CACHE = `original-runtime-${CACHE_VERSION}`;
 
+// ⚠️ لا تضع /index.html (غير موجود)
 const CORE_ASSETS = [
   "/",
-  "/verify.html",
   "/landing.html",
+  "/verify.html",
+  "/verify",
   "/signup.html",
+  "/signup",
+  "/login.html",
+  "/login",
   "/contact.html",
+  "/contact",
+  "/brand.html",
+  "/brand",
   "/style.css",
   "/app.js",
   "/i18n.js",
+  "/chat.js",
+  "/bot-guard.js",
   "/manifest.json",
-  "/icon.png"
+  "/icon.png",
+  "/instagram.png",
+  "/facebook.png",
+  "/tiktok.png"
 ];
 
+// ============================================================
+// INSTALL — تثبيت Service Worker + cache الملفات الأساسية
+// ============================================================
 self.addEventListener("install", (event) => {
+  console.log("[SW] Installing v" + CACHE_VERSION);
+
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return Promise.allSettled(
-        CORE_ASSETS.map(asset => cache.add(asset).catch(err => console.warn("Cache skip:", asset, err.message)))
+        CORE_ASSETS.map(asset =>
+          cache.add(asset).catch(err => console.warn("[SW] Cache skip:", asset, err.message))
+        )
       );
     })
   );
+
+  // تفعيل فوري
   self.skipWaiting();
 });
 
+// ============================================================
+// ACTIVATE — تنظيف Cache القديم
+// ============================================================
 self.addEventListener("activate", (event) => {
+  console.log("[SW] Activating v" + CACHE_VERSION);
+
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
-        keys.filter((key) => key !== CACHE_NAME && key !== OFFLINE_CACHE).map((key) => caches.delete(key))
+        keys
+          .filter((key) => key !== CACHE_NAME && key !== OFFLINE_CACHE && key !== RUNTIME_CACHE)
+          .map((key) => {
+            console.log("[SW] Deleting old cache:", key);
+            return caches.delete(key);
+          })
       );
-    })
-  );
-  self.clients.claim();
-});
-
-self.addEventListener("fetch", (event) => {
-  const url = new URL(event.request.url);
-  if (url.pathname.startsWith("/api/")) return;
-  if (event.request.method !== "GET") return;
-  if (url.origin !== self.location.origin) return;
-
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        if (response && response.status === 200) {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
-        }
-        return response;
-      })
-      .catch(async () => {
-        const cached = await caches.match(event.request);
-        if (cached) return cached;
-        if (event.request.headers.get("accept")?.includes("text/html")) {
-          const fallback = await caches.match("/verify.html");
-          if (fallback) return fallback;
-        }
-        return new Response("Hors ligne", { status: 503, statusText: "Offline" });
-      })
+    }).then(() => self.clients.claim())
   );
 });
 
 // ============================================================
-// 🔔 PUSH NOTIFICATIONS
+// FETCH — استراتيجية ذكية
+// ============================================================
+self.addEventListener("fetch", (event) => {
+  const url = new URL(event.request.url);
+
+  // تجاهل: API, غير GET, نطاقات خارجية
+  if (url.pathname.startsWith("/api/")) return;
+  if (event.request.method !== "GET") return;
+  if (url.origin !== self.location.origin) return;
+
+  // ملفات HTML → Network First (الأحدث)
+  if (event.request.headers.get("accept")?.includes("text/html")) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(RUNTIME_CACHE).then(cache => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(async () => {
+          const cached = await caches.match(event.request);
+          if (cached) return cached;
+
+          const fallback = await caches.match("/verify.html");
+          if (fallback) return fallback;
+
+          return new Response("Hors ligne", {
+            status: 503,
+            statusText: "Offline",
+            headers: { "Content-Type": "text/plain; charset=utf-8" }
+          });
+        })
+    );
+    return;
+  }
+
+  // الملفات الثابتة (CSS, JS, صور) → Cache First
+  event.respondWith(
+    caches.match(event.request).then((cached) => {
+      if (cached) return cached;
+
+      return fetch(event.request).then((response) => {
+        if (response && response.status === 200) {
+          const clone = response.clone();
+          caches.open(RUNTIME_CACHE).then(cache => cache.put(event.request, clone));
+        }
+        return response;
+      }).catch(() => {
+        return new Response("", { status: 503 });
+      });
+    })
+  );
+});
+
+// ============================================================
+// PUSH NOTIFICATIONS — استقبال الإشعارات
 // ============================================================
 self.addEventListener("push", (event) => {
   console.log("[SW] Push received");
@@ -75,7 +139,10 @@ self.addEventListener("push", (event) => {
   try {
     data = event.data ? event.data.json() : {};
   } catch (e) {
-    data = { title: "Original", body: event.data ? event.data.text() : "" };
+    data = {
+      title: "Original",
+      body: event.data ? event.data.text() : ""
+    };
   }
 
   const title = data.title || "📋 Notification";
@@ -90,10 +157,16 @@ self.addEventListener("push", (event) => {
     vibrate: [200, 100, 200]
   };
 
-  event.waitUntil(self.registration.showNotification(title, options));
+  event.waitUntil(
+    self.registration.showNotification(title, options)
+  );
 });
 
+// ============================================================
+// NOTIFICATION CLICK — فتح الرابط عند النقر
+// ============================================================
 self.addEventListener("notificationclick", async (event) => {
+  console.log("[SW] Notification clicked");
   event.notification.close();
 
   const url = event.notification.data?.url || "/brand";
@@ -105,7 +178,10 @@ self.addEventListener("notificationclick", async (event) => {
 
   for (const client of clientList) {
     if (client.url.includes(self.location.origin) && "focus" in client) {
-      await client.navigate(url);
+      // ✅ await للتنقل
+      if (client.navigate) {
+        await client.navigate(url);
+      }
       return client.focus();
     }
   }
@@ -115,8 +191,17 @@ self.addEventListener("notificationclick", async (event) => {
   }
 });
 
+// ============================================================
+// MESSAGE — تحديث فوري
+// ============================================================
 self.addEventListener("message", (event) => {
   if (event.data === "skipWaiting") {
     self.skipWaiting();
+  }
+
+  if (event.data === "clearCache") {
+    caches.keys().then(keys => {
+      keys.forEach(key => caches.delete(key));
+    });
   }
 });
