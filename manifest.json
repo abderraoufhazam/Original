@@ -1,16 +1,50 @@
 {
-  "name": "Original — Vérification de produit",
+  "id": "/",
+  "name": "Original — Vérification d'authenticité",
   "short_name": "Original",
   "description": "Vérifiez l'authenticité d'un produit en scannant le QR code et en saisissant le code de sécurité.",
-  "start_url": "/verify",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#ffffff",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "portrait-primary",
+  "background_color": "#0f172a",
   "theme_color": "#0f172a",
-  "lang": "fr",
-  "dir": "ltr",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": ["business", "productivity", "utilities"],
+  "prefer_related_applications": false,
   "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "/icon.png",
       "sizes": "192x192",
@@ -19,9 +53,85 @@
     },
     {
       "src": "/icon.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "تحقق من منتج",
+      "short_name": "تحقق",
+      "description": "تحقق من أصالة منتج الآن",
+      "url": "/verify",
+      "icons": [
+        {
+          "src": "/icon.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "تسجيل دخول",
+      "short_name": "دخول",
+      "description": "الدخول إلى لوحة التحكم",
+      "url": "/login",
+      "icons": [
+        {
+          "src": "/icon.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "تسجيل ماركة",
+      "short_name": "تسجيل",
+      "description": "إنشاء حساب علامة تجارية",
+      "url": "/signup",
+      "icons": [
+        {
+          "src": "/icon.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "اتصل بنا",
+      "short_name": "اتصال",
+      "description": "التواصل مع الدعم",
+      "url": "/contact",
+      "icons": [
+        {
+          "src": "/icon.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "handle_links": "preferred"
 }
