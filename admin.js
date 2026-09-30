@@ -1116,10 +1116,7 @@ async function loadInventory() {
 // ✅ عرض الأكواد (يدعم 7 و 12 حرفاً)
 function formatDisplayCode(code) {
   if (!code) return '';
-  const s = String(code).trim().toUpperCase();
-  if (s.length === 7) return s.slice(0, 3) + '-' + s.slice(3);
-  if (s.length === 12) return s.match(/.{1,4}/g).join(' ');
-  return s;
+  return String(code).trim().toUpperCase();
 }
 function printLabels(codes, brand, lot, logoUrl) {
   if (!codes || !codes.length) { window.toast("Aucun code.", "error"); return; }
