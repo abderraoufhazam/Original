@@ -715,3 +715,58 @@ try {
     currentY = 0;
   });
 })();
+
+
+// ============================================================
+// ENHANCED TOAST SYSTEM
+// ============================================================
+window.showToast = function(message, type = "info", title = "") {
+  let container = document.getElementById("toastContainer");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toastContainer";
+    container.className = "toast-container";
+    document.body.appendChild(container);
+  }
+
+  const icons = {
+    success: "✓",
+    error: "✕",
+    warning: "!",
+    info: "i"
+  };
+
+  const defaultTitles = {
+    success: "نجح",
+    error: "خطأ",
+    warning: "تحذير",
+    info: "معلومة"
+  };
+
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    <div class="toast-icon">${icons[type] || "i"}</div>
+    <div class="toast-content">
+      <div class="toast-title">${title || defaultTitles[type] || ""}</div>
+      <div class="toast-message">${String(message).replace(/[<>]/g, "")}</div>
+    </div>
+  `;
+
+  container.appendChild(toast);
+
+  // 📳 اهتزاز حسب النوع
+  if (typeof vibrate === "function") {
+    if (type === "success") vibrate(30);
+    else if (type === "error") vibrate([50, 30, 50]);
+  }
+
+  // احذف بعد 3.5 ثانية
+  setTimeout(() => {
+    toast.classList.add("toast-out");
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+};
+
+// ✅ نسخة قصيرة للاستخدام السريع
+window.toast = window.showToast;
