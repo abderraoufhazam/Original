@@ -659,14 +659,45 @@ window.__applyOfflineHistory = loadOfflineHistory;
       indicator.style.transform = "translateX(-50%) translateY(0)";
       if (typeof vibrate === "function") vibrate(30);
 
-      // حدّث البيانات
-      try {
-        if (typeof refresh === "function") await refresh();
-        else if (typeof loadStats === "function") await loadStats();
-        else await new Promise(r => setTimeout(r, 700));
-      } catch (e) {
-        console.warn("Refresh error:", e);
-      }
+      // حدّث البيانات + امسح النموذج
+try {
+  // امسح حقل الكود
+  const codeInput = document.getElementById("code");
+  if (codeInput) codeInput.value = "";
+
+  // امسح النتيجة
+  const resultBox = document.getElementById("result");
+  if (resultBox) {
+    resultBox.className = "result hidden";
+    resultBox.innerHTML = "";
+  }
+
+  // أخفِ أقسام التقييم والإبلاغ
+  const feedbackSection = document.getElementById("feedbackSection");
+  const reportSection = document.getElementById("reportSection");
+  if (feedbackSection) feedbackSection.classList.add("hidden");
+  if (reportSection) reportSection.classList.add("hidden");
+
+  // أعد تهيئة التقييم
+  if (typeof currentRating !== "undefined") {
+    window.currentRating = 0;
+  }
+  const starsContainer = document.getElementById("stars");
+  if (starsContainer) {
+    starsContainer.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+  }
+
+  // استدعِ الدوال الموجودة إن وُجدت
+  if (typeof resetFeedbackSections === "function") {
+    resetFeedbackSections();
+  }
+
+  // انتظر قليلًا للشعور بالـ refresh
+  await new Promise(r => setTimeout(r, 500));
+
+} catch (e) {
+  console.warn("Refresh error:", e);
+}
 
       // أخفِ المؤشر
       setTimeout(() => {
