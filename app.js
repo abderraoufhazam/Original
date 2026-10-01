@@ -50,16 +50,15 @@ function show(type, html) {
   result.className = "result " + type;
   result.innerHTML = html;
 
-  // 📳 اهتزاز حسب نوع النتيجة
+  // 📳 اهتزاز حسب نوع النتيجة (مدة ملحوظة)
   if (type === "success") {
-    vibrate(30);
+    vibrate([80, 50, 80]);
   } else if (type === "warning") {
-    vibrate([30, 50, 30]);
+    vibrate([150, 80, 150]);
   } else if (type === "danger") {
-    vibrate([50, 30, 50, 30, 50]);
+    vibrate([250, 100, 250, 100, 250]);
   }
 }
-
 // ============================================================
 // OFFLINE HISTORY
 // ============================================================
