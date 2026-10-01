@@ -34,6 +34,12 @@ let currentRating = 0;
 let lastResultData = null;
 let currentImageDataUrl = null;
 
+function vibrate(pattern = 30) {
+  if ("vibrate" in navigator) {
+    try { navigator.vibrate(pattern); } catch (e) {}
+  }
+}
+
 function escapeHtml(v = "") {
   return String(v).replace(/[&<>"']/g, c => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
@@ -43,6 +49,15 @@ function escapeHtml(v = "") {
 function show(type, html) {
   result.className = "result " + type;
   result.innerHTML = html;
+
+  // 📳 اهتزاز حسب نوع النتيجة
+  if (type === "success") {
+    vibrate(30);
+  } else if (type === "warning") {
+    vibrate([30, 50, 30]);
+  } else if (type === "danger") {
+    vibrate([50, 30, 50, 30, 50]);
+  }
 }
 
 // ============================================================
