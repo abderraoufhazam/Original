@@ -1618,3 +1618,8 @@ html.dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
 @keyframes ptrSpin {
   to { transform: rotate(360deg); }
 }
+/* تعطيل Pull-to-Refresh الأصلي للمتصفح */
+html, body {
+  overscroll-behavior-y: contain;
+  overscroll-behavior: none;
+}
