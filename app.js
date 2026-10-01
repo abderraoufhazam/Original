@@ -613,3 +613,68 @@ document.addEventListener("visibilitychange", () => {
 window.addEventListener("focus", () => setTimeout(updateOnlineStatus, 300));
 
 window.__applyOfflineHistory = loadOfflineHistory;
+
+// ============================================================
+// PULL TO REFRESH
+// ============================================================
+(function initPullToRefresh() {
+  let startY = 0;
+  let currentY = 0;
+  let pulling = false;
+  const THRESHOLD = 80;
+  const MAX_PULL = 140;
+
+  // أنشئ المؤشر
+  const indicator = document.createElement("div");
+  indicator.className = "ptr-indicator";
+  indicator.innerHTML = '<div class="spinner"></div><span>جاري التحديث...</span>';
+  document.body.appendChild(indicator);
+
+  document.addEventListener("touchstart", (e) => {
+    if (window.scrollY === 0 && !pulling) {
+      startY = e.touches[0].clientY;
+    }
+  }, { passive: true });
+
+  document.addEventListener("touchmove", (e) => {
+    if (startY === 0) return;
+    currentY = e.touches[0].clientY - startY;
+
+    if (currentY > 0 && currentY < MAX_PULL && window.scrollY === 0) {
+      pulling = true;
+      indicator.style.transition = "none";
+      indicator.style.transform = `translateX(-50%) translateY(${Math.min(currentY - 70, 0)}px)`;
+    }
+  }, { passive: true });
+
+  document.addEventListener("touchend", async () => {
+    if (!pulling) {
+      startY = 0;
+      return;
+    }
+
+    if (currentY >= THRESHOLD) {
+      indicator.classList.add("visible");
+      if (typeof vibrate === "function") vibrate(30);
+
+      // حدّث البيانات
+      try {
+        if (typeof refresh === "function") await refresh();
+        else if (typeof loadStats === "function") await loadStats();
+      } catch (e) {
+        console.warn("Refresh error:", e);
+      }
+
+      setTimeout(() => {
+        indicator.classList.remove("visible");
+      }, 800);
+    } else {
+      indicator.style.transition = "transform 200ms ease";
+      indicator.style.transform = "translateX(-50%) translateY(-80px)";
+    }
+
+    pulling = false;
+    startY = 0;
+    currentY = 0;
+  });
+})();
