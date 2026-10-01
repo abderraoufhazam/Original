@@ -654,21 +654,27 @@ window.__applyOfflineHistory = loadOfflineHistory;
     }
 
     if (currentY >= THRESHOLD) {
-      indicator.classList.add("visible");
+      // اعرض المؤشر
+      indicator.style.transition = "transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1)";
+      indicator.style.transform = "translateX(-50%) translateY(0)";
       if (typeof vibrate === "function") vibrate(30);
 
       // حدّث البيانات
       try {
         if (typeof refresh === "function") await refresh();
         else if (typeof loadStats === "function") await loadStats();
+        else await new Promise(r => setTimeout(r, 700));
       } catch (e) {
         console.warn("Refresh error:", e);
       }
 
+      // أخفِ المؤشر
       setTimeout(() => {
-        indicator.classList.remove("visible");
-      }, 800);
+        indicator.style.transform = "translateX(-50%) translateY(-80px)";
+      }, 400);
+
     } else {
+      // ارجع للأعلى
       indicator.style.transition = "transform 200ms ease";
       indicator.style.transform = "translateX(-50%) translateY(-80px)";
     }
