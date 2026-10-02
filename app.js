@@ -345,55 +345,117 @@ function renderResult(data) {
   if (!data) { result.className = "result hidden"; return; }
 
   if (data.status === "ORIGINAL") {
-    const p = data.product || {};
-    window.__lastVerifiedProduct = {
-      brand: p.brand || null,
-      product_name: p.product_name || null,
-      reference: p.reference || null,
-      lot: p.lot || null,
-      manufacture_date: p.manufacture_date || null,
-      expiry_date: p.expiry_date || null
-    };
+  const p = data.product || {};
+  window.__lastVerifiedProduct = {
+    brand: p.brand || null,
+    product_name: p.product_name || null,
+    reference: p.reference || null,
+    lot: p.lot || null,
+    manufacture_date: p.manufacture_date || null,
+    expiry_date: p.expiry_date || null
+  };
 
-    show("success", `
-      <div class="icon">✓</div>
-      <h2>${escapeHtml(t("originalTitle"))}</h2>
-      <p>${escapeHtml(t("originalMsg"))}</p>
-      ${p.product_image ? `<img class="product-image" src="${escapeHtml(p.product_image)}" alt="">` : ""}
-      <div class="details">
-        ${p.brand ? `<div><b>${escapeHtml(t("brandLabel"))}</b><span>${escapeHtml(p.brand)}</span></div>` : ""}
-        ${p.product_name ? `<div><b>${escapeHtml(t("productLabel"))}</b><span>${escapeHtml(p.product_name)}</span></div>` : ""}
-        ${p.reference ? `<div><b>${escapeHtml(t("referenceLabel"))}</b><span>${escapeHtml(p.reference)}</span></div>` : ""}
-        ${p.lot ? `<div><b>${escapeHtml(t("lotLabel"))}</b><span>${escapeHtml(p.lot)}</span></div>` : ""}
-        ${p.manufacture_date ? `<div><b>${escapeHtml(t("fabricationLabel"))}</b><span>${escapeHtml(p.manufacture_date)}</span></div>` : ""}
-        ${p.expiry_date ? `<div><b>${escapeHtml(t("expirationLabel"))}</b><span>${escapeHtml(p.expiry_date)}</span></div>` : ""}
+  const productCardId = "product-card-" + Date.now();
+  window.__currentProductCardId = productCardId;
+
+  show("success", `
+    <div class="product-card" id="${productCardId}">
+      <div class="card-badge">
+        <span class="card-badge-icon">✓</span>
+        <span>${escapeHtml(t("originalTitle"))}</span>
       </div>
-      ${p.description ? `<p class="description">${escapeHtml(p.description)}</p>` : ""}
-      ${(p.instagram_url || p.facebook_url || p.tiktok_url) ? `
-        <div class="social-links">
-          <p class="social-title">${escapeHtml(t("followUs"))}</p>
-          <div class="social-buttons">
-            ${p.instagram_url ? `
-              <a href="${escapeHtml(p.instagram_url)}" target="_blank" rel="noopener" class="social-btn social-instagram" aria-label="Instagram">
-                <img src="/instagram.png" alt="Instagram" class="social-icon-img">
-                <span>Instagram</span>
-              </a>` : ""}
-            ${p.facebook_url ? `
-              <a href="${escapeHtml(p.facebook_url)}" target="_blank" rel="noopener" class="social-btn social-facebook" aria-label="Facebook">
-                <img src="/facebook.png" alt="Facebook" class="social-icon-img">
-                <span>Facebook</span>
-              </a>` : ""}
-            ${p.tiktok_url ? `
-              <a href="${escapeHtml(p.tiktok_url)}" target="_blank" rel="noopener" class="social-btn social-tiktok" aria-label="TikTok">
-                <img src="/tiktok.png" alt="TikTok" class="social-icon-img">
-                <span>TikTok</span>
-              </a>` : ""}
-          </div>
+
+      ${p.product_image ? `
+        <div class="card-image-wrap">
+          <img class="card-image" src="${escapeHtml(p.product_image)}" alt="">
         </div>
-      ` : ""}
-    `);
-    feedbackSection.classList.remove("hidden");
-    reportSection.classList.remove("hidden");
+      ` : `
+        <div class="card-image-wrap card-image-placeholder">
+          <img src="/icon.png" alt="">
+        </div>
+      `}
+
+      <div class="card-header">
+        ${p.brand ? `<h2 class="card-brand">${escapeHtml(p.brand)}</h2>` : ""}
+        ${p.product_name ? `<p class="card-product">${escapeHtml(p.product_name)}</p>` : ""}
+      </div>
+
+      <div class="card-details">
+        ${p.reference ? `
+          <div class="card-detail-row">
+            <span class="card-detail-icon">🔖</span>
+            <span class="card-detail-label">${escapeHtml(t("referenceLabel"))}</span>
+            <span class="card-detail-value">${escapeHtml(p.reference)}</span>
+          </div>` : ""}
+        ${p.lot ? `
+          <div class="card-detail-row">
+            <span class="card-detail-icon">📦</span>
+            <span class="card-detail-label">${escapeHtml(t("lotLabel"))}</span>
+            <span class="card-detail-value">${escapeHtml(p.lot)}</span>
+          </div>` : ""}
+        ${p.manufacture_date ? `
+          <div class="card-detail-row">
+            <span class="card-detail-icon">📅</span>
+            <span class="card-detail-label">${escapeHtml(t("fabricationLabel"))}</span>
+            <span class="card-detail-value">${escapeHtml(p.manufacture_date)}</span>
+          </div>` : ""}
+        ${p.expiry_date ? `
+          <div class="card-detail-row">
+            <span class="card-detail-icon">⏰</span>
+            <span class="card-detail-label">${escapeHtml(t("expirationLabel"))}</span>
+            <span class="card-detail-value">${escapeHtml(p.expiry_date)}</span>
+          </div>` : ""}
+      </div>
+
+      ${p.description ? `<div class="card-description">${escapeHtml(p.description)}</div>` : ""}
+
+      <div class="card-actions">
+        <button type="button" class="card-action-btn" id="saveCardBtn-${productCardId}">
+          <span>💾</span>
+          <span>حفظ البطاقة</span>
+        </button>
+        <button type="button" class="card-action-btn primary" id="shareCardBtn-${productCardId}">
+          <span>📤</span>
+          <span>مشاركة</span>
+        </button>
+      </div>
+    </div>
+
+    ${(p.instagram_url || p.facebook_url || p.tiktok_url) ? `
+      <div class="social-links">
+        <p class="social-title">${escapeHtml(t("followUs"))}</p>
+        <div class="social-buttons">
+          ${p.instagram_url ? `
+            <a href="${escapeHtml(p.instagram_url)}" target="_blank" rel="noopener" class="social-btn social-instagram" aria-label="Instagram">
+              <img src="/instagram.png" alt="Instagram" class="social-icon-img">
+              <span>Instagram</span>
+            </a>` : ""}
+          ${p.facebook_url ? `
+            <a href="${escapeHtml(p.facebook_url)}" target="_blank" rel="noopener" class="social-btn social-facebook" aria-label="Facebook">
+              <img src="/facebook.png" alt="Facebook" class="social-icon-img">
+              <span>Facebook</span>
+            </a>` : ""}
+          ${p.tiktok_url ? `
+            <a href="${escapeHtml(p.tiktok_url)}" target="_blank" rel="noopener" class="social-btn social-tiktok" aria-label="TikTok">
+              <img src="/tiktok.png" alt="TikTok" class="social-icon-img">
+              <span>TikTok</span>
+            </a>` : ""}
+        </div>
+      </div>
+    ` : ""}
+  `);
+
+  // ✅ اربط أزرار البطاقة
+  setTimeout(() => {
+    const saveBtn = document.getElementById("saveCardBtn-" + productCardId);
+    const shareBtn = document.getElementById("shareCardBtn-" + productCardId);
+
+    if (saveBtn) saveBtn.onclick = () => saveProductCard(p);
+    if (shareBtn) shareBtn.onclick = () => shareProductCard(p);
+  }, 100);
+
+  feedbackSection.classList.remove("hidden");
+  reportSection.classList.remove("hidden");
 
   } else if (data.status === "USED") {
     window.__lastVerifiedProduct = null;
