@@ -1,8 +1,5 @@
 // api/ai.js
-// Gemini AI موحّد: chat (محادثة) + analyze (تحليل صور)
-// الاستخدام:
-//   POST /api/ai?mode=chat      { message, history, context }
-//   POST /api/ai?mode=analyze   { image }
+// Gemini AI موحّد: chat (محادثة) + analyze (تحليل صور) + analytics (تحليل بلاغات)
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -16,12 +13,13 @@ export default async function handler(req, res) {
 
   const mode = (req.query && req.query.mode) || (req.body && req.body.mode);
 
-  if (mode === 'chat')    return handleChat(req, res);
-  if (mode === 'analyze') return handleAnalyze(req, res);
+  if (mode === 'chat')      return handleChat(req, res);
+  if (mode === 'analyze')   return handleAnalyze(req, res);
+  if (mode === 'analytics') return handleAnalytics(req, res);
 
   return res.status(400).json({
     status: 'ERROR',
-    message: 'Mode invalide. Utilisez ?mode=chat ou ?mode=analyze'
+    message: 'Mode invalide. Utilisez ?mode=chat, ?mode=analyze ou ?mode=analytics'
   });
 }
 
@@ -74,7 +72,7 @@ RÈGLES ABSOLUES :
     }
     contents.push({ role: 'user', parts: [{ text: message.trim().slice(0, 1000) }] });
 
-    // جلب قائمة الموديلات المتاحة
+    // جلب قائمة الموديلات
     let availableModels = [];
     try {
       const listRes = await fetch(
@@ -98,7 +96,6 @@ RÈGLES ABSOLUES :
       ];
     }
 
-    // 🔥 الأولوية: 2.0 قبل 2.5 (لأن 2.0 لا يفكر)
     const preferred = [
       'gemini-2.0-flash',
       'gemini-2.0-flash-001',
@@ -124,8 +121,6 @@ RÈGLES ABSOLUES :
     for (const model of availableModels) {
       try {
         const is25 = model.includes('2.5');
-
-        // ✅ thinkingConfig فقط لموديلات 2.5
         const generationConfig = {
           temperature: 0.7,
           maxOutputTokens: 500
@@ -154,7 +149,6 @@ RÈGLES ABSOLUES :
           break;
         } else {
           lastError = { status: r.status, model: model, body: text.slice(0, 200) };
-          console.warn(`⚠️ Model ${model} failed:`, r.status);
         }
       } catch (e) {
         lastError = { status: 'exception', model: model, body: String(e).slice(0, 200) };
@@ -173,8 +167,6 @@ RÈGLES ABSOLUES :
     try {
       const candidate = geminiData.candidates[0];
       const allParts = candidate.content.parts || [];
-
-      // 🔥 إزالة أجزاء "التفكير" الداخلي
       const realParts = allParts.filter(p => !p.thought);
       const fullText = realParts.map(p => p.text || '').join('').trim();
 
@@ -207,7 +199,7 @@ RÈGLES ABSOLUES :
 }
 
 // ============================================================
-// MODE 2: ANALYZE — تحليل صور المنتجات بـ Gemini Vision
+// MODE 2: ANALYZE — تحليل صور المنتجات
 // ============================================================
 async function handleAnalyze(req, res) {
   try {
@@ -287,11 +279,9 @@ Ne mets AUCUN texte avant ou après le JSON.`;
         } else {
           const errText = await geminiRes.text();
           lastError = { status: geminiRes.status, model, body: errText.slice(0, 250) };
-          console.warn(`⚠️ Analyze model ${model} failed:`, geminiRes.status);
         }
       } catch (err) {
         lastError = { status: 'exception', model, body: String(err).slice(0, 250) };
-        console.warn(`❌ Analyze model ${model} exception:`, err);
       }
     }
 
@@ -310,13 +300,11 @@ Ne mets AUCUN texte avant ou après le JSON.`;
     try {
       const candidate = geminiData.candidates[0];
       const allParts = candidate.content.parts || [];
-      // فلترة أجزاء التفكير إن وجدت
       const realParts = allParts.filter(p => !p.thought);
       const text = realParts.map(p => p.text || '').join('');
       const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
       result = JSON.parse(cleaned);
     } catch (e) {
-      console.error('Parse error:', e);
       return res.status(500).json({
         status: 'ERROR',
         message: 'Réponse IA invalide',
@@ -334,11 +322,234 @@ Ne mets AUCUN texte avant ou après le JSON.`;
     });
 
   } catch (error) {
-    console.error('Handler error:', error);
     return res.status(500).json({
       status: 'ERROR',
       message: 'Erreur inattendue',
       detail: String(error).slice(0, 200)
+    });
+  }
+}
+
+// ============================================================
+// MODE 3: ANALYTICS — تحليل بلاغات التقليد
+// ============================================================
+async function handleAnalytics(req, res) {
+  try {
+    const { brand_name, days = 30 } = req.body || {};
+
+    if (!brand_name || typeof brand_name !== 'string' || brand_name.trim() === '') {
+      return res.status(400).json({ status: 'ERROR', message: 'brand_name obligatoire' });
+    }
+
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!GEMINI_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      return res.status(500).json({ status: 'ERROR', message: 'Config manquante' });
+    }
+
+    // اجلب البلاغات للفترة المطلوبة
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+    const cleanBrand = brand_name.trim();
+
+    const reportsRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/fake_reports?select=wilaya,comment,product_name,product_brand,status,created_at,ai_analyzed&order=created_at.desc&limit=500&created_at=gte.${since}`,
+      {
+        headers: {
+          'apikey': SUPABASE_SERVICE_ROLE_KEY,
+          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+
+    if (!reportsRes.ok) {
+      return res.status(500).json({ status: 'ERROR', message: 'Erreur récupération' });
+    }
+
+    const allReports = await reportsRes.json();
+
+    // فلترة بحسب اسم الماركة (fuzzy match)
+    const reports = (allReports || []).filter(r => {
+      const brand = (r.product_brand || '').toLowerCase();
+      const name = (r.product_name || '').toLowerCase();
+      const target = cleanBrand.toLowerCase();
+      return brand.includes(target) || target.includes(brand) || name.includes(target);
+    });
+
+    if (reports.length === 0) {
+      return res.status(200).json({
+        status: 'OK',
+        report_count: 0,
+        analysis: {
+          summary: `لا توجد بلاغات تقليد على "${cleanBrand}" خلال آخر ${days} يومًا.`,
+          patterns: [],
+          recommendations: ['استمر في المراقبة الدورية'],
+          risk_level: 'LOW'
+        }
+      });
+    }
+
+    // إحصائيات أساسية
+    const wilayaCounts = {};
+    let totalWithImage = 0;
+    let totalAnalyzed = 0;
+
+    reports.forEach(r => {
+      if (r.wilaya) wilayaCounts[r.wilaya] = (wilayaCounts[r.wilaya] || 0) + 1;
+      if (r.ai_analyzed) totalAnalyzed++;
+      if (r.comment) totalWithImage++;
+    });
+
+    const topWilayas = Object.entries(wilayaCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, count]) => `${name} (${count})`);
+
+    // جهّز ملخص للـ AI
+    const reportsSummary = reports.slice(0, 30).map(r => ({
+      wilaya: r.wilaya || '—',
+      brand: r.product_brand || '—',
+      product: r.product_name || '—',
+      comment: (r.comment || '').slice(0, 150),
+      date: r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : '—'
+    }));
+
+    const dataSummary = `
+Brand: ${cleanBrand}
+Période: derniers ${days} jours
+Total signalements: ${reports.length}
+Top wilayas: ${topWilayas.join(', ') || 'aucune'}
+Signalements analysés par IA: ${totalAnalyzed}
+`;
+
+    const prompt = `Tu es un analyste expert en détection de contrefaçon pour la marque "${cleanBrand}".
+
+Voici les données des signalements reçus :
+
+${dataSummary}
+
+Détails des derniers signalements :
+${JSON.stringify(reportsSummary, null, 2)}
+
+Analyse ces données et identifie :
+1. Les tendances géographiques (où se concentre la contrefaçon ?)
+2. Les patterns temporels (périodes d'activité accrue ?)
+3. Les types de produits visés
+4. Le niveau de risque global
+
+Réponds UNIQUEMENT en JSON valide avec cette structure exacte :
+{
+  "summary": "résumé en 2-3 phrases en arabe",
+  "patterns": [
+    "pattern 1 en arabe",
+    "pattern 2 en arabe"
+  ],
+  "recommendations": [
+    "recommandation 1 en arabe",
+    "recommandation 2 en arabe"
+  ],
+  "risk_level": "LOW|MEDIUM|HIGH|CRITICAL",
+  "top_wilayas": ["wilaya1", "wilaya2"]
+}
+
+IMPORTANT :
+- Réponds en arabe dans les champs texte
+- Sois précis et concret
+- Ne mets AUCUN texte avant ou après le JSON`;
+
+    // جرّب الموديلات بالترتيب
+    const MODELS = [
+      'gemini-2.0-flash',
+      'gemini-2.0-flash-001',
+      'gemini-2.5-flash',
+      'gemini-1.5-flash',
+      'gemini-1.5-flash-latest'
+    ];
+
+    let lastError = null;
+    let geminiData = null;
+    let usedModel = null;
+
+    for (const model of MODELS) {
+      try {
+        const is25 = model.includes('2.5');
+        const generationConfig = {
+          temperature: 0.3,
+          maxOutputTokens: 800,
+          responseMimeType: "application/json"
+        };
+        if (is25) {
+          generationConfig.thinkingConfig = { thinkingBudget: 0 };
+        }
+
+        const r = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig
+            })
+          }
+        );
+
+        if (r.ok) {
+          geminiData = await r.json();
+          usedModel = model;
+          console.log('✅ Analytics success with model:', model);
+          break;
+        } else {
+          const errText = await r.text();
+          lastError = { status: r.status, model, body: errText.slice(0, 250) };
+        }
+      } catch (err) {
+        lastError = { status: 'exception', model, body: String(err).slice(0, 250) };
+      }
+    }
+
+    if (!geminiData) {
+      return res.status(500).json({
+        status: 'ERROR',
+        message: 'Erreur analyse IA',
+        detail: JSON.stringify(lastError).slice(0, 300)
+      });
+    }
+
+    // استخرج JSON
+    let analysis = null;
+    try {
+      const candidate = geminiData.candidates[0];
+      const allParts = candidate.content.parts || [];
+      const realParts = allParts.filter(p => !p.thought);
+      const text = realParts.map(p => p.text || '').join('');
+      const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      analysis = JSON.parse(cleaned);
+    } catch (e) {
+      console.error('Analytics parse error:', e);
+      analysis = {
+        summary: `تم استلام ${reports.length} بلاغ على "${cleanBrand}".`,
+        patterns: [`التركيز الجغرافي: ${topWilayas.join(', ')}`],
+        recommendations: ['راجع الموردين في المناطق المذكورة'],
+        risk_level: reports.length > 20 ? 'HIGH' : 'MEDIUM',
+        top_wilayas: topWilayas
+      };
+    }
+
+    return res.status(200).json({
+      status: 'OK',
+      report_count: reports.length,
+      analysis: analysis,
+      model: usedModel
+    });
+
+  } catch (error) {
+    console.error('Analytics error:', error);
+    return res.status(500).json({
+      status: 'ERROR',
+      message: 'Erreur inattendue',
+      detail: String(error).slice(0, 300)
     });
   }
 }
