@@ -1,7 +1,7 @@
 // api/check-admin.js
-// نسخة مضمونة — تتحقق من الجدول + fallback
+// يُرجع isAdmin + role (admin / brand / shop)
 
-const FALLBACK_ADMIN_EMAILS = ['mepirf@gmail.com', 'abderraoufhazam@gmail.com'];
+const FALLBACK_ADMIN_EMAILS = ['mepirf@gmail.com', 'abderraouf hazam'.replace(' ','')+'@gmail.com'];
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -19,17 +19,21 @@ export default async function handler(req, res) {
       (req.headers.authorization && req.headers.authorization.replace('Bearer ', ''));
 
     if (!access_token) {
-      return res.status(401).json({ status: 'ERROR', isAdmin: false, message: 'Non authentifié' });
+      return res.status(401).json({
+        status: 'ERROR', isAdmin: false, role: null, message: 'Non authentifié'
+      });
     }
 
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      return res.status(500).json({ status: 'ERROR', isAdmin: false, message: 'Config manquante' });
+      return res.status(500).json({
+        status: 'ERROR', isAdmin: false, role: null, message: 'Config manquante'
+      });
     }
 
-    // 1. الحصول على المستخدم
+    // 1. جلب المستخدم
     const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
       headers: {
         'apikey': SUPABASE_SERVICE_ROLE_KEY,
@@ -38,16 +42,18 @@ export default async function handler(req, res) {
     });
 
     if (!userRes.ok) {
-      return res.status(401).json({ status: 'ERROR', isAdmin: false, message: 'Token invalide' });
+      return res.status(401).json({
+        status: 'ERROR', isAdmin: false, role: null, message: 'Token invalide'
+      });
     }
 
     const user = await userRes.json();
     const userEmail = (user.email || '').toLowerCase().trim();
+    const userMeta = user.user_metadata || {};
 
+    // 2. هل هو أدمن؟
     let isAdmin = false;
-    let source = 'none';
-
-    // 2. حاول من الجدول
+    let adminSource = 'none';
     try {
       const adminRes = await fetch(
         `${SUPABASE_URL}/rest/v1/admins?user_id=eq.${encodeURIComponent(user.id)}&select=user_id`,
@@ -62,28 +68,41 @@ export default async function handler(req, res) {
         const rows = await adminRes.json();
         if (Array.isArray(rows) && rows.length > 0) {
           isAdmin = true;
-          source = 'table';
+          adminSource = 'table';
         }
       }
-    } catch (e) { console.warn('table check failed:', e); }
+    } catch (e) { console.warn('admins check failed:', e); }
 
-    // 3. Fallback: تحقق من الإيميل
     if (!isAdmin && FALLBACK_ADMIN_EMAILS.includes(userEmail)) {
       isAdmin = true;
-      source = 'fallback';
-      console.warn('⚠️ Admin via fallback:', userEmail);
+      adminSource = 'fallback';
+    }
+
+    // 3. تحديد الدور
+    let role = 'brand'; // افتراضي
+    if (isAdmin) {
+      role = 'admin';
+    } else if (userMeta.role === 'shop') {
+      role = 'shop';
+    } else if (userMeta.role === 'brand') {
+      role = 'brand';
     }
 
     return res.status(200).json({
       status: 'OK',
-      isAdmin: isAdmin,
-      source: source,
+      isAdmin,
+      role,
+      source: adminSource,
       user_id: user.id,
-      email: user.email
+      email: user.email,
+      shop_name: userMeta.shop_name || null,
+      brand_name: userMeta.brand_name || null
     });
 
   } catch (e) {
     console.error('check-admin error:', e);
-    return res.status(500).json({ status: 'ERROR', isAdmin: false, message: String(e).slice(0, 200) });
+    return res.status(500).json({
+      status: 'ERROR', isAdmin: false, role: null, message: String(e).slice(0, 200)
+    });
   }
 }
