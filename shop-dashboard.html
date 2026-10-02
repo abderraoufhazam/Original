@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>لوحة المحل — Original</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="icon" type="image/svg+xml" href="/icon.png">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #fff;
+      padding: 20px;
+    }
+    .box {
+      background: #fff;
+      color: #0f172a;
+      border-radius: 24px;
+      padding: 40px 28px;
+      max-width: 460px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    }
+    .icon { font-size: 64px; margin-bottom: 16px; line-height: 1; }
+    h1 { font-size: 22px; margin: 0 0 12px; font-weight: 800; }
+    p { color: #64748b; font-size: 14px; line-height: 1.7; margin: 0 0 20px; }
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #0f172a;
+      color: #fff;
+      border: 0;
+      border-radius: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+      text-decoration: none;
+    }
+    .ban { background: #fef2f2; border: 2px solid #dc2626; padding: 16px; border-radius: 14px; color: #dc2626; margin-bottom: 20px; }
+    .ban b { display: block; font-size: 16px; margin-bottom: 6px; }
+    .ban small { color: #991b1b; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div class="icon" id="icon">⏳</div>
+    <h1 id="title">جارٍ التحقق من حسابك...</h1>
+    <p id="msg">الرجاء الانتظار لحظة.</p>
+    <button class="btn" onclick="logout()">🚪 تسجيل الخروج</button>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://qfpmbbntxyrderjlejql.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m";
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function logout() {
+      await sb.auth.signOut();
+      location.href = "/";
+    }
+
+    (async function init() {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) { location.href = "/login"; return; }
+
+      const meta = session.user.user_metadata || {};
+      if (meta.role !== "shop") { location.href = "/brand"; return; }
+
+      const icon = document.getElementById("icon");
+      const title = document.getElementById("title");
+      const msg = document.getElementById("msg");
+
+      const { data, error } = await sb.rpc("shop_get_dashboard");
+
+      if (error) {
+        icon.textContent = "⚠️";
+        title.textContent = "خطأ في التحميل";
+        msg.textContent = error.message;
+        return;
+      }
+
+      if (!data || data.status === "PENDING_REVIEW") {
+        icon.textContent = "⏳";
+        title.textContent = "حسابك قيد المراجعة";
+        msg.textContent = "سيتم مراجعة طلبك من طرف الإدارة. ستصلك رسالة عند الموافقة (خلال 24-48 ساعة).";
+        return;
+      }
+
+      if (data.status === "OK") {
+        const shop = data.shop || {};
+
+        if (shop.status === "BANNED") {
+          document.querySelector(".box").innerHTML = `
+            <div class="ban">
+              <b>⛔ تم حظر حسابك</b>
+              <small>${shop.ban_reason || 'مخالفة الشروط'}</small>
+            </div>
+            <p>تم إيقاف حسابك نهائيًا. للاستفسار تواصل مع الإدارة.</p>
+            <button class="btn" onclick="logout()">🚪 تسجيل الخروج</button>
+          `;
+          return;
+        }
+
+        icon.textContent = "🏪";
+        title.textContent = `مرحبًا ${shop.shop_name || ''}`;
+        msg.innerHTML = `✅ حسابك نشط<br><small style="color:#94a3b8">لوحة التحكم الكاملة قيد البناء — ستكون جاهزة قريبًا</small>`;
+      }
+    })();
+  </script>
+</body>
+</html>
