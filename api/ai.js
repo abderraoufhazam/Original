@@ -13,9 +13,10 @@ export default async function handler(req, res) {
 
   const mode = (req.query && req.query.mode) || (req.body && req.body.mode);
 
-  if (mode === 'chat')      return handleChat(req, res);
-  if (mode === 'analyze')   return handleAnalyze(req, res);
-  if (mode === 'analytics') return handleAnalytics(req, res);
+  if (mode === 'chat')       return handleChat(req, res);
+if (mode === 'analyze')    return handleAnalyze(req, res);
+if (mode === 'analytics')  return handleAnalytics(req, res);
+if (mode === 'read-label') return handleReadLabel(req, res);
 
   return res.status(400).json({
     status: 'ERROR',
@@ -550,6 +551,145 @@ IMPORTANT :
       status: 'ERROR',
       message: 'Erreur inattendue',
       detail: String(error).slice(0, 300)
+    });
+  }
+}
+
+// ============================================================
+// MODE 4: READ LABEL — قراءة الكود من صورة الملصق
+// ============================================================
+async function handleReadLabel(req, res) {
+  try {
+    const { image } = req.body || {};
+
+    if (!image || typeof image !== 'string' || !image.startsWith('data:image/')) {
+      return res.status(400).json({ status: 'ERROR', message: 'Image manquante' });
+    }
+
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+    if (!GEMINI_API_KEY) {
+      return res.status(500).json({ status: 'ERROR', message: 'Config manquante' });
+    }
+
+    const match = image.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+    if (!match) {
+      return res.status(400).json({ status: 'ERROR', message: 'Format invalide' });
+    }
+
+    const mimeType = match[1];
+    const base64Data = match[2];
+
+    const prompt = `Tu es un expert en lecture de codes d'authentification.
+
+Lis le code secret visible sur cette image (sous la zone à gratter ou imprimé sur le label).
+
+RÈGLES :
+- Le code contient exactement 7 caractères
+- Caractères autorisés : A-Z (sauf I, O, L) et 2-9 (sauf 0, 1)
+- Peut contenir un tiret (ex: DHY-583T) → ignore-le
+- Réponds UNIQUEMENT en JSON valide
+
+Format de réponse :
+{
+  "code": "XXXXXXX",
+  "confidence": "high|medium|low",
+  "notes": "raison si low"
+}
+
+Si aucun code n'est lisible :
+{ "code": "", "confidence": "low", "notes": "aucun code visible" }`;
+
+    const MODELS = [
+      'gemini-2.5-flash-lite',
+      'gemini-2.5-flash',
+      'gemini-flash-lite-latest',
+      'gemini-flash-latest'
+    ];
+
+    let lastError = null;
+    let geminiData = null;
+    let usedModel = null;
+
+    for (const model of MODELS) {
+      try {
+        const geminiRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [
+                  { text: prompt },
+                  { inline_data: { mime_type: mimeType, data: base64Data } }
+                ]
+              }],
+              generationConfig: {
+                temperature: 0.1,
+                maxOutputTokens: 200,
+                responseMimeType: "application/json"
+              }
+            })
+          }
+        );
+
+        if (geminiRes.ok) {
+          geminiData = await geminiRes.json();
+          usedModel = model;
+          break;
+        } else {
+          const errText = await geminiRes.text();
+          lastError = { status: geminiRes.status, model, body: errText.slice(0, 200) };
+        }
+      } catch (err) {
+        lastError = { status: 'exception', model, body: String(err).slice(0, 200) };
+      }
+    }
+
+    if (!geminiData) {
+      return res.status(500).json({
+        status: 'ERROR',
+        message: 'Erreur lecture IA',
+        detail: JSON.stringify(lastError).slice(0, 200)
+      });
+    }
+
+    let result = null;
+    try {
+      const candidate = geminiData.candidates[0];
+      const allParts = candidate.content.parts || [];
+      const realParts = allParts.filter(p => !p.thought);
+      const text = realParts.map(p => p.text || '').join('');
+      const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      result = JSON.parse(cleaned);
+    } catch (e) {
+      return res.status(500).json({ status: 'ERROR', message: 'Réponse IA invalide' });
+    }
+
+    let cleanCode = String(result.code || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+    if (!cleanCode || cleanCode.length < 6) {
+      return res.status(200).json({
+        status: 'OK',
+        code: '',
+        confidence: 'low',
+        message: 'لم نتمكن من قراءة الكود، اكتبه يدويًا'
+      });
+    }
+
+    return res.status(200).json({
+      status: 'OK',
+      code: cleanCode,
+      confidence: result.confidence || 'medium',
+      notes: result.notes || '',
+      model: usedModel
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      status: 'ERROR',
+      message: 'Erreur inattendue',
+      detail: String(error).slice(0, 200)
     });
   }
 }
