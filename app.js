@@ -832,3 +832,97 @@ window.showToast = function(message, type = "info", title = "") {
 
 // ✅ نسخة قصيرة للاستخدام السريع
 window.toast = window.showToast;
+
+// ============================================================
+// PRODUCT CARD — SAVE & SHARE
+// ============================================================
+async function saveProductCard(p) {
+  // حمّل html2canvas عند الحاجة
+  if (typeof html2canvas === "undefined") {
+    try {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement("script");
+        s.src = "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js";
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    } catch (e) {
+      toast("فشل تحميل الأداة", "error");
+      return;
+    }
+  }
+
+  const cardId = window.__currentProductCardId;
+  const cardEl = cardId ? document.getElementById(cardId) : null;
+
+  if (!cardEl) {
+    toast("لم يتم العثور على البطاقة", "error");
+    return;
+  }
+
+  try {
+    toast("جاري إنشاء الصورة...", "info", "الرجاء الانتظار");
+    if (typeof vibrate === "function") vibrate(30);
+
+    const canvas = await html2canvas(cardEl, {
+      backgroundColor: "#ffffff",
+      scale: 2,
+      useCORS: true,
+      logging: false
+    });
+
+    const link = document.createElement("a");
+    const brandSlug = (p.brand || "product").replace(/[^a-zA-Z0-9\u0600-\u06FF]/g, "-");
+    link.download = `OriginalDz-${brandSlug}-${Date.now()}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+
+    toast("تم حفظ البطاقة في التنزيلات", "success", "✓ تم");
+    if (typeof vibrate === "function") vibrate([80, 50, 80]);
+
+  } catch (e) {
+    console.error("Save card error:", e);
+    toast("فشل حفظ البطاقة", "error");
+  }
+}
+
+async function shareProductCard(p) {
+  const brand = p.brand || "";
+  const productName = p.product_name || "";
+  const text = [
+    "✅ منتج أصلي",
+    "",
+    brand ? `🏢 ${brand}` : "",
+    productName ? `📦 ${productName}` : "",
+    "",
+    "تحققت من أصالته على OriginalDz 🇩🇿"
+  ].filter(Boolean).join("\n");
+
+  const url = location.origin;
+
+  // ✅ Web Share API (الأفضل على الجوال)
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: "منتج أصلي — OriginalDz",
+        text: text,
+        url: url
+      });
+      if (typeof vibrate === "function") vibrate(30);
+      return;
+    } catch (e) {
+      if (e.name === "AbortError") return;
+      // إذا فشل share → جرّب نسخ
+    }
+  }
+
+  // Fallback: نسخ إلى الحافظة
+  try {
+    await navigator.clipboard.writeText(text + "\n" + url);
+    toast("تم نسخ النص — الصقه في أي مكان", "success", "✓ تم");
+    if (typeof vibrate === "function") vibrate(30);
+  } catch (e) {
+    toast("فشل النسخ", "error");
+  }
+}
