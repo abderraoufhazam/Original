@@ -173,10 +173,14 @@
     <p class="muted" data-i18n="subtitle">Entrez le code de sécurité caché sous la zone à gratter.</p>
 
     <form id="verifyForm">
-      <input id="code" autocomplete="off" autocapitalize="characters"
-       maxlength="14" data-i18n="placeholder" placeholder="CODE DE SÉCURITÉ" required>
-      <button type="submit" id="verifyBtn" data-i18n="verifyBtn">VÉRIFIER</button>
-    </form>
+  <div class="code-input-wrap">
+    <input id="code" autocomplete="off" autocapitalize="characters"
+           maxlength="14" data-i18n="placeholder" placeholder="CODE DE SÉCURITÉ" required>
+    <button type="button" id="scanLabelBtn" class="scan-label-btn" aria-label="Scan label">📷</button>
+  </div>
+  <input type="file" id="labelImageInput" accept="image/*" capture="environment" style="display:none">
+  <button type="submit" id="verifyBtn" data-i18n="verifyBtn">VÉRIFIER</button>
+</form>
 
     <div id="result" class="result hidden"></div>
 
