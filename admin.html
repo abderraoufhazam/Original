@@ -1590,7 +1590,31 @@
         <div id="brandsStats" class="stats-grid"></div>
         <div id="brandsList"></div>
       </section>
+      
+<!-- ═══════════════ SHOPS (المحلات) ═══════════════ -->
+<section class="panel" id="panel-shops">
+  <div class="panel-header">
+    <h1 class="panel-title"><span class="panel-title-icon">🏪</span><span>المحلات</span></h1>
+    <p class="panel-sub">إدارة طلبات المحلات · الموافقة · الرفض · العربون</p>
+  </div>
 
+  <div id="shopsStats" class="stats-grid"></div>
+
+  <!-- Tabs -->
+  <div class="tabs" id="shopsTabs" style="margin:22px 0 16px;">
+    <button class="tab active" data-tab="pending">⏳ قيد المراجعة</button>
+    <button class="tab" data-tab="active">✅ النشطة</button>
+    <button class="tab" data-tab="banned">🚫 المحظورة</button>
+  </div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+    <button id="refreshShopsBtn" class="btn btn-ghost" style="flex:1;min-width:140px;">🔄 تحديث</button>
+    <input id="shopsSearch" placeholder="🔍 بحث بالاسم أو الهاتف..." style="flex:2;min-width:180px;">
+  </div>
+
+  <div id="shopsList"></div>
+</section>
+      
       <!-- VISITORS -->
       <section class="panel" id="panel-visitors">
         <div class="panel-header">
