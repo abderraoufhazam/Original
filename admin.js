@@ -111,6 +111,7 @@ const PANEL_TITLES = {
   feedback: "Avis clients",
   messages: "Messages",
   brands: "Marques",
+  shops: "المحلات",
   visitors: "Visiteurs",
   fakes: "Contrefaçons",
   faq: "FAQ",
