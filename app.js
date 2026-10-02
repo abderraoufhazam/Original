@@ -926,3 +926,110 @@ async function shareProductCard(p) {
     toast("فشل النسخ", "error");
   }
 }
+
+// ============================================================
+// SCAN LABEL WITH CAMERA
+// ============================================================
+(function initScanLabel() {
+  const scanBtn = document.getElementById("scanLabelBtn");
+  const imageInput = document.getElementById("labelImageInput");
+  const codeInput = document.getElementById("code");
+
+  if (!scanBtn || !imageInput || !codeInput) {
+    console.warn("Scan label elements not found");
+    return;
+  }
+
+  scanBtn.addEventListener("click", () => {
+    imageInput.click();
+  });
+
+  imageInput.addEventListener("change", async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      if (typeof toast === "function") toast("اختر صورة صالحة", "error");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      if (typeof toast === "function") toast("الصورة كبيرة جدًا (5MB كحد أقصى)", "error");
+      return;
+    }
+
+    const originalText = scanBtn.textContent;
+    scanBtn.textContent = "⏳";
+    scanBtn.disabled = true;
+
+    try {
+      const dataUrl = await compressLabelImage(file);
+
+      const res = await fetch("/api/ai?mode=read-label", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: dataUrl })
+      });
+
+      const data = await res.json();
+
+      if (data.status === "OK" && data.code) {
+        codeInput.value = data.code;
+        codeInput.focus();
+
+        if (typeof vibrate === "function") vibrate(30);
+
+        if (typeof toast === "function") {
+          const isHigh = data.confidence === "high";
+          toast(
+            isHigh ? "✅ تم قراءة الكود" : "⚠️ تحقق من الكود قبل التحقق",
+            isHigh ? "success" : "warning"
+          );
+        }
+      } else {
+        if (typeof toast === "function") {
+          toast(data.message || "لم نتمكن من قراءة الكود، اكتبه يدويًا", "warning");
+        }
+      }
+    } catch (err) {
+      console.error("Scan error:", err);
+      if (typeof toast === "function") toast("خطأ في المسح", "error");
+    } finally {
+      scanBtn.textContent = originalText;
+      scanBtn.disabled = false;
+      imageInput.value = "";
+    }
+  });
+
+  function compressLabelImage(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+          const maxWidth = 800;
+          if (width > maxWidth) {
+            height = Math.round(height * (maxWidth / width));
+            width = maxWidth;
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+          try {
+            resolve(canvas.toDataURL("image/jpeg", 0.7));
+          } catch (e) {
+            reject(e);
+          }
+        };
+        img.onerror = reject;
+        img.src = ev.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+})();
