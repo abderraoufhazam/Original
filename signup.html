@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>إنشاء حساب علامة تجارية — Original</title>
+  <title>إنشاء حساب — Original</title>
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#0f172a">
   <link rel="icon" type="image/svg+xml" href="/icon.png">
@@ -74,7 +74,7 @@
       background: var(--card-bg);
       border-radius: var(--radius-lg);
       padding: 40px 32px 34px;
-      max-width: 480px;
+      max-width: 500px;
       width: 100%;
       box-shadow: var(--shadow-lg);
       position: relative;
@@ -120,28 +120,22 @@
       gap: 6px;
       font-size: 13px;
       color: var(--text-muted);
-      margin-bottom: 20px;
+      margin-bottom: 18px;
       font-weight: 600;
     }
 
-    .logo-wrap {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
+    .logo-wrap { text-align: center; margin-bottom: 18px; }
     .logo-wrap img {
-      width: 70px;
-      height: 70px;
-      border-radius: 18px;
+      width: 68px; height: 68px; border-radius: 18px;
       box-shadow: 0 12px 28px -8px rgba(15, 23, 42, 0.25);
     }
 
     h1 {
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 800;
-      letter-spacing: -0.6px;
+      letter-spacing: -0.5px;
       text-align: center;
-      margin: 0 0 8px;
+      margin: 0 0 6px;
       color: var(--text);
     }
 
@@ -149,13 +143,59 @@
       text-align: center;
       color: var(--text-muted);
       font-size: 13px;
-      margin-bottom: 26px;
+      margin-bottom: 22px;
       line-height: 1.6;
     }
 
+    /* ═══════════ TABS ═══════════ */
+    .role-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 6px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin-bottom: 22px;
+    }
+
+    .role-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 12px 8px;
+      border: 0;
+      background: transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--text-muted);
+      transition: all 200ms ease;
+    }
+
+    .role-tab:hover { color: var(--text); }
+
+    .role-tab.active {
+      background: var(--card-bg);
+      color: var(--primary);
+      box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.1);
+      border: 1px solid var(--border);
+    }
+
+    html.dark .role-tab.active {
+      box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.4);
+    }
+
+    .role-tab-icon { font-size: 22px; line-height: 1; }
+    .role-tab-label { font-size: 12.5px; font-weight: 800; letter-spacing: 0.3px; }
+
+    /* ═══════════ FORM ═══════════ */
     form { display: flex; flex-direction: column; gap: 12px; }
 
     .field { display: flex; flex-direction: column; gap: 6px; }
+    .field.hidden { display: none; }
 
     label {
       font-size: 11px;
@@ -194,17 +234,9 @@
       cursor: not-allowed;
     }
 
-    /* Email + Send Button */
-    .email-row {
-      display: flex;
-      gap: 8px;
-      align-items: stretch;
-    }
-
-    .email-row input {
-      flex: 1;
-      min-width: 0;
-    }
+    /* Email + Send */
+    .email-row { display: flex; gap: 8px; align-items: stretch; }
+    .email-row input { flex: 1; min-width: 0; }
 
     .send-code-btn {
       padding: 0 16px;
@@ -220,43 +252,23 @@
       margin: 0;
       min-width: 110px;
     }
+    .send-code-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    .send-code-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    /* Verification code section */
+    /* Verify Section */
     .verify-section {
       padding: 16px;
       background: linear-gradient(160deg, #f0fdf4, #dcfce7);
       border: 2px solid #22c55e;
       border-radius: var(--radius);
-      margin: 12px 0;
+      margin: 4px 0;
     }
-
     html.dark .verify-section {
       background: linear-gradient(160deg, rgba(22,163,74,0.1), rgba(34,197,94,0.05));
       border-color: rgba(22,163,74,0.4);
     }
-
-    .verify-title {
-      font-size: 13px;
-      font-weight: 800;
-      color: #166534;
-      margin: 0 0 6px;
-    }
-
+    .verify-title { font-size: 13px; font-weight: 800; color: #166534; margin: 0 0 6px; }
     html.dark .verify-title { color: #86efac; }
-
-    .verify-hint {
-      font-size: 11px;
-      color: #166534;
-      opacity: 0.8;
-      margin: 0 0 12px;
-      line-height: 1.5;
-    }
-
+    .verify-hint { font-size: 11px; color: #166534; opacity: 0.8; margin: 0 0 12px; line-height: 1.5; }
     .code-input {
       text-align: center;
       font-family: 'Courier New', monospace;
@@ -265,7 +277,6 @@
       letter-spacing: 8px;
       padding: 14px !important;
     }
-
     .verify-btn {
       width: 100%;
       padding: 12px;
@@ -279,13 +290,8 @@
       font-family: inherit;
       margin-top: 10px;
     }
+    .verify-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    .verify-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    /* Verified badge */
     .verified-badge {
       display: inline-flex;
       align-items: center;
@@ -297,18 +303,87 @@
       border-radius: 100px;
       font-size: 11px;
       font-weight: 800;
-      margin-top: 6px;
+      align-self: flex-start;
     }
+    .verified-badge.hidden { display: none; }
 
     /* Turnstile */
     .turnstile-wrap {
       display: flex;
       justify-content: center;
-      margin: 16px 0;
+      margin: 10px 0;
       min-height: 65px;
     }
 
-    /* Main submit */
+    /* ═══════════ TERMS (للمحل فقط) ═══════════ */
+    .terms-accept {
+      padding: 14px 16px;
+      background: linear-gradient(160deg, #fffbeb, #fef3c7);
+      border: 2px solid #f59e0b;
+      border-radius: var(--radius);
+      margin: 6px 0;
+    }
+    html.dark .terms-accept {
+      background: linear-gradient(160deg, rgba(245,158,11,0.1), rgba(251,191,36,0.05));
+      border-color: rgba(245,158,11,0.4);
+    }
+    .terms-accept.hidden { display: none; }
+
+    .terms-warning {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .terms-warning-icon { font-size: 22px; flex-shrink: 0; }
+    .terms-warning-text { font-size: 12px; line-height: 1.6; color: #92400e; font-weight: 600; }
+    html.dark .terms-warning-text { color: #fcd34d; }
+    .terms-warning-text b { color: #dc2626; font-weight: 900; }
+
+    .terms-checkbox-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      cursor: pointer;
+      padding: 12px;
+      background: var(--card-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      transition: all 200ms;
+      margin: 0;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .terms-checkbox-label:hover { border-color: #f59e0b; }
+    .terms-checkbox-label:has(input:checked) {
+      border-color: #16a34a;
+      background: rgba(22, 163, 74, 0.06);
+    }
+    .terms-checkbox-label input {
+      width: 20px !important;
+      height: 20px !important;
+      margin: 2px 0 0 0 !important;
+      padding: 0 !important;
+      accent-color: #16a34a;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .terms-checkbox-text { flex: 1; line-height: 1.5; }
+
+    .terms-link {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 12px;
+      color: #16a34a;
+      font-weight: 800;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    /* ═══════════ SUBMIT ═══════════ */
     button[type="submit"] {
       width: 100%;
       padding: 14px 22px;
@@ -328,7 +403,6 @@
       justify-content: center;
       gap: 8px;
     }
-
     button[type="submit"]:disabled {
       opacity: 0.5;
       cursor: not-allowed;
@@ -344,19 +418,16 @@
       margin-top: 12px;
       line-height: 1.5;
     }
-
     .msg.error {
       background: var(--danger-bg);
       border: 1px solid rgba(220, 38, 38, 0.3);
       color: var(--danger);
     }
-
     .msg.success {
       background: var(--success-bg);
       border: 1px solid rgba(22, 163, 74, 0.3);
       color: var(--success);
     }
-
     .msg.hidden { display: none; }
 
     .login-link {
@@ -367,11 +438,7 @@
       font-size: 13px;
       color: var(--text-muted);
     }
-
-    .login-link a {
-      color: var(--primary);
-      font-weight: 800;
-    }
+    .login-link a { color: var(--primary); font-weight: 800; }
 
     .perks {
       margin-top: 22px;
@@ -383,7 +450,6 @@
       color: var(--text-muted);
       line-height: 1.7;
     }
-
     .perks b {
       color: var(--text);
       display: block;
@@ -392,26 +458,17 @@
       letter-spacing: 1px;
       text-transform: uppercase;
     }
-
-    .perks ul {
-      list-style: none;
-      padding: 0; margin: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .perks li::before {
-      content: "✓ ";
-      color: var(--primary);
-      font-weight: bold;
-    }
+    .perks ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+    .perks li::before { content: "✓ "; color: var(--primary); font-weight: bold; }
 
     @media (max-width: 480px) {
-      .card { padding: 30px 22px 26px; }
-      h1 { font-size: 21px; }
+      .card { padding: 28px 20px 24px; }
+      h1 { font-size: 20px; }
       .email-row { flex-direction: column; }
       .send-code-btn { padding: 12px; width: 100%; }
+      .role-tab { padding: 10px 6px; }
+      .role-tab-icon { font-size: 20px; }
+      .role-tab-label { font-size: 11.5px; }
     }
   </style>
 </head>
@@ -432,24 +489,45 @@
       <img src="/icon.png" alt="Original">
     </div>
 
-    <h1 data-i18n="title">إنشاء حساب علامة تجارية</h1>
-    <p class="subtitle" data-i18n="subtitle">سجّل مجانًا وابدأ بحماية منتجاتك.</p>
+    <h1 id="pageTitle" data-i18n="title">إنشاء حساب</h1>
+    <p class="subtitle" id="pageSub" data-i18n="subtitle">اختر نوع الحساب وابدأ الآن.</p>
+
+    <!-- ═══════════ TABS ═══════════ -->
+    <div class="role-tabs" role="tablist">
+      <button type="button" class="role-tab active" data-role="brand">
+        <span class="role-tab-icon">🏢</span>
+        <span class="role-tab-label" data-i18n="tabBrand">علامة تجارية</span>
+      </button>
+      <button type="button" class="role-tab" data-role="shop">
+        <span class="role-tab-icon">🏪</span>
+        <span class="role-tab-label" data-i18n="tabShop">محل</span>
+      </button>
+    </div>
 
     <form id="signupForm">
-      <div class="field">
+
+      <!-- اسم الماركة (brand only) -->
+      <div class="field brand-only">
         <label for="brand_name" data-i18n="brandNameLabel">اسم العلامة التجارية <span class="req">*</span></label>
-        <input id="brand_name" type="text" placeholder="مثال: Rutin Bio" required maxlength="80">
+        <input id="brand_name" type="text" placeholder="مثال: Rutin Bio" maxlength="80">
       </div>
 
+      <!-- اسم المحل (shop only) -->
+      <div class="field shop-only hidden">
+        <label for="shop_name" data-i18n="shopNameLabel">اسم المحل <span class="req">*</span></label>
+        <input id="shop_name" type="text" placeholder="مثال: صيدلية النور" maxlength="80">
+      </div>
+
+      <!-- الإيميل + إرسال الكود -->
       <div class="field">
         <label for="email" data-i18n="emailLabel">البريد الإلكتروني <span class="req">*</span></label>
         <div class="email-row">
-          <input id="email" type="email" placeholder="email@example.com" required autocomplete="email">
+          <input id="email" type="email" placeholder="email@example.com" autocomplete="email">
           <button type="button" id="sendCodeBtn" class="send-code-btn" data-i18n="sendCodeBtn">📧 إرسال الكود</button>
         </div>
       </div>
 
-      <!-- Turnstile Widget -->
+      <!-- Turnstile -->
       <div class="turnstile-wrap">
         <div class="cf-turnstile"
              data-sitekey="0x4AAAAAAFFX92wdV_tKDjqB"
@@ -457,7 +535,7 @@
              data-size="normal"></div>
       </div>
 
-      <!-- كود التحقق من البريد -->
+      <!-- كود التحقق -->
       <div id="verifySection" class="verify-section hidden">
         <h4 class="verify-title" data-i18n="verifyTitle">📬 تفقّد بريدك الإلكتروني</h4>
         <p class="verify-hint" data-i18n="verifyHint">أدخل الكود المكوّن من 6 أرقام الذي أرسلناه إلى بريدك.</p>
@@ -470,37 +548,53 @@
         <span data-i18n="verifiedText">تم تأكيد البريد الإلكتروني</span>
       </div>
 
+      <!-- الهاتف -->
       <div class="field">
         <label for="phone" data-i18n="phoneLabel">رقم الهاتف <span class="req">*</span></label>
-        <input id="phone" type="tel" placeholder="+213 xxx xxx xxx" autocomplete="tel" required minlength="9" maxlength="20">
+        <input id="phone" type="tel" placeholder="+213 xxx xxx xxx" autocomplete="tel" maxlength="20">
       </div>
 
+      <!-- كلمة السر -->
       <div class="field">
         <label for="password" data-i18n="passwordLabel">كلمة المرور <span class="req">*</span></label>
-        <input id="password" type="password" placeholder="6 أحرف على الأقل" required minlength="6" autocomplete="new-password">
+        <input id="password" type="password" placeholder="6 أحرف على الأقل" autocomplete="new-password">
       </div>
 
       <div class="field">
         <label for="password_confirm" data-i18n="confirmLabel">تأكيد كلمة المرور <span class="req">*</span></label>
-        <input id="password_confirm" type="password" placeholder="أعد كتابة كلمة المرور" required minlength="6" autocomplete="new-password">
+        <input id="password_confirm" type="password" placeholder="أعد كتابة كلمة المرور" autocomplete="new-password">
       </div>
 
-      <button type="submit" id="submitBtn" disabled>
+      <!-- ═══════════ الشروط (shop only) ═══════════ -->
+      <div class="terms-accept shop-only hidden">
+        <div class="terms-warning">
+          <div class="terms-warning-icon">⚠️</div>
+          <div class="terms-warning-text">
+            <b>وثيقة قانونية ملزمة:</b>
+            <span data-i18n="termsWarning">بالموافقة، تتحمل المسؤولية الكاملة لوحدك في حال الخروج عن الشروط.</span>
+          </div>
+        </div>
+
+        <label class="terms-checkbox-label">
+          <input type="checkbox" id="termsAccepted">
+          <span class="terms-checkbox-text">
+            <span data-i18n="termsAgree">أوافق على شروط الاستخدام كاملة</span>
+            <a href="/shop-terms.html" target="_blank" class="terms-link" data-i18n="readTerms">📜 اقرأ الشروط كاملة</a>
+          </span>
+        </label>
+      </div>
+
+      <button type="submit" id="submitBtn">
         <span>🚀</span>
-        <span data-i18n="submitBtn">إنشاء حساب</span>
+        <span id="submitBtnText" data-i18n="submitBtn">إنشاء حساب</span>
       </button>
     </form>
 
     <div id="msg" class="msg hidden"></div>
 
-    <div class="perks">
-      <b data-i18n="perksTitle">ما ستحصل عليه:</b>
-      <ul>
-        <li data-i18n="perk1">لوحة تحكم كاملة لإدارة أكوادك</li>
-        <li data-i18n="perk2">تشفير AES-256 لحماية أكوادك</li>
-        <li data-i18n="perk3">إحصائيات ورسوم بيانية</li>
-        <li data-i18n="perk4">دعم فني مباشر عبر واتساب</li>
-      </ul>
+    <div class="perks" id="perks">
+      <b id="perksTitle" data-i18n="perksTitle">ما ستحصل عليه:</b>
+      <ul id="perksList"></ul>
     </div>
 
     <div class="login-link">
@@ -518,15 +612,22 @@
 
   const $ = id => document.getElementById(id);
 
+  // ═══════════ الحالة ═══════════
+  let currentRole = "brand";       // brand | shop
   let emailVerified = false;
   let verifiedEmail = "";
+  let lastSentEmail = "";
 
+  // ═══════════ الترجمات ═══════════
   const TRANSLATIONS = {
     ar: {
       backLink: "← الرئيسية",
-      title: "إنشاء حساب علامة تجارية",
-      subtitle: "سجّل مجانًا وابدأ بحماية منتجاتك.",
+      title: "إنشاء حساب",
+      subtitle: "اختر نوع الحساب وابدأ الآن.",
+      tabBrand: "علامة تجارية",
+      tabShop: "محل",
       brandNameLabel: "اسم العلامة التجارية",
+      shopNameLabel: "اسم المحل",
       emailLabel: "البريد الإلكتروني",
       sendCodeBtn: "📧 إرسال الكود",
       sending: "⏳...",
@@ -539,24 +640,25 @@
       verifyHint: "أدخل الكود المكوّن من 6 أرقام الذي أرسلناه إلى بريدك.",
       verifyBtn: "✓ تحقق من الكود",
       verifiedText: "تم تأكيد البريد الإلكتروني",
+      termsWarning: "بالموافقة، تتحمل المسؤولية الكاملة لوحدك في حال الخروج عن الشروط.",
+      termsAgree: "أوافق على شروط الاستخدام كاملة",
+      readTerms: "📜 اقرأ الشروط كاملة",
       perksTitle: "ما ستحصل عليه:",
-      perk1: "لوحة تحكم كاملة لإدارة أكوادك",
-      perk2: "تشفير AES-256 لحماية أكوادك",
-      perk3: "إحصائيات ورسوم بيانية",
-      perk4: "دعم فني مباشر عبر واتساب",
+      perksBrand: ["لوحة تحكم كاملة", "تشفير AES-256", "إحصائيات ورسوم بيانية", "دعم واتساب"],
+      perksShop: ["متابعة أكواد محلك", "نظام حماية من التقليد", "عربون قابل للاسترداد", "دعم واتساب"],
       alreadyAccount: "لديك حساب بالفعل؟",
       loginNow: "سجّل الدخول",
-      errBrand: "الرجاء إدخال اسم العلامة التجارية.",
+      errName: "الرجاء إدخال الاسم.",
       errEmail: "الرجاء إدخال بريد إلكتروني صالح.",
-      errPhoneRequired: "⚠️ رقم الهاتف إجباري.",
       errPhone: "رقم الهاتف غير صالح.",
       errPassword: "كلمة المرور يجب أن تكون 6 أحرف على الأقل.",
       errPasswordMatch: "كلمتا المرور غير متطابقتين.",
       errVerifyFirst: "⚠️ يجب تأكيد بريدك الإلكتروني أولاً.",
+      errTerms: "⚠️ يجب الموافقة على الشروط أولاً.",
       errTurnstile: "⚠️ الرجاء إكمال التحقق من الأمان.",
       errExists: "هذا البريد مستعمل بالفعل. جرّب تسجيل الدخول.",
-      errGeneric: "حدث خطأ. الرجاء المحاولة مجددًا.",
-      successMsg: "✓ تم إنشاء الحساب بنجاح! جارٍ التحويل...",
+      errGeneric: "حدث خطأ. حاول مجددًا.",
+      successMsg: "✓ تم إنشاء الحساب! جارٍ التحويل...",
       creating: "جارٍ الإنشاء...",
       codeSent: "✓ تم إرسال الكود إلى بريدك",
       codeRequired: "الرجاء إدخال الكود.",
@@ -564,95 +666,100 @@
       codeCorrect: "✅ تم تأكيد البريد بنجاح!",
       errCodeSend: "فشل إرسال الكود.",
       errCodeCheck: "الكود خاطئ. حاول مجدداً.",
-      turnstileWaiting: "الرجاء انتظار التحقق من الأمان..."
     },
     fr: {
       backLink: "← Accueil",
-      title: "Créer un compte marque",
-      subtitle: "Inscrivez-vous gratuitement et protégez vos produits.",
+      title: "Créer un compte",
+      subtitle: "Choisissez votre type de compte.",
+      tabBrand: "Marque",
+      tabShop: "Boutique",
       brandNameLabel: "Nom de la marque",
+      shopNameLabel: "Nom de la boutique",
       emailLabel: "Adresse e-mail",
       sendCodeBtn: "📧 Envoyer",
       sending: "⏳...",
       resend: "🔄 Renvoyer",
       phoneLabel: "Téléphone",
       passwordLabel: "Mot de passe",
-      confirmLabel: "Confirmer le mot de passe",
+      confirmLabel: "Confirmer",
       submitBtn: "Créer un compte",
       verifyTitle: "📬 Vérifiez votre email",
       verifyHint: "Entrez le code à 6 chiffres envoyé à votre adresse.",
-      verifyBtn: "✓ Vérifier le code",
+      verifyBtn: "✓ Vérifier",
       verifiedText: "Email vérifié",
+      termsWarning: "En acceptant, vous assumez seul la responsabilité.",
+      termsAgree: "J'accepte les conditions d'utilisation",
+      readTerms: "📜 Lire les conditions",
       perksTitle: "Ce que vous obtiendrez :",
-      perk1: "Tableau de bord complet",
-      perk2: "Chiffrement AES-256",
-      perk3: "Statistiques et graphiques",
-      perk4: "Support WhatsApp direct",
+      perksBrand: ["Tableau de bord", "Chiffrement AES-256", "Statistiques", "Support WhatsApp"],
+      perksShop: ["Suivi de vos codes", "Anti-contrefaçon", "Dépôt remboursable", "Support WhatsApp"],
       alreadyAccount: "Vous avez déjà un compte ?",
       loginNow: "Se connecter",
-      errBrand: "Veuillez saisir le nom de la marque.",
-      errEmail: "Veuillez saisir un email valide.",
-      errPhoneRequired: "⚠️ Le numéro de téléphone est obligatoire.",
-      errPhone: "Numéro de téléphone invalide.",
-      errPassword: "Le mot de passe doit faire au moins 6 caractères.",
+      errName: "Veuillez saisir le nom.",
+      errEmail: "Email invalide.",
+      errPhone: "Téléphone invalide.",
+      errPassword: "Mot de passe : 6 caractères min.",
       errPasswordMatch: "Les mots de passe ne correspondent pas.",
       errVerifyFirst: "⚠️ Vérifiez d'abord votre email.",
-      errTurnstile: "⚠️ Veuillez compléter la vérification de sécurité.",
-      errExists: "Cet email est déjà utilisé. Connectez-vous.",
-      errGeneric: "Une erreur est survenue. Réessayez.",
-      successMsg: "✓ Compte créé avec succès ! Redirection...",
+      errTerms: "⚠️ Vous devez accepter les conditions.",
+      errTurnstile: "⚠️ Complétez la vérification.",
+      errExists: "Email déjà utilisé. Connectez-vous.",
+      errGeneric: "Erreur. Réessayez.",
+      successMsg: "✓ Compte créé ! Redirection...",
       creating: "Création...",
-      codeSent: "✓ Code envoyé à votre email",
-      codeRequired: "Veuillez saisir le code.",
-      codeInvalid: "Le code doit contenir 6 chiffres.",
-      codeCorrect: "✅ Email vérifié avec succès !",
-      errCodeSend: "Échec de l'envoi du code.",
-      errCodeCheck: "Code incorrect. Réessayez.",
-      turnstileWaiting: "Veuillez patienter pour la vérification..."
+      codeSent: "✓ Code envoyé",
+      codeRequired: "Entrez le code.",
+      codeInvalid: "Code à 6 chiffres requis.",
+      codeCorrect: "✅ Email vérifié !",
+      errCodeSend: "Échec d'envoi.",
+      errCodeCheck: "Code incorrect.",
     },
     en: {
       backLink: "← Home",
-      title: "Create a brand account",
-      subtitle: "Sign up for free and protect your products.",
+      title: "Create account",
+      subtitle: "Choose your account type.",
+      tabBrand: "Brand",
+      tabShop: "Shop",
       brandNameLabel: "Brand name",
+      shopNameLabel: "Shop name",
       emailLabel: "Email",
       sendCodeBtn: "📧 Send",
       sending: "⏳...",
       resend: "🔄 Resend",
       phoneLabel: "Phone",
       passwordLabel: "Password",
-      confirmLabel: "Confirm password",
+      confirmLabel: "Confirm",
       submitBtn: "Create account",
       verifyTitle: "📬 Check your email",
       verifyHint: "Enter the 6-digit code sent to your address.",
-      verifyBtn: "✓ Verify code",
+      verifyBtn: "✓ Verify",
       verifiedText: "Email verified",
+      termsWarning: "By accepting, you bear full responsibility alone.",
+      termsAgree: "I accept the terms of use",
+      readTerms: "📜 Read full terms",
       perksTitle: "What you'll get:",
-      perk1: "Full dashboard",
-      perk2: "AES-256 encryption",
-      perk3: "Statistics and charts",
-      perk4: "Direct WhatsApp support",
+      perksBrand: ["Full dashboard", "AES-256 encryption", "Statistics", "WhatsApp support"],
+      perksShop: ["Track your codes", "Anti-counterfeit", "Refundable deposit", "WhatsApp support"],
       alreadyAccount: "Already have an account?",
       loginNow: "Sign in",
-      errBrand: "Please enter the brand name.",
-      errEmail: "Please enter a valid email.",
-      errPhoneRequired: "⚠️ Phone number is required.",
-      errPhone: "Invalid phone number.",
-      errPassword: "Password must be at least 6 characters.",
-      errPasswordMatch: "Passwords do not match.",
-      errVerifyFirst: "⚠️ Please verify your email first.",
-      errTurnstile: "⚠️ Please complete the security verification.",
-      errExists: "This email is already registered. Try logging in.",
-      errGeneric: "An error occurred. Please try again.",
-      successMsg: "✓ Account created successfully! Redirecting...",
+      errName: "Please enter the name.",
+      errEmail: "Invalid email.",
+      errPhone: "Invalid phone.",
+      errPassword: "Password: 6 characters min.",
+      errPasswordMatch: "Passwords don't match.",
+      errVerifyFirst: "⚠️ Verify your email first.",
+      errTerms: "⚠️ You must accept the terms.",
+      errTurnstile: "⚠️ Complete the verification.",
+      errExists: "Email already used. Please login.",
+      errGeneric: "Error. Please retry.",
+      successMsg: "✓ Account created! Redirecting...",
       creating: "Creating...",
-      codeSent: "✓ Code sent to your email",
-      codeRequired: "Please enter the code.",
-      codeInvalid: "Code must be 6 digits.",
-      codeCorrect: "✅ Email verified successfully!",
-      errCodeSend: "Failed to send code.",
-      errCodeCheck: "Incorrect code. Try again.",
-      turnstileWaiting: "Please wait for security verification..."
+      codeSent: "✓ Code sent",
+      codeRequired: "Enter the code.",
+      codeInvalid: "6-digit code required.",
+      codeCorrect: "✅ Email verified!",
+      errCodeSend: "Send failed.",
+      errCodeCheck: "Incorrect code.",
     }
   };
 
@@ -667,6 +774,7 @@
            (TRANSLATIONS.ar[key]) || key;
   }
 
+  // ═══════════ التطبيق ═══════════
   function applyTranslations() {
     document.querySelectorAll("[data-i18n]").forEach(el => {
       el.textContent = t(el.dataset.i18n);
@@ -680,10 +788,33 @@
     });
 
     document.title = currentLang === "ar"
-      ? "إنشاء حساب علامة تجارية — Original"
+      ? "إنشاء حساب — Original"
       : currentLang === "fr"
         ? "Créer un compte — Original"
         : "Create account — Original";
+
+    renderPerks();
+    updatePageTitle();
+  }
+
+  function renderPerks() {
+    const list = $("perksList");
+    const items = currentRole === "shop" ? t("perksShop") : t("perksBrand");
+    list.innerHTML = items.map(i => `<li>${i}</li>`).join("");
+  }
+
+  function updatePageTitle() {
+    if (currentRole === "shop") {
+      $("pageTitle").textContent = currentLang === "ar"
+        ? "إنشاء حساب محل"
+        : currentLang === "fr" ? "Créer un compte boutique" : "Create shop account";
+      $("pageSub").textContent = currentLang === "ar"
+        ? "سجّل محلك للانضمام إلى شبكة المحلات الموثوقة."
+        : currentLang === "fr" ? "Inscrivez votre boutique." : "Register your shop.";
+    } else {
+      $("pageTitle").textContent = t("title");
+      $("pageSub").textContent = t("subtitle");
+    }
   }
 
   document.querySelectorAll(".lang-btn").forEach(btn => {
@@ -694,11 +825,29 @@
     });
   });
 
-  applyTranslations();
+  // ═══════════ TABS ═══════════
+  document.querySelectorAll(".role-tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      currentRole = tab.dataset.role;
 
-  // ============================================================
-  // Helpers
-  // ============================================================
+      document.querySelectorAll(".role-tab").forEach(t => {
+        t.classList.toggle("active", t.dataset.role === currentRole);
+      });
+
+      document.querySelectorAll(".brand-only").forEach(el => {
+        el.classList.toggle("hidden", currentRole !== "brand");
+      });
+      document.querySelectorAll(".shop-only").forEach(el => {
+        el.classList.toggle("hidden", currentRole !== "shop");
+      });
+
+      updatePageTitle();
+      renderPerks();
+      hideMsg();
+    });
+  });
+
+  // ═══════════ Helpers ═══════════
   function showMsg(text, type) {
     const el = $("msg");
     el.className = "msg " + type;
@@ -711,9 +860,6 @@
     return document.querySelector('[name="cf-turnstile-response"]')?.value || '';
   }
 
-  // ============================================================
-  // إرسال كود التحقق
-  // ============================================================
   const sendCodeBtn = $("sendCodeBtn");
   const verifySection = $("verifySection");
   const verifiedBadge = $("verifiedBadge");
@@ -721,12 +867,15 @@
   const verifyBtn = $("verifyBtn");
   const emailInput = $("email");
   const brandInput = $("brand_name");
+  const shopInput = $("shop_name");
   const submitBtn = $("submitBtn");
 
+  // ═══════════ إرسال الكود ═══════════
   sendCodeBtn.addEventListener("click", async () => {
     hideMsg();
     const email = emailInput.value.trim().toLowerCase();
     const brandName = brandInput.value.trim();
+    const shopName = shopInput.value.trim();
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return showMsg(t("errEmail"), "error");
@@ -746,7 +895,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: email,
-          brand_name: brandName || "Client",
+          brand_name: currentRole === "shop" ? (shopName || "Client") : (brandName || "Client"),
           turnstile_token: turnstileToken
         })
       });
@@ -759,11 +908,11 @@
         verifyCodeInput.value = "";
         verifyCodeInput.focus();
         emailInput.disabled = true;
+        lastSentEmail = email;
 
         sendCodeBtn.textContent = t("resend");
         sendCodeBtn.disabled = false;
 
-        // عداد 60 ثانية
         let seconds = 60;
         sendCodeBtn.disabled = true;
         const interval = setInterval(() => {
@@ -776,7 +925,6 @@
             sendCodeBtn.textContent = `⏱ ${seconds}s`;
           }
         }, 1000);
-
       } else {
         showMsg(data.message || t("errCodeSend"), "error");
         sendCodeBtn.disabled = false;
@@ -789,9 +937,7 @@
     }
   });
 
-  // ============================================================
-  // التحقق من الكود
-  // ============================================================
+  // ═══════════ التحقق من الكود ═══════════
   verifyBtn.addEventListener("click", async () => {
     hideMsg();
     const email = emailInput.value.trim().toLowerCase();
@@ -801,9 +947,7 @@
     if (!/^\d{6}$/.test(code)) return showMsg(t("codeInvalid"), "error");
 
     const turnstileToken = getTurnstileToken();
-    if (!turnstileToken) {
-      return showMsg(t("errTurnstile"), "error");
-    }
+    if (!turnstileToken) return showMsg(t("errTurnstile"), "error");
 
     verifyBtn.disabled = true;
     verifyBtn.textContent = "⏳...";
@@ -827,9 +971,6 @@
         verifiedBadge.classList.remove("hidden");
         emailVerified = true;
         verifiedEmail = email;
-
-        submitBtn.disabled = false;
-
         sendCodeBtn.disabled = true;
         sendCodeBtn.style.display = "none";
       } else {
@@ -844,19 +985,18 @@
     }
   });
 
-  // إدخال الأرقام فقط
+  // أرقام فقط
   verifyCodeInput.addEventListener("input", (e) => {
     e.target.value = e.target.value.replace(/[^0-9]/g, "").slice(0, 6);
   });
 
-  // إعادة تعيين الحالة عند تغيير الإيميل
+  // إعادة تعيين عند تغيير الإيميل
   emailInput.addEventListener("input", () => {
     if (emailVerified && emailInput.value.trim().toLowerCase() !== verifiedEmail) {
       emailVerified = false;
       verifiedEmail = "";
       verifiedBadge.classList.add("hidden");
       verifySection.classList.add("hidden");
-      submitBtn.disabled = true;
       sendCodeBtn.style.display = "block";
       sendCodeBtn.disabled = false;
       sendCodeBtn.textContent = t("sendCodeBtn");
@@ -864,9 +1004,7 @@
     }
   });
 
-  // ============================================================
-  // إنشاء الحساب
-  // ============================================================
+  // ═══════════ إنشاء الحساب ═══════════
   $("signupForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     hideMsg();
@@ -875,16 +1013,24 @@
       return showMsg(t("errVerifyFirst"), "error");
     }
 
-    const brandName = brandInput.value.trim();
     const email = emailInput.value.trim().toLowerCase();
     const phone = $("phone").value.trim();
     const password = $("password").value;
     const passwordConfirm = $("password_confirm").value;
 
-    if (!brandName || brandName.length < 2) return showMsg(t("errBrand"), "error");
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMsg(t("errEmail"), "error");
+    if (currentRole === "brand") {
+      const brandName = brandInput.value.trim();
+      if (!brandName || brandName.length < 2) return showMsg(t("errName"), "error");
+    } else {
+      const shopName = shopInput.value.trim();
+      if (!shopName || shopName.length < 2) return showMsg(t("errName"), "error");
 
-    if (!phone) return showMsg(t("errPhoneRequired"), "error");
+      // ⚠️ الشروط إلزامية للمحل
+      if (!$("termsAccepted").checked) {
+        return showMsg(t("errTerms"), "error");
+      }
+    }
+
     const cleanPhone = phone.replace(/[^\d]/g, '');
     if (cleanPhone.length < 9 || cleanPhone.length > 15) {
       return showMsg(t("errPhone"), "error");
@@ -894,20 +1040,28 @@
     if (password !== passwordConfirm) return showMsg(t("errPasswordMatch"), "error");
 
     submitBtn.disabled = true;
-    submitBtn.innerHTML = `<span>⏳</span><span>${t("creating")}</span>`;
+    $("submitBtnText").textContent = t("creating");
+
+    // ═══════ تجهيز user_metadata حسب الدور ═══════
+    const userData = {
+      role: currentRole,
+      phone: phone
+    };
+
+    if (currentRole === "shop") {
+      userData.shop_name = shopInput.value.trim();
+      userData.terms_accepted = true;
+      userData.terms_version = "v1.0";
+    } else {
+      userData.brand_name = brandInput.value.trim();
+      userData.email_verified = true;
+    }
 
     try {
       const { data, error } = await sb.auth.signUp({
         email: email,
         password: password,
-        options: {
-          data: {
-            role: "brand",
-            brand_name: brandName,
-            phone: phone,
-            email_verified: true
-          }
-        }
+        options: { data: userData }
       });
 
       if (error) {
@@ -918,53 +1072,85 @@
           showMsg(error.message, "error");
         }
         submitBtn.disabled = false;
-        submitBtn.innerHTML = `<span>🚀</span><span>${t("submitBtn")}</span>`;
+        $("submitBtnText").textContent = t("submitBtn");
         return;
       }
 
-      // رسالة ترحيب
-      try {
-        await sb.from("brand_messages").insert({
-          user_id: data.user.id,
-          brand_name: brandName,
-          email: email,
-          phone: phone,
-          subject: "Nouvelle inscription",
-          message: "Bonjour, je viens de créer mon compte marque. Merci de m'accompagner dans la configuration."
-        });
-      } catch (msgErr) {
-        console.warn("Message auto non envoyé:", msgErr);
-      }
+      // ═══════ إشعارات ═══════
+      if (currentRole === "brand") {
+        // رسالة ترحيب للماركة (كما كان)
+        try {
+          await sb.from("brand_messages").insert({
+            user_id: data.user.id,
+            brand_name: userData.brand_name,
+            email: email,
+            phone: phone,
+            subject: "Nouvelle inscription",
+            message: "Bonjour, je viens de créer mon compte marque."
+          });
+        } catch (e) { console.warn(e); }
 
-      // إشعار واتساب للأدمن
-      try {
+        // واتساب
         fetch("/api/submit?type=signup", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            brand_name: brandName,
+            brand_name: userData.brand_name,
             email: email,
             phone: phone
           })
-        }).catch(e => console.warn("Notify error:", e));
-      } catch (e) {
-        console.warn("Notify setup error:", e);
+        }).catch(e => console.warn(e));
+
+      } else {
+        // ═══════ إشعار المحل الجديد ═══════
+        fetch("/api/submit?type=signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            brand_name: "🏪 محل: " + userData.shop_name,
+            email: email,
+            phone: phone
+          })
+        }).catch(e => console.warn(e));
       }
 
       showMsg(t("successMsg"), "success");
-      submitBtn.innerHTML = `<span>✓</span><span>${t("submitBtn")}</span>`;
+      $("submitBtnText").textContent = "✓";
+
+      // ═══════ التوجيه حسب الدور ═══════
+      const redirectUrl = currentRole === "shop"
+        ? "/shop-dashboard.html"
+        : "/brand";
 
       setTimeout(() => {
-        window.location.href = "/brand";
+        window.location.href = redirectUrl;
       }, 1800);
 
     } catch (err) {
       console.error(err);
       showMsg(t("errGeneric"), "error");
       submitBtn.disabled = false;
-      submitBtn.innerHTML = `<span>🚀</span><span>${t("submitBtn")}</span>`;
+      $("submitBtnText").textContent = t("submitBtn");
     }
   });
+
+  // ═══════════ قراءة ?role= من الرابط ═══════════
+  (function initFromQuery() {
+    const params = new URLSearchParams(location.search);
+    const qrole = params.get("role");
+
+    if (qrole === "shop") {
+      currentRole = "shop";
+      document.querySelectorAll(".role-tab").forEach(t => {
+        t.classList.toggle("active", t.dataset.role === "shop");
+      });
+      document.querySelectorAll(".brand-only").forEach(el => el.classList.add("hidden"));
+      document.querySelectorAll(".shop-only").forEach(el => el.classList.remove("hidden"));
+    }
+  })();
+
+  // ═══════════ تشغيل ═══════════
+  applyTranslations();
 </script>
 
 <script src="/bot-guard.js"></script>
