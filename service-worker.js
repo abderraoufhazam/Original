@@ -1,12 +1,11 @@
 // service-worker.js
-// Original — Service Worker v18
+// Original — Service Worker v23
 
-const CACHE_VERSION = "v22";
+const CACHE_VERSION = "v23";
 const CACHE_NAME = `original-${CACHE_VERSION}`;
 const OFFLINE_CACHE = `original-offline-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `original-runtime-${CACHE_VERSION}`;
 
-// ⚠️ لا تضع /index.html (غير موجود)
 const CORE_ASSETS = [
   "/",
   "/landing.html",
@@ -20,6 +19,8 @@ const CORE_ASSETS = [
   "/contact",
   "/brand.html",
   "/brand",
+  "/report.html",
+  "/report",
   "/shop-dashboard.html",
   "/shop-terms.html",
   "/style.css",
@@ -35,7 +36,7 @@ const CORE_ASSETS = [
 ];
 
 // ============================================================
-// INSTALL — تثبيت Service Worker + cache الملفات الأساسية
+// INSTALL
 // ============================================================
 self.addEventListener("install", (event) => {
   console.log("[SW] Installing v" + CACHE_VERSION);
@@ -50,12 +51,11 @@ self.addEventListener("install", (event) => {
     })
   );
 
-  // تفعيل فوري
   self.skipWaiting();
 });
 
 // ============================================================
-// ACTIVATE — تنظيف Cache القديم
+// ACTIVATE
 // ============================================================
 self.addEventListener("activate", (event) => {
   console.log("[SW] Activating v" + CACHE_VERSION);
@@ -75,17 +75,16 @@ self.addEventListener("activate", (event) => {
 });
 
 // ============================================================
-// FETCH — استراتيجية ذكية
+// FETCH
 // ============================================================
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
-  // تجاهل: API, غير GET, نطاقات خارجية
   if (url.pathname.startsWith("/api/")) return;
   if (event.request.method !== "GET") return;
   if (url.origin !== self.location.origin) return;
 
-  // ملفات HTML → Network First (الأحدث)
+  // HTML → Network First
   if (event.request.headers.get("accept")?.includes("text/html")) {
     event.respondWith(
       fetch(event.request)
@@ -113,7 +112,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // الملفات الثابتة (CSS, JS, صور) → Cache First
+  // Static → Cache First
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;
@@ -132,7 +131,7 @@ self.addEventListener("fetch", (event) => {
 });
 
 // ============================================================
-// PUSH NOTIFICATIONS — استقبال الإشعارات
+// PUSH
 // ============================================================
 self.addEventListener("push", (event) => {
   console.log("[SW] Push received");
@@ -165,7 +164,7 @@ self.addEventListener("push", (event) => {
 });
 
 // ============================================================
-// NOTIFICATION CLICK — فتح الرابط عند النقر
+// NOTIFICATION CLICK
 // ============================================================
 self.addEventListener("notificationclick", async (event) => {
   console.log("[SW] Notification clicked");
@@ -193,7 +192,7 @@ self.addEventListener("notificationclick", async (event) => {
 });
 
 // ============================================================
-// MESSAGE — تحديث فوري
+// MESSAGE
 // ============================================================
 self.addEventListener("message", (event) => {
   if (event.data === "skipWaiting") {
