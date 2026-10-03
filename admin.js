@@ -1702,18 +1702,20 @@ async function loadShopComplaints() {
         <div class="stat-card"><div class="stat-value" style="color:var(--danger)">${stats.rejected}</div><div class="stat-label">❌ مرفوضة</div></div>`;
     }
 
-    // Badge
-    const badge = $("complaintsBadge");
-    if (badge) {
-      if (stats.pending > 0) {
-        badge.textContent = stats.pending;
-        badge.style.display = "inline-block";
-      } else {
-        badge.style.display = "none";
-      }
-    }
+// Badge
+const badge = $("complaintsBadge");
+if (badge) {
+  if (stats.pending > 0) {
+    badge.textContent = stats.pending;
+    badge.style.display = "inline-block";
+  } else {
+    badge.style.display = "none";
+  }
+}
 
-    renderShopComplaints();
+fillComplaintsWilayaFilter();
+renderShopComplaints();
+    
   } catch (err) {
     console.error("loadShopComplaints error:", err);
     container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(err.message)}</p>`;
@@ -1817,6 +1819,107 @@ if (currentComplaintsDateRange !== "all") {
   });
 
   container.innerHTML = html;
+}
+
+// ─── تصدير Excel ───
+function exportComplaintsToExcel() {
+  if (!allComplaints || allComplaints.length === 0) {
+    window.toast("لا توجد بيانات", "error");
+    return;
+  }
+
+  const statusLabels = {
+    PENDING: "معلقة",
+    REVIEWING: "قيد المراجعة",
+    VERIFIED: "مؤكدة",
+    RESOLVED: "تم الحل",
+    REJECTED: "مرفوضة"
+  };
+
+  // نصدّر ما يظهر في الفلتر الحالي
+  const search = ($("complaintsSearch")?.value || "").toLowerCase().trim();
+  let list = [...allComplaints];
+
+  if (currentComplaintsFilter === "pending") list = list.filter(c => c.status === "PENDING");
+  else if (currentComplaintsFilter === "reviewing") list = list.filter(c => c.status === "REVIEWING");
+  else if (currentComplaintsFilter === "verified") list = list.filter(c => c.status === "VERIFIED" || c.status === "RESOLVED");
+  else if (currentComplaintsFilter === "rejected") list = list.filter(c => c.status === "REJECTED");
+
+  if (search) {
+    list = list.filter(c =>
+      (c.product_code || "").toLowerCase().includes(search) ||
+      (c.customer_name || "").toLowerCase().includes(search) ||
+      (c.shop_name || "").toLowerCase().includes(search) ||
+      (c.customer_phone || "").toLowerCase().includes(search)
+    );
+  }
+
+  if (currentComplaintsWilaya) {
+    list = list.filter(c => c.customer_wilaya === currentComplaintsWilaya);
+  }
+
+  if (currentComplaintsDateRange !== "all") {
+    const days = parseInt(currentComplaintsDateRange, 10);
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    list = list.filter(c => c.created_at && new Date(c.created_at) >= since);
+  }
+
+  const rows = list.map(c => ({
+    "التاريخ": c.created_at ? new Date(c.created_at).toLocaleString("fr-FR") : "",
+    "الحالة": statusLabels[c.status] || c.status,
+    "المحل": c.shop_name || "",
+    "الكود": c.product_code || "",
+    "اسم الزبون": c.customer_name || "",
+    "الهاتف": c.customer_phone || "",
+    "الولاية": c.customer_wilaya || "",
+    "السعر (دج)": c.product_price || 0,
+    "مكان الشراء": c.purchase_location || "",
+    "ملاحظات": c.notes || "",
+    "عدد الصور": c.image_count || 0,
+    "ملاحظات الأدمن": c.admin_notes || ""
+  }));
+
+  downloadExcel(rows, "شكاوى_المحلات", "الشكاوى");
+  window.toast(`✅ تم تصدير ${rows.length} شكوى`, "success");
+}
+
+// ─── حذف شكوى ───
+window.deleteComplaint = async function(id) {
+  if (!confirm("⚠️ حذف هذه الشكوى نهائيًا؟")) return;
+
+  try {
+    const { error } = await sb
+      .from("shop_complaints")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+
+    window.toast("✅ تم الحذف", "success");
+    loadShopComplaints();
+  } catch (e) {
+    console.error("deleteComplaint error:", e);
+    window.toast("خطأ: " + e.message, "error");
+  }
+};
+
+// ─── تعبئة فلتر الولايات ───
+function fillComplaintsWilayaFilter() {
+  const sel = $("complaintsWilaya");
+  if (!sel) return;
+
+  // احتفظ بالقيمة الحالية
+  const current = sel.value;
+
+  let html = `<option value="">📍 كل الولايات</option>`;
+
+  const wilayas = [...new Set(allComplaints.map(c => c.customer_wilaya).filter(Boolean))].sort();
+  wilayas.forEach(w => {
+    html += `<option value="${escapeHtml(w)}">${escapeHtml(w)}</option>`;
+  });
+
+  sel.innerHTML = html;
+  sel.value = current;
 }
 
 // ─── عرض تفاصيل شكوى ───
@@ -2132,6 +2235,21 @@ if (_rfb) _rfb.onclick = () => loadFeedback();
 
 const _rbb = $("refreshBrandsBtn");
 if (_rbb) _rbb.onclick = () => loadBrands();
+
+const _ecb = $("exportComplaintsBtn");
+if (_ecb) _ecb.onclick = () => exportComplaintsToExcel();
+
+const _cwb = $("complaintsWilaya");
+if (_cwb) _cwb.addEventListener("change", () => {
+  currentComplaintsWilaya = _cwb.value;
+  renderShopComplaints();
+});
+
+const _cdb = $("complaintsDate");
+if (_cdb) _cdb.addEventListener("change", () => {
+  currentComplaintsDateRange = _cdb.value;
+  renderShopComplaints();
+});
 
 const _rcb = $("refreshComplaintsBtn");
 if (_rcb) _rcb.onclick = () => loadShopComplaints();
