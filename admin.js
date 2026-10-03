@@ -1,9 +1,14 @@
 // ============================================================
-// ORIGINAL — ADMIN.JS (v4 — shops support)
+// ORIGINAL — ADMIN.JS (v5 — EmailJS + Shops)
 // ============================================================
 const SUPABASE_URL = "https://qfpmbbntxyrderjlejql.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ═══════════ EmailJS Config ═══════════
+const EMAILJS_PUBLIC_KEY = "-u23EBBOrhdGM3uwm";
+const EMAILJS_SERVICE_ID = "service_jzvkogk";
+const EMAILJS_TEMPLATE_ID = "template_0yy00zs";
 
 const $ = id => document.getElementById(id);
 
@@ -51,7 +56,6 @@ function formatMoney(amount) {
   return num.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + " DA";
 }
 
-// ✅ NEW: التحقق من الأدمن عبر السيرفر
 async function checkAdminServer(token) {
   try {
     const res = await fetch("/api/check-admin", {
@@ -94,7 +98,6 @@ function toastType(msg) {
   return "info";
 }
 
-const _origAlert = window.alert;
 window.alert = function(msg) {
   window.toast(msg, toastType(msg));
 };
@@ -438,6 +441,8 @@ async function loadBrands() {
     container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(err.message)}</p>`;
   }
 }
+
+// ═══════════════ انتهى الجزء 1 ═══════════════
 
 // ============================================================
 // VISITORS
@@ -1117,6 +1122,8 @@ async function loadInventory() {
   } catch (err) { container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(err.message)}</p>`; }
 }
 
+// ═══════════════ انتهى الجزء 2 ═══════════════
+
 // ============================================================
 // 🏪 SHOPS (المحلات)
 // ============================================================
@@ -1275,6 +1282,9 @@ function renderShopsList() {
   container.innerHTML = html;
 }
 
+// ═══════════════════════════════════════════════════════════
+// 🏪 approveShop — مع EmailJS
+// ═══════════════════════════════════════════════════════════
 window.approveShop = async function(userId) {
   if (!confirm("الموافقة على هذا المحل؟")) return;
   const wilaya = prompt("📍 الولاية (اختياري):") || null;
@@ -1295,30 +1305,63 @@ window.approveShop = async function(userId) {
 
     window.toast("✅ تم تفعيل المحل: " + data.shop_name, "success");
 
-    // ═══════════ إرسال بريد عبر Resend ═══════════
+    // ═══════════ إرسال بريد عبر EmailJS ═══════════
     if (data.email) {
       try {
-        const res = await fetch("/api/submit?type=notify-shop", {
+        const date = new Date().toLocaleDateString("ar-DZ", {
+          year: "numeric", month: "long", day: "numeric"
+        });
+
+        const bodyHtml = `
+          <p style="margin:0 0 16px;">
+            يسعدنا إبلاغك بأنه تمت <b style="color:#16a34a;">الموافقة على تسجيل محلّك</b>
+            في منصة <b>OriginalDz</b>. أصبح حسابك الآن نشطًا.
+          </p>
+
+          <div style="background:#f0fdf4;border:1.5px solid #22c55e;border-radius:12px;padding:16px 18px;margin:20px 0;">
+            <div style="font-size:11px;color:#166534;font-weight:800;letter-spacing:1.5px;margin-bottom:10px;">📋 تفاصيل الحساب</div>
+            <div style="margin-bottom:6px;"><b>🏪 المحل:</b> ${escapeHtml(data.shop_name)}</div>
+            <div style="margin-bottom:6px;"><b>📧 البريد:</b> ${escapeHtml(data.email)}</div>
+            ${wilaya ? `<div style="margin-bottom:6px;"><b>📍 الولاية:</b> ${escapeHtml(wilaya)}</div>` : ""}
+            <div><b>📅 تاريخ الموافقة:</b> ${date}</div>
+          </div>
+
+          <p style="margin:0 0 8px;">يمكنك الآن الدخول إلى لوحة المتابعة ومشاهدة:</p>
+          <ul style="margin:0 0 20px;padding-right:20px;">
+            <li>إحصائيات أكوادك</li>
+            <li>حالة العربون</li>
+            <li>البلاغات الواردة</li>
+          </ul>
+
+          <p style="margin:16px 0 0;font-size:12.5px;color:#64748b;text-align:center;">
+            لأي استفسار تواصل معنا على واتساب: <b>+213 556 339 415</b>
+          </p>
+        `;
+
+        const emailRes = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            to_email: data.email,
-            shop_name: data.shop_name,
-            shop_email: data.email,
-            shop_phone: data.phone || null,
-            wilaya: wilaya,
-            approved_date: new Date().toLocaleDateString("ar-DZ", {
-              year: "numeric", month: "long", day: "numeric"
-            })
+            service_id: EMAILJS_SERVICE_ID,
+            template_id: EMAILJS_TEMPLATE_ID,
+            user_id: EMAILJS_PUBLIC_KEY,
+            template_params: {
+              to_email: data.email,
+              subject: `✅ تم تفعيل حساب محلك — ${data.shop_name}`,
+              title: "✅ تم تفعيل حسابك",
+              name: data.shop_name,
+              email: data.email,
+              phone: data.phone || "—",
+              body_html: bodyHtml
+            }
           })
         });
 
-        const result = await res.json();
-
-        if (result.status === "OK") {
+        if (emailRes.ok) {
           window.toast("📧 تم إرسال البريد إلى " + data.email, "success");
         } else {
-          console.warn("Email send failed:", result);
+          const errText = await emailRes.text();
+          console.warn("EmailJS error:", errText);
           window.toast("⚠️ لم يُرسل البريد — لكن المحل مُفعّل", "warning");
         }
       } catch (emailErr) {
@@ -1985,7 +2028,7 @@ if (_llb) _llb.onclick = async () => {
   info.className = "result success";
   info.innerHTML = `<h2>${data.length} code(s)</h2>`;
 
-    showBatchStatus(data.map(row => row.secret_status));
+  showBatchStatus(data.map(row => row.secret_status));
   const plb = $("printLotBtn"); if (plb) plb.classList.remove("hidden");
   const eb = $("exportLotCodesBtn"); if (eb) eb.classList.remove("hidden");
 
@@ -2055,55 +2098,6 @@ if (_disBtn) _disBtn.onclick = async () => {
   } catch (e) { window.toast("Erreur : " + e.message, "error"); }
 };
 
-const _plb = $("printLotBtn");
-if (_plb) _plb.onclick = async () => {
-  if (!loadedLot) return;
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) return;
-  try {
-    const res = await fetch("/api/batch-manager?action=print", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.access_token },
-      body: JSON.stringify({ lot: loadedLot, access_token: session.access_token })
-    });
-    const data = await res.json();
-    if (data.status !== "OK") { window.toast("Erreur : " + (data.message || ""), "error"); return; }
-    const codes = (data.codes || []).map(c => c.code).filter(Boolean);
-    if (codes.length === 0) { window.toast("Aucun code.", "error"); return; }
-
-    try {
-      await sb.rpc("admin_add_inventory_movement", {
-        p_type: "OUT", p_quantity: -Math.abs(codes.length),
-        p_reason: `Impression lot ${loadedLot}`,
-        p_reference: `${data.brand || loadedLotBrand || "?"} - Lot ${loadedLot}`
-      });
-    } catch (e) { console.warn(e); }
-
-    printLabels(codes, data.brand || loadedLotBrand || "MARQUE", data.lot || loadedLotLot, data.logo_url || loadedLotLogo);
-  } catch (err) { window.toast("Erreur : " + err.message, "error"); }
-};
-
-const _elcb = $("exportLotCodesBtn");
-if (_elcb) _elcb.onclick = async () => {
-  if (!loadedLot) return;
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) return;
-  try {
-    const res = await fetch("/api/batch-manager?action=print", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.access_token },
-      body: JSON.stringify({ lot: loadedLot, access_token: session.access_token })
-    });
-    const data = await res.json();
-    if (data.status !== "OK") { window.toast("Erreur", "error"); return; }
-    const rows = (data.codes || []).map((c, i) => ({ "#": i + 1, "Code": c.code, "Statut": c.status || "UNUSED", "Lot": data.lot || loadedLot, "Marque": data.brand || loadedLotBrand }));
-    downloadExcel(rows, "Codes_" + loadedLot, "Codes");
-  } catch (err) { window.toast("Erreur : " + err.message, "error"); }
-};
-
-// ============================================================
-// ADV SEARCH buttons
-// ============================================================
 // 🏪 Shop batch handlers
 const _sbt = $("shopBatchToggle");
 if (_sbt) {
@@ -2189,6 +2183,56 @@ if (_rsb2) {
     }
   };
 }
+
+const _plb = $("printLotBtn");
+if (_plb) _plb.onclick = async () => {
+  if (!loadedLot) return;
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return;
+  try {
+    const res = await fetch("/api/batch-manager?action=print", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.access_token },
+      body: JSON.stringify({ lot: loadedLot, access_token: session.access_token })
+    });
+    const data = await res.json();
+    if (data.status !== "OK") { window.toast("Erreur : " + (data.message || ""), "error"); return; }
+    const codes = (data.codes || []).map(c => c.code).filter(Boolean);
+    if (codes.length === 0) { window.toast("Aucun code.", "error"); return; }
+
+    try {
+      await sb.rpc("admin_add_inventory_movement", {
+        p_type: "OUT", p_quantity: -Math.abs(codes.length),
+        p_reason: `Impression lot ${loadedLot}`,
+        p_reference: `${data.brand || loadedLotBrand || "?"} - Lot ${loadedLot}`
+      });
+    } catch (e) { console.warn(e); }
+
+    printLabels(codes, data.brand || loadedLotBrand || "MARQUE", data.lot || loadedLotLot, data.logo_url || loadedLotLogo);
+  } catch (err) { window.toast("Erreur : " + err.message, "error"); }
+};
+
+const _elcb = $("exportLotCodesBtn");
+if (_elcb) _elcb.onclick = async () => {
+  if (!loadedLot) return;
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return;
+  try {
+    const res = await fetch("/api/batch-manager?action=print", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.access_token },
+      body: JSON.stringify({ lot: loadedLot, access_token: session.access_token })
+    });
+    const data = await res.json();
+    if (data.status !== "OK") { window.toast("Erreur", "error"); return; }
+    const rows = (data.codes || []).map((c, i) => ({ "#": i + 1, "Code": c.code, "Statut": c.status || "UNUSED", "Lot": data.lot || loadedLot, "Marque": data.brand || loadedLotBrand }));
+    downloadExcel(rows, "Codes_" + loadedLot, "Codes");
+  } catch (err) { window.toast("Erreur : " + err.message, "error"); }
+};
+
+// ============================================================
+// ADV SEARCH buttons
+// ============================================================
 const _advBtn = $("advSearchBtn");
 if (_advBtn) _advBtn.onclick = () => loadAdvancedSearch();
 
@@ -2905,5 +2949,5 @@ if (_efkb) _efkb.onclick = async () => {
 };
 
 // ============================================================
-// FIN DU FICHIER admin.js (v4 — shops support)
+// FIN DU FICHIER admin.js (v5 — EmailJS + Shops)
 // ============================================================
