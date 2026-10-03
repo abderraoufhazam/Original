@@ -1,17 +1,18 @@
 // ============================================================
-// ORIGINAL — ADMIN.JS (v5 — EmailJS + Shops)
+// ORIGINAL — ADMIN.JS (v6 — Full)
 // ============================================================
 const SUPABASE_URL = "https://qfpmbbntxyrderjlejql.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ═══════════ EmailJS Config ═══════════
+// ═══════════ EmailJS Config (احتياطي) ═══════════
 const EMAILJS_PUBLIC_KEY = "-u23EBBOrhdGM3uwm";
 const EMAILJS_SERVICE_ID = "service_jzvkogk";
 const EMAILJS_TEMPLATE_ID = "template_0yy00zs";
 
 const $ = id => document.getElementById(id);
 
+// ═══════════ GLOBAL STATE ═══════════
 let lastCodes = [];
 let lastLogo = "";
 let loadedLot = null;
@@ -60,6 +61,11 @@ function formatMoney(amount) {
   return num.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + " DA";
 }
 
+function formatDisplayCode(code) {
+  if (!code) return '';
+  return String(code).trim().toUpperCase();
+}
+
 async function checkAdminServer(token) {
   try {
     const res = await fetch("/api/check-admin", {
@@ -73,6 +79,11 @@ async function checkAdminServer(token) {
     console.warn("check-admin error:", e);
     return false;
   }
+}
+
+async function getAdminToken() {
+  const { data: { session } } = await sb.auth.getSession();
+  return session ? session.access_token : null;
 }
 
 // ============================================================
@@ -178,14 +189,6 @@ if (_ov) _ov.addEventListener("click", () => {
   if (s) s.classList.remove("open");
   if (o) o.classList.remove("show");
 });
-
-// ============================================================
-// TOKEN HELPER
-// ============================================================
-async function getAdminToken() {
-  const { data: { session } } = await sb.auth.getSession();
-  return session ? session.access_token : null;
-}
 
 // ============================================================
 // LOADERS
@@ -1288,9 +1291,7 @@ function renderShopsList() {
   container.innerHTML = html;
 }
 
-// ═══════════════════════════════════════════════════════════
-// 🏪 approveShop — مع EmailJS
-// ═══════════════════════════════════════════════════════════
+// ─── موافقة على محل ───
 window.approveShop = async function(userId) {
   if (!confirm("الموافقة على هذا المحل؟")) return;
   const wilaya = prompt("📍 الولاية (اختياري):") || null;
@@ -1311,62 +1312,32 @@ window.approveShop = async function(userId) {
 
     window.toast("✅ تم تفعيل المحل: " + data.shop_name, "success");
 
-    // ═══════════ إرسال بريد عبر EmailJS ═══════════
+    // إرسال بريد عبر Brevo
     if (data.email) {
       try {
-        const date = new Date().toLocaleDateString("ar-DZ", {
-          year: "numeric", month: "long", day: "numeric"
+        const res = await fetch("/api/submit?type=shop-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            to_email: data.email,
+            shop_name: data.shop_name,
+            shop_email: data.email,
+            shop_phone: data.phone || null,
+            wilaya: wilaya,
+            approved_date: new Date().toLocaleDateString("ar-DZ", {
+              year: "numeric", month: "long", day: "numeric"
+            })
+          })
         });
 
-        const bodyHtml = `
-          <p style="margin:0 0 16px;">
-            يسعدنا إبلاغك بأنه تمت <b style="color:#16a34a;">الموافقة على تسجيل محلّك</b>
-            في منصة <b>OriginalDz</b>. أصبح حسابك الآن نشطًا.
-          </p>
+        const result = await res.json();
 
-          <div style="background:#f0fdf4;border:1.5px solid #22c55e;border-radius:12px;padding:16px 18px;margin:20px 0;">
-            <div style="font-size:11px;color:#166534;font-weight:800;letter-spacing:1.5px;margin-bottom:10px;">📋 تفاصيل الحساب</div>
-            <div style="margin-bottom:6px;"><b>🏪 المحل:</b> ${escapeHtml(data.shop_name)}</div>
-            <div style="margin-bottom:6px;"><b>📧 البريد:</b> ${escapeHtml(data.email)}</div>
-            ${wilaya ? `<div style="margin-bottom:6px;"><b>📍 الولاية:</b> ${escapeHtml(wilaya)}</div>` : ""}
-            <div><b>📅 تاريخ الموافقة:</b> ${date}</div>
-          </div>
-
-          <p style="margin:0 0 8px;">يمكنك الآن الدخول إلى لوحة المتابعة ومشاهدة:</p>
-          <ul style="margin:0 0 20px;padding-right:20px;">
-            <li>إحصائيات أكوادك</li>
-            <li>حالة العربون</li>
-            <li>البلاغات الواردة</li>
-          </ul>
-
-          <p style="margin:16px 0 0;font-size:12.5px;color:#64748b;text-align:center;">
-            لأي استفسار تواصل معنا على واتساب: <b>+213 556 339 415</b>
-          </p>
-        `;
-
-        const emailRes = await fetch("/api/submit?type=shop-email", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    to_email: data.email,
-    shop_name: data.shop_name,
-    shop_email: data.email,
-    shop_phone: data.phone || null,
-    wilaya: wilaya,
-    approved_date: new Date().toLocaleDateString("ar-DZ", {
-      year: "numeric", month: "long", day: "numeric"
-    })
-  })
-});
-
-const emailResult = await emailRes.json();
-
-if (emailResult.status === "OK") {
-  window.toast("📧 تم إرسال البريد إلى " + data.email, "success");
-} else {
-  console.warn("Brevo error:", emailResult);
-  window.toast("⚠️ لم يُرسل البريد — لكن المحل مُفعّل", "warning");
-}
+        if (result.status === "OK") {
+          window.toast("📧 تم إرسال البريد إلى " + data.email, "success");
+        } else {
+          console.warn("Email send failed:", result);
+          window.toast("⚠️ لم يُرسل البريد — لكن المحل مُفعّل", "warning");
+        }
       } catch (emailErr) {
         console.warn("Email error:", emailErr);
         window.toast("⚠️ خطأ في إرسال البريد", "warning");
@@ -1595,71 +1566,8 @@ window.unbanShop = async function(shopId, shopName) {
 };
 
 window.viewShopDetails = async function(userId) {
-  window.toast("🚧 قيد البناء — التحديث القادم", "info");
+  window.toast("🚧 قيد البناء", "info");
 };
-
-// ============================================================
-// 🏪 SHOP BATCH — ربط دفعة بمحل
-// ============================================================
-async function loadShopsForSelect() {
-  const sel = $("shopBatchSelect");
-  if (!sel) return;
-
-  try {
-    const { data, error } = await sb
-      .from("verified_shops")
-      .select("id, shop_name, status")
-      .eq("status", "ACTIVE")
-      .order("shop_name");
-
-    if (error) throw error;
-
-    let html = `<option value="">-- اختر المحل --</option>`;
-    (data || []).forEach(s => {
-      html += `<option value="${s.id}">🏪 ${escapeHtml(s.shop_name)}</option>`;
-    });
-    sel.innerHTML = html;
-  } catch (e) {
-    console.warn("loadShopsForSelect error:", e);
-  }
-}
-
-async function checkBatchShopStatus(lot) {
-  try {
-    const { data, error } = await sb
-      .from("qr_codes")
-      .select("is_shop_lot, shop_name, product_price")
-      .eq("lot", lot)
-      .limit(1)
-      .single();
-
-    if (error || !data) return;
-
-    const toggle = $("shopBatchToggle");
-    const fields = $("shopBatchFields");
-    const price = $("shopBatchPrice");
-    const sel = $("shopBatchSelect");
-
-    if (!toggle || !fields) return;
-
-    if (data.is_shop_lot === true) {
-      toggle.checked = true;
-      fields.classList.remove("hidden");
-      if (price) price.value = data.product_price || "";
-      await loadShopsForSelect();
-      if (sel && data.shop_name) {
-        const option = Array.from(sel.options).find(o => o.text.includes(data.shop_name));
-        if (option) sel.value = option.value;
-      }
-    } else {
-      toggle.checked = false;
-      fields.classList.add("hidden");
-      if (price) price.value = "";
-    }
-  } catch (e) {
-    console.warn("checkBatchShopStatus:", e);
-  }
-}
 
 // ============================================================
 // 🚨 SHOP COMPLAINTS (شكاوى المحلات)
@@ -1673,7 +1581,6 @@ async function loadShopComplaints() {
   if (statsBox) statsBox.innerHTML = "";
 
   try {
-    // جلب كل الشكاوى
     const { data, error } = await sb
       .from("shop_complaints")
       .select("*")
@@ -1684,7 +1591,6 @@ async function loadShopComplaints() {
 
     allComplaints = data || [];
 
-    // الإحصائيات
     const stats = {
       total: allComplaints.length,
       pending: allComplaints.filter(c => c.status === "PENDING").length,
@@ -1702,24 +1608,38 @@ async function loadShopComplaints() {
         <div class="stat-card"><div class="stat-value" style="color:var(--danger)">${stats.rejected}</div><div class="stat-label">❌ مرفوضة</div></div>`;
     }
 
-// Badge
-const badge = $("complaintsBadge");
-if (badge) {
-  if (stats.pending > 0) {
-    badge.textContent = stats.pending;
-    badge.style.display = "inline-block";
-  } else {
-    badge.style.display = "none";
-  }
-}
+    const badge = $("complaintsBadge");
+    if (badge) {
+      if (stats.pending > 0) {
+        badge.textContent = stats.pending;
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+    }
 
-fillComplaintsWilayaFilter();
-renderShopComplaints();
-    
+    fillComplaintsWilayaFilter();
+    renderShopComplaints();
   } catch (err) {
     console.error("loadShopComplaints error:", err);
     container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(err.message)}</p>`;
   }
+}
+
+function fillComplaintsWilayaFilter() {
+  const sel = $("complaintsWilaya");
+  if (!sel) return;
+
+  const current = sel.value;
+  let html = `<option value="">📍 كل الولايات</option>`;
+
+  const wilayas = [...new Set(allComplaints.map(c => c.customer_wilaya).filter(Boolean))].sort();
+  wilayas.forEach(w => {
+    html += `<option value="${escapeHtml(w)}">${escapeHtml(w)}</option>`;
+  });
+
+  sel.innerHTML = html;
+  sel.value = current;
 }
 
 function renderShopComplaints() {
@@ -1728,7 +1648,6 @@ function renderShopComplaints() {
 
   const search = ($("complaintsSearch")?.value || "").toLowerCase().trim();
 
-  // فلترة حسب الـ tab
   let list = [];
   if (currentComplaintsFilter === "pending") list = allComplaints.filter(c => c.status === "PENDING");
   else if (currentComplaintsFilter === "reviewing") list = allComplaints.filter(c => c.status === "REVIEWING");
@@ -1736,28 +1655,25 @@ function renderShopComplaints() {
   else if (currentComplaintsFilter === "rejected") list = allComplaints.filter(c => c.status === "REJECTED");
   else list = allComplaints;
 
-  // بحث
-if (search) {
-  list = list.filter(c => {
-    const code = (c.product_code || "").toLowerCase();
-    const name = (c.customer_name || "").toLowerCase();
-    const shop = (c.shop_name || "").toLowerCase();
-    const phone = (c.customer_phone || "").toLowerCase();
-    return code.includes(search) || name.includes(search) || shop.includes(search) || phone.includes(search);
-  });
-}
+  if (search) {
+    list = list.filter(c => {
+      const code = (c.product_code || "").toLowerCase();
+      const name = (c.customer_name || "").toLowerCase();
+      const shop = (c.shop_name || "").toLowerCase();
+      const phone = (c.customer_phone || "").toLowerCase();
+      return code.includes(search) || name.includes(search) || shop.includes(search) || phone.includes(search);
+    });
+  }
 
-// فلتر الولاية
-if (currentComplaintsWilaya) {
-  list = list.filter(c => c.customer_wilaya === currentComplaintsWilaya);
-}
+  if (currentComplaintsWilaya) {
+    list = list.filter(c => c.customer_wilaya === currentComplaintsWilaya);
+  }
 
-// فلتر التاريخ
-if (currentComplaintsDateRange !== "all") {
-  const days = parseInt(currentComplaintsDateRange, 10);
-  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-  list = list.filter(c => c.created_at && new Date(c.created_at) >= since);
-}
+  if (currentComplaintsDateRange !== "all") {
+    const days = parseInt(currentComplaintsDateRange, 10);
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    list = list.filter(c => c.created_at && new Date(c.created_at) >= since);
+  }
 
   if (list.length === 0) {
     container.innerHTML = `<p class="muted" style="text-align:center;padding:40px 0">لا توجد شكاوى في هذه الفئة</p>`;
@@ -1776,9 +1692,7 @@ if (currentComplaintsDateRange !== "all") {
     };
     const st = statusMap[c.status] || { cls: "warning", label: c.status };
 
-    // مصغرات الصور
     const images = c.images || [];
-    const imgCount = images.length;
     const firstImg = images[0] ? `<img src="${escapeHtml(images[0])}" alt="" style="width:100%;height:120px;object-fit:cover;border-radius:10px;">` : "";
 
     html += `
@@ -1809,12 +1723,12 @@ if (currentComplaintsDateRange !== "all") {
           ${c.status === "PENDING" ? `
             <button onclick="updateComplaintStatus('${c.id}','REVIEWING')" class="btn btn-ghost" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">🔍 مراجعة</button>
           ` : ""}
-            ${c.status !== "VERIFIED" && c.status !== "REJECTED" ? `
-    <button onclick="updateComplaintStatus('${c.id}','VERIFIED')" class="btn btn-success" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">✅ تأكيد</button>
-    <button onclick="updateComplaintStatus('${c.id}','REJECTED')" class="btn btn-danger" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">❌ رفض</button>
-  ` : ""}
-  <button onclick="deleteComplaint('${c.id}')" class="btn btn-ghost" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px;background:var(--danger-soft);color:var(--danger)">🗑️ حذف</button>
-</div>
+          ${c.status !== "VERIFIED" && c.status !== "REJECTED" ? `
+            <button onclick="updateComplaintStatus('${c.id}','VERIFIED')" class="btn btn-success" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">✅ تأكيد</button>
+            <button onclick="updateComplaintStatus('${c.id}','REJECTED')" class="btn btn-danger" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">❌ رفض</button>
+          ` : ""}
+          <button onclick="deleteComplaint('${c.id}')" class="btn btn-ghost" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px;background:var(--danger-soft);color:var(--danger)">🗑️ حذف</button>
+        </div>
       </div>`;
   });
 
@@ -1836,7 +1750,6 @@ function exportComplaintsToExcel() {
     REJECTED: "مرفوضة"
   };
 
-  // نصدّر ما يظهر في الفلتر الحالي
   const search = ($("complaintsSearch")?.value || "").toLowerCase().trim();
   let list = [...allComplaints];
 
@@ -1902,25 +1815,6 @@ window.deleteComplaint = async function(id) {
     window.toast("خطأ: " + e.message, "error");
   }
 };
-
-// ─── تعبئة فلتر الولايات ───
-function fillComplaintsWilayaFilter() {
-  const sel = $("complaintsWilaya");
-  if (!sel) return;
-
-  // احتفظ بالقيمة الحالية
-  const current = sel.value;
-
-  let html = `<option value="">📍 كل الولايات</option>`;
-
-  const wilayas = [...new Set(allComplaints.map(c => c.customer_wilaya).filter(Boolean))].sort();
-  wilayas.forEach(w => {
-    html += `<option value="${escapeHtml(w)}">${escapeHtml(w)}</option>`;
-  });
-
-  sel.innerHTML = html;
-  sel.value = current;
-}
 
 // ─── عرض تفاصيل شكوى ───
 window.viewComplaint = async function(id) {
@@ -2009,7 +1903,6 @@ window.updateComplaintStatus = async function(id, newStatus) {
   let adminNotes = null;
   let deductAmount = 0;
 
-  // إذا كانت مؤكدة، اسأل عن خصم من العربون
   if (newStatus === "VERIFIED") {
     const complaint = allComplaints.find(c => c.id === id);
     adminNotes = prompt("ملاحظات (اختياري):") || null;
@@ -2048,13 +1941,71 @@ window.updateComplaintStatus = async function(id, newStatus) {
 };
 
 // ============================================================
-// PRINT (Labels + Invoice)
+// 🏪 SHOP BATCH
 // ============================================================
-function formatDisplayCode(code) {
-  if (!code) return '';
-  return String(code).trim().toUpperCase();
+async function loadShopsForSelect() {
+  const sel = $("shopBatchSelect");
+  if (!sel) return;
+
+  try {
+    const { data, error } = await sb
+      .from("verified_shops")
+      .select("id, shop_name, status")
+      .eq("status", "ACTIVE")
+      .order("shop_name");
+
+    if (error) throw error;
+
+    let html = `<option value="">-- اختر المحل --</option>`;
+    (data || []).forEach(s => {
+      html += `<option value="${s.id}">🏪 ${escapeHtml(s.shop_name)}</option>`;
+    });
+    sel.innerHTML = html;
+  } catch (e) {
+    console.warn("loadShopsForSelect error:", e);
+  }
 }
 
+async function checkBatchShopStatus(lot) {
+  try {
+    const { data, error } = await sb
+      .from("qr_codes")
+      .select("is_shop_lot, shop_name, product_price")
+      .eq("lot", lot)
+      .limit(1)
+      .single();
+
+    if (error || !data) return;
+
+    const toggle = $("shopBatchToggle");
+    const fields = $("shopBatchFields");
+    const price = $("shopBatchPrice");
+    const sel = $("shopBatchSelect");
+
+    if (!toggle || !fields) return;
+
+    if (data.is_shop_lot === true) {
+      toggle.checked = true;
+      fields.classList.remove("hidden");
+      if (price) price.value = data.product_price || "";
+      await loadShopsForSelect();
+      if (sel && data.shop_name) {
+        const option = Array.from(sel.options).find(o => o.text.includes(data.shop_name));
+        if (option) sel.value = option.value;
+      }
+    } else {
+      toggle.checked = false;
+      fields.classList.add("hidden");
+      if (price) price.value = "";
+    }
+  } catch (e) {
+    console.warn("checkBatchShopStatus:", e);
+  }
+}
+
+// ============================================================
+// PRINT (Labels + Invoice)
+// ============================================================
 function printLabels(codes, brand, lot, logoUrl) {
   if (!codes || !codes.length) { window.toast("Aucun code.", "error"); return; }
   const mode = ($("printMode") && $("printMode").value) || "labels";
@@ -2236,20 +2187,11 @@ if (_rfb) _rfb.onclick = () => loadFeedback();
 const _rbb = $("refreshBrandsBtn");
 if (_rbb) _rbb.onclick = () => loadBrands();
 
+const _rsb = $("refreshShopsBtn");
+if (_rsb) _rsb.onclick = () => loadShops();
+
 const _ecb = $("exportComplaintsBtn");
 if (_ecb) _ecb.onclick = () => exportComplaintsToExcel();
-
-const _cwb = $("complaintsWilaya");
-if (_cwb) _cwb.addEventListener("change", () => {
-  currentComplaintsWilaya = _cwb.value;
-  renderShopComplaints();
-});
-
-const _cdb = $("complaintsDate");
-if (_cdb) _cdb.addEventListener("change", () => {
-  currentComplaintsDateRange = _cdb.value;
-  renderShopComplaints();
-});
 
 const _rcb = $("refreshComplaintsBtn");
 if (_rcb) _rcb.onclick = () => loadShopComplaints();
@@ -2263,8 +2205,17 @@ if (_csi) {
   });
 }
 
-const _rsb = $("refreshShopsBtn");
-if (_rsb) _rsb.onclick = () => loadShops();
+const _cwb = $("complaintsWilaya");
+if (_cwb) _cwb.addEventListener("change", () => {
+  currentComplaintsWilaya = _cwb.value;
+  renderShopComplaints();
+});
+
+const _cdb = $("complaintsDate");
+if (_cdb) _cdb.addEventListener("change", () => {
+  currentComplaintsDateRange = _cdb.value;
+  renderShopComplaints();
+});
 
 const _ssi = $("shopsSearch");
 if (_ssi) {
@@ -2449,7 +2400,6 @@ if (_llb) _llb.onclick = async () => {
   const plb = $("printLotBtn"); if (plb) plb.classList.remove("hidden");
   const eb = $("exportLotCodesBtn"); if (eb) eb.classList.remove("hidden");
 
-  // 🏪 إظهار قسم المحل
   const shopBox = $("shopBatchBox");
   if (shopBox) shopBox.classList.remove("hidden");
   checkBatchShopStatus(lot);
@@ -3366,5 +3316,5 @@ if (_efkb) _efkb.onclick = async () => {
 };
 
 // ============================================================
-// FIN DU FICHIER admin.js (v5 — EmailJS + Shops)
+// FIN DU FICHIER admin.js (v6 — Full)
 // ============================================================
