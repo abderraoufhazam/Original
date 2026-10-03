@@ -1,7 +1,7 @@
 // service-worker.js
 // Original — Service Worker v16
 
-const CACHE_VERSION = "v16";
+const CACHE_VERSION = "v17";
 const CACHE_NAME = `original-${CACHE_VERSION}`;
 const OFFLINE_CACHE = `original-offline-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `original-runtime-${CACHE_VERSION}`;
