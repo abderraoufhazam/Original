@@ -1338,32 +1338,29 @@ window.approveShop = async function(userId) {
           </p>
         `;
 
-        const emailRes = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            service_id: EMAILJS_SERVICE_ID,
-            template_id: EMAILJS_TEMPLATE_ID,
-            user_id: EMAILJS_PUBLIC_KEY,
-            template_params: {
-              to_email: data.email,
-              subject: `✅ تم تفعيل حساب محلك — ${data.shop_name}`,
-              title: "✅ تم تفعيل حسابك",
-              name: data.shop_name,
-              email: data.email,
-              phone: data.phone || "—",
-              body_html: bodyHtml
-            }
-          })
-        });
+        const emailRes = await fetch("/api/submit?type=shop-email", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    to_email: data.email,
+    shop_name: data.shop_name,
+    shop_email: data.email,
+    shop_phone: data.phone || null,
+    wilaya: wilaya,
+    approved_date: new Date().toLocaleDateString("ar-DZ", {
+      year: "numeric", month: "long", day: "numeric"
+    })
+  })
+});
 
-        if (emailRes.ok) {
-          window.toast("📧 تم إرسال البريد إلى " + data.email, "success");
-        } else {
-          const errText = await emailRes.text();
-          console.warn("EmailJS error:", errText);
-          window.toast("⚠️ لم يُرسل البريد — لكن المحل مُفعّل", "warning");
-        }
+const emailResult = await emailRes.json();
+
+if (emailResult.status === "OK") {
+  window.toast("📧 تم إرسال البريد إلى " + data.email, "success");
+} else {
+  console.warn("Brevo error:", emailResult);
+  window.toast("⚠️ لم يُرسل البريد — لكن المحل مُفعّل", "warning");
+}
       } catch (emailErr) {
         console.warn("Email error:", emailErr);
         window.toast("⚠️ خطأ في إرسال البريد", "warning");
