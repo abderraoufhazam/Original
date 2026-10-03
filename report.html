@@ -17,7 +17,6 @@
   </script>
 
   <style>
-    /* ═══════════ REPORT PAGE — CUSTOM STYLES ═══════════ */
     .report-page {
       min-height: 100vh;
       padding: 24px 16px 60px;
@@ -25,12 +24,8 @@
       background-attachment: fixed;
     }
 
-    .report-container {
-      max-width: 780px;
-      margin: 0 auto;
-    }
+    .report-container { max-width: 780px; margin: 0 auto; }
 
-    /* Header */
     .report-header {
       background: linear-gradient(135deg, #0f172a, #1e293b);
       color: #fff;
@@ -80,7 +75,6 @@
       line-height: 1.6;
     }
 
-    /* Choice Cards */
     .report-choice {
       display: grid;
       grid-template-columns: 1fr;
@@ -88,9 +82,7 @@
       margin-bottom: 24px;
     }
 
-    @media (min-width: 640px) {
-      .report-choice { grid-template-columns: 1fr 1fr; }
-    }
+    @media (min-width: 640px) { .report-choice { grid-template-columns: 1fr 1fr; } }
 
     .choice-card {
       background: var(--card-bg);
@@ -110,7 +102,7 @@
     }
 
     .choice-card.active {
-      border-color: var(--success);
+      border-color: #16a34a;
       background: linear-gradient(160deg, #f0fdf4, #dcfce7);
     }
 
@@ -128,13 +120,8 @@
       font-size: 28px;
     }
 
-    .choice-card.brand .choice-card-icon {
-      background: linear-gradient(135deg, #0f172a, #1e293b);
-    }
-
-    .choice-card.shop .choice-card-icon {
-      background: linear-gradient(135deg, #16a34a, #22c55e);
-    }
+    .choice-card.brand .choice-card-icon { background: linear-gradient(135deg, #0f172a, #1e293b); }
+    .choice-card.shop .choice-card-icon { background: linear-gradient(135deg, #16a34a, #22c55e); }
 
     .choice-card h3 {
       font-size: 16px;
@@ -151,7 +138,6 @@
       line-height: 1.5;
     }
 
-    /* Form */
     .report-form {
       background: var(--card-bg);
       border-radius: 22px;
@@ -200,10 +186,7 @@
       flex-shrink: 0;
     }
 
-    .form-field {
-      margin-bottom: 14px;
-    }
-
+    .form-field { margin-bottom: 14px; }
     .form-field:last-child { margin-bottom: 0; }
 
     .form-label {
@@ -237,35 +220,23 @@
     .form-input:focus,
     .form-select:focus,
     .form-textarea:focus {
-      border-color: var(--success);
+      border-color: #16a34a;
       box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.12);
     }
 
-    .form-textarea {
-      resize: vertical;
-      min-height: 80px;
-    }
+    .form-textarea { resize: vertical; min-height: 80px; }
 
-    .form-grid-2 {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
+    .form-grid-2 { display: grid; grid-template-columns: 1fr; gap: 12px; }
 
-    @media (min-width: 640px) {
-      .form-grid-2 { grid-template-columns: 1fr 1fr; }
-    }
+    @media (min-width: 640px) { .form-grid-2 { grid-template-columns: 1fr 1fr; } }
 
-    /* Images Grid */
     .images-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 10px;
     }
 
-    @media (min-width: 640px) {
-      .images-grid { grid-template-columns: repeat(4, 1fr); }
-    }
+    @media (min-width: 640px) { .images-grid { grid-template-columns: repeat(4, 1fr); } }
 
     .image-slot {
       aspect-ratio: 1;
@@ -285,22 +256,18 @@
     }
 
     .image-slot:hover {
-      border-color: var(--success);
+      border-color: #16a34a;
       background: rgba(22, 163, 74, 0.04);
     }
 
     .image-slot.has-image {
       border-style: solid;
-      border-color: var(--success);
+      border-color: #16a34a;
       background: #fff;
       padding: 0;
     }
 
-    .image-slot-icon {
-      font-size: 24px;
-      margin-bottom: 6px;
-      opacity: 0.7;
-    }
+    .image-slot-icon { font-size: 24px; margin-bottom: 6px; opacity: 0.7; }
 
     .image-slot-label {
       font-size: 10.5px;
@@ -333,9 +300,7 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
 
-    .image-slot input[type="file"] {
-      display: none;
-    }
+    .image-slot input[type="file"] { display: none; }
 
     .images-hint {
       margin-top: 12px;
@@ -353,7 +318,6 @@
       color: #fcd34d;
     }
 
-    /* Submit Button */
     .report-submit {
       width: 100%;
       padding: 16px 24px;
@@ -380,13 +344,8 @@
       box-shadow: 0 14px 32px -8px rgba(220, 38, 38, 0.6);
     }
 
-    .report-submit:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      box-shadow: none;
-    }
+    .report-submit:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
 
-    /* Message */
     .report-msg {
       padding: 14px 16px;
       border-radius: 12px;
@@ -412,7 +371,6 @@
       color: #dc2626;
     }
 
-    /* Back button */
     .report-back {
       display: inline-flex;
       align-items: center;
@@ -426,7 +384,6 @@
 
     .report-back:hover { color: var(--text); }
 
-    /* Success Screen */
     .report-success {
       background: var(--card-bg);
       border-radius: 22px;
@@ -498,8 +455,6 @@
       font-size: 14px;
       margin-top: 24px;
     }
-
-    /* ═══ انتهى CSS — JS في الجزء 2ب ═══ */
   </style>
 </head>
 <body>
@@ -507,13 +462,11 @@
 <div class="report-page">
   <div class="report-container">
 
-    <!-- Back -->
     <a href="/verify" class="report-back">
       <span>←</span>
       <span>العودة للتحقق</span>
     </a>
 
-    <!-- Header -->
     <div class="report-header">
       <div class="report-header-inner">
         <div class="report-header-icon">🚨</div>
@@ -522,7 +475,6 @@
       </div>
     </div>
 
-    <!-- Choice Cards -->
     <div id="choiceStep">
       <div class="report-choice">
         <div class="choice-card brand" data-type="brand">
@@ -539,12 +491,10 @@
       </div>
     </div>
 
-    <!-- Form Step -->
     <div id="formStep" class="report-form">
 
       <form id="reportForm">
 
-        <!-- Section 1: Product -->
         <div class="form-section">
           <h2 class="form-section-title">
             <span class="form-section-title-num">1</span>
@@ -573,23 +523,19 @@
           </div>
         </div>
 
-        <!-- Section 2: Images -->
         <div class="form-section">
           <h2 class="form-section-title">
             <span class="form-section-title-num">2</span>
             <span>صور المنتج (7 صور)</span>
           </h2>
 
-          <div class="images-grid" id="imagesGrid">
-            <!-- Slots generated by JS -->
-          </div>
+          <div class="images-grid" id="imagesGrid"></div>
 
           <div class="images-hint">
             ⚠️ <b>مهم:</b> 7 صور إلزامية. التقط صورًا واضحة من جميع الزوايا، مع صورة قريبة للملصق.
           </div>
         </div>
 
-        <!-- Section 3: Customer Info -->
         <div class="form-section">
           <h2 class="form-section-title">
             <span class="form-section-title-num">3</span>
@@ -624,7 +570,6 @@
           </div>
         </div>
 
-        <!-- Submit -->
         <button type="submit" id="submitBtn" class="report-submit">
           <span>📤</span>
           <span>إرسال البلاغ</span>
@@ -635,7 +580,6 @@
       <div id="reportMsg" class="report-msg hidden"></div>
     </div>
 
-    <!-- Success Screen -->
     <div id="successStep" class="report-success">
       <div class="report-success-icon">✓</div>
       <h2>تم استلام بلاغك</h2>
@@ -652,26 +596,15 @@
   </div>
 </div>
 
-<!-- ═══ انتهى HTML — JS في الجزء 2ب ═══ -->
-</body>
-</html>
-
 <script>
-// ============================================================
-// REPORT PAGE — JavaScript
-// ============================================================
-
 const SUPABASE_URL = "https://qfpmbbntxyrderjlejql.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m";
 
 const $ = id => document.getElementById(id);
 
-let reportType = null;       // "brand" | "shop"
+let reportType = null;
 let uploadedImages = [null, null, null, null, null, null, null];
 
-// ═══════════════════════════════════════════════════════════
-// WILAYAS
-// ═══════════════════════════════════════════════════════════
 const WILAYAS = [
   "01 - أدرار","02 - الشلف","03 - الأغواط","04 - أم البواقي","05 - باتنة","06 - بجاية","07 - بسكرة","08 - بشار","09 - البليدة","10 - البويرة","11 - تمنراست","12 - تبسة","13 - تلمسان","14 - تيارت","15 - تيزي وزو","16 - الجزائر","17 - الجلفة","18 - جيجل","19 - سطيف","20 - سعيدة","21 - سكيكدة","22 - سيدي بلعباس","23 - عنابة","24 - قالمة","25 - قسنطينة","26 - المدية","27 - مستغانم","28 - المسيلة","29 - معسكر","30 - ورقلة","31 - وهران","32 - البيض","33 - إليزي","34 - برج بوعريريج","35 - بومرداس","36 - الطارف","37 - تندوف","38 - تيسمسيلت","39 - الوادي","40 - خنشلة","41 - سوق أهراس","42 - تيبازة","43 - ميلة","44 - عين الدفلى","45 - النعامة","46 - عين تموشنت","47 - غرداية","48 - غليزان","49 - تيميمون","50 - برج باجي مختار","51 - أولاد جلال","52 - بني عباس","53 - عين صالح","54 - عين قزام","55 - تقرت","56 - جانت","57 - المغير","58 - المنيعة"
 ];
@@ -687,9 +620,6 @@ function fillWilayas() {
   });
 }
 
-// ═══════════════════════════════════════════════════════════
-// IMAGE SLOTS — Labels (7 صور)
-// ═══════════════════════════════════════════════════════════
 const IMAGE_LABELS = [
   { icon: "📷", label: "الأمام" },
   { icon: "📷", label: "الخلف" },
@@ -703,7 +633,6 @@ const IMAGE_LABELS = [
 function buildImageSlots() {
   const grid = $("imagesGrid");
   if (!grid) return;
-
   grid.innerHTML = "";
 
   IMAGE_LABELS.forEach((info, idx) => {
@@ -730,17 +659,9 @@ function handleImageSelect(e, idx) {
   const file = e.target.files && e.target.files[0];
   if (!file) return;
 
-  if (!file.type.startsWith("image/")) {
-    alert("الرجاء اختيار صورة صالحة");
-    return;
-  }
+  if (!file.type.startsWith("image/")) { alert("الرجاء اختيار صورة صالحة"); return; }
+  if (file.size > 5 * 1024 * 1024) { alert("الصورة كبيرة جدًا (الحد 5MB)"); return; }
 
-  if (file.size > 5 * 1024 * 1024) {
-    alert("الصورة كبيرة جدًا (الحد 5MB)");
-    return;
-  }
-
-  // ضغط الصورة
   compressImage(file).then(dataUrl => {
     uploadedImages[idx] = dataUrl;
 
@@ -750,20 +671,17 @@ function handleImageSelect(e, idx) {
     const placeholder = slot.querySelector(".slot-placeholder");
     if (placeholder) placeholder.style.display = "none";
 
-    // احذف الصورة القديمة إن وُجدت
     const oldImg = slot.querySelector("img");
     if (oldImg) oldImg.remove();
 
     const oldRemove = slot.querySelector(".image-slot-remove");
     if (oldRemove) oldRemove.remove();
 
-    // أضف الصورة
     const img = document.createElement("img");
     img.src = dataUrl;
     img.alt = IMAGE_LABELS[idx].label;
     slot.appendChild(img);
 
-    // أضف زر الحذف
     const removeBtn = document.createElement("button");
     removeBtn.type = "button";
     removeBtn.className = "image-slot-remove";
@@ -783,7 +701,6 @@ function handleImageSelect(e, idx) {
 
 function removeImage(idx) {
   uploadedImages[idx] = null;
-
   const slot = document.querySelector(`.image-slot[data-idx="${idx}"]`);
   if (!slot) return;
 
@@ -798,7 +715,6 @@ function removeImage(idx) {
 
   slot.classList.remove("has-image");
 
-  // إعادة تعيين input
   const input = slot.querySelector("input");
   if (input) input.value = "";
 }
@@ -824,11 +740,8 @@ function compressImage(file, maxWidth = 900, quality = 0.5) {
         ctx.drawImage(img, 0, 0, width, height);
 
         try {
-          const dataUrl = canvas.toDataURL("image/jpeg", quality);
-          resolve(dataUrl);
-        } catch (e) {
-          reject(e);
-        }
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        } catch (e) { reject(e); }
       };
       img.onerror = reject;
       img.src = ev.target.result;
@@ -838,23 +751,14 @@ function compressImage(file, maxWidth = 900, quality = 0.5) {
   });
 }
 
-// ═══════════════════════════════════════════════════════════
-// TYPE SELECTION
-// ═══════════════════════════════════════════════════════════
 function initTypeChoice() {
   document.querySelectorAll(".choice-card").forEach(card => {
     card.addEventListener("click", () => {
-      const type = card.dataset.type;
-      reportType = type;
-
-      // Highlight
+      reportType = card.dataset.type;
       document.querySelectorAll(".choice-card").forEach(c => c.classList.remove("active"));
       card.classList.add("active");
 
-      // Short delay for UX
-      setTimeout(() => {
-        showForm(type);
-      }, 200);
+      setTimeout(() => showForm(reportType), 200);
     });
   });
 }
@@ -862,33 +766,17 @@ function initTypeChoice() {
 function showForm(type) {
   const choiceStep = $("choiceStep");
   const formStep = $("formStep");
-
   if (choiceStep) choiceStep.style.display = "none";
   if (formStep) formStep.classList.add("active");
-
-  // قم بتغيير محتوى الزر حسب النوع
-  const submitBtn = $("submitBtn");
-  if (submitBtn && type === "brand") {
-    // في المستقبل: توجيه مختلف
-    submitBtn.innerHTML = `<span>📤</span><span>إرسال البلاغ</span>`;
-  }
-
-  // Scroll to top
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-// ═══════════════════════════════════════════════════════════
-// FORM SUBMIT
-// ═══════════════════════════════════════════════════════════
 async function handleSubmit(e) {
   e.preventDefault();
-
   const msg = $("reportMsg");
   const submitBtn = $("submitBtn");
-
   msg.classList.add("hidden");
 
-  // ─── جمع البيانات ───
   const productCode = $("productCode").value.trim().toUpperCase();
   const productPrice = $("productPrice").value;
   const purchaseLocation = $("purchaseLocation").value.trim();
@@ -897,30 +785,15 @@ async function handleSubmit(e) {
   const customerWilaya = $("customerWilaya").value;
   const notes = $("notes").value.trim();
 
-  // ─── التحقق ───
-  if (!productCode || productCode.length < 6) {
-    return showMsg("الرجاء إدخال الكود السري (6 أحرف على الأقل)", "error");
-  }
-  if (!productPrice || parseFloat(productPrice) <= 0) {
-    return showMsg("الرجاء إدخال سعر المنتج", "error");
-  }
-  if (!customerName || customerName.length < 2) {
-    return showMsg("الرجاء إدخال اسمك الكامل", "error");
-  }
-  if (!customerPhone || customerPhone.length < 6) {
-    return showMsg("الرجاء إدخال رقم هاتفك", "error");
-  }
-  if (!customerWilaya) {
-    return showMsg("الرجاء اختيار الولاية", "error");
-  }
+  if (!productCode || productCode.length < 6) return showMsg("الرجاء إدخال الكود السري (6 أحرف على الأقل)", "error");
+  if (!productPrice || parseFloat(productPrice) <= 0) return showMsg("الرجاء إدخال سعر المنتج", "error");
+  if (!customerName || customerName.length < 2) return showMsg("الرجاء إدخال اسمك الكامل", "error");
+  if (!customerPhone || customerPhone.length < 6) return showMsg("الرجاء إدخال رقم هاتفك", "error");
+  if (!customerWilaya) return showMsg("الرجاء اختيار الولاية", "error");
 
-  // ─── التحقق من الصور ───
   const filledImages = uploadedImages.filter(img => img !== null);
-  if (filledImages.length < 7) {
-    return showMsg(`الرجاء إضافة 7 صور كاملة (أضفت ${filledImages.length}/7)`, "error");
-  }
+  if (filledImages.length < 7) return showMsg(`الرجاء إضافة 7 صور كاملة (أضفت ${filledImages.length}/7)`, "error");
 
-  // ─── تجهيز الطلب ───
   submitBtn.disabled = true;
   submitBtn.innerHTML = `<span>⏳</span><span>جاري الإرسال...</span>`;
 
@@ -943,24 +816,19 @@ async function handleSubmit(e) {
     const data = await res.json();
 
     if (data.status === "OK") {
-      // نجاح
       $("formStep").classList.remove("active");
       $("successStep").classList.add("active");
 
-      // عرض رقم مرجعي
       const ref = $("refNumber");
       if (ref && data.complaint_id) {
         ref.textContent = data.complaint_id.slice(0, 8).toUpperCase();
       }
-
       window.scrollTo({ top: 0, behavior: "smooth" });
-
     } else {
       showMsg(data.message || "فشل إرسال البلاغ", "error");
       submitBtn.disabled = false;
       submitBtn.innerHTML = `<span>📤</span><span>إرسال البلاغ</span>`;
     }
-
   } catch (err) {
     console.error("Submit error:", err);
     showMsg("خطأ في الاتصال. حاول مجددًا.", "error");
@@ -977,9 +845,6 @@ function showMsg(text, type) {
   msg.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
-// ═══════════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════════
 function init() {
   fillWilayas();
   buildImageSlots();
@@ -988,21 +853,20 @@ function init() {
   const form = $("reportForm");
   if (form) form.addEventListener("submit", handleSubmit);
 
-  // اقرأ ?type= من الرابط
   const params = new URLSearchParams(location.search);
   const typeParam = params.get("type");
   if (typeParam === "shop" || typeParam === "brand") {
     const card = document.querySelector(`.choice-card[data-type="${typeParam}"]`);
-    if (card) {
-      setTimeout(() => card.click(), 300);
-    }
+    if (card) setTimeout(() => card.click(), 300);
   }
 }
 
-// تشغيل
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", init);
 } else {
   init();
 }
 </script>
+
+</body>
+</html>
