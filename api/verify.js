@@ -66,7 +66,7 @@ export default async function handler(req, res) {
 
     // Appeler verify_code_v2
     const rpcResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/rpc/verify_code_v2`,
+      `${SUPABASE_URL}/rest/v1/rpc/verify_code_v3`,
       {
         method: 'POST',
         headers: {
