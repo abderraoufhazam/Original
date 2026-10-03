@@ -1,7 +1,7 @@
 // service-worker.js
-// Original — Service Worker v16
+// Original — Service Worker v18
 
-const CACHE_VERSION = "v17";
+const CACHE_VERSION = "v18";
 const CACHE_NAME = `original-${CACHE_VERSION}`;
 const OFFLINE_CACHE = `original-offline-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `original-runtime-${CACHE_VERSION}`;
@@ -21,6 +21,7 @@ const CORE_ASSETS = [
   "/brand.html",
   "/brand",
   "/shop-dashboard.html",
+  "/shop-terms.html",
   "/style.css",
   "/app.js",
   "/i18n.js",
@@ -179,7 +180,6 @@ self.addEventListener("notificationclick", async (event) => {
 
   for (const client of clientList) {
     if (client.url.includes(self.location.origin) && "focus" in client) {
-      // ✅ await للتنقل
       if (client.navigate) {
         await client.navigate(url);
       }
