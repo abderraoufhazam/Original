@@ -41,6 +41,8 @@ let currentShopsTab = "pending";
 let allPendingShops = [];
 let allActiveShops = [];
 let allBannedShops = [];
+let currentComplaintsFilter = "pending";
+let allComplaints = [];
 
 // ============================================================
 // HELPERS
@@ -147,6 +149,7 @@ function showPanel(name) {
   if (name === "messages") loadMessages();
   if (name === "brands") loadBrands();
   if (name === "shops") loadShops();
+  if (name === "shop-complaints") loadShopComplaints();
   if (name === "visitors") loadVisitors();
   if (name === "adv-search") loadAdvancedSearch();
   if (name === "faq") loadFAQ();
@@ -1657,6 +1660,276 @@ async function checkBatchShopStatus(lot) {
 }
 
 // ============================================================
+// 🚨 SHOP COMPLAINTS (شكاوى المحلات)
+// ============================================================
+async function loadShopComplaints() {
+  const container = $("complaintsList");
+  const statsBox = $("complaintsStats");
+  if (!container) return;
+
+  container.innerHTML = `<p class="muted">Chargement...</p>`;
+  if (statsBox) statsBox.innerHTML = "";
+
+  try {
+    // جلب كل الشكاوى
+    const { data, error } = await sb
+      .from("shop_complaints")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(500);
+
+    if (error) throw error;
+
+    allComplaints = data || [];
+
+    // الإحصائيات
+    const stats = {
+      total: allComplaints.length,
+      pending: allComplaints.filter(c => c.status === "PENDING").length,
+      reviewing: allComplaints.filter(c => c.status === "REVIEWING").length,
+      verified: allComplaints.filter(c => c.status === "VERIFIED" || c.status === "RESOLVED").length,
+      rejected: allComplaints.filter(c => c.status === "REJECTED").length
+    };
+
+    if (statsBox) {
+      statsBox.innerHTML = `
+        <div class="stat-card"><div class="stat-value">${stats.total}</div><div class="stat-label">الإجمالي</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--warning)">${stats.pending}</div><div class="stat-label">⏳ معلّقة</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--primary)">${stats.reviewing}</div><div class="stat-label">🔍 قيد المراجعة</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--success)">${stats.verified}</div><div class="stat-label">✅ مؤكدة</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--danger)">${stats.rejected}</div><div class="stat-label">❌ مرفوضة</div></div>`;
+    }
+
+    // Badge
+    const badge = $("complaintsBadge");
+    if (badge) {
+      if (stats.pending > 0) {
+        badge.textContent = stats.pending;
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+    }
+
+    renderShopComplaints();
+  } catch (err) {
+    console.error("loadShopComplaints error:", err);
+    container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(err.message)}</p>`;
+  }
+}
+
+function renderShopComplaints() {
+  const container = $("complaintsList");
+  if (!container) return;
+
+  const search = ($("complaintsSearch")?.value || "").toLowerCase().trim();
+
+  // فلترة حسب الـ tab
+  let list = [];
+  if (currentComplaintsFilter === "pending") list = allComplaints.filter(c => c.status === "PENDING");
+  else if (currentComplaintsFilter === "reviewing") list = allComplaints.filter(c => c.status === "REVIEWING");
+  else if (currentComplaintsFilter === "verified") list = allComplaints.filter(c => c.status === "VERIFIED" || c.status === "RESOLVED");
+  else if (currentComplaintsFilter === "rejected") list = allComplaints.filter(c => c.status === "REJECTED");
+  else list = allComplaints;
+
+  // بحث
+  if (search) {
+    list = list.filter(c => {
+      const code = (c.product_code || "").toLowerCase();
+      const name = (c.customer_name || "").toLowerCase();
+      const shop = (c.shop_name || "").toLowerCase();
+      const phone = (c.customer_phone || "").toLowerCase();
+      return code.includes(search) || name.includes(search) || shop.includes(search) || phone.includes(search);
+    });
+  }
+
+  if (list.length === 0) {
+    container.innerHTML = `<p class="muted" style="text-align:center;padding:40px 0">لا توجد شكاوى في هذه الفئة</p>`;
+    return;
+  }
+
+  let html = "";
+  list.forEach(c => {
+    const date = c.created_at ? new Date(c.created_at).toLocaleString("fr-FR") : "—";
+    const statusMap = {
+      PENDING: { cls: "warning", label: "⏳ معلّقة" },
+      REVIEWING: { cls: "success", label: "🔍 قيد المراجعة" },
+      VERIFIED: { cls: "success", label: "✅ مؤكدة" },
+      RESOLVED: { cls: "success", label: "✓ تم الحل" },
+      REJECTED: { cls: "danger", label: "❌ مرفوضة" }
+    };
+    const st = statusMap[c.status] || { cls: "warning", label: c.status };
+
+    // مصغرات الصور
+    const images = c.images || [];
+    const imgCount = images.length;
+    const firstImg = images[0] ? `<img src="${escapeHtml(images[0])}" alt="" style="width:100%;height:120px;object-fit:cover;border-radius:10px;">` : "";
+
+    html += `
+      <div class="log-row log-${st.cls}" style="padding:18px">
+        <div class="log-top">
+          <span class="log-result log-result-${st.cls}">${st.label}</span>
+          <span class="log-date">${escapeHtml(date)}</span>
+        </div>
+
+        <div style="display:flex;gap:14px;margin-top:12px;flex-wrap:wrap;">
+          ${firstImg ? `<div style="flex:0 0 140px;max-width:140px;">${firstImg}</div>` : ""}
+          <div style="flex:1;min-width:200px;">
+            <div style="font-weight:900;font-size:15px;margin-bottom:6px">🏪 ${escapeHtml(c.shop_name || "غير مرتبط")}</div>
+            <div style="font-size:12.5px;margin-bottom:4px"><b>📦 الكود:</b> <span style="font-family:monospace">${escapeHtml(c.product_code || "—")}</span></div>
+            <div style="font-size:12.5px;margin-bottom:4px"><b>👤 الزبون:</b> ${escapeHtml(c.customer_name || "—")}</div>
+            <div style="font-size:12.5px;margin-bottom:4px"><b>📱 الهاتف:</b> ${escapeHtml(c.customer_phone || "—")}</div>
+            <div style="font-size:12.5px;margin-bottom:4px"><b>📍 الولاية:</b> ${escapeHtml(c.customer_wilaya || "—")}</div>
+            <div style="font-size:12.5px"><b>💰 السعر:</b> ${formatMoney(c.product_price || 0)}</div>
+          </div>
+        </div>
+
+        ${c.purchase_location ? `<div style="font-size:12px;color:var(--text-secondary);margin-top:10px;padding:8px 12px;background:var(--bg-secondary);border-radius:8px">📍 مكان الشراء: ${escapeHtml(c.purchase_location)}</div>` : ""}
+
+        ${c.notes ? `<div style="font-size:12px;color:var(--text-secondary);margin-top:8px;padding:8px 12px;background:var(--bg-secondary);border-radius:8px">💬 ${escapeHtml(c.notes)}</div>` : ""}
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
+          <button onclick="viewComplaint('${c.id}')" class="btn btn-primary" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">👁 عرض</button>
+          ${c.status === "PENDING" ? `
+            <button onclick="updateComplaintStatus('${c.id}','REVIEWING')" class="btn btn-ghost" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">🔍 مراجعة</button>
+          ` : ""}
+          ${c.status !== "VERIFIED" && c.status !== "REJECTED" ? `
+            <button onclick="updateComplaintStatus('${c.id}','VERIFIED')" class="btn btn-success" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">✅ تأكيد</button>
+            <button onclick="updateComplaintStatus('${c.id}','REJECTED')" class="btn btn-danger" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">❌ رفض</button>
+          ` : ""}
+        </div>
+      </div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+// ─── عرض تفاصيل شكوى ───
+window.viewComplaint = async function(id) {
+  const complaint = allComplaints.find(c => c.id === id);
+  if (!complaint) {
+    window.toast("الشكوى غير موجودة", "error");
+    return;
+  }
+
+  const w = window.open("", "_blank");
+  const images = complaint.images || [];
+  const date = complaint.created_at ? new Date(complaint.created_at).toLocaleString("fr-FR") : "—";
+
+  const imagesHtml = images.map((img, i) => `
+    <div style="margin-bottom:16px;">
+      <div style="font-size:11px;font-weight:800;color:#64748b;margin-bottom:6px;">صورة ${i + 1}</div>
+      <img src="${escapeHtml(img)}" style="max-width:100%;border-radius:12px;border:1px solid #e2e8f0;cursor:pointer;" onclick="window.open(this.src,'_blank')">
+    </div>
+  `).join("");
+
+  w.document.write(`<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>شكوى — ${escapeHtml(complaint.product_code || id.slice(0,8))}</title>
+<style>
+  @page { margin: 15mm; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, Arial, sans-serif; padding: 20px; color: #0f172a; max-width: 900px; margin: 0 auto; background: #f8fafc; }
+  .toolbar { background: #0f172a; color: #fff; padding: 12px; text-align: center; border-radius: 8px; margin-bottom: 24px; position: sticky; top: 0; z-index: 10; }
+  .toolbar button { background: #16a34a; color: #fff; border: 0; padding: 10px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
+  .card { background: #fff; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+  h1 { font-size: 22px; margin: 0 0 8px; }
+  h2 { font-size: 15px; margin: 0 0 14px; color: #64748b; letter-spacing: 1px; text-transform: uppercase; }
+  .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+  .info-row:last-child { border-bottom: 0; }
+  .info-row b { color: #64748b; font-weight: 700; }
+  .info-row span { font-weight: 800; }
+  @media print { .toolbar { display: none; } body { background: #fff; padding: 0; } .card { box-shadow: none; } }
+</style>
+</head>
+<body>
+  <div class="toolbar">
+    <button onclick="window.print()">🖨 طباعة</button>
+  </div>
+
+  <div class="card">
+    <h1>🚨 شكوى على محل</h1>
+    <div style="color:#64748b;font-size:13px;margin-bottom:20px;">${escapeHtml(date)}</div>
+
+    <h2>معلومات المحل</h2>
+    <div class="info-row"><b>🏪 المحل:</b><span>${escapeHtml(complaint.shop_name || "—")}</span></div>
+    <div class="info-row"><b>📦 الكود:</b><span style="font-family:monospace">${escapeHtml(complaint.product_code || "—")}</span></div>
+    <div class="info-row"><b>💰 السعر:</b><span>${complaint.product_price || 0} دج</span></div>
+    ${complaint.purchase_location ? `<div class="info-row"><b>📍 مكان الشراء:</b><span>${escapeHtml(complaint.purchase_location)}</span></div>` : ""}
+  </div>
+
+  <div class="card">
+    <h2>معلومات الزبون</h2>
+    <div class="info-row"><b>👤 الاسم:</b><span>${escapeHtml(complaint.customer_name || "—")}</span></div>
+    <div class="info-row"><b>📱 الهاتف:</b><span>${escapeHtml(complaint.customer_phone || "—")}</span></div>
+    <div class="info-row"><b>📍 الولاية:</b><span>${escapeHtml(complaint.customer_wilaya || "—")}</span></div>
+    ${complaint.notes ? `<div class="info-row"><b>💬 ملاحظات:</b><span>${escapeHtml(complaint.notes)}</span></div>` : ""}
+  </div>
+
+  <div class="card">
+    <h2>📸 صور المنتج (${images.length})</h2>
+    ${imagesHtml || '<p style="color:#94a3b8;text-align:center;">لا توجد صور</p>'}
+  </div>
+</body>
+</html>`);
+  w.document.close();
+};
+
+// ─── تحديث حالة الشكوى ───
+window.updateComplaintStatus = async function(id, newStatus) {
+  const statusLabels = {
+    REVIEWING: "قيد المراجعة",
+    VERIFIED: "مؤكدة",
+    REJECTED: "مرفوضة",
+    RESOLVED: "تم الحل"
+  };
+
+  if (!confirm(`تغيير الحالة إلى "${statusLabels[newStatus] || newStatus}"؟`)) return;
+
+  let adminNotes = null;
+  let deductAmount = 0;
+
+  // إذا كانت مؤكدة، اسأل عن خصم من العربون
+  if (newStatus === "VERIFIED") {
+    const complaint = allComplaints.find(c => c.id === id);
+    adminNotes = prompt("ملاحظات (اختياري):") || null;
+
+    if (complaint && complaint.shop_id) {
+      const deductStr = prompt(
+        `💰 خصم من عربون المحل (اختياري)\n\nالسعر المدفوع: ${complaint.product_price || 0} دج\nاقتراح (50%): ${Math.round((complaint.product_price || 0) * 0.5)} دج\n\nأدخل المبلغ أو 0 لعدم الخصم:`,
+        "0"
+      );
+      deductAmount = parseFloat(deductStr) || 0;
+    }
+  } else if (newStatus === "REJECTED") {
+    adminNotes = prompt("سبب الرفض (اختياري):") || null;
+  }
+
+  try {
+    const { data, error } = await sb.rpc("admin_update_complaint", {
+      p_complaint_id: id,
+      p_new_status: newStatus,
+      p_admin_notes: adminNotes,
+      p_deduct_amount: deductAmount
+    });
+
+    if (error) throw error;
+    if (data.status !== "OK") {
+      window.toast("خطأ: " + (data.message || ""), "error");
+      return;
+    }
+
+    window.toast(`✅ تم تحديث الحالة${deductAmount > 0 ? ` + خصم ${deductAmount} دج` : ""}`, "success");
+    loadShopComplaints();
+  } catch (e) {
+    console.error("updateComplaintStatus error:", e);
+    window.toast("خطأ: " + e.message, "error");
+  }
+};
+
+// ============================================================
 // PRINT (Labels + Invoice)
 // ============================================================
 function formatDisplayCode(code) {
@@ -1845,6 +2118,18 @@ if (_rfb) _rfb.onclick = () => loadFeedback();
 const _rbb = $("refreshBrandsBtn");
 if (_rbb) _rbb.onclick = () => loadBrands();
 
+const _rcb = $("refreshComplaintsBtn");
+if (_rcb) _rcb.onclick = () => loadShopComplaints();
+
+const _csi = $("complaintsSearch");
+if (_csi) {
+  let _cTimer;
+  _csi.addEventListener("input", () => {
+    clearTimeout(_cTimer);
+    _cTimer = setTimeout(renderShopComplaints, 300);
+  });
+}
+
 const _rsb = $("refreshShopsBtn");
 if (_rsb) _rsb.onclick = () => loadShops();
 
@@ -1890,6 +2175,7 @@ document.querySelectorAll(".tabs .tab").forEach(t => {
     else if (parent.id === "visitorTabs") { currentVisitorFilter = t.dataset.tab; loadVisitors(); }
     else if (parent.id === "fakesTabs") { currentFakesFilter = t.dataset.tab; loadFakes(); }
     else if (parent.id === "shopsTabs") { currentShopsTab = t.dataset.tab; renderShopsList(); }
+    else if (parent.id === "complaintsTabs") { currentComplaintsFilter = t.dataset.tab; renderShopComplaints(); }
   });
 });
 
