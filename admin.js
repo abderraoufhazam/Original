@@ -43,6 +43,8 @@ let allActiveShops = [];
 let allBannedShops = [];
 let currentComplaintsFilter = "pending";
 let allComplaints = [];
+let currentComplaintsWilaya = "";
+let currentComplaintsDateRange = "all";
 
 // ============================================================
 // HELPERS
@@ -1733,15 +1735,27 @@ function renderShopComplaints() {
   else list = allComplaints;
 
   // بحث
-  if (search) {
-    list = list.filter(c => {
-      const code = (c.product_code || "").toLowerCase();
-      const name = (c.customer_name || "").toLowerCase();
-      const shop = (c.shop_name || "").toLowerCase();
-      const phone = (c.customer_phone || "").toLowerCase();
-      return code.includes(search) || name.includes(search) || shop.includes(search) || phone.includes(search);
-    });
-  }
+if (search) {
+  list = list.filter(c => {
+    const code = (c.product_code || "").toLowerCase();
+    const name = (c.customer_name || "").toLowerCase();
+    const shop = (c.shop_name || "").toLowerCase();
+    const phone = (c.customer_phone || "").toLowerCase();
+    return code.includes(search) || name.includes(search) || shop.includes(search) || phone.includes(search);
+  });
+}
+
+// فلتر الولاية
+if (currentComplaintsWilaya) {
+  list = list.filter(c => c.customer_wilaya === currentComplaintsWilaya);
+}
+
+// فلتر التاريخ
+if (currentComplaintsDateRange !== "all") {
+  const days = parseInt(currentComplaintsDateRange, 10);
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  list = list.filter(c => c.created_at && new Date(c.created_at) >= since);
+}
 
   if (list.length === 0) {
     container.innerHTML = `<p class="muted" style="text-align:center;padding:40px 0">لا توجد شكاوى في هذه الفئة</p>`;
@@ -1793,11 +1807,12 @@ function renderShopComplaints() {
           ${c.status === "PENDING" ? `
             <button onclick="updateComplaintStatus('${c.id}','REVIEWING')" class="btn btn-ghost" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">🔍 مراجعة</button>
           ` : ""}
-          ${c.status !== "VERIFIED" && c.status !== "REJECTED" ? `
-            <button onclick="updateComplaintStatus('${c.id}','VERIFIED')" class="btn btn-success" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">✅ تأكيد</button>
-            <button onclick="updateComplaintStatus('${c.id}','REJECTED')" class="btn btn-danger" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">❌ رفض</button>
-          ` : ""}
-        </div>
+            ${c.status !== "VERIFIED" && c.status !== "REJECTED" ? `
+    <button onclick="updateComplaintStatus('${c.id}','VERIFIED')" class="btn btn-success" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">✅ تأكيد</button>
+    <button onclick="updateComplaintStatus('${c.id}','REJECTED')" class="btn btn-danger" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">❌ رفض</button>
+  ` : ""}
+  <button onclick="deleteComplaint('${c.id}')" class="btn btn-ghost" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px;background:var(--danger-soft);color:var(--danger)">🗑️ حذف</button>
+</div>
       </div>`;
   });
 
