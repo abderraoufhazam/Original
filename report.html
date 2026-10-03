@@ -300,7 +300,15 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
 
-    .image-slot input[type="file"] { display: none; }
+    .image-slot input[type="file"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 1;
+}
 
     .images-hint {
       margin-top: 12px;
