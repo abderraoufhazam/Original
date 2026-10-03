@@ -1419,6 +1419,33 @@
             <button id="activateBatchBtn" class="btn btn-success" style="flex:1;min-width:140px;">✅ ACTIVER LA BATCH</button>
             <button id="disableBatchBtn" class="btn btn-danger" style="flex:1;min-width:140px;">🛑 DÉSACTIVER</button>
           </div>
+         <!-- 🏪 إعدادات دفعة المحل -->
+<div id="shopBatchBox" class="hidden" style="margin-top:16px;padding:18px;background:var(--bg-secondary);border:2px solid var(--primary);border-radius:14px;text-align:right;">
+
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+    <input type="checkbox" id="shopBatchToggle" style="width:20px;height:20px;accent-color:var(--primary);cursor:pointer;margin:0;">
+    <label for="shopBatchToggle" style="font-size:14px;font-weight:800;color:var(--text);cursor:pointer;margin:0;">
+      🏪 هذه الدفعة لمحل موثوق
+    </label>
+  </div>
+
+  <div id="shopBatchFields" class="hidden">
+    <label style="display:block;font-size:11px;font-weight:800;color:var(--text-secondary);margin-bottom:6px;letter-spacing:1px;">اختر المحل *</label>
+    <select id="shopBatchSelect" style="margin-bottom:12px;width:100%;">
+      <option value="">-- اختر المحل --</option>
+    </select>
+
+    <label style="display:block;font-size:11px;font-weight:800;color:var(--text-secondary);margin-bottom:6px;letter-spacing:1px;">💰 السعر لكل منتج (دج) *</label>
+    <input id="shopBatchPrice" type="number" min="0" step="50" placeholder="مثال: 5000" style="margin-bottom:14px;width:100%;">
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button id="applyShopBatchBtn" class="btn btn-primary" style="flex:1;min-width:130px;">✅ تطبيق على كل الأكواد</button>
+      <button id="removeShopBatchBtn" class="btn btn-ghost" style="flex:1;min-width:130px;">↺ إلغاء الربط</button>
+    </div>
+
+    <div id="shopBatchResult" class="result hidden" style="margin-top:12px;"></div>
+  </div>
+</div>
           <button id="printLotBtn" class="btn btn-success btn-block hidden" style="margin-top:14px;">🖨 IMPRIMER CE LOT</button>
           <button id="exportLotCodesBtn" class="btn btn-ghost btn-block hidden" style="margin-top:10px;">📊 EXPORTER EN EXCEL</button>
         </div>
