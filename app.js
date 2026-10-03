@@ -345,8 +345,68 @@ function renderResult(data) {
   if (!data) { result.className = "result hidden"; return; }
 
   if (data.status === "ORIGINAL") {
-  const p = data.product || {};
-  window.__lastVerifiedProduct = {
+
+    // ═══════════════════════════════════════════════════════════
+    // 🏪 بطاقة المحل — للمحلات الموثوقة
+    // ═══════════════════════════════════════════════════════════
+    if (data.is_shop_lot === true) {
+      window.__lastVerifiedProduct = null;
+
+      show("success", `
+        <div class="product-card" style="border-color:#22c55e;">
+          <div class="card-badge" style="background:linear-gradient(135deg,#0f172a,#1e293b);">
+            <span class="card-badge-icon">🛡️</span>
+            <span>منتج من محل موثوق</span>
+          </div>
+
+          <div class="card-header" style="margin-top:14px;">
+            <h2 class="card-brand" style="color:#16a34a;font-size:22px;">
+              ✅ منتج أصلي
+            </h2>
+            <p class="card-product" style="font-size:14px;line-height:1.7;margin-top:10px;">
+              هذا المنتج يباع في
+              <b style="color:#16a34a;">محل موثوق من OriginalDz</b>
+            </p>
+          </div>
+
+          <div style="background:linear-gradient(160deg,#fef3c7,#fde68a);border:2px solid #f59e0b;border-radius:16px;padding:18px 16px;margin:18px 0;text-align:right;">
+            <div style="font-size:14px;font-weight:900;color:#92400e;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+              <span>⚠️</span>
+              <span>في حالة كان المنتج مقلدًا:</span>
+            </div>
+            <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;">
+              <li style="font-size:13.5px;color:#78350f;line-height:1.6;padding-right:22px;position:relative;">
+                <span style="position:absolute;right:0;top:0;">•</span>
+                <b>أبلغنا فورًا</b> عبر الزر أدناه
+              </li>
+              <li style="font-size:13.5px;color:#78350f;line-height:1.6;padding-right:22px;position:relative;">
+                <span style="position:absolute;right:0;top:0;">•</span>
+                سيتم <b>تعويضك بـ 50%</b> من سعر المنتج
+              </li>
+              <li style="font-size:11.5px;color:#a16207;line-height:1.5;margin-top:6px;font-style:italic;padding-right:22px;">
+                (بعد تأكدنا من أن المنتج مقلد فعلًا)
+              </li>
+            </ul>
+          </div>
+
+          <div class="card-actions" style="margin-top:16px;">
+            <button type="button" class="card-action-btn primary" onclick="document.getElementById('reportBtn').click()">
+              <span>🚨</span>
+              <span>أبلغنا الآن</span>
+            </button>
+          </div>
+        </div>
+      `);
+
+      reportSection.classList.remove("hidden");
+      return;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // 🏢 بطاقة الماركة (كما هي — لا نلمسها)
+    // ═══════════════════════════════════════════════════════════
+    const p = data.product || {};
+    window.__lastVerifiedProduct = {
     brand: p.brand || null,
     product_name: p.product_name || null,
     reference: p.reference || null,
