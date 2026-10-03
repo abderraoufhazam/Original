@@ -1553,6 +1553,69 @@ window.viewShopDetails = async function(userId) {
 };
 
 // ============================================================
+// 🏪 SHOP BATCH — ربط دفعة بمحل
+// ============================================================
+async function loadShopsForSelect() {
+  const sel = $("shopBatchSelect");
+  if (!sel) return;
+
+  try {
+    const { data, error } = await sb
+      .from("verified_shops")
+      .select("id, shop_name, status")
+      .eq("status", "ACTIVE")
+      .order("shop_name");
+
+    if (error) throw error;
+
+    let html = `<option value="">-- اختر المحل --</option>`;
+    (data || []).forEach(s => {
+      html += `<option value="${s.id}">🏪 ${escapeHtml(s.shop_name)}</option>`;
+    });
+    sel.innerHTML = html;
+  } catch (e) {
+    console.warn("loadShopsForSelect error:", e);
+  }
+}
+
+async function checkBatchShopStatus(lot) {
+  try {
+    const { data, error } = await sb
+      .from("qr_codes")
+      .select("is_shop_lot, shop_name, product_price")
+      .eq("lot", lot)
+      .limit(1)
+      .single();
+
+    if (error || !data) return;
+
+    const toggle = $("shopBatchToggle");
+    const fields = $("shopBatchFields");
+    const price = $("shopBatchPrice");
+    const sel = $("shopBatchSelect");
+
+    if (!toggle || !fields) return;
+
+    if (data.is_shop_lot === true) {
+      toggle.checked = true;
+      fields.classList.remove("hidden");
+      if (price) price.value = data.product_price || "";
+      await loadShopsForSelect();
+      if (sel && data.shop_name) {
+        const option = Array.from(sel.options).find(o => o.text.includes(data.shop_name));
+        if (option) sel.value = option.value;
+      }
+    } else {
+      toggle.checked = false;
+      fields.classList.add("hidden");
+      if (price) price.value = "";
+    }
+  } catch (e) {
+    console.warn("checkBatchShopStatus:", e);
+  }
+}
+
+// ============================================================
 // PRINT (Labels + Invoice)
 // ============================================================
 function formatDisplayCode(code) {
@@ -1922,9 +1985,14 @@ if (_llb) _llb.onclick = async () => {
   info.className = "result success";
   info.innerHTML = `<h2>${data.length} code(s)</h2>`;
 
-  showBatchStatus(data.map(row => row.secret_status));
+    showBatchStatus(data.map(row => row.secret_status));
   const plb = $("printLotBtn"); if (plb) plb.classList.remove("hidden");
   const eb = $("exportLotCodesBtn"); if (eb) eb.classList.remove("hidden");
+
+  // 🏪 إظهار قسم المحل
+  const shopBox = $("shopBatchBox");
+  if (shopBox) shopBox.classList.remove("hidden");
+  checkBatchShopStatus(lot);
 };
 
 function showBatchStatus(statuses) {
@@ -2036,6 +2104,91 @@ if (_elcb) _elcb.onclick = async () => {
 // ============================================================
 // ADV SEARCH buttons
 // ============================================================
+// 🏪 Shop batch handlers
+const _sbt = $("shopBatchToggle");
+if (_sbt) {
+  _sbt.addEventListener("change", async () => {
+    const fields = $("shopBatchFields");
+    if (!fields) return;
+    if (_sbt.checked) {
+      fields.classList.remove("hidden");
+      await loadShopsForSelect();
+    } else {
+      fields.classList.add("hidden");
+    }
+  });
+}
+
+const _asb = $("applyShopBatchBtn");
+if (_asb) {
+  _asb.onclick = async () => {
+    if (!loadedLot) { window.toast("حمّل دفعة أولًا", "error"); return; }
+    const shopId = $("shopBatchSelect")?.value;
+    const price = parseFloat($("shopBatchPrice")?.value || 0);
+
+    if (!shopId) { window.toast("اختر المحل", "error"); return; }
+    if (!price || price <= 0) { window.toast("أدخل سعرًا صحيحًا", "error"); return; }
+
+    _asb.disabled = true;
+    _asb.textContent = "⏳...";
+
+    try {
+      const { data, error } = await sb.rpc("admin_mark_shop_batch", {
+        p_lot: loadedLot,
+        p_shop_id: shopId,
+        p_product_price: price
+      });
+
+      if (error) throw error;
+      if (data.status !== "OK") {
+        window.toast("خطأ: " + (data.message || ""), "error");
+        return;
+      }
+
+      window.toast(`✅ تم الربط: ${data.updated} كود → ${data.shop_name}`, "success");
+
+      const resBox = $("shopBatchResult");
+      if (resBox) {
+        resBox.className = "result success";
+        resBox.innerHTML = `<h2>✅ تم الربط</h2><p>${data.updated} كود → ${escapeHtml(data.shop_name)}</p><p>السعر: ${formatMoney(data.product_price)}</p>`;
+      }
+    } catch (e) {
+      window.toast("خطأ: " + e.message, "error");
+    } finally {
+      _asb.disabled = false;
+      _asb.textContent = "✅ تطبيق على كل الأكواد";
+    }
+  };
+}
+
+const _rsb2 = $("removeShopBatchBtn");
+if (_rsb2) {
+  _rsb2.onclick = async () => {
+    if (!loadedLot) return;
+    if (!confirm("إلغاء ربط هذه الدفعة بالمحل؟")) return;
+
+    _rsb2.disabled = true;
+    try {
+      const { data, error } = await sb.rpc("admin_unmark_shop_batch", {
+        p_lot: loadedLot
+      });
+
+      if (error) throw error;
+      if (data.status !== "OK") {
+        window.toast("خطأ: " + (data.message || ""), "error");
+        return;
+      }
+
+      window.toast(`✅ أُلغي الربط عن ${data.updated} كود`, "info");
+      if ($("shopBatchToggle")) $("shopBatchToggle").checked = false;
+      if ($("shopBatchFields")) $("shopBatchFields").classList.add("hidden");
+    } catch (e) {
+      window.toast("خطأ: " + e.message, "error");
+    } finally {
+      _rsb2.disabled = false;
+    }
+  };
+}
 const _advBtn = $("advSearchBtn");
 if (_advBtn) _advBtn.onclick = () => loadAdvancedSearch();
 
