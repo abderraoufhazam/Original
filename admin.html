@@ -1642,6 +1642,30 @@
 
   <div id="shopsList"></div>
 </section>
+
+      <!-- ═══════════════ SHOP COMPLAINTS (شكاوى المحلات) ═══════════════ -->
+<section class="panel" id="panel-shop-complaints">
+  <div class="panel-header">
+    <h1 class="panel-title"><span class="panel-title-icon">🚨</span><span>شكاوى المحلات</span></h1>
+    <p class="panel-sub">بلاغات التقليد على المحلات الموثوقة</p>
+  </div>
+
+  <div id="complaintsStats" class="stats-grid"></div>
+
+  <div class="tabs" id="complaintsTabs" style="margin:22px 0 16px;">
+    <button class="tab active" data-tab="pending">⏳ معلّقة</button>
+    <button class="tab" data-tab="reviewing">🔍 قيد المراجعة</button>
+    <button class="tab" data-tab="verified">✅ مؤكدة</button>
+    <button class="tab" data-tab="rejected">❌ مرفوضة</button>
+  </div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+    <button id="refreshComplaintsBtn" class="btn btn-ghost" style="flex:1;min-width:140px;">🔄 تحديث</button>
+    <input id="complaintsSearch" placeholder="🔍 بحث بالكود أو الاسم..." style="flex:2;min-width:180px;">
+  </div>
+
+  <div id="complaintsList"></div>
+</section>
       
       <!-- VISITORS -->
       <section class="panel" id="panel-visitors">
