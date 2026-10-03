@@ -86,557 +86,322 @@
     button { font-family: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
     a { color: inherit; text-decoration: none; }
 
-    /* ============================================================ */
-    /* LOGIN PAGE */
-    /* ============================================================ */
+    /* LOGIN */
     #loginPage {
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       background: linear-gradient(135deg, #0a0e1a 0%, #151b2d 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      z-index: 1000;
-      overflow-y: auto;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px; z-index: 1000; overflow-y: auto;
     }
-
     #loginPage.hidden { display: none; }
 
     .login-card {
       background: var(--card);
       border-radius: 24px;
       padding: 44px 36px 36px;
-      width: 100%;
-      max-width: 420px;
+      width: 100%; max-width: 420px;
       box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
-      position: relative;
-      overflow: hidden;
+      position: relative; overflow: hidden;
       border: 1px solid rgba(255, 255, 255, 0.05);
     }
-
     .login-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
       height: 4px;
       background: linear-gradient(90deg, var(--primary), var(--gold), var(--primary-light));
     }
-
     .login-logo {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 20px;
-      display: block;
-      border-radius: 20px;
+      width: 80px; height: 80px; margin: 0 auto 20px;
+      display: block; border-radius: 20px;
       box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
     }
-
     .login-brand {
-      text-align: center;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 3px;
-      color: var(--gold);
-      margin-bottom: 6px;
-      text-transform: uppercase;
+      text-align: center; font-size: 11px; font-weight: 800;
+      letter-spacing: 3px; color: var(--gold);
+      margin-bottom: 6px; text-transform: uppercase;
     }
-
     .login-title {
-      font-size: 24px;
-      font-weight: 800;
-      text-align: center;
-      color: var(--text);
-      margin: 0 0 6px;
-      letter-spacing: -0.6px;
+      font-size: 24px; font-weight: 800; text-align: center;
+      color: var(--text); margin: 0 0 6px; letter-spacing: -0.6px;
     }
-
     .login-sub {
-      text-align: center;
-      color: var(--text-secondary);
-      font-size: 13px;
-      margin-bottom: 28px;
+      text-align: center; color: var(--text-secondary);
+      font-size: 13px; margin-bottom: 28px;
     }
-
     #loginForm { display: flex; flex-direction: column; gap: 12px; }
-
     #loginForm input {
-      width: 100%;
-      padding: 14px 16px;
+      width: 100%; padding: 14px 16px;
       background: var(--bg-secondary);
       border: 1.5px solid var(--border);
-      border-radius: 12px;
-      font-size: 14px;
-      font-family: inherit;
-      color: var(--text);
-      outline: none;
-      transition: all 200ms;
+      border-radius: 12px; font-size: 14px;
+      font-family: inherit; color: var(--text);
+      outline: none; transition: all 200ms;
     }
-
     #loginForm input:focus {
       border-color: var(--primary);
       background: var(--card);
       box-shadow: 0 0 0 4px var(--primary-soft);
     }
-
     #loginForm input::placeholder { color: var(--text-tertiary); }
-
     #loginBtn {
-      width: 100%;
-      padding: 14px;
+      width: 100%; padding: 14px;
       background: linear-gradient(135deg, var(--primary), var(--primary-light));
-      color: #fff;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      margin-top: 8px;
+      color: #fff; border-radius: 12px;
+      font-size: 14px; font-weight: 800;
+      letter-spacing: 0.5px; margin-top: 8px;
       box-shadow: 0 10px 24px -6px var(--primary);
       transition: all 220ms;
     }
-
     #loginBtn:hover:not(:disabled) {
       transform: translateY(-2px);
       box-shadow: 0 14px 32px -8px var(--primary);
     }
-
     #loginBtn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    /* ============================================================ */
     /* APP LAYOUT */
-    /* ============================================================ */
-    .app {
-      display: flex;
-      min-height: 100vh;
-      flex-direction: row;
-    }
+    .app { display: flex; min-height: 100vh; flex-direction: row; }
 
-    /* ============================================================ */
-    /* SIDEBAR — LEFT */
-    /* ============================================================ */
+    /* SIDEBAR */
     .sidebar {
       width: var(--sidebar-w);
       background: var(--card);
       border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      position: fixed;
-      top: 0; left: 0; bottom: 0;
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; bottom: 0;
       z-index: 100;
       transition: transform 280ms cubic-bezier(0.4, 0, 0.2, 1);
     }
-
     .sidebar-header {
       padding: 20px 22px;
       border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 12px;
+      display: flex; align-items: center; gap: 12px;
     }
-
     .sidebar-logo {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
+      width: 42px; height: 42px; border-radius: 12px;
       box-shadow: 0 4px 14px rgba(212, 175, 55, 0.3);
-      flex-shrink: 0;
-      overflow: hidden;
+      flex-shrink: 0; overflow: hidden;
       background: linear-gradient(135deg, var(--gold), var(--gold-light));
     }
-
     .sidebar-logo img { width: 100%; height: 100%; object-fit: cover; }
-
     .sidebar-brand { flex: 1; min-width: 0; }
-
-    .sidebar-title {
-      font-size: 15px;
-      font-weight: 800;
-      color: var(--text);
-      letter-spacing: -0.3px;
-    }
-
+    .sidebar-title { font-size: 15px; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
     .sidebar-sub {
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--gold);
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      margin-top: 2px;
+      font-size: 10px; font-weight: 700; color: var(--gold);
+      letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px;
     }
-
     .sidebar-nav {
-      flex: 1;
-      padding: 16px 12px;
+      flex: 1; padding: 16px 12px;
       overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
+      display: flex; flex-direction: column; gap: 18px;
     }
-
     .nav-group { display: flex; flex-direction: column; gap: 3px; }
-
     .nav-group-label {
-      font-size: 10px;
-      font-weight: 800;
+      font-size: 10px; font-weight: 800;
       color: var(--text-tertiary);
       letter-spacing: 1.5px;
       text-transform: uppercase;
-      padding: 0 10px 6px;
-      opacity: 0.7;
+      padding: 0 10px 6px; opacity: 0.7;
     }
-
     .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 12px;
-      border-radius: 10px;
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px; border-radius: 10px;
       color: var(--text-secondary);
-      font-size: 13.5px;
-      font-weight: 600;
+      font-size: 13.5px; font-weight: 600;
       transition: all 160ms ease;
-      position: relative;
-      cursor: pointer;
-      width: 100%;
-      text-align: left;
+      position: relative; cursor: pointer;
+      width: 100%; text-align: left;
     }
-
-    .nav-item:hover {
-      background: var(--bg-secondary);
-      color: var(--text);
-    }
-
+    .nav-item:hover { background: var(--bg-secondary); color: var(--text); }
     .nav-item.active {
       background: var(--primary-soft);
-      color: var(--primary);
-      font-weight: 700;
+      color: var(--primary); font-weight: 700;
     }
-
     .nav-item.active::before {
-      content: '';
-      position: absolute;
-      left: -12px;
-      top: 50%;
+      content: ''; position: absolute;
+      left: -12px; top: 50%;
       transform: translateY(-50%);
-      width: 3px;
-      height: 20px;
+      width: 3px; height: 20px;
       background: var(--primary);
       border-radius: 3px 0 0 3px;
     }
-
     .nav-icon {
-      width: 18px; height: 18px;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 18px; height: 18px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
       font-size: 15px;
     }
-
     .nav-badge {
       margin-left: auto;
-      background: var(--danger);
-      color: #fff;
-      font-size: 10px;
-      font-weight: 800;
-      padding: 2px 7px;
-      border-radius: 10px;
-      min-width: 20px;
-      text-align: center;
+      background: var(--danger); color: #fff;
+      font-size: 10px; font-weight: 800;
+      padding: 2px 7px; border-radius: 10px;
+      min-width: 20px; text-align: center;
     }
-
-    .sidebar-footer {
-      padding: 14px 12px;
-      border-top: 1px solid var(--border);
-    }
-
+    .sidebar-footer { padding: 14px 12px; border-top: 1px solid var(--border); }
     .sidebar-user {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      border-radius: 10px;
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 10px;
       transition: background 160ms ease;
     }
-
     .sidebar-user:hover { background: var(--bg-secondary); }
-
     .user-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
+      width: 36px; height: 36px; border-radius: 10px;
       overflow: hidden;
       background: linear-gradient(135deg, var(--gold), var(--gold-light));
       flex-shrink: 0;
       box-shadow: 0 2px 8px rgba(212, 175, 55, 0.25);
     }
-
     .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
-
     .user-info { flex: 1; min-width: 0; }
-
     .user-name {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-size: 13px; font-weight: 700; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-
     .user-role {
-      font-size: 11px;
-      color: var(--gold);
-      margin-top: 1px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
+      font-size: 11px; color: var(--gold);
+      margin-top: 1px; font-weight: 700; letter-spacing: 0.5px;
     }
-
     .logout-mini {
-      padding: 8px;
-      border-radius: 8px;
+      padding: 8px; border-radius: 8px;
       color: var(--text-tertiary);
       transition: all 160ms ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
     }
+    .logout-mini:hover { background: var(--danger-soft); color: var(--danger); }
 
-    .logout-mini:hover {
-      background: var(--danger-soft);
-      color: var(--danger);
-    }
-
-    /* ============================================================ */
     /* MAIN */
-    /* ============================================================ */
-    .main {
-      flex: 1;
-      margin-left: var(--sidebar-w);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
+    .main { flex: 1; margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
     .topbar {
       height: var(--header-h);
       background: var(--card);
       border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      padding: 0 24px;
-      gap: 16px;
-      position: sticky;
-      top: 0;
-      z-index: 50;
+      display: flex; align-items: center;
+      padding: 0 24px; gap: 16px;
+      position: sticky; top: 0; z-index: 50;
     }
-
     .topbar-title {
-      font-size: 16px;
-      font-weight: 800;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      font-size: 16px; font-weight: 800; color: var(--text);
+      display: flex; align-items: center; gap: 10px;
     }
-
     .topbar-title::before {
-      content: '';
-      width: 4px;
-      height: 20px;
+      content: ''; width: 4px; height: 20px;
       background: linear-gradient(180deg, var(--primary), var(--gold));
       border-radius: 2px;
     }
-
     .topbar-spacer { flex: 1; }
     .topbar-actions { display: flex; align-items: center; gap: 8px; }
-
     .icon-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
+      width: 40px; height: 40px; border-radius: 10px;
       color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      transition: all 180ms ease;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; transition: all 180ms ease;
     }
-
-    .icon-btn:hover {
-      background: var(--bg-secondary);
-      color: var(--text);
-    }
-
+    .icon-btn:hover { background: var(--bg-secondary); color: var(--text); }
     .menu-toggle { display: none; }
-
     .content {
-      flex: 1;
-      padding: 28px 32px 60px;
-      max-width: 1500px;
-      width: 100%;
-      margin: 0 auto;
+      flex: 1; padding: 28px 32px 60px;
+      max-width: 1500px; width: 100%; margin: 0 auto;
     }
 
-    /* ============================================================ */
-    /* PANEL SYSTEM */
-    /* ============================================================ */
+    /* PANELS */
     .panel { display: none; animation: panelIn 300ms ease; }
     .panel.active { display: block; }
-
     @keyframes panelIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-
     .panel-header {
-      margin-bottom: 24px;
-      padding-bottom: 20px;
+      margin-bottom: 24px; padding-bottom: 20px;
       border-bottom: 1px solid var(--border);
     }
-
     .panel-title {
-      font-size: 26px;
-      font-weight: 900;
-      letter-spacing: -0.8px;
-      color: var(--text);
+      font-size: 26px; font-weight: 900;
+      letter-spacing: -0.8px; color: var(--text);
       margin: 0 0 6px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
+      display: flex; align-items: center; gap: 12px;
     }
-
     .panel-title-icon {
-      width: 44px;
-      height: 44px;
+      width: 44px; height: 44px;
       background: linear-gradient(135deg, var(--primary-soft), var(--gold-soft));
       border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
     }
-
     .panel-sub {
-      font-size: 14px;
-      color: var(--text-secondary);
-      margin: 0;
-      line-height: 1.6;
+      font-size: 14px; color: var(--text-secondary);
+      margin: 0; line-height: 1.6;
     }
 
-    /* ============================================================ */
     /* BUTTONS */
-    /* ============================================================ */
     .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 12px 20px;
-      border-radius: 12px;
-      font-size: 13.5px;
-      font-weight: 700;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 12px 20px; border-radius: 12px;
+      font-size: 13.5px; font-weight: 700;
       letter-spacing: 0.3px;
       transition: all 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
-      cursor: pointer;
-      border: 0;
-      font-family: inherit;
+      cursor: pointer; border: 0; font-family: inherit;
     }
-
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
     .btn-primary {
       background: linear-gradient(135deg, var(--primary), var(--primary-light));
-      color: #fff;
-      box-shadow: 0 6px 16px -4px var(--primary);
+      color: #fff; box-shadow: 0 6px 16px -4px var(--primary);
     }
-
     .btn-primary:hover:not(:disabled) {
       transform: translateY(-2px);
       box-shadow: 0 10px 24px -6px var(--primary);
     }
-
     .btn-gold {
       background: linear-gradient(135deg, var(--gold), var(--gold-light));
-      color: #0a0e1a;
-      font-weight: 800;
+      color: #0a0e1a; font-weight: 800;
       box-shadow: 0 6px 16px -4px rgba(212, 175, 55, 0.5);
     }
-
     .btn-gold:hover:not(:disabled) {
       transform: translateY(-2px);
       box-shadow: 0 10px 24px -6px rgba(212, 175, 55, 0.7);
     }
-
     .btn-success {
       background: linear-gradient(135deg, var(--success), #34d399);
-      color: #fff;
-      box-shadow: 0 6px 16px -4px var(--success);
+      color: #fff; box-shadow: 0 6px 16px -4px var(--success);
     }
-
     .btn-danger {
       background: linear-gradient(135deg, var(--danger), #f87171);
-      color: #fff;
-      box-shadow: 0 6px 16px -4px var(--danger);
+      color: #fff; box-shadow: 0 6px 16px -4px var(--danger);
     }
-
     .btn-ghost {
-      background: var(--bg-secondary);
-      color: var(--text);
+      background: var(--bg-secondary); color: var(--text);
       border: 1px solid var(--border);
     }
-
     .btn-ghost:hover:not(:disabled) {
       background: var(--card);
       border-color: var(--primary);
       color: var(--primary);
     }
-
     .btn-block { width: 100%; }
 
-    /* ============================================================ */
     /* INPUTS */
-    /* ============================================================ */
     input:not([type="checkbox"]):not([type="radio"]),
     select,
     textarea {
-      width: 100%;
-      padding: 12px 14px;
+      width: 100%; padding: 12px 14px;
       background: var(--bg-secondary);
       border: 1.5px solid var(--border);
-      border-radius: 12px;
-      font-size: 13.5px;
-      font-family: inherit;
-      color: var(--text);
-      outline: none;
-      transition: all 200ms;
+      border-radius: 12px; font-size: 13.5px;
+      font-family: inherit; color: var(--text);
+      outline: none; transition: all 200ms;
     }
-
     input:focus, select:focus, textarea:focus {
       border-color: var(--primary);
       background: var(--card);
       box-shadow: 0 0 0 4px var(--primary-soft);
     }
-
     input::placeholder, textarea::placeholder { color: var(--text-tertiary); }
     textarea { resize: vertical; min-height: 80px; }
 
     .form-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
     }
-
     .form-grid .full { grid-column: 1 / -1; }
+    @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
 
-    @media (max-width: 640px) {
-      .form-grid { grid-template-columns: 1fr; }
-    }
-
-    /* ============================================================ */
     /* CARDS */
-    /* ============================================================ */
     .card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -644,16 +409,12 @@
       padding: 20px;
     }
 
-    /* ============================================================ */
     /* STATS */
-    /* ============================================================ */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
+      gap: 16px; margin-bottom: 24px;
     }
-
     .stat-card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -661,147 +422,93 @@
       padding: 18px;
       transition: all 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
     }
-
     .stat-card:hover {
       transform: translateY(-3px);
       box-shadow: var(--shadow-md);
       border-color: var(--primary);
     }
-
     .stat-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 12px;
     }
-
     .stat-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      flex-shrink: 0;
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
     }
-
     .stat-icon.primary { background: var(--primary-soft); }
     .stat-icon.gold { background: var(--gold-soft); }
     .stat-icon.success { background: var(--success-soft); }
     .stat-icon.warning { background: var(--warning-soft); }
     .stat-icon.danger { background: var(--danger-soft); }
-
     .stat-value {
-      font-size: 26px;
-      font-weight: 900;
-      line-height: 1;
-      letter-spacing: -1px;
-      color: var(--text);
+      font-size: 26px; font-weight: 900; line-height: 1;
+      letter-spacing: -1px; color: var(--text);
       margin-bottom: 4px;
       font-variant-numeric: tabular-nums;
     }
-
     .stat-label {
-      font-size: 10px;
-      font-weight: 800;
+      font-size: 10px; font-weight: 800;
       color: var(--text-tertiary);
       letter-spacing: 1px;
       text-transform: uppercase;
     }
 
-    /* ============================================================ */
     /* CHARTS */
-    /* ============================================================ */
     .chart-box {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 20px;
-      margin-bottom: 16px;
-      min-height: 280px;
-      position: relative;
+      padding: 20px; margin-bottom: 16px;
+      min-height: 280px; position: relative;
     }
-
     .chart-box canvas { max-width: 100%; }
+    .chart-title { font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 14px; }
 
-    .chart-title {
-      font-size: 13px;
-      font-weight: 800;
-      color: var(--text);
-      margin-bottom: 14px;
-    }
-
-    /* ============================================================ */
     /* LOG ROWS */
-    /* ============================================================ */
     .log-row {
       background: var(--card);
       border: 1px solid var(--border);
       border-left: 4px solid var(--border);
       border-radius: var(--radius);
-      padding: 14px 16px;
-      margin-bottom: 10px;
+      padding: 14px 16px; margin-bottom: 10px;
       transition: all 200ms;
     }
-
     .log-row:hover { box-shadow: var(--shadow-sm); }
     .log-row.log-success { border-left-color: var(--success); }
     .log-row.log-warning { border-left-color: var(--warning); }
     .log-row.log-danger  { border-left-color: var(--danger); }
-
     .log-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-      gap: 10px;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 8px; gap: 10px;
     }
-
     .log-result {
-      font-weight: 800;
-      font-size: 10.5px;
-      padding: 4px 10px;
-      border-radius: 6px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
+      font-weight: 800; font-size: 10.5px;
+      padding: 4px 10px; border-radius: 6px;
+      letter-spacing: 1px; text-transform: uppercase;
     }
-
     .log-result-success { background: var(--success-soft); color: var(--success); }
     .log-result-warning { background: var(--warning-soft); color: var(--warning); }
     .log-result-danger { background: var(--danger-soft); color: var(--danger); }
-
     .log-date { font-size: 11px; color: var(--text-tertiary); font-weight: 600; }
-
     .log-code {
       font-family: 'SF Mono', 'Courier New', monospace;
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: 2px;
-      margin: 6px 0 8px;
-      color: var(--text);
-      word-break: break-all;
+      font-size: 15px; font-weight: 800;
+      letter-spacing: 2px; margin: 6px 0 8px;
+      color: var(--text); word-break: break-all;
     }
-
     .log-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px 14px;
-      font-size: 11px;
-      color: var(--text-secondary);
+      display: flex; flex-wrap: wrap; gap: 8px 14px;
+      font-size: 11px; color: var(--text-secondary);
     }
 
-    /* ============================================================ */
     /* RESULT */
-    /* ============================================================ */
     .result {
-      margin: 18px 0;
-      padding: 20px;
+      margin: 18px 0; padding: 20px;
       border-radius: var(--radius);
       border: 1.5px solid var(--border);
       background: var(--card);
     }
-
     .result.hidden { display: none; }
     .result.success { background: var(--success-soft); border-color: var(--success); }
     .result.success h2 { color: var(--success); }
@@ -809,162 +516,102 @@
     .result.warning h2 { color: var(--warning); }
     .result.danger { background: var(--danger-soft); border-color: var(--danger); }
     .result.danger h2 { color: var(--danger); }
-
     .result h2 {
-      font-size: 18px;
-      font-weight: 800;
+      font-size: 18px; font-weight: 800;
       margin: 0 0 8px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      display: flex; align-items: center; gap: 10px;
     }
-
     .result p { font-size: 13px; color: var(--text-secondary); margin: 6px 0; }
-
     .details {
       margin-top: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      display: flex; flex-direction: column; gap: 8px;
     }
-
     .details > div {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      display: flex; justify-content: space-between; align-items: center;
       padding: 10px 14px;
       background: var(--bg-secondary);
-      border-radius: 10px;
-      font-size: 13px;
-      gap: 12px;
+      border-radius: 10px; font-size: 13px; gap: 12px;
     }
-
     .details b {
-      color: var(--text-secondary);
-      font-weight: 700;
-      font-size: 11px;
-      text-transform: uppercase;
+      color: var(--text-secondary); font-weight: 700;
+      font-size: 11px; text-transform: uppercase;
       flex-shrink: 0;
     }
-
     .details span {
-      color: var(--text);
-      font-weight: 700;
-      text-align: right;
-      word-break: break-word;
+      color: var(--text); font-weight: 700;
+      text-align: right; word-break: break-word;
     }
 
-    /* ============================================================ */
     /* QR BOX */
-    /* ============================================================ */
     .qr-box {
       padding: 20px;
       background: var(--bg-secondary);
       border-radius: var(--radius);
       border: 1px solid var(--border);
-      display: inline-flex;
-      margin: 15px auto;
-      justify-content: center;
+      display: inline-flex; margin: 15px auto; justify-content: center;
     }
-
     .qr-box img { border-radius: 8px; }
 
-    /* ============================================================ */
     /* MODAL */
-    /* ============================================================ */
     .modal-overlay {
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       background: rgba(10, 14, 26, 0.75);
       backdrop-filter: blur(6px);
       z-index: 10000;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 20px;
-      overflow-y: auto;
+      display: flex; align-items: flex-start; justify-content: center;
+      padding: 20px; overflow-y: auto;
     }
-
     .modal-overlay.hidden { display: none !important; }
-
     .modal-box {
       background: var(--card);
       border-radius: 20px;
-      width: 100%;
-      max-width: 680px;
+      width: 100%; max-width: 680px;
       margin: auto;
       box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
-      display: flex;
-      flex-direction: column;
+      display: flex; flex-direction: column;
       max-height: calc(100vh - 40px);
       border: 1px solid var(--border);
     }
-
     .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      display: flex; justify-content: space-between; align-items: center;
       padding: 20px 24px;
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
     }
-
     .modal-header h2 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--text);
+      margin: 0; font-size: 18px; font-weight: 800; color: var(--text);
     }
-
     .modal-close {
-      width: 34px;
-      height: 34px;
-      padding: 0;
+      width: 34px; height: 34px; padding: 0;
       background: var(--bg-secondary);
       color: var(--text-secondary);
-      border-radius: 50%;
-      font-size: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      border-radius: 50%; font-size: 14px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
       transition: all 180ms;
     }
-
     .modal-close:hover {
       background: var(--danger-soft);
       color: var(--danger);
       transform: rotate(90deg);
     }
-
     .modal-body {
       padding: 20px 24px;
-      overflow-y: auto;
-      flex: 1;
+      overflow-y: auto; flex: 1;
     }
-
     .modal-footer {
       padding: 16px 24px;
       border-top: 1px solid var(--border);
-      display: flex;
-      gap: 10px;
-      flex-shrink: 0;
+      display: flex; gap: 10px; flex-shrink: 0;
     }
-
     .modal-footer button,
     .modal-footer a {
-      flex: 1;
-      padding: 12px;
+      flex: 1; padding: 12px;
       border-radius: 12px;
-      font-weight: 800;
-      font-size: 13.5px;
+      font-weight: 800; font-size: 13.5px;
       text-align: center;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+      display: inline-flex; align-items: center; justify-content: center;
       gap: 6px;
     }
-
     .form-section {
       padding: 16px;
       background: var(--bg-secondary);
@@ -972,165 +619,107 @@
       border-radius: 14px;
       margin-bottom: 14px;
     }
-
     .form-section h3 {
-      font-size: 11px;
-      font-weight: 900;
+      font-size: 11px; font-weight: 900;
       color: var(--text-secondary);
       margin: 0 0 12px;
       letter-spacing: 1.2px;
       text-transform: uppercase;
     }
-
     .form-section input,
     .form-section textarea,
     .form-section select { margin-bottom: 8px; }
-
     .radio-card {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      display: flex; align-items: center; gap: 8px;
       padding: 12px 14px;
       border: 2px solid var(--border);
-      border-radius: 12px;
-      cursor: pointer;
+      border-radius: 12px; cursor: pointer;
       background: var(--card);
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text);
+      font-size: 13px; font-weight: 700; color: var(--text);
       transition: all 180ms;
     }
-
     .radio-card:has(input:checked) {
       border-color: var(--primary);
       background: var(--primary-soft);
     }
-
     .radio-card input {
       width: auto !important;
       margin: 0 !important;
       padding: 0 !important;
       accent-color: var(--primary);
     }
-
     .order-item-row {
       display: grid;
       grid-template-columns: 2fr 1fr auto;
-      gap: 8px;
-      margin-bottom: 8px;
+      gap: 8px; margin-bottom: 8px;
       align-items: start;
     }
-
     .order-item-row input { margin: 0 !important; }
-
     .order-item-row button {
-      width: 38px;
-      height: 38px;
-      padding: 0;
-      margin: 0;
-      background: var(--danger-soft);
-      color: var(--danger);
-      border-radius: 10px;
-      font-size: 14px;
-      flex-shrink: 0;
+      width: 38px; height: 38px; padding: 0; margin: 0;
+      background: var(--danger-soft); color: var(--danger);
+      border-radius: 10px; font-size: 14px; flex-shrink: 0;
     }
-
-    .lot-check-hint {
-      font-size: 10px;
-      margin-top: 4px;
-      font-weight: 700;
-    }
-
+    .lot-check-hint { font-size: 10px; margin-top: 4px; font-weight: 700; }
     .lot-check-hint.ok { color: var(--success); }
     .lot-check-hint.warn { color: var(--warning); }
     .lot-check-hint.err { color: var(--danger); }
 
-    /* ============================================================ */
     /* TOAST */
-    /* ============================================================ */
     .toast-container {
-      position: fixed;
-      top: 20px;
-      left: 50%;
+      position: fixed; top: 20px; left: 50%;
       transform: translateX(-50%);
       z-index: 100000;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      display: flex; flex-direction: column; gap: 10px;
       pointer-events: none;
     }
-
     .toast {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 14px 20px;
       box-shadow: var(--shadow-lg);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text);
+      display: flex; align-items: center; gap: 12px;
+      font-size: 13px; font-weight: 600; color: var(--text);
       pointer-events: auto;
       animation: toastIn 400ms cubic-bezier(0.16, 1, 0.3, 1);
       max-width: 400px;
       border-left: 4px solid var(--primary);
     }
-
     .toast.success { border-left-color: var(--success); }
     .toast.error { border-left-color: var(--danger); }
-
     @keyframes toastIn {
       from { opacity: 0; transform: translateY(-20px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* ============================================================ */
     /* TABS */
-    /* ============================================================ */
     .tabs {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 18px;
+      display: flex; gap: 6px; margin-bottom: 18px;
       padding: 4px;
       background: var(--bg-secondary);
       border-radius: 12px;
       overflow-x: auto;
     }
-
     .tabs .tab {
-      padding: 9px 14px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 700;
+      padding: 9px 14px; border-radius: 8px;
+      font-size: 12px; font-weight: 700;
       color: var(--text-secondary);
-      background: transparent;
-      border: 0;
-      cursor: pointer;
-      transition: all 180ms;
-      white-space: nowrap;
-      flex: 1;
+      background: transparent; border: 0; cursor: pointer;
+      transition: all 180ms; white-space: nowrap; flex: 1;
     }
-
     .tabs .tab.active {
       background: var(--card);
       color: var(--primary);
       box-shadow: var(--shadow-sm);
     }
 
-    /* ============================================================ */
     /* RESPONSIVE */
-    /* ============================================================ */
     .mobile-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
+      display: none; position: fixed; inset: 0;
       background: rgba(0, 0, 0, 0.5);
-      z-index: 90;
-      backdrop-filter: blur(2px);
+      z-index: 90; backdrop-filter: blur(2px);
     }
-
     @media (max-width: 1024px) {
       .sidebar { transform: translateX(-100%); }
       .sidebar.open { transform: translateX(0); }
@@ -1141,7 +730,6 @@
       .panel-title { font-size: 20px; }
       .panel-title-icon { width: 38px; height: 38px; font-size: 18px; }
     }
-
     @media (max-width: 640px) {
       .topbar { padding: 0 14px; }
       .topbar-title { font-size: 14px; }
@@ -1150,21 +738,17 @@
       .stat-card { padding: 14px; }
       .stat-value { font-size: 22px; }
     }
-
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
-
     .hidden { display: none !important; }
     .muted { color: var(--text-secondary); font-size: 13.5px; line-height: 1.6; }
   </style>
 </head>
 <body>
 
-<!-- ============================================================ -->
 <!-- LOGIN -->
-<!-- ============================================================ -->
 <main id="loginPage">
   <section class="login-card">
     <img src="/admin-icon.png" alt="Original" class="login-logo">
@@ -1182,9 +766,7 @@
   </section>
 </main>
 
-<!-- ============================================================ -->
 <!-- APP -->
-<!-- ============================================================ -->
 <div class="app hidden" id="adminApp">
 
   <aside class="sidebar" id="sidebar">
@@ -1272,8 +854,7 @@
       </div>
     </header>
 
-    <div class="content" id="contentArea">
-
+    <div class="content" id="contentArea">  
       <!-- DASHBOARD -->
       <section class="panel active" id="panel-dashboard">
         <div class="panel-header">
@@ -1420,54 +1001,36 @@
             <button id="activateBatchBtn" class="btn btn-success" style="flex:1;min-width:140px;">✅ ACTIVER LA BATCH</button>
             <button id="disableBatchBtn" class="btn btn-danger" style="flex:1;min-width:140px;">🛑 DÉSACTIVER</button>
           </div>
-         <!-- 🏪 إعدادات دفعة المحل -->
-<div id="shopBatchBox" class="hidden" style="margin-top:16px;padding:18px;background:var(--bg-secondary);border:2px solid var(--primary);border-radius:14px;text-align:right;">
 
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
-    <input type="checkbox" id="shopBatchToggle" style="width:20px;height:20px;accent-color:var(--primary);cursor:pointer;margin:0;">
-    <label for="shopBatchToggle" style="font-size:14px;font-weight:800;color:var(--text);cursor:pointer;margin:0;">
-      🏪 هذه الدفعة لمحل موثوق
-    </label>
-  </div>
+          <!-- 🏪 Shop Batch Box -->
+          <div id="shopBatchBox" class="hidden" style="margin-top:16px;padding:18px;background:var(--bg-secondary);border:2px solid var(--primary);border-radius:14px;text-align:right;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+              <input type="checkbox" id="shopBatchToggle" style="width:20px;height:20px;accent-color:var(--primary);cursor:pointer;margin:0;">
+              <label for="shopBatchToggle" style="font-size:14px;font-weight:800;color:var(--text);cursor:pointer;margin:0;">
+                🏪 هذه الدفعة لمحل موثوق
+              </label>
+            </div>
 
-  <div id="shopBatchFields" class="hidden">
-    <label style="display:block;font-size:11px;font-weight:800;color:var(--text-secondary);margin-bottom:6px;letter-spacing:1px;">اختر المحل *</label>
-    <select id="shopBatchSelect" style="margin-bottom:12px;width:100%;">
-      <option value="">-- اختر المحل --</option>
-    </select>
+            <div id="shopBatchFields" class="hidden">
+              <label style="display:block;font-size:11px;font-weight:800;color:var(--text-secondary);margin-bottom:6px;letter-spacing:1px;">اختر المحل *</label>
+              <select id="shopBatchSelect" style="margin-bottom:12px;width:100%;">
+                <option value="">-- اختر المحل --</option>
+              </select>
 
-    <label style="display:block;font-size:11px;font-weight:800;color:var(--text-secondary);margin-bottom:6px;letter-spacing:1px;">💰 السعر لكل منتج (دج) *</label>
-    <input id="shopBatchPrice" type="number" min="0" step="50" placeholder="مثال: 5000" style="margin-bottom:14px;width:100%;">
+              <label style="display:block;font-size:11px;font-weight:800;color:var(--text-secondary);margin-bottom:6px;letter-spacing:1px;">💰 السعر لكل منتج (دج) *</label>
+              <input id="shopBatchPrice" type="number" min="0" step="50" placeholder="مثال: 5000" style="margin-bottom:14px;width:100%;">
 
-    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <button id="applyShopBatchBtn" class="btn btn-primary" style="flex:1;min-width:130px;">✅ تطبيق على كل الأكواد</button>
-      <button id="removeShopBatchBtn" class="btn btn-ghost" style="flex:1;min-width:130px;">↺ إلغاء الربط</button>
-    </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button id="applyShopBatchBtn" class="btn btn-primary" style="flex:1;min-width:130px;">✅ تطبيق على كل الأكواد</button>
+                <button id="removeShopBatchBtn" class="btn btn-ghost" style="flex:1;min-width:130px;">↺ إلغاء الربط</button>
+              </div>
 
-    <div id="shopBatchResult" class="result hidden" style="margin-top:12px;"></div>
-  </div>
-</div>
+              <div id="shopBatchResult" class="result hidden" style="margin-top:12px;"></div>
+            </div>
+          </div>
+
           <button id="printLotBtn" class="btn btn-success btn-block hidden" style="margin-top:14px;">🖨 IMPRIMER CE LOT</button>
           <button id="exportLotCodesBtn" class="btn btn-ghost btn-block hidden" style="margin-top:10px;">📊 EXPORTER EN EXCEL</button>
-        </div>
-        <div id="editForm" class="hidden card" style="margin-top:20px;">
-          <h3 style="margin:0 0 6px;font-size:15px;font-weight:800;color:var(--text);">Modifier ce lot</h3>
-          <p class="muted" style="font-size:12px;margin-bottom:14px;">Les champs vides ne sont pas modifiés.</p>
-          <div class="form-grid">
-            <input id="editBrand" placeholder="Marque">
-            <input id="editProductName" placeholder="Nom du produit">
-            <input id="editReference" placeholder="Référence">
-            <input id="editNewLot" placeholder="Nouveau lot (optionnel)">
-            <input id="editManufactureDate" type="date">
-            <input id="editExpiryDate" type="date">
-            <input id="editProductImage" placeholder="URL image produit">
-            <input id="editLogoUrl" placeholder="URL du logo">
-            <input id="editDescription" placeholder="Description" class="full">
-            <input id="editInstagramUrl" placeholder="📷 Instagram" class="full">
-            <input id="editFacebookUrl" placeholder="📘 Facebook" class="full">
-            <input id="editTiktokUrl" placeholder="🎵 TikTok" class="full">
-          </div>
-          <button id="updateBatchBtn" class="btn btn-primary btn-block" style="margin-top:16px;">METTRE À JOUR LE LOT</button>
         </div>
       </section>
 
@@ -1611,75 +1174,74 @@
           <h1 class="panel-title"><span class="panel-title-icon">🏢</span><span>Marques</span></h1>
           <p class="panel-sub">Toutes les marques inscrites et leurs statistiques.</p>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-  <button id="refreshComplaintsBtn" class="btn btn-ghost" style="flex:1;min-width:120px;">🔄 تحديث</button>
-  <button id="exportComplaintsBtn" class="btn btn-success" style="flex:1;min-width:120px;">📊 Excel</button>
-  <input id="complaintsSearch" placeholder="🔍 بحث..." style="flex:2;min-width:180px;">
-</div>
-
-<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
-  <select id="complaintsWilaya" style="flex:1;min-width:180px;">
-    <option value="">📍 كل الولايات</option>
-  </select>
-  <select id="complaintsDate" style="flex:1;min-width:140px;">
-    <option value="all">📅 كل الفترات</option>
-    <option value="7">آخر 7 أيام</option>
-    <option value="30">آخر 30 يومًا</option>
-    <option value="90">آخر 3 أشهر</option>
-  </select>
-</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+          <button id="refreshBrandsBtn" class="btn btn-ghost" style="flex:1;min-width:140px;">🔄 ACTUALISER</button>
+          <button id="exportBrandsBtn" class="btn btn-ghost" style="flex:1;min-width:140px;">📊 EXPORTER EXCEL</button>
+        </div>
         <div id="brandsStats" class="stats-grid"></div>
         <div id="brandsList"></div>
       </section>
-      
-<!-- ═══════════════ SHOPS (المحلات) ═══════════════ -->
-<section class="panel" id="panel-shops">
-  <div class="panel-header">
-    <h1 class="panel-title"><span class="panel-title-icon">🏪</span><span>المحلات</span></h1>
-    <p class="panel-sub">إدارة طلبات المحلات · الموافقة · الرفض · العربون</p>
-  </div>
 
-  <div id="shopsStats" class="stats-grid"></div>
+      <!-- SHOPS -->
+      <section class="panel" id="panel-shops">
+        <div class="panel-header">
+          <h1 class="panel-title"><span class="panel-title-icon">🏪</span><span>المحلات</span></h1>
+          <p class="panel-sub">إدارة طلبات المحلات · الموافقة · الرفض · العربون</p>
+        </div>
 
-  <!-- Tabs -->
-  <div class="tabs" id="shopsTabs" style="margin:22px 0 16px;">
-    <button class="tab active" data-tab="pending">⏳ قيد المراجعة</button>
-    <button class="tab" data-tab="active">✅ النشطة</button>
-    <button class="tab" data-tab="banned">🚫 المحظورة</button>
-  </div>
+        <div id="shopsStats" class="stats-grid"></div>
 
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
-    <button id="refreshShopsBtn" class="btn btn-ghost" style="flex:1;min-width:140px;">🔄 تحديث</button>
-    <input id="shopsSearch" placeholder="🔍 بحث بالاسم أو الهاتف..." style="flex:2;min-width:180px;">
-  </div>
+        <div class="tabs" id="shopsTabs" style="margin:22px 0 16px;">
+          <button class="tab active" data-tab="pending">⏳ قيد المراجعة</button>
+          <button class="tab" data-tab="active">✅ النشطة</button>
+          <button class="tab" data-tab="banned">🚫 المحظورة</button>
+        </div>
 
-  <div id="shopsList"></div>
-</section>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+          <button id="refreshShopsBtn" class="btn btn-ghost" style="flex:1;min-width:140px;">🔄 تحديث</button>
+          <input id="shopsSearch" placeholder="🔍 بحث بالاسم أو الهاتف..." style="flex:2;min-width:180px;">
+        </div>
 
-      <!-- ═══════════════ SHOP COMPLAINTS (شكاوى المحلات) ═══════════════ -->
-<section class="panel" id="panel-shop-complaints">
-  <div class="panel-header">
-    <h1 class="panel-title"><span class="panel-title-icon">🚨</span><span>شكاوى المحلات</span></h1>
-    <p class="panel-sub">بلاغات التقليد على المحلات الموثوقة</p>
-  </div>
+        <div id="shopsList"></div>
+      </section>
 
-  <div id="complaintsStats" class="stats-grid"></div>
+      <!-- SHOP COMPLAINTS -->
+      <section class="panel" id="panel-shop-complaints">
+        <div class="panel-header">
+          <h1 class="panel-title"><span class="panel-title-icon">🚨</span><span>شكاوى المحلات</span></h1>
+          <p class="panel-sub">بلاغات التقليد على المحلات الموثوقة</p>
+        </div>
 
-  <div class="tabs" id="complaintsTabs" style="margin:22px 0 16px;">
-    <button class="tab active" data-tab="pending">⏳ معلّقة</button>
-    <button class="tab" data-tab="reviewing">🔍 قيد المراجعة</button>
-    <button class="tab" data-tab="verified">✅ مؤكدة</button>
-    <button class="tab" data-tab="rejected">❌ مرفوضة</button>
-  </div>
+        <div id="complaintsStats" class="stats-grid"></div>
 
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
-    <button id="refreshComplaintsBtn" class="btn btn-ghost" style="flex:1;min-width:140px;">🔄 تحديث</button>
-    <input id="complaintsSearch" placeholder="🔍 بحث بالكود أو الاسم..." style="flex:2;min-width:180px;">
-  </div>
+        <div class="tabs" id="complaintsTabs" style="margin:22px 0 16px;">
+          <button class="tab active" data-tab="pending">⏳ معلّقة</button>
+          <button class="tab" data-tab="reviewing">🔍 قيد المراجعة</button>
+          <button class="tab" data-tab="verified">✅ مؤكدة</button>
+          <button class="tab" data-tab="rejected">❌ مرفوضة</button>
+        </div>
 
-  <div id="complaintsList"></div>
-</section>
-      
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+          <button id="refreshComplaintsBtn" class="btn btn-ghost" style="flex:1;min-width:120px;">🔄 تحديث</button>
+          <button id="exportComplaintsBtn" class="btn btn-success" style="flex:1;min-width:120px;">📊 Excel</button>
+          <input id="complaintsSearch" placeholder="🔍 بحث..." style="flex:2;min-width:180px;">
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+          <select id="complaintsWilaya" style="flex:1;min-width:180px;">
+            <option value="">📍 كل الولايات</option>
+          </select>
+          <select id="complaintsDate" style="flex:1;min-width:140px;">
+            <option value="all">📅 كل الفترات</option>
+            <option value="7">آخر 7 أيام</option>
+            <option value="30">آخر 30 يومًا</option>
+            <option value="90">آخر 3 أشهر</option>
+          </select>
+        </div>
+
+        <div id="complaintsList"></div>
+      </section>
+
       <!-- VISITORS -->
       <section class="panel" id="panel-visitors">
         <div class="panel-header">
@@ -1812,7 +1374,6 @@
         <h3>👤 Client</h3>
         <input id="orderBrand" placeholder="Nom de la marque *" list="brandsList">
         <datalist id="brandsList"></datalist>
-        <div id="brandHint" style="font-size:11px;margin-top:6px;color:var(--text-secondary);"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
           <input id="orderBrandPhone" placeholder="📱 Téléphone" type="tel">
           <input id="orderBrandEmail" placeholder="📧 Email" type="email">
@@ -1902,18 +1463,14 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="/admin.js"></script>
 <script>
-  // ============================================================
   // SERVICE WORKER
-  // ============================================================
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/service-worker.js').catch(err => console.warn('SW:', err));
     });
   }
 
-  // ============================================================
   // INSTALL PROMPT
-  // ============================================================
   let deferredPrompt = null;
   const installBtn = document.getElementById('installAdminBtn');
 
@@ -1936,9 +1493,7 @@
     if (installBtn) installBtn.style.display = 'none';
   });
 
-  // ============================================================
   // DARK MODE
-  // ============================================================
   function updateDarkIcon() {
     const isDark = document.documentElement.classList.contains('dark');
     const icon = document.getElementById('darkIcon');
