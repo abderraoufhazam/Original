@@ -1,6 +1,7 @@
 // api/submit.js
-// API موحّد: feedback + report + message + signup
+// API موحّد: feedback + report + message + signup + notify-shop
 // + إشعارات واتساب تلقائية للأدمن عبر Green API
+// + إشعار بريد إلكتروني عبر Resend
 
 import { verifyTurnstile, getClientIp } from './_turnstile.js';
 
@@ -16,14 +17,15 @@ export default async function handler(req, res) {
 
   const type = (req.query && req.query.type) || (req.body && req.body.type);
 
-  if (type === 'feedback') return handleFeedback(req, res);
-  if (type === 'report')   return handleReport(req, res);
-  if (type === 'message')  return handleMessage(req, res);
-  if (type === 'signup')   return handleSignup(req, res);
+  if (type === 'feedback')    return handleFeedback(req, res);
+  if (type === 'report')      return handleReport(req, res);
+  if (type === 'message')     return handleMessage(req, res);
+  if (type === 'signup')      return handleSignup(req, res);
+  if (type === 'notify-shop') return handleNotifyShop(req, res);
 
   return res.status(400).json({
     status: 'ERROR',
-    message: 'Type invalide. Utilisez: feedback, report, message ou signup'
+    message: 'Type invalide. Utilisez: feedback, report, message, signup ou notify-shop'
   });
 }
 
@@ -281,7 +283,7 @@ async function handleMessage(req, res) {
 }
 
 // ============================================================
-// TYPE 4: SIGNUP — تسجيل ماركة جديدة + إشعار واتساب
+// TYPE 4: SIGNUP — تسجيل ماركة/محل جديد + إشعار واتساب
 // ============================================================
 async function handleSignup(req, res) {
   try {
@@ -311,6 +313,165 @@ async function handleSignup(req, res) {
       detail: String(error).slice(0, 200)
     });
   }
+}
+
+// ============================================================
+// TYPE 5: NOTIFY-SHOP — إشعار محل عند الموافقة (Resend)
+// ============================================================
+async function handleNotifyShop(req, res) {
+  try {
+    const {
+      to_email,
+      shop_name,
+      shop_email,
+      shop_phone,
+      wilaya,
+      approved_date
+    } = req.body || {};
+
+    if (!to_email || !shop_name) {
+      return res.status(400).json({
+        status: 'ERROR',
+        message: 'to_email + shop_name obligatoires'
+      });
+    }
+
+    const RESEND_KEY = process.env.RESEND_API_KEY;
+    if (!RESEND_KEY) {
+      console.error('RESEND_API_KEY not configured');
+      return res.status(500).json({
+        status: 'ERROR',
+        message: 'Resend non configuré'
+      });
+    }
+
+    // من أين يُرسل البريد
+    // - للتجربة: onboarding@resend.dev (يعمل فقط إلى إيميلك)
+    // - للإنتاج: شيء@originaldz.online (بعد توثيق الدومين)
+    const FROM = process.env.RESEND_FROM || 'onboarding@resend.dev';
+    const FROM_NAME = 'OriginalDz';
+
+    const date = approved_date || new Date().toLocaleDateString('ar-DZ', {
+      year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    const html = `
+<!doctype html>
+<html dir="rtl" lang="ar">
+<head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,Tahoma,Arial,sans-serif;">
+  <div style="max-width:600px;margin:20px auto;background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 10px 30px -10px rgba(15,23,42,0.15);">
+
+    <div style="background:linear-gradient(135deg,#16a34a,#22c55e);padding:36px 28px;text-align:center;color:#ffffff;">
+      <div style="font-size:52px;line-height:1;margin-bottom:8px;">✅</div>
+      <h1 style="margin:0;font-size:22px;font-weight:900;letter-spacing:-0.5px;">
+        تم تفعيل حسابك!
+      </h1>
+    </div>
+
+    <div style="padding:32px 28px;color:#0f172a;line-height:1.8;">
+      <p style="font-size:15px;margin:0 0 16px;">
+        مرحبًا <b style="color:#16a34a;font-size:16px;">${escapeHtmlLocal(shop_name)}</b> 👋
+      </p>
+
+      <p style="font-size:14px;margin:0 0 20px;color:#334155;">
+        يسعدنا إبلاغك بأنه تمت <b>الموافقة على تسجيل محلّك</b>
+        في منصة <b>OriginalDz</b>. أصبح حسابك الآن نشطًا.
+      </p>
+
+      <div style="background:#f0fdf4;border:1.5px solid #22c55e;border-radius:14px;padding:18px 20px;margin:22px 0;">
+        <div style="font-size:11px;color:#166534;font-weight:800;letter-spacing:1.5px;margin-bottom:10px;">
+          📋 تفاصيل الحساب
+        </div>
+        <div style="font-size:13.5px;margin-bottom:8px;">
+          <b style="color:#166534;">🏪 المحل:</b>
+          <span style="color:#0f172a;font-weight:700;">${escapeHtmlLocal(shop_name)}</span>
+        </div>
+        ${shop_email ? `<div style="font-size:13.5px;margin-bottom:8px;">
+          <b style="color:#166534;">📧 البريد:</b>
+          <span style="color:#0f172a;font-weight:700;">${escapeHtmlLocal(shop_email)}</span>
+        </div>` : ''}
+        ${wilaya ? `<div style="font-size:13.5px;margin-bottom:8px;">
+          <b style="color:#166534;">📍 الولاية:</b>
+          <span style="color:#0f172a;font-weight:700;">${escapeHtmlLocal(wilaya)}</span>
+        </div>` : ''}
+        <div style="font-size:13.5px;">
+          <b style="color:#166534;">📅 تاريخ الموافقة:</b>
+          <span style="color:#0f172a;font-weight:700;">${escapeHtmlLocal(date)}</span>
+        </div>
+      </div>
+
+      <div style="text-align:center;margin:30px 0 22px;">
+        <a href="https://originaldz.online/login?role=shop"
+           style="display:inline-block;background:linear-gradient(135deg,#16a34a,#22c55e);color:#ffffff;padding:15px 34px;border-radius:12px;text-decoration:none;font-weight:800;font-size:14px;">
+          🔐 الدخول إلى حسابك
+        </a>
+      </div>
+
+      <p style="font-size:12.5px;color:#64748b;margin:24px 0 0;text-align:center;line-height:1.7;">
+        لأي استفسار، تواصل معنا على واتساب:
+        <br>
+        <b style="color:#16a34a;">+213 556 339 415</b>
+      </p>
+    </div>
+
+    <div style="background:#0f172a;padding:22px 28px;text-align:center;color:#94a3b8;">
+      <div style="font-size:14px;font-weight:800;color:#ffffff;margin-bottom:4px;">OriginalDz</div>
+      <div style="font-size:11px;letter-spacing:1px;">حماية المنتجات من التقليد</div>
+      <div style="font-size:11px;margin-top:10px;">
+        <a href="https://originaldz.online" style="color:#16a34a;text-decoration:none;">originaldz.online</a>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>`;
+
+    const emailRes = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RESEND_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: `${FROM_NAME} <${FROM}>`,
+        to: [to_email],
+        subject: `✅ تم تفعيل حساب محلك — ${shop_name}`,
+        html: html
+      })
+    });
+
+    const data = await emailRes.json();
+
+    if (!emailRes.ok) {
+      console.error('Resend error:', data);
+      return res.status(500).json({
+        status: 'ERROR',
+        message: 'Erreur Resend',
+        detail: JSON.stringify(data).slice(0, 300)
+      });
+    }
+
+    return res.status(200).json({
+      status: 'OK',
+      message: 'Email envoyé',
+      email_id: data.id
+    });
+
+  } catch (error) {
+    console.error('handleNotifyShop error:', error);
+    return res.status(500).json({
+      status: 'ERROR',
+      message: String(error).slice(0, 200)
+    });
+  }
+}
+
+// Helper: escape HTML
+function escapeHtmlLocal(v = '') {
+  return String(v).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+  }[c]));
 }
 
 // ============================================================
@@ -434,7 +595,7 @@ function buildSignupMessage(body) {
   const { brand_name, email, phone } = body;
 
   const lines = [
-    '🎉 *NOUVELLE MARQUE INSCRITE*',
+    '🎉 *NOUVELLE INSCRIPTION*',
     '',
     `🏢 *Nom:* ${brand_name || '—'}`,
     `📧 *Email:* ${email || '—'}`,
@@ -442,7 +603,7 @@ function buildSignupMessage(body) {
 
   if (phone) lines.push(`📱 *Téléphone:* ${phone}`);
 
-  lines.push('', '👉 Contactez-la pour la bienvenue.');
+  lines.push('', '👉 Vérifiez dans votre dashboard admin.');
 
   return lines.join('\n');
 }
