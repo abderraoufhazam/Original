@@ -23,6 +23,7 @@ export default async function handler(req, res) {
   if (type === 'signup')      return handleSignup(req, res);
   if (type === 'notify-shop') return handleNotifyShop(req, res);
   if (type === 'shop-email') return handleShopEmail(req, res);
+  if (type === 'shop-complaint') return handleShopComplaint(req, res);
   
   return res.status(400).json({
     status: 'ERROR',
@@ -465,6 +466,225 @@ async function handleShopEmail(req, res) {
     return res.status(500).json({
       status: 'ERROR',
       message: String(error).slice(0, 200)
+    });
+  }
+}
+
+// ============================================================
+// TYPE 8: SHOP-COMPLAINT — شكوى على منتج من محل موثوق
+// 7 صور + بحث تلقائي عن المحل + بدون إشعار للمحل
+// ============================================================
+async function handleShopComplaint(req, res) {
+  try {
+    const {
+      product_code,
+      customer_name,
+      customer_phone,
+      customer_wilaya,
+      product_price,
+      purchase_location,
+      notes,
+      images   // مصفوفة base64 (7 صور)
+    } = req.body || {};
+
+    // ─── التحقق ───
+    if (!product_code || typeof product_code !== 'string') {
+      return res.status(400).json({ status: 'ERROR', message: 'Code manquant' });
+    }
+    if (!customer_name || customer_name.trim().length < 2) {
+      return res.status(400).json({ status: 'ERROR', message: 'Nom obligatoire' });
+    }
+    if (!customer_phone || customer_phone.trim().length < 6) {
+      return res.status(400).json({ status: 'ERROR', message: 'Téléphone obligatoire' });
+    }
+    if (!customer_wilaya || !customer_wilaya.trim()) {
+      return res.status(400).json({ status: 'ERROR', message: 'Wilaya obligatoire' });
+    }
+    if (!Array.isArray(images) || images.length < 7) {
+      return res.status(400).json({
+        status: 'ERROR',
+        message: '7 صور إلزامية (' + (images || []).length + ' مستلمة)'
+      });
+    }
+
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      return res.status(500).json({ status: 'ERROR', message: 'Config manquante' });
+    }
+
+    const cleanCode = String(product_code).trim().toUpperCase();
+
+    // ─── 1. البحث عن الكود ───
+    const codeRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/qr_codes?secret_code=eq.${encodeURIComponent(cleanCode)}&select=id,is_shop_lot,shop_name,shop_user_id,product_price&limit=1`,
+      {
+        headers: {
+          'apikey': SUPABASE_SERVICE_ROLE_KEY,
+          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+
+    const codes = codeRes.ok ? await codeRes.json() : [];
+    let shopId = null;
+    let shopName = null;
+
+    // ─── 2. البحث عن المحل (بدون علمه) ───
+    if (codes.length > 0 && codes[0].is_shop_lot && codes[0].shop_user_id) {
+      const shopRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/verified_shops?user_id=eq.${codes[0].shop_user_id}&select=id,shop_name,status&limit=1`,
+        {
+          headers: {
+            'apikey': SUPABASE_SERVICE_ROLE_KEY,
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      const shops = shopRes.ok ? await shopRes.json() : [];
+      if (shops.length > 0) {
+        shopId = shops[0].id;
+        shopName = shops[0].shop_name;
+      }
+    }
+
+    // ─── 3. رفع 7 صور ───
+    const uploadedUrls = [];
+    const ts = Date.now();
+    const rand = Math.random().toString(36).slice(2, 8);
+
+    for (let i = 0; i < images.length && i < 7; i++) {
+      try {
+        const img = images[i];
+        if (!img || typeof img !== 'string') continue;
+
+        const match = img.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+        if (!match) continue;
+
+        const mime = match[1];
+        const b64 = match[2];
+        const buffer = Buffer.from(b64, 'base64');
+
+        if (buffer.length > 2 * 1024 * 1024) {
+          console.warn(`Image ${i + 1} trop grande:`, buffer.length);
+          continue;
+        }
+
+        const ext = mime.split('/')[1].replace('jpeg', 'jpg');
+        const fileName = `complaints/${cleanCode}-${ts}-${i}-${rand}.${ext}`;
+
+        const up = await fetch(
+          `${SUPABASE_URL}/storage/v1/object/fake-products/${fileName}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': mime,
+              'apikey': SUPABASE_SERVICE_ROLE_KEY,
+              'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+              'x-upsert': 'false'
+            },
+            body: buffer
+          }
+        );
+
+        if (up.ok) {
+          uploadedUrls.push(
+            `${SUPABASE_URL}/storage/v1/object/public/fake-products/${fileName}`
+          );
+        } else {
+          const err = await up.text();
+          console.error(`Upload ${i + 1} failed:`, err.slice(0, 150));
+        }
+      } catch (e) {
+        console.error(`Image ${i + 1} error:`, e.message);
+      }
+    }
+
+    if (uploadedUrls.length < 7) {
+      return res.status(500).json({
+        status: 'ERROR',
+        message: `فقط ${uploadedUrls.length}/7 صور رُفعت`,
+        uploaded: uploadedUrls.length
+      });
+    }
+
+    // ─── 4. إدراج الشكوى ───
+    const ip = getClientIp(req) || 'unknown';
+    const ua = req.headers['user-agent'] || 'unknown';
+    const cleanPrice = parseFloat(product_price) || 0;
+
+    const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/shop_complaints`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_SERVICE_ROLE_KEY,
+        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({
+        shop_id: shopId,
+        shop_name: shopName,
+        product_code: cleanCode,
+        customer_name: customer_name.trim().slice(0, 100),
+        customer_phone: customer_phone.trim().slice(0, 30),
+        customer_wilaya: customer_wilaya.trim().slice(0, 50),
+        product_price: cleanPrice,
+        purchase_location: (purchase_location || '').trim().slice(0, 300) || null,
+        notes: (notes || '').trim().slice(0, 1000) || null,
+        images: uploadedUrls,
+        image_count: uploadedUrls.length,
+        status: 'PENDING',
+        ip: ip,
+        user_agent: ua.slice(0, 300)
+      })
+    });
+
+    if (!insertRes.ok) {
+      const err = await insertRes.text();
+      console.error('Complaint insert error:', err);
+      return res.status(500).json({
+        status: 'ERROR',
+        message: 'Erreur enregistrement',
+        detail: err.slice(0, 200)
+      });
+    }
+
+    const inserted = await insertRes.json();
+    const complaint = Array.isArray(inserted) ? inserted[0] : inserted;
+
+    // ─── 5. إشعار واتساب للأدمن فقط ───
+    try {
+      await sendWhatsApp([
+        '🚨 *شكوى جديدة على محل*',
+        '',
+        `🏪 *المحل:* ${shopName || '(غير مرتبط)'}`,
+        `📦 *الكود:* ${cleanCode}`,
+        `👤 *الزبون:* ${customer_name}`,
+        `📱 *الهاتف:* ${customer_phone}`,
+        `📍 *الولاية:* ${customer_wilaya}`,
+        `💰 *السعر:* ${cleanPrice} دج`,
+        '',
+        '👉 راجعها في /admin'
+      ].join('\n'));
+    } catch (e) {
+      console.warn('WA notify error:', e.message);
+    }
+
+    return res.status(200).json({
+      status: 'OK',
+      message: 'تم استلام الشكوى بنجاح',
+      complaint_id: complaint.id,
+      images_count: uploadedUrls.length,
+      shop_linked: !!shopId
+    });
+
+  } catch (error) {
+    console.error('handleShopComplaint error:', error);
+    return res.status(500).json({
+      status: 'ERROR',
+      message: 'Erreur inattendue',
+      detail: String(error).slice(0, 300)
     });
   }
 }
