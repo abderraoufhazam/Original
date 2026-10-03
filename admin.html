@@ -1611,10 +1611,23 @@
           <h1 class="panel-title"><span class="panel-title-icon">🏢</span><span>Marques</span></h1>
           <p class="panel-sub">Toutes les marques inscrites et leurs statistiques.</p>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
-          <button id="refreshBrandsBtn" class="btn btn-ghost" style="flex:1;min-width:140px;">🔄 ACTUALISER</button>
-          <button id="exportBrandsBtn" class="btn btn-ghost" style="flex:1;min-width:140px;">📊 EXPORTER EXCEL</button>
-        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+  <button id="refreshComplaintsBtn" class="btn btn-ghost" style="flex:1;min-width:120px;">🔄 تحديث</button>
+  <button id="exportComplaintsBtn" class="btn btn-success" style="flex:1;min-width:120px;">📊 Excel</button>
+  <input id="complaintsSearch" placeholder="🔍 بحث..." style="flex:2;min-width:180px;">
+</div>
+
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+  <select id="complaintsWilaya" style="flex:1;min-width:180px;">
+    <option value="">📍 كل الولايات</option>
+  </select>
+  <select id="complaintsDate" style="flex:1;min-width:140px;">
+    <option value="all">📅 كل الفترات</option>
+    <option value="7">آخر 7 أيام</option>
+    <option value="30">آخر 30 يومًا</option>
+    <option value="90">آخر 3 أشهر</option>
+  </select>
+</div>
         <div id="brandsStats" class="stats-grid"></div>
         <div id="brandsList"></div>
       </section>
