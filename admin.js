@@ -1734,7 +1734,17 @@ if (_rfb) _rfb.onclick = () => loadFeedback();
 
 const _rbb = $("refreshBrandsBtn");
 if (_rbb) _rbb.onclick = () => loadBrands();
+const _rsb = $("refreshShopsBtn");
+if (_rsb) _rsb.onclick = () => loadShops();
 
+const _ssi = $("shopsSearch");
+if (_ssi) {
+  let _shopTimer;
+  _ssi.addEventListener("input", () => {
+    clearTimeout(_shopTimer);
+    _shopTimer = setTimeout(renderShopsList, 300);
+  });
+}
 const _rvb = $("refreshVisitorsBtn");
 if (_rvb) _rvb.onclick = () => loadVisitors();
 
@@ -1767,6 +1777,7 @@ document.querySelectorAll(".tabs .tab").forEach(t => {
     else if (parent.id === "messagesTabs") { currentMessagesFilter = t.dataset.tab; loadMessages(); }
     else if (parent.id === "visitorTabs") { currentVisitorFilter = t.dataset.tab; loadVisitors(); }
     else if (parent.id === "fakesTabs") { currentFakesFilter = t.dataset.tab; loadFakes(); }
+    else if (parent.id === "shopsTabs") { currentShopsTab = t.dataset.tab; renderShopsList(); }
   });
 });
 
