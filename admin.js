@@ -119,6 +119,7 @@ const PANEL_TITLES = {
   messages: "Messages",
   brands: "Marques",
   shops: "المحلات",
+  "shop-complaints": "شكاوى المحلات",
   visitors: "Visiteurs",
   fakes: "Contrefaçons",
   faq: "FAQ",
