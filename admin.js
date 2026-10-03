@@ -622,6 +622,44 @@ window.approveShop = async function(userId) {
 
     window.toast("✅ تم تفعيل المحل: " + data.shop_name, "success");
 
+    // ═══════════ إرسال بريد عبر Resend ═══════════
+    if (data.email) {
+      try {
+        const res = await fetch("/api/submit?type=notify-shop", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            to_email: data.email,
+            shop_name: data.shop_name,
+            shop_email: data.email,
+            shop_phone: data.phone || null,
+            wilaya: wilaya,
+            approved_date: new Date().toLocaleDateString("ar-DZ", {
+              year: "numeric", month: "long", day: "numeric"
+            })
+          })
+        });
+
+        const result = await res.json();
+
+        if (result.status === "OK") {
+          window.toast("📧 تم إرسال البريد إلى " + data.email, "success");
+        } else {
+          console.warn("Email send failed:", result);
+          window.toast("⚠️ لم يُرسل البريد — لكن المحل مُفعّل", "warning");
+        }
+      } catch (emailErr) {
+        console.warn("Email error:", emailErr);
+        window.toast("⚠️ خطأ في إرسال البريد", "warning");
+      }
+    }
+
+    loadShops();
+  } catch (e) {
+    window.toast("خطأ: " + e.message, "error");
+  }
+};
+
     // إشعار واتساب (اختياري)
     if (data.phone) {
       fetch("/api/submit?type=signup", {
