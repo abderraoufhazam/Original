@@ -2211,9 +2211,9 @@ if (_cwb) _cwb.addEventListener("change", () => {
   renderShopComplaints();
 });
 
-const _cdb = $("complaintsDate");
-if (_cdb) _cdb.addEventListener("change", () => {
-  currentComplaintsDateRange = _cdb.value;
+const _cdt = $("complaintsDate");
+if (_cdt) _cdt.addEventListener("change", () => {
+  currentComplaintsDateRange = _cdt.value;
   renderShopComplaints();
 });
 
