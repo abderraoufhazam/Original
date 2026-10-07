@@ -103,6 +103,55 @@
       font-size: 13px; font-weight: 800;
       border: 0; cursor: pointer;
     }
+    /* 🚨 زر الإبلاغ — أحمر */
+.btn-report {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  border: 0;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 6px 16px -4px rgba(220, 38, 38, 0.5);
+  transition: all 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-report::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: reportShine 3s infinite;
+}
+
+@keyframes reportShine {
+  0%, 100% { left: -100%; }
+  50% { left: 100%; }
+}
+
+.btn-report:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -6px rgba(220, 38, 38, 0.7);
+}
+
+/* على الموبايل — أيقونة فقط */
+@media (max-width: 640px) {
+  .btn-report {
+    padding: 9px 12px;
+    font-size: 14px;
+  }
+  .btn-report span[data-i18n="reportBtn"] {
+    display: none;
+  }
+}
 
     /* ============ HERO ============ */
     .hero {
@@ -693,7 +742,14 @@
       <button class="lang-btn" data-lang="fr">FR</button>
       <button class="lang-btn" data-lang="en">EN</button>
       <button class="dark-btn" id="darkBtn">🌙</button>
-      <a href="/login" class="btn-login">
+
+<!-- 🚨 زر الإبلاغ -->
+<a href="/report" class="btn-report" title="الإبلاغ عن منتج مقلد">
+  <span>🚨</span>
+  <span data-i18n="reportBtn">إبلاغ</span>
+</a>
+
+<a href="/login" class="btn-login">
         <span>🔐</span>
         <span data-i18n="loginBtn">دخول</span>
       </a>
