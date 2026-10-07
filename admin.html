@@ -13,25 +13,7 @@
       const isDark = localStorage.getItem("theme") !== "light";
       if (isDark) document.documentElement.classList.add("dark");
     })();
-  </script>
-  <div id="jsError" style="position:fixed;top:0;left:0;right:0;background:#dc2626;color:#fff;padding:12px 16px;z-index:9999999;display:none;font-family:monospace;font-size:12px;direction:ltr;text-align:left;"></div>
-<script>
-  window.onerror = function(msg, url, line, col) {
-    var e = document.getElementById('jsError');
-    if (e) {
-      e.style.display = 'block';
-      e.textContent = '❌ JS ERROR: ' + msg + ' @ ' + (url||'').split('/').pop() + ':' + line;
-    }
-    return false;
-  };
-  window.addEventListener('unhandledrejection', function(e) {
-    var el = document.getElementById('jsError');
-    if (el) {
-      el.style.display = 'block';
-      el.textContent = '❌ PROMISE: ' + (e.reason && e.reason.message ? e.reason.message : String(e.reason));
-    }
-  });
-</script>
+    
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
