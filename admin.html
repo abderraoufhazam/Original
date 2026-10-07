@@ -1516,5 +1516,24 @@
   updateDarkIcon();
 </script>
 <script src="/bot-guard.js"></script>
+<!-- DEBUG — سيُحذف لاحقًا -->
+<div id="dbg" style="position:fixed;bottom:0;left:0;right:0;background:#000;color:#0f0;padding:10px;font-family:monospace;font-size:11px;z-index:999999;line-height:1.5;"></div>
+<script>
+  function updateDbg() {
+    const dbg = document.getElementById('dbg');
+    if (!dbg) return;
+    const lp = document.getElementById('loginPage');
+    const aa = document.getElementById('adminApp');
+    const tb = document.querySelector('.topbar');
+    dbg.innerHTML =
+      'URL: ' + location.href.split('/').slice(-1)[0] + '<br>' +
+      'loginPage: ' + (lp ? (lp.classList.contains('hidden') ? '❌HIDDEN' : '✅shown') : 'MISSING') + '<br>' +
+      'adminApp: ' + (aa ? (aa.classList.contains('hidden') ? '❌HIDDEN' : '✅shown (' + getComputedStyle(aa).display + ')') : 'MISSING') + '<br>' +
+      'topbar: ' + (tb ? '✅exists' : '❌missing') + '<br>' +
+      'body height: ' + document.body.offsetHeight + 'px';
+  }
+  setInterval(updateDbg, 500);
+  updateDbg();
+</script>
 </body>
 </html>
