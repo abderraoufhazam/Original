@@ -276,12 +276,21 @@ html.dark .lang-switch button.active { background: var(--brand-green); }
 .mobile-menu {
   display: none;
   position: fixed;
-  inset: 0;
-  z-index: 999;
-  background: rgba(15, 23, 42, 0.7);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background: rgba(15, 23, 42, 0.75);
   backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   padding: 20px;
   overflow-y: auto;
+}
+.mobile-menu.open {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
 }
 .mobile-menu.open { display: flex; flex-direction: column; }
 
@@ -291,10 +300,11 @@ html.dark .lang-switch button.active { background: var(--brand-green); }
   padding: 24px;
   max-width: 420px;
   width: 100%;
-  margin: auto;
   box-shadow: var(--shadow-lg);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  margin-top: 20px;
 }
-
 .mobile-menu-header {
   display: flex;
   justify-content: space-between;
