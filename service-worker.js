@@ -1,7 +1,7 @@
 // service-worker.js
 // Original — Service Worker v23
 
-const CACHE_VERSION = "v29";
+const CACHE_VERSION = "v30";
 const CACHE_NAME = `original-${CACHE_VERSION}`;
 const OFFLINE_CACHE = `original-offline-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `original-runtime-${CACHE_VERSION}`;
@@ -9,6 +9,10 @@ const RUNTIME_CACHE = `original-runtime-${CACHE_VERSION}`;
 const CORE_ASSETS = [
   "/",
   "/landing.html",
+  "/about.html",
+"/about",
+"/site-layout.css",
+"/site-layout.js",
   "/verify.html",
   "/verify",
   "/signup.html",
