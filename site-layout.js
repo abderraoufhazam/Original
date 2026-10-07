@@ -1,32 +1,28 @@
 // ============================================================
-// OriginalDz — Site Layout System v1.0
-// يُنشئ Header و Footer تلقائيًا في كل صفحة
-// 
-// الاستخدام في كل صفحة:
-//   1. أضف في <head>:
-//      <link rel="stylesheet" href="/site-layout.css">
-//      <script>window.SITE_PAGE = "home";</script>
-//   2. أضف في <body>:
-//      <div id="site-header"></div>
-//      ... محتوى الصفحة ...
-//      <div id="site-footer"></div>
-//      <script src="/site-layout.js"></script>
+// OriginalDz — Site Layout System v1.1
+// Header + Footer موحّد لكل الصفحات
 // ============================================================
 
 (function() {
-  // ─── الصفحات ───
+  // ─── الصفحات في القائمة العلوية ───
   const PAGES = [
-    { id: "home",     url: "/",              ar: "الرئيسية",  fr: "Accueil" },
-    { id: "how",      url: "/how-it-works",  ar: "كيف يعمل",  fr: "Comment ça marche" },
-    { id: "pricing",  url: "/pricing",       ar: "الأسعار",   fr: "Tarifs" },
-    { id: "about",    url: "/about",         ar: "من نحن",    fr: "À propos" },
-    { id: "faq",      url: "/faq",           ar: "الأسئلة",   fr: "FAQ" },
-    { id: "report",   url: "/report",        ar: "الإبلاغ",   fr: "Signaler" },
-    { id: "contact",  url: "/contact",       ar: "اتصل بنا",  fr: "Contact" }
+    { id: "home",     url: "/",              ar: "الرئيسية",       fr: "Accueil",             en: "Home" },
+    { id: "how",      url: "/how-it-works",  ar: "كيف يعمل",       fr: "Comment ça marche",   en: "How it works" },
+    { id: "pricing",  url: "/pricing",       ar: "الأسعار",        fr: "Tarifs",              en: "Pricing" },
+    { id: "about",    url: "/about",         ar: "من نحن",         fr: "À propos",            en: "About" },
+    { id: "faq",      url: "/faq",           ar: "الأسئلة",        fr: "FAQ",                 en: "FAQ" },
+    { id: "team",     url: "/team",          ar: "الفريق",         fr: "Équipe",              en: "Team" },
+    { id: "report",   url: "/report",        ar: "الإبلاغ",        fr: "Signaler",            en: "Report" },
+    { id: "contact",  url: "/contact",       ar: "اتصل بنا",       fr: "Contact",             en: "Contact" }
   ];
 
   // ─── الحالة ───
   let currentLang = localStorage.getItem("lang") || "ar";
+  if (!localStorage.getItem("lang")) {
+    const bl = (navigator.language || "ar").toLowerCase().slice(0, 2);
+    currentLang = bl === "fr" ? "fr" : bl === "en" ? "en" : "ar";
+  }
+
   const isDark = localStorage.getItem("theme") === "dark";
   if (isDark) document.documentElement.classList.add("dark");
 
@@ -37,22 +33,27 @@
     ar: {
       home: "الرئيسية", how: "كيف يعمل", pricing: "الأسعار",
       about: "من نحن", faq: "الأسئلة", report: "الإبلاغ",
+      team: "الفريق", "case-studies": "دراسات الحالة",
+      privacy: "الخصوصية", terms: "الشروط",
       contact: "اتصل بنا",
+
       loginBtn: "دخول",
       signupBtn: "تسجيل",
       tagline: "الحماية من التقليد",
+      menu: "القائمة",
+
       footerDesc: "نظام جزائري احترافي لحماية المنتجات من التقليد، عبر QR وكود سري مخفي.",
       platform: "المنصة",
       company: "الشركة",
       contactCol: "تواصل",
+      legal: "قانوني",
+
       verify: "التحقق",
       signupLink: "التسجيل",
       howItWorks: "كيف يعمل",
       aboutLink: "من نحن",
       pricingLink: "الأسعار",
       faqLink: "الأسئلة",
-      privacy: "الخصوصية",
-      terms: "الشروط",
       reportFake: "الإبلاغ عن تقليد",
       contactUs: "اتصل بنا",
       rights: "جميع الحقوق محفوظة"
@@ -60,22 +61,27 @@
     fr: {
       home: "Accueil", how: "Comment ça marche", pricing: "Tarifs",
       about: "À propos", faq: "FAQ", report: "Signaler",
+      team: "Équipe", "case-studies": "Cas d'étude",
+      privacy: "Confidentialité", terms: "Conditions",
       contact: "Contact",
+
       loginBtn: "Connexion",
       signupBtn: "Inscription",
       tagline: "Protection anti-contrefaçon",
+      menu: "Menu",
+
       footerDesc: "Système algérien professionnel de protection des produits contre la contrefaçon.",
       platform: "Plateforme",
       company: "Entreprise",
       contactCol: "Contact",
+      legal: "Légal",
+
       verify: "Vérifier",
       signupLink: "Inscription",
       howItWorks: "Comment ça marche",
       aboutLink: "À propos",
       pricingLink: "Tarifs",
       faqLink: "FAQ",
-      privacy: "Confidentialité",
-      terms: "Conditions",
       reportFake: "Signaler",
       contactUs: "Contactez-nous",
       rights: "Tous droits réservés"
@@ -83,22 +89,27 @@
     en: {
       home: "Home", how: "How it works", pricing: "Pricing",
       about: "About", faq: "FAQ", report: "Report",
+      team: "Team", "case-studies": "Case studies",
+      privacy: "Privacy", terms: "Terms",
       contact: "Contact",
+
       loginBtn: "Login",
       signupBtn: "Sign up",
       tagline: "Anti-counterfeit protection",
+      menu: "Menu",
+
       footerDesc: "Algerian professional system protecting products from counterfeiting.",
       platform: "Platform",
       company: "Company",
       contactCol: "Contact",
+      legal: "Legal",
+
       verify: "Verify",
       signupLink: "Sign up",
       howItWorks: "How it works",
       aboutLink: "About",
       pricingLink: "Pricing",
       faqLink: "FAQ",
-      privacy: "Privacy",
-      terms: "Terms",
       reportFake: "Report",
       contactUs: "Contact us",
       rights: "All rights reserved"
@@ -164,7 +175,7 @@
       <div class="mobile-menu" id="siteMobileMenu">
         <div class="mobile-menu-inner">
           <div class="mobile-menu-header">
-            <div class="mobile-menu-title">📱 القائمة</div>
+            <div class="mobile-menu-title">📱 ${t("menu")}</div>
             <button class="icon-btn" id="siteMobileClose">✕</button>
           </div>
           <nav class="mobile-menu-nav">
@@ -213,8 +224,9 @@
             <h5>${t("company")}</h5>
             <ul>
               <li><a href="/about">🏢 ${t("aboutLink")}</a></li>
+              <li><a href="/team">👥 ${t("team")}</a></li>
+              <li><a href="/case-studies">📊 ${t("case-studies")}</a></li>
               <li><a href="/faq">❓ ${t("faqLink")}</a></li>
-              <li><a href="/report">🚨 ${t("reportFake")}</a></li>
               <li><a href="/contact">📞 ${t("contactUs")}</a></li>
             </ul>
           </div>
@@ -225,6 +237,15 @@
               <li><a href="https://wa.me/213556339415" target="_blank" rel="noopener">💬 WhatsApp</a></li>
               <li><a href="mailto:mepirf@gmail.com">📧 mepirf@gmail.com</a></li>
               <li><a href="tel:+213556339415">📱 +213 556 339 415</a></li>
+            </ul>
+          </div>
+
+          <div class="site-footer-col">
+            <h5>${t("legal")}</h5>
+            <ul>
+              <li><a href="/privacy">🔒 ${t("privacy")}</a></li>
+              <li><a href="/terms">📜 ${t("terms")}</a></li>
+              <li><a href="/report">🚨 ${t("reportFake")}</a></li>
             </ul>
           </div>
         </div>
@@ -238,26 +259,26 @@
 
   // ─── Injection ───
   function inject() {
-  const headerEl = document.getElementById("site-header");
-  const footerEl = document.getElementById("site-footer");
+    const headerEl = document.getElementById("site-header");
+    const footerEl = document.getElementById("site-footer");
 
-  if (headerEl) {
-    headerEl.className = "site-header";
-    headerEl.innerHTML = buildHeader();
-  }
-  if (footerEl) {
-    footerEl.className = "site-footer";
-    footerEl.innerHTML = buildFooter();
-  }
+    if (headerEl) {
+      headerEl.className = "site-header";
+      headerEl.innerHTML = buildHeader();
+    }
+    if (footerEl) {
+      footerEl.className = "site-footer";
+      footerEl.innerHTML = buildFooter();
+    }
 
-  // 🎯 نقل القائمة إلى body (خارج الـheader) لتجنب مشكلة backdrop-filter
-  const mobileMenu = document.getElementById("siteMobileMenu");
-  if (mobileMenu && mobileMenu.parentElement) {
-    document.body.appendChild(mobileMenu);
-  }
+    // نقل القائمة إلى body
+    const mobileMenu = document.getElementById("siteMobileMenu");
+    if (mobileMenu && mobileMenu.parentElement) {
+      document.body.appendChild(mobileMenu);
+    }
 
-  setupHandlers();
-}
+    setupHandlers();
+  }
 
   // ─── Handlers ───
   function setupHandlers() {
