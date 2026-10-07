@@ -585,3 +585,71 @@ html.dark .lang-switch button.active { background: var(--brand-green); }
 /* ═══════════ UTILITIES ═══════════ */
 .hidden { display: none !important; }
 .text-center { text-align: center; }
+
+/* ═══════════ MOBILE OPTIMIZATIONS ═══════════ */
+
+/* على الموبايل — إخفاء النصوص والأزرار الثانوية */
+@media (max-width: 1023px) {
+  /* إخفاء نصوص الأزرار — إبقاء الأيقونات فقط */
+  .hide-mobile {
+    display: none !important;
+  }
+
+  /* تصغير الشعار */
+  .site-logo img {
+    width: 34px;
+    height: 34px;
+  }
+
+  .site-logo-text b {
+    font-size: 13px;
+  }
+
+  .site-logo-text small {
+    font-size: 8px;
+    letter-spacing: 1.5px;
+  }
+
+  /* تصغير الأزرار */
+  .site-btn {
+    padding: 8px 10px;
+    font-size: 13px;
+    gap: 4px;
+  }
+
+  /* تصغير زر Dark Mode */
+  .icon-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 14px;
+  }
+
+  /* تصغير Lang Switcher */
+  .lang-switch {
+    padding: 2px;
+  }
+
+  .lang-switch button {
+    padding: 4px 6px;
+    font-size: 10px;
+  }
+
+  /* تصغير القائمة */
+  .mobile-menu-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 16px;
+  }
+}
+
+/* للشاشات الصغيرة جدًا (< 400px) — إخفاء Dark Mode و Lang Switcher */
+@media (max-width: 400px) {
+  .lang-switch,
+  .icon-btn#siteDarkToggle {
+    display: none !important;
+  }
+
+  .site-logo-text small {
+    display: none;
+  }
+}
