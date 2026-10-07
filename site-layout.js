@@ -238,20 +238,26 @@
 
   // ─── Injection ───
   function inject() {
-    const headerEl = document.getElementById("site-header");
-    const footerEl = document.getElementById("site-footer");
+  const headerEl = document.getElementById("site-header");
+  const footerEl = document.getElementById("site-footer");
 
-    if (headerEl) {
-      headerEl.className = "site-header";
-      headerEl.innerHTML = buildHeader();
-    }
-    if (footerEl) {
-      footerEl.className = "site-footer";
-      footerEl.innerHTML = buildFooter();
-    }
-
-    setupHandlers();
+  if (headerEl) {
+    headerEl.className = "site-header";
+    headerEl.innerHTML = buildHeader();
   }
+  if (footerEl) {
+    footerEl.className = "site-footer";
+    footerEl.innerHTML = buildFooter();
+  }
+
+  // 🎯 نقل القائمة إلى body (خارج الـheader) لتجنب مشكلة backdrop-filter
+  const mobileMenu = document.getElementById("siteMobileMenu");
+  if (mobileMenu && mobileMenu.parentElement) {
+    document.body.appendChild(mobileMenu);
+  }
+
+  setupHandlers();
+}
 
   // ─── Handlers ───
   function setupHandlers() {
