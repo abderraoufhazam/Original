@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>سياسة الخصوصية — OriginalDz</title>
+  <link rel="icon" type="image/svg+xml" href="/icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="stylesheet" href="/site-layout.css">
+  <script>window.SITE_PAGE = "privacy";</script>
+  <script>
+    (function() {
+      const isDark = localStorage.getItem("theme") === "dark";
+      if (isDark) document.documentElement.classList.add("dark");
+    })();
+  </script>
+  <style>
+    .legal h2 {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--text);
+      margin: 32px 0 14px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .legal h2:first-child { margin-top: 0; }
+    .legal p, .legal li {
+      font-size: 14.5px;
+      line-height: 1.9;
+      color: var(--text-muted);
+    }
+    .legal ul {
+      padding-right: 24px;
+      margin: 8px 0 16px;
+    }
+    .legal li { margin-bottom: 6px; }
+    .legal strong { color: var(--text); font-weight: 800; }
+    .legal-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+    }
+    @media (max-width: 640px) {
+      .legal-box { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="container page-hero-inner">
+    <div class="page-hero-badge">🔒 سياسة الخصوصية</div>
+    <h1>خصوصيتك تهمّنا</h1>
+    <p>نحن نحترم بياناتك ونحميها بأعلى المعايير.</p>
+  </div>
+</section>
+
+<main class="page-content">
+  <div class="container" style="max-width: 820px;">
+    <div class="legal-box legal">
+
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">
+        <b>آخر تحديث:</b> <span id="lastUpdate">—</span>
+      </p>
+
+      <h2>1️⃣ المعلومات التي نجمعها</h2>
+      <p>نجمع نوعين من المعلومات:</p>
+
+      <p style="margin-top:12px;"><strong>أ) معلومات تقدّمها بنفسك:</strong></p>
+      <ul>
+        <li>الاسم الكامل</li>
+        <li>البريد الإلكتروني</li>
+        <li>رقم الهاتف</li>
+        <li>الولاية والمدينة</li>
+        <li>اسم المحل أو العلامة التجارية</li>
+        <li>الصور المرفقة مع البلاغات</li>
+      </ul>
+
+      <p><strong>ب) معلومات تُجمع تلقائيًا:</strong></p>
+      <ul>
+        <li>عنوان IP</li>
+        <li>نوع المتصفح ونظام التشغيل</li>
+        <li>تواريخ وأوقات الزيارة</li>
+        <li>الصفحات التي زرتها</li>
+      </ul>
+
+      <h2>2️⃣ كيف نستخدم معلوماتك</h2>
+      <ul>
+        <li>لتفعيل حسابك وإدارة طلباتك</li>
+        <li>للتحقق من الأكواد وكشف التقليد</li>
+        <li>لمعالجة بلاغات التقليد</li>
+        <li>لإرسال إشعارات مهمة (تحديث الطلبات، الردود)</li>
+        <li>لتحسين الخدمة وتطوير الميزات</li>
+        <li>لمنع الاحتيال واستخدام البوتات</li>
+      </ul>
+
+      <h2>3️⃣ حماية البيانات</h2>
+      <p>نستخدم أحدث المعايير التقنية لحماية بياناتك:</p>
+      <ul>
+        <li><strong>تشفير AES-256</strong> لكل الأكواد السريّة</li>
+        <li><strong>HTTPS/TLS</strong> لكل الاتصالات</li>
+        <li><strong>RLS (Row Level Security)</strong> في قاعدة البيانات</li>
+        <li><strong>2FA</strong> على حسابات الأدمن</li>
+        <li>مراجعة دورية للثغرات الأمنية</li>
+      </ul>
+
+      <h2>4️⃣ مشاركة البيانات</h2>
+      <p>
+        <strong>لا نبيع بياناتك لأي طرف ثالث.</strong> قد نشاركها فقط في الحالات التالية:
+      </p>
+      <ul>
+        <li>مع موفّري الخدمات الموثوقين (Supabase, Vercel, Brevo) — لتشغيل النظام</li>
+        <li>إذا طلبت السلطات القانونية ذلك (بموجب القانون الجزائري)</li>
+        <li>بموافقتك الصريحة</li>
+      </ul>
+
+      <h2>5️⃣ Cookies والتتبّع</h2>
+      <p>نستخدم:</p>
+      <ul>
+        <li><strong>Cookies ضرورية:</strong> للحفاظ على جلسة تسجيل الدخول</li>
+        <li><strong>Local Storage:</strong> لحفظ اللغة والإعدادات</li>
+        <li><strong>Turnstile:</strong> للحماية من البوتات</li>
+      </ul>
+      <p>لا نستخدم cookies إعلانية أو تتبّع عبر مواقع أخرى.</p>
+
+      <h2>6️⃣ حقوقك</h2>
+      <p>لك الحق في:</p>
+      <ul>
+        <li>الوصول إلى بياناتك في أي وقت</li>
+        <li>تصحيح أي معلومة خاطئة</li>
+        <li>طلب حذف حسابك وبياناتك</li>
+        <li>الاعتراض على معالجة بياناتك</li>
+        <li>الحصول على نسخة من بياناتك (JSON)</li>
+      </ul>
+      <p>للتواصل بخصوص أي حق: <b>mepirf@gmail.com</b></p>
+
+      <h2>7️⃣ مدة الاحتفاظ بالبيانات</h2>
+      <ul>
+        <li><strong>حساب نشط:</strong> نحتفظ ببياناتك طالما حسابك مُفعّل</li>
+        <li><strong>حساب محذوف:</strong> نحذف بياناتك خلال 30 يومًا</li>
+        <li><strong>بلاغات التقليد:</strong> نحتفظ بها لمدة 5 سنوات (لأغراض قانونية)</li>
+        <li><strong>سجلات التحقق:</strong> نحتفظ بها لمدة سنة</li>
+      </ul>
+
+      <h2>8️⃣ الأطفال</h2>
+      <p>
+        خدمتنا موجّهة للأشخاص الذين تبلغ أعمارهم 16 عامًا أو أكثر. لا نجمع بيانات الأطفال دون علمنا.
+      </p>
+
+      <h2>9️⃣ التحديثات على هذه السياسة</h2>
+      <p>
+        قد نُحدّث هذه السياسة من وقت لآخر. في حالة التغييرات الجوهرية، سنُرسل إشعارًا عبر البريد الإلكتروني قبل 30 يومًا من تطبيقها.
+      </p>
+
+      <h2>🔟 التواصل</h2>
+      <p>لأي استفسار حول الخصوصية:</p>
+      <ul>
+        <li>📧 <b>mepirf@gmail.com</b></li>
+        <li>📱 <b>+213 556 339 415</b> (واتساب)</li>
+        <li>🌐 <b>originaldz.online/contact</b></li>
+      </ul>
+
+    </div>
+  </div>
+</main>
+
+<div id="site-footer"></div>
+
+<script src="/site-layout.js"></script>
+<script>
+  document.getElementById('lastUpdate').textContent = new Date().toLocaleDateString('ar-DZ', { year: 'numeric', month: 'long', day: 'numeric' });
+</script>
+<script src="/bot-guard.js"></script>
+</body>
+</html>
