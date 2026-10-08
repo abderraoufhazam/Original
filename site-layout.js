@@ -334,11 +334,43 @@
       document.body.appendChild(mobileMenu);
     }
 
-    // 🌍 زر اللغة العائم
-    injectLangSwitcher();
+      // 🌍 زر اللغة العائم
+  injectLangSwitcher();
 
-    setupHandlers();
-  }
+  setupHandlers();
+
+  // 🌐 تطبيق ترجمات المحتوى
+  applyContentTranslations();
+}
+
+// ─── تطبيق ترجمات المحتوى ───
+function applyContentTranslations() {
+  const pageId = currentPage;
+  if (!pageId) return;
+
+  const translations = window.CONTENT_TRANSLATIONS;
+  if (!translations || !translations[pageId]) return;
+
+  const pageTranslations = translations[pageId];
+
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.dataset.i18n;
+    if (!key) return;
+
+    const entry = pageTranslations[key];
+    if (!entry) return;
+
+    const val = entry[currentLang] || entry.ar;
+    if (!val) return;
+
+    // للـplaceholder
+    if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
+      el.placeholder = val;
+    } else {
+      el.textContent = val;
+    }
+  });
+}
 
   // ─── زر اللغة العائم ───
   function injectLangSwitcher() {
