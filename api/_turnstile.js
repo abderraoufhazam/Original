@@ -7,12 +7,10 @@ export async function verifyTurnstile(token, remoteIp = null) {
   }
 
   const secret = process.env.TURNSTILE_SECRET_KEY;
-  if (!secret) {
-    console.error('TURNSTILE_SECRET_KEY not configured');
-    // ⚠️ في حال عدم الإعداد، نسمح بالمرور (dev mode)
-    // 🔴 لكن يجب رفع هذا التحذير للمراجعة
-    return { success: true, warning: 'secret-not-configured' };
-  }
+if (!secret) {
+  console.error('❌ CRITICAL: TURNSTILE_SECRET_KEY not configured');
+  return { success: false, error: 'server-misconfigured' };
+}
 
   try {
     const body = new URLSearchParams();
