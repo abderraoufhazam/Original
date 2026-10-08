@@ -618,3 +618,165 @@ html.dark .lang-switch button.active { background: var(--brand-green); }
   .icon-btn#siteDarkToggle { display: none !important; }
   .site-logo-text small { display: none; }
 }
+
+/* ═══════════ NAV DROPDOWN (قانوني) ═══════════ */
+.site-nav-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.site-nav-dropdown-btn {
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: all 180ms ease;
+  white-space: nowrap;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: inherit;
+  background: transparent;
+  border: 0;
+}
+
+.site-nav-dropdown-btn:hover,
+.site-nav-dropdown.open .site-nav-dropdown-btn {
+  color: var(--text);
+  background: var(--bg-alt);
+}
+
+.site-nav-dropdown.open .site-nav-dropdown-btn {
+  color: var(--brand-green);
+}
+
+.site-nav-dropdown-arrow {
+  font-size: 10px;
+  transition: transform 200ms ease;
+}
+
+.site-nav-dropdown.open .site-nav-dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.site-nav-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 180px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 12px 32px -8px rgba(15, 23, 42, 0.18);
+  display: none;
+  z-index: 200;
+  animation: dropdownIn 200ms ease;
+}
+
+.site-nav-dropdown.open .site-nav-dropdown-menu {
+  display: block;
+}
+
+@keyframes dropdownIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.site-nav-dropdown-menu a {
+  display: block;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: all 180ms ease;
+  white-space: nowrap;
+}
+
+.site-nav-dropdown-menu a:hover {
+  background: var(--bg-alt);
+  color: var(--brand-green);
+}
+
+html[dir="rtl"] .site-nav-dropdown-menu {
+  right: auto;
+  left: 0;
+}
+
+/* ═══════════ MOBILE NAV GROUP (القائمة المنبثقة في الموبايل) ═══════════ */
+.mobile-nav-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-nav-toggle {
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  transition: all 180ms;
+  background: transparent;
+  border: 0;
+  width: 100%;
+  font-family: inherit;
+  text-align: right;
+}
+
+html[dir="ltr"] .mobile-nav-toggle {
+  text-align: left;
+}
+
+.mobile-nav-toggle:hover,
+.mobile-nav-group.open .mobile-nav-toggle {
+  background: var(--bg-alt);
+  color: var(--brand-green);
+}
+
+.mobile-nav-arrow {
+  font-size: 12px;
+  transition: transform 200ms ease;
+}
+
+.mobile-nav-group.open .mobile-nav-arrow {
+  transform: rotate(180deg);
+}
+
+.mobile-nav-children {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 300ms ease;
+  padding-right: 12px;
+}
+
+html[dir="ltr"] .mobile-nav-children {
+  padding-right: 0;
+  padding-left: 12px;
+}
+
+.mobile-nav-group.open .mobile-nav-children {
+  max-height: 200px;
+}
+
+.mobile-sub-link {
+  padding: 10px 14px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: var(--text-muted) !important;
+  border-radius: 8px !important;
+  display: block;
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
+.mobile-sub-link:hover {
+  background: var(--bg-alt) !important;
+  color: var(--brand-green) !important;
+}
