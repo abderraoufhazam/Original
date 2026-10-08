@@ -4,7 +4,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>الأسئلة الشائعة — OriginalDz</title>
-  <meta name="description" content="أجوبة على أكثر الأسئلة شيوعًا عن OriginalDz.">
   <link rel="icon" type="image/svg+xml" href="/icon.png">
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#0f172a">
@@ -27,33 +26,20 @@
     }
     .faq-item:hover { border-color: var(--brand-green); }
     .faq-q {
-      width: 100%;
-      padding: 20px 24px;
-      background: transparent;
-      border: 0;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 15.5px;
-      font-weight: 800;
-      color: var(--text);
-      text-align: start;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      width: 100%; padding: 20px 24px;
+      background: transparent; border: 0; cursor: pointer;
+      font-family: inherit; font-size: 15.5px; font-weight: 800;
+      color: var(--text); text-align: start;
+      display: flex; align-items: center; justify-content: space-between;
       gap: 16px;
     }
     .faq-icon {
-      flex-shrink: 0;
-      width: 32px;
-      height: 32px;
+      flex-shrink: 0; width: 32px; height: 32px;
       border-radius: 50%;
       background: rgba(22, 163, 74, 0.1);
       color: var(--brand-green);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 900;
       transition: transform 250ms ease;
     }
     .faq-item.open .faq-icon {
@@ -61,15 +47,10 @@
       background: var(--brand-green);
       color: #fff;
     }
-    .faq-a {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 350ms ease;
-    }
+    .faq-a { max-height: 0; overflow: hidden; transition: max-height 350ms ease; }
     .faq-a-inner {
       padding: 0 24px 20px;
-      font-size: 14.5px;
-      line-height: 1.8;
+      font-size: 14.5px; line-height: 1.8;
       color: var(--text-muted);
       border-top: 1px solid var(--border);
       padding-top: 16px;
@@ -82,9 +63,9 @@
 
 <section class="page-hero">
   <div class="container page-hero-inner">
-    <div class="page-hero-badge">❓ الأسئلة الشائعة</div>
-    <h1>كل ما تحتاج معرفته</h1>
-    <p>15 سؤالًا وجوابًا — مصنّفة حسب الموضوع.</p>
+    <div class="page-hero-badge" data-i18n="hero.badge">❓ الأسئلة الشائعة</div>
+    <h1 data-i18n="hero.title">كل ما تحتاج معرفته</h1>
+    <p data-i18n="hero.sub">15 سؤالًا وجوابًا — مصنّفة حسب الموضوع.</p>
   </div>
 </section>
 
@@ -93,105 +74,110 @@
 
     <!-- للماركات -->
     <section class="section">
-      <h2 class="section-title">🏢 للعلامات التجارية</h2>
+      <h2 class="section-title" data-i18n="cat.brands">🏢 للعلامات التجارية</h2>
 
       <div class="faq-item">
-        <button class="faq-q"><span>هل التسجيل مجاني حقًا؟</span><span class="faq-icon">+</span></button>
-        <div class="faq-a"><div class="faq-a-inner">نعم، مجاني 100% للعلامات التجارية. لا اشتراك شهري، ولا رسوم إنشاء أكواد. تدفع فقط إذا كنت محلًا (عربون قابل للاسترداد).</div></div>
+        <button class="faq-q"><span data-i18n="b.q1">هل التسجيل مجاني حقًا؟</span><span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner" data-i18n="b.a1">نعم، مجاني 100% للعلامات التجارية. لا اشتراك شهري، ولا رسوم إنشاء أكواد. تدفع فقط إذا كنت محلًا (عربون قابل للاسترداد).</div></div>
       </div>
 
       <div class="faq-item">
-        <button class="faq-q"><span>كم عدد الأكواد التي يمكنني إنشاؤها؟</span><span class="faq-icon">+</span></button>
-        <div class="faq-a"><div class="faq-a-inner">لا محدود. يمكنك إنشاء دفعة بـ500، 1000، 10,000، أو حتى مليون كود. كل دفعة لها رقم لوت خاص لتسهيل الإدارة.</div></div>
+        <button class="faq-q"><span data-i18n="b.q2">كم عدد الأكواد التي يمكنني إنشاؤها؟</span><span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner" data-i18n="b.a2">لا محدود. يمكنك إنشاء دفعة بـ100، 1000، 10,000، أو حتى مليون كود. كل دفعة لها رقم لوت خاص.</div></div>
       </div>
 
       <div class="faq-item">
-        <button class="faq-q"><span>ما هي مميزات الباقة المجانية؟</span><span class="faq-icon">+</span></button>
-        <div class="faq-a"><div class="faq-a-inner">كل شيء: أكواد لا محدودة، لوحة تحكم كاملة، تقارير، إحصائيات، دعم فني، تشفير AES-256، وتحديثات مجانية.</div></div>
+        <button class="faq-q"><span data-i18n="b.q3">كيف أطبع الملصقات؟</span><span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner" data-i18n="b.a3">من لوحة التحكم → "Gérer un lot" → اضغط "🖨 IMPRIMER". النظام يولّد PDF جاهز للطباعة بأحجام مختلفة.</div></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q"><span data-i18n="b.q4">ما هي مميزات الباقة المجانية؟</span><span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner" data-i18n="b.a4">كل شيء: أكواد لا محدودة، لوحة تحكم كاملة، تقارير، إحصائيات، دعم فني، تشفير AES-256، وتحديثات مجانية.</div></div>
       </div>
     </section>
 
     <!-- للمحلات -->
     <section class="section">
-      <h2 class="section-title">🏪 للمحلات الموثوقة</h2>
+      <h2 class="section-title" data-i18n="cat.shops">🏪 للمحلات الموثوقة</h2>
 
       <div class="faq-item">
-        <button class="faq-q"><span>كيف أسجّل محلي؟</span><span class="faq-icon">+</span></button>
-        <div class="faq-a"><div class="faq-a-inner">اذهب إلى /signup → اختر "🏪 محل" → املأ البيانات → اقبل الشروط. سيتم مراجعة طلبك خلال 24-48 ساعة.</div></div>
+        <button class="faq-q"><span data-i18n="s.q1">كيف أسجّل محلي؟</span><span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner" data-i18n="s.a1">اذهب إلى /signup → اختر "🏪 محل" → املأ البيانات → اقبل الشروط. سيتم مراجعة طلبك خلال 24-48 ساعة.</div></div>
       </div>
 
       <div class="faq-item">
-        <button class="faq-q"><span>كيف يتم دفع العربون؟</span><span class="faq-icon">+</span></button>
-        <div class="faq-a"><div class="faq-a-inner">حاليًا يدويًا (تحويل بنكي، CCP، أو نقدًا). قريبًا: دفع إلكتروني مباشر من الموقع.</div></div>
+        <button class="faq-q"><span data-i18n="s.q2">كيف يتم دفع العربون؟</span><span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner" data-i18n="s.a2">حاليًا يدويًا (تحويل بنكي، CCP، أو نقدًا). قريبًا: دفع إلكتروني مباشر من الموقع.</div></div>
       </div>
 
       <div class="faq-item">
-        <button class="faq-q"><span>متى أسترد العربون؟</span><span class="faq-icon">+</span></button>
-        <div class="faq-a"><div class="faq-a-inner">عند استخدام كل أكواد الدفعة. مثال: عربون 50,000 دج لـ500 كود — تسترده كاملًا عند استخدام 500/500 كود.</div></div>
+        <button class="faq-q"><span data-i18n="s.q3">متى أسترد العربون؟</span><span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner" data-i18n="s.a3">عند استخدام كل أكواد الدفعة. مثال: عربون 50,000 دج لـ500 كود — تسترده كاملًا عند استخدام 500/500 كود.</div></div>
       </div>
 
       <div class="faq-item">
-        <button class="faq-q"><span>ما هي شروط الحظر؟</span><span class="faq-icon">+</span></button>
-        <div class="faq-a"><div class="faq-a-inner">يُحظر المحل عند تحقق أحد الشرطين: 5 بلاغات مؤكدة من الزبائن، أو استهلاك 50% من العربون في التعويضات.</div></div>
+        <button class="faq-q"><span data-i18n="s.q4">ما هي شروط الحظر؟</span><span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner" data-i18n="s.a4">يُحظر المحل عند تحقق أحد الشرطين: 5 بلاغات مؤكدة من الزبائن، أو استهلاك 50% من العربون في التعويضات.</div></div>
       </div>
 
       <div class="faq-item">
-        <button class="faq-q"><span>كيف يعمل نظام التعويض؟</span><span class="faq-icon">+</span></button>
-        <div class="faq-a"><div class="faq-a-inner">عند إبلاغ زبون عن منتج مقلد (بعد التحقق من الأدمن)، يُخصم من عربونك 50% من سعر المنتج كتعويض للزبون.</div></div>
+        <button class="faq-q"><span data-i18n="s.q5">كيف يعمل نظام التعويض؟</span><span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner" data-i18n="s.a5">عند إبلاغ زبون عن منتج مقلد (بعد التحقق من الأدمن)، يُخصم من عربونك 50% من سعر المنتج كتعويض للزبون.</div></div>
       </div>
     </section>
 
-    <!-- للزبائن -->
+    <!-- للمستهلكين -->
     <section class="section">
-      <h2 class="section-title">👤 للمستهلكين</h2>
+      <h2 class="section-title" data-i18n="cat.customers">👤 للمستهلكين</h2>
 
       <div class="faq-item">
-        <button class="faq-q"><span>كيف أتحقق من منتج؟</span><span class="faq-icon">+</span></button>
-        <div class="faq-a"><div class="faq-a-inner">امسح QR على الملصق → اخدش الطبقة الفضية → أدخل الكود (7 أحرف) في صفحة التحقق → النتيجة تظهر فورًا.</div></div>
+        <button class="faq-q"><span data-i18n="c.q1">كيف أتحقق من منتج؟</span><span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner" data-i18n="c.a1">امسح QR على الملصق → اخدش الطبقة الفضية → أدخل الكود (7 أحرف) في صفحة التحقق → النتيجة تظهر فورًا.</div></div>
       </div>
 
       <div class="faq-item">
-        <button class="faq-q"><span>ماذا يعني "كود مستعمل"؟</span><span class="faq-icon">+</span></button>
-        <div class="faq-a"><div class="faq-a-inner">الكود صحيح، لكن تم التحقق منه سابقًا. إذا كنت أول من يشتري المنتج، فهذه إشارة خطر — قد يكون المنتج مقلدًا.</div></div>
+        <button class="faq-q"><span data-i18n="c.q2">ماذا يعني "كود مستعمل"؟</span><span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner" data-i18n="c.a2">الكود صحيح، لكن تم التحقق منه سابقًا. إذا كنت أول من يشتري المنتج، فهذه إشارة خطر — قد يكون المنتج مقلدًا.</div></div>
       </div>
 
       <div class="faq-item">
-        <button class="faq-q"><span>وجدت منتجًا مقلدًا — ماذا أفعل؟</span><span class="faq-icon">+</span></button>
-        <div class="faq-a"><div class="faq-a-inner">اذهب إلى /report → اختر نوع الإبلاغ (ماركة أو محل) → املأ البيانات + 7 صور → أرسل. سنراجع البلاغ خلال 24-48 ساعة.</div></div>
+        <button class="faq-q"><span data-i18n="c.q3">وجدت منتجًا مقلدًا — ماذا أفعل؟</span><span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner" data-i18n="c.a3">اذهب إلى /report → اختر نوع الإبلاغ (ماركة أو محل) → املأ البيانات + 7 صور → أرسل. سنراجع البلاغ خلال 24-48 ساعة.</div></div>
       </div>
 
       <div class="faq-item">
-        <button class="faq-q"><span>هل أحصل على تعويض؟</span><span class="faq-icon">+</span></button>
-        <div class="faq-a"><div class="faq-a-inner">نعم — إذا كان المنتج مقلدًا واشتريته من محل موثوق، تُعوَّض بـ50% من سعر المنتج بعد تأكيد البلاغ.</div></div>
+        <button class="faq-q"><span data-i18n="c.q4">هل أحصل على تعويض؟</span><span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner" data-i18n="c.a4">نعم — إذا كان المنتج مقلدًا واشتريته من محل موثوق، تُعوَّض بـ50% من سعر المنتج بعد تأكيد البلاغ.</div></div>
       </div>
     </section>
 
     <!-- تقنية -->
     <section class="section">
-      <h2 class="section-title">🔧 تقنية</h2>
+      <h2 class="section-title" data-i18n="cat.tech">🔧 تقنية</h2>
 
       <div class="faq-item">
-        <button class="faq-q"><span>هل النظام آمن؟</span><span class="faq-icon">+</span></button>
-        <div class="faq-a"><div class="faq-a-inner">نعم. كل الأكواد مشفّرة بـAES-256. حتى نحن لا نستطيع قراءتها بدون مفتاح التشفير. قاعدة البيانات محمية بـRLS.</div></div>
+        <button class="faq-q"><span data-i18n="t.q1">هل النظام آمن؟</span><span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner" data-i18n="t.a1">نعم. كل الأكواد مشفّرة بـAES-256. حتى نحن لا نستطيع قراءتها بدون مفتاح التشفير. قاعدة البيانات محمية بـRLS.</div></div>
       </div>
 
       <div class="faq-item">
-        <button class="faq-q"><span>هل يعمل بدون إنترنت؟</span><span class="faq-icon">+</span></button>
-        <div class="faq-a"><div class="faq-a-inner">التطبيق يعمل كـPWA — يمكن تثبيته على الهاتف والوصول لبعض الميزات offline بعد الزيارة الأولى.</div></div>
+        <button class="faq-q"><span data-i18n="t.q2">هل يعمل بدون إنترنت؟</span><span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner" data-i18n="t.a2">التطبيق يعمل كـPWA — يمكن تثبيته على الهاتف والوصول لبعض الميزات offline بعد الزيارة الأولى.</div></div>
       </div>
 
       <div class="faq-item">
-        <button class="faq-q"><span>ما هي الدول التي يعمل فيها؟</span><span class="faq-icon">+</span></button>
-        <div class="faq-a"><div class="faq-a-inner">النظام متاح عالميًا، لكنه مصمّم خصيصًا للسوق الجزائرية (58 ولاية، عملة دج، لغة عربية).</div></div>
+        <button class="faq-q"><span data-i18n="t.q3">ما هي الدول التي يعمل فيها؟</span><span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner" data-i18n="t.a3">النظام متاح عالميًا، لكنه مصمّم خصيصًا للسوق الجزائرية (58 ولاية، عملة دج، لغة عربية).</div></div>
       </div>
     </section>
 
     <!-- CTA -->
     <section class="section" style="text-align:center;">
-      <h2 class="section-title">لم تجد إجابتك؟</h2>
-      <p class="section-sub" style="margin:0 auto 32px;">تواصل معنا وسنجيبك في أقل من ساعة.</p>
+      <h2 class="section-title" data-i18n="final.title">لم تجد إجابتك؟</h2>
+      <p class="section-sub" style="margin:0 auto 32px;" data-i18n="final.sub">تواصل معنا وسنجيبك في أقل من ساعة.</p>
 
-      <a href="/contact" class="site-btn site-btn-green" style="padding:14px 28px;font-size:15px;">📞 اتصل بنا</a>
+      <a href="/contact" class="site-btn site-btn-green" style="padding:14px 28px;font-size:15px;" data-i18n="final.contact">📞 اتصل بنا</a>
     </section>
 
   </div>
@@ -199,6 +185,7 @@
 
 <div id="site-footer"></div>
 
+<script src="/i18n-content.js"></script>
 <script src="/site-layout.js"></script>
 <script>
   document.querySelectorAll('.faq-q').forEach(btn => {
