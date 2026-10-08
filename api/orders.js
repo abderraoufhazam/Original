@@ -86,11 +86,14 @@ async function verifyAdmin(req) {
     } catch (e) { console.warn('admins check failed:', e); }
 
     // Fallback مؤقت
-    if (!isAdmin) {
-      const FALLBACK = ['mepirf@gmail.com', 'abderraoufhazam@gmail.com'];
-      const callerEmail = (caller.email || '').toLowerCase().trim();
-      if (FALLBACK.includes(callerEmail)) isAdmin = true;
-    }
+if (!isAdmin) {
+  const FALLBACK = (process.env.ADMIN_EMAILS || '')
+    .split(',')
+    .map(e => e.trim().toLowerCase())
+    .filter(Boolean);
+  const callerEmail = (caller.email || '').toLowerCase().trim();
+  if (FALLBACK.includes(callerEmail)) isAdmin = true;
+}
 
     if (!isAdmin) {
       return { ok: false, status: 403, message: 'Accès refusé' };
