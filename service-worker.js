@@ -1,7 +1,7 @@
 // service-worker.js
-// Original — Service Worker v23
+// Original — Service Worker v33
 
-const CACHE_VERSION = "v32";
+const CACHE_VERSION = "v33";
 const CACHE_NAME = `original-${CACHE_VERSION}`;
 const OFFLINE_CACHE = `original-offline-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `original-runtime-${CACHE_VERSION}`;
@@ -9,24 +9,6 @@ const RUNTIME_CACHE = `original-runtime-${CACHE_VERSION}`;
 const CORE_ASSETS = [
   "/",
   "/landing.html",
-  "/about.html",
-"/about.html",
-"/how-it-works.html",
-"/how-it-works",
-"/pricing.html",
-"/pricing",
-"/faq.html",
-"/faq",
-"/team.html",
-"/team",
-"/case-studies.html",
-"/case-studies",
-"/privacy.html",
-"/privacy",
-"/terms.html",
-"/terms",
-"/site-layout.css",
-"/site-layout.js",
   "/verify.html",
   "/verify",
   "/signup.html",
@@ -39,11 +21,30 @@ const CORE_ASSETS = [
   "/brand",
   "/report.html",
   "/report",
+  "/about.html",
+  "/about",
+  "/how-it-works.html",
+  "/how-it-works",
+  "/pricing.html",
+  "/pricing",
+  "/faq.html",
+  "/faq",
+  "/team.html",
+  "/team",
+  "/case-studies.html",
+  "/case-studies",
+  "/privacy.html",
+  "/privacy",
+  "/terms.html",
+  "/terms",
   "/shop-dashboard.html",
   "/shop-terms.html",
   "/style.css",
+  "/site-layout.css",
   "/app.js",
   "/i18n.js",
+  "/i18n-content.js",
+  "/site-layout.js",
   "/chat.js",
   "/bot-guard.js",
   "/manifest.json",
@@ -185,9 +186,7 @@ self.addEventListener("push", (event) => {
 // NOTIFICATION CLICK
 // ============================================================
 self.addEventListener("notificationclick", async (event) => {
-  console.log("[SW] Notification clicked");
   event.notification.close();
-
   const url = event.notification.data?.url || "/brand";
 
   const clientList = await clients.matchAll({
