@@ -691,7 +691,7 @@ async function checkRealInternet() {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3000);
-    const res = await fetch("/icon.svg?_=" + Date.now(), {
+    const res = await fetch("/icon.png?_=" + Date.now(), {
       method: "HEAD",
       cache: "no-store",
       signal: controller.signal
