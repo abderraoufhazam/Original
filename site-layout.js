@@ -1,10 +1,10 @@
 // ============================================================
-// OriginalDz — Site Layout System v1.2
-// Header + Footer + Dropdown (قانوني)
+// OriginalDz — Site Layout System v1.3
+// Header + Footer + Dropdown (قانوني) + زر اللغة العائم
 // ============================================================
 
 (function() {
-  // ─── الصفحات في القائمة ───
+  // ─── الصفحات ───
   const PAGES = [
     { id: "home",     url: "/",              ar: "الرئيسية",   fr: "Accueil",           en: "Home" },
     { id: "how",      url: "/how-it-works",  ar: "كيف يعمل",   fr: "Comment ça marche", en: "How it works" },
@@ -52,6 +52,7 @@
       signupBtn: "تسجيل",
       tagline: "الحماية من التقليد",
       menu: "القائمة",
+      chooseLanguage: "اختر اللغة",
 
       footerDesc: "نظام جزائري احترافي لحماية المنتجات من التقليد، عبر QR وكود سري مخفي.",
       platform: "المنصة",
@@ -80,6 +81,7 @@
       signupBtn: "Inscription",
       tagline: "Protection anti-contrefaçon",
       menu: "Menu",
+      chooseLanguage: "Choisir la langue",
 
       footerDesc: "Système algérien professionnel de protection des produits contre la contrefaçon.",
       platform: "Plateforme",
@@ -108,6 +110,7 @@
       signupBtn: "Sign up",
       tagline: "Anti-counterfeit protection",
       menu: "Menu",
+      chooseLanguage: "Choose language",
 
       footerDesc: "Algerian professional system protecting products from counterfeiting.",
       platform: "Platform",
@@ -133,7 +136,6 @@
 
   // ─── Header HTML ───
   function buildHeader() {
-    // بناء روابط Nav (مع dropdown)
     const navLinks = PAGES.map(p => {
       if (p.isDropdown) {
         const items = p.children.map(c => {
@@ -156,7 +158,6 @@
       return `<a href="${p.url}" class="${isActive}">${label}</a>`;
     }).join("");
 
-    // بناء قائمة الموبايل
     const mobileNavLinks = PAGES.map(p => {
       if (p.isDropdown) {
         const items = p.children.map(c => {
@@ -216,13 +217,25 @@
         </div>
       </div>
 
-      <!-- Mobile Menu -->
       <div class="mobile-menu" id="siteMobileMenu">
         <div class="mobile-menu-inner">
           <div class="mobile-menu-header">
             <div class="mobile-menu-title">📱 ${t("menu")}</div>
             <button class="icon-btn" id="siteMobileClose">✕</button>
           </div>
+
+          <div class="mobile-lang-switch">
+            <button data-lang="ar" class="${currentLang === 'ar' ? 'active' : ''}">
+              <span>🇩🇿</span><span>العربية</span>
+            </button>
+            <button data-lang="fr" class="${currentLang === 'fr' ? 'active' : ''}">
+              <span>🇫🇷</span><span>Français</span>
+            </button>
+            <button data-lang="en" class="${currentLang === 'en' ? 'active' : ''}">
+              <span>🇬🇧</span><span>English</span>
+            </button>
+          </div>
+
           <nav class="mobile-menu-nav">
             ${mobileNavLinks}
           </nav>
@@ -321,7 +334,71 @@
       document.body.appendChild(mobileMenu);
     }
 
+    // 🌍 زر اللغة العائم
+    injectLangSwitcher();
+
     setupHandlers();
+  }
+
+  // ─── زر اللغة العائم ───
+  function injectLangSwitcher() {
+    if (document.getElementById("floatingLangSwitcher")) return;
+
+    const langNames = {
+      ar: { name: "العربية", flag: "🇩🇿" },
+      fr: { name: "Français", flag: "🇫🇷" },
+      en: { name: "English", flag: "🇬🇧" }
+    };
+
+    const current = langNames[currentLang] || langNames.ar;
+
+    const el = document.createElement("div");
+    el.id = "floatingLangSwitcher";
+    el.className = "floating-lang";
+    el.innerHTML = `
+      <button class="floating-lang-btn" id="floatingLangBtn" aria-label="${t("chooseLanguage")}">
+        <span class="floating-lang-icon">🌍</span>
+        <span class="floating-lang-current">${current.flag}</span>
+      </button>
+      <div class="floating-lang-menu" id="floatingLangMenu">
+        <button data-lang="ar" class="${currentLang === 'ar' ? 'active' : ''}">
+          <span>🇩🇿</span><span>العربية</span>
+          ${currentLang === 'ar' ? '<span class="check">✓</span>' : ''}
+        </button>
+        <button data-lang="fr" class="${currentLang === 'fr' ? 'active' : ''}">
+          <span>🇫🇷</span><span>Français</span>
+          ${currentLang === 'fr' ? '<span class="check">✓</span>' : ''}
+        </button>
+        <button data-lang="en" class="${currentLang === 'en' ? 'active' : ''}">
+          <span>🇬🇧</span><span>English</span>
+          ${currentLang === 'en' ? '<span class="check">✓</span>' : ''}
+        </button>
+      </div>
+    `;
+    document.body.appendChild(el);
+
+    const btn = document.getElementById("floatingLangBtn");
+    const menu = document.getElementById("floatingLangMenu");
+
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      el.classList.toggle("open");
+    });
+
+    menu.querySelectorAll("button").forEach(b => {
+      b.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const lang = b.dataset.lang;
+        localStorage.setItem("lang", lang);
+        location.reload();
+      });
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest("#floatingLangSwitcher")) {
+        el.classList.remove("open");
+      }
+    });
   }
 
   // ─── Handlers ───
@@ -339,8 +416,8 @@
       });
     }
 
-    // Language switcher
-    document.querySelectorAll(".lang-switch button").forEach(btn => {
+    // Language switcher (Header + Mobile Menu + Floating)
+    document.querySelectorAll(".lang-switch button, .mobile-lang-switch button").forEach(btn => {
       btn.addEventListener("click", () => {
         const lang = btn.dataset.lang;
         localStorage.setItem("lang", lang);
@@ -348,7 +425,7 @@
       });
     });
 
-    // Mobile menu open/close
+    // Mobile menu
     const mobileBtn = document.getElementById("siteMobileBtn");
     const mobileMenu = document.getElementById("siteMobileMenu");
     const mobileClose = document.getElementById("siteMobileClose");
@@ -376,7 +453,7 @@
       });
     }
 
-    // ─── Desktop dropdown ───
+    // Desktop dropdown
     document.querySelectorAll(".site-nav-dropdown").forEach(dd => {
       const btn = dd.querySelector(".site-nav-dropdown-btn");
       if (!btn) return;
@@ -390,14 +467,13 @@
       });
     });
 
-    // إغلاق عند الضغط خارج
     document.addEventListener("click", (e) => {
       if (!e.target.closest(".site-nav-dropdown")) {
         document.querySelectorAll(".site-nav-dropdown").forEach(dd => dd.classList.remove("open"));
       }
     });
 
-    // ─── Mobile dropdown (قانوني) ───
+    // Mobile dropdown
     document.querySelectorAll(".mobile-nav-toggle").forEach(btn => {
       btn.addEventListener("click", () => {
         const group = btn.closest(".mobile-nav-group");
