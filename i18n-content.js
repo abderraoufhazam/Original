@@ -149,4 +149,175 @@ window.CONTENT_TRANSLATIONS = {
     "final.signup": { ar: "✨ سجّل كماركة", fr: "✨ S'inscrire comme marque", en: "✨ Sign up as brand" }
   }
 
+  },
+
+  // ═══════════ FAQ PAGE ═══════════
+  faq: {
+    "hero.badge": { ar: "❓ الأسئلة الشائعة", fr: "❓ Questions fréquentes", en: "❓ FAQ" },
+    "hero.title": { ar: "كل ما تحتاج معرفته", fr: "Tout ce que vous devez savoir", en: "Everything you need to know" },
+    "hero.sub": { ar: "15 سؤالًا وجوابًا — مصنّفة حسب الموضوع.", fr: "15 questions et réponses — classées par thème.", en: "15 questions and answers — categorized." },
+
+    "cat.brands": { ar: "🏢 للعلامات التجارية", fr: "🏢 Pour les marques", en: "🏢 For brands" },
+    "cat.shops": { ar: "🏪 للمحلات الموثوقة", fr: "🏪 Pour les boutiques", en: "🏪 For shops" },
+    "cat.customers": { ar: "👤 للمستهلكين", fr: "👤 Pour les consommateurs", en: "👤 For customers" },
+    "cat.tech": { ar: "🔧 تقنية", fr: "🔧 Technique", en: "🔧 Technical" },
+
+    "b.q1": { ar: "هل التسجيل مجاني حقًا؟", fr: "L'inscription est-elle vraiment gratuite ?", en: "Is registration really free?" },
+    "b.a1": { ar: "نعم، مجاني 100% للعلامات التجارية. لا اشتراك شهري، ولا رسوم إنشاء أكواد. تدفع فقط إذا كنت محلًا (عربون قابل للاسترداد).", fr: "Oui, 100% gratuit pour les marques. Pas d'abonnement, pas de frais de génération. Payant uniquement pour les boutiques (dépôt remboursable).", en: "Yes, 100% free for brands. No subscription, no code generation fees. Only shops pay (refundable deposit)." },
+    "b.q2": { ar: "كم عدد الأكواد التي يمكنني إنشاؤها؟", fr: "Combien de codes puis-je créer ?", en: "How many codes can I create?" },
+    "b.a2": { ar: "لا محدود. يمكنك إنشاء دفعة بـ100، 1000، 10,000، أو حتى مليون كود. كل دفعة لها رقم لوت خاص.", fr: "Illimité. Vous pouvez créer des lots de 100, 1000, 10 000, ou même un million. Chaque lot a son numéro unique.", en: "Unlimited. Create batches of 100, 1000, 10,000, or even a million. Each batch has its own lot number." },
+    "b.q3": { ar: "كيف أطبع الملصقات؟", fr: "Comment imprimer les étiquettes ?", en: "How do I print labels?" },
+    "b.a3": { ar: "من لوحة التحكم → \"Gérer un lot\" → اضغط \"🖨 IMPRIMER\". النظام يولّد PDF جاهز للطباعة بأحجام مختلفة.", fr: "Tableau de bord → « Gérer un lot » → « 🖨 IMPRIMER ». PDF prêt en plusieurs tailles.", en: "Dashboard → \"Gérer un lot\" → \"🖨 IMPRIMER\". Ready PDF in various sizes." },
+    "b.q4": { ar: "ما هي مميزات الباقة المجانية؟", fr: "Quels sont les avantages de la formule gratuite ?", en: "What are the free plan features?" },
+    "b.a4": { ar: "كل شيء: أكواد لا محدودة، لوحة تحكم كاملة، تقارير، إحصائيات، دعم فني، تشفير AES-256، وتحديثات مجانية.", fr: "Tout : codes illimités, tableau de bord complet, rapports, stats, support, AES-256, mises à jour.", en: "Everything: unlimited codes, full dashboard, reports, stats, support, AES-256, free updates." },
+
+    "s.q1": { ar: "كيف أسجّل محلي؟", fr: "Comment inscrire ma boutique ?", en: "How do I register my shop?" },
+    "s.a1": { ar: "اذهب إلى /signup → اختر \"🏪 محل\" → املأ البيانات → اقبل الشروط. سيتم مراجعة طلبك خلال 24-48 ساعة.", fr: "Allez sur /signup → choisissez « 🏪 Boutique » → remplissez → acceptez les conditions. Vérification en 24-48h.", en: "Go to /signup → choose \"🏪 Shop\" → fill in → accept terms. Reviewed within 24-48h." },
+    "s.q2": { ar: "كيف يتم دفع العربون؟", fr: "Comment se paie le dépôt ?", en: "How is the deposit paid?" },
+    "s.a2": { ar: "حاليًا يدويًا (تحويل بنكي، CCP، أو نقدًا). قريبًا: دفع إلكتروني مباشر من الموقع.", fr: "Actuellement manuellement (virement, CCP, espèces). Bientôt : paiement en ligne.", en: "Currently manually (transfer, CCP, cash). Soon: online payment." },
+    "s.q3": { ar: "متى أسترد العربون؟", fr: "Quand le dépôt est-il remboursé ?", en: "When is the deposit refunded?" },
+    "s.a3": { ar: "عند استخدام كل أكواد الدفعة. مثال: عربون 50,000 دج لـ500 كود — تسترده كاملًا عند استخدام 500/500 كود.", fr: "À l'usage de tous les codes du lot. Ex : dépôt 50 000 DA pour 500 codes — remboursé à 500/500.", en: "When all batch codes are used. Ex: 50,000 DA deposit for 500 codes — refunded at 500/500." },
+    "s.q4": { ar: "ما هي شروط الحظر؟", fr: "Quelles sont les conditions de bannissement ?", en: "What are the ban conditions?" },
+    "s.a4": { ar: "يُحظر المحل عند تحقق أحد الشرطين: 5 بلاغات مؤكدة من الزبائن، أو استهلاك 50% من العربون في التعويضات.", fr: "La boutique est bannie si : 5 signalements confirmés ou 50% du dépôt épuisé en compensations.", en: "The shop is banned if: 5 confirmed reports or 50% of deposit used in compensations." },
+    "s.q5": { ar: "كيف يعمل نظام التعويض؟", fr: "Comment fonctionne le système de compensation ?", en: "How does compensation work?" },
+    "s.a5": { ar: "عند إبلاغ زبون عن منتج مقلد (بعد التحقق من الأدمن)، يُخصم من عربونك 50% من سعر المنتج كتعويض للزبون.", fr: "Si un client signale un contrefait (vérifié par l'admin), 50% du prix est déduit de votre dépôt pour le rembourser.", en: "If a customer reports a counterfeit (verified by admin), 50% of price is deducted from your deposit." },
+
+    "c.q1": { ar: "كيف أتحقق من منتج؟", fr: "Comment vérifier un produit ?", en: "How do I verify a product?" },
+    "c.a1": { ar: "امسح QR على الملصق → اخدش الطبقة الفضية → أدخل الكود (7 أحرف) في صفحة التحقق → النتيجة تظهر فورًا.", fr: "Scannez le QR → grattez la couche → entrez le code (7 caractères) → résultat immédiat.", en: "Scan QR → scratch layer → enter code (7 chars) → instant result." },
+    "c.q2": { ar: "ماذا يعني \"كود مستعمل\"؟", fr: "Que signifie « code déjà utilisé » ?", en: "What does \"code already used\" mean?" },
+    "c.a2": { ar: "الكود صحيح، لكن تم التحقق منه سابقًا. إذا كنت أول من يشتري المنتج، فهذه إشارة خطر — قد يكون المنتج مقلدًا.", fr: "Le code est valide mais déjà vérifié. Si vous êtes le premier acheteur, danger — possible contrefaçon.", en: "The code is valid but was already verified. If you're the first buyer, danger — possible counterfeit." },
+    "c.q3": { ar: "وجدت منتجًا مقلدًا — ماذا أفعل؟", fr: "J'ai trouvé un contrefait — que faire ?", en: "Found a counterfeit — what to do?" },
+    "c.a3": { ar: "اذهب إلى /report → اختر نوع الإبلاغ (ماركة أو محل) → املأ البيانات + 7 صور → أرسل. سنراجع البلاغ خلال 24-48 ساعة.", fr: "Allez sur /report → choisissez le type → remplissez + 7 photos → envoyez. Traitement sous 24-48h.", en: "Go to /report → choose type → fill + 7 photos → send. Reviewed within 24-48h." },
+    "c.q4": { ar: "هل أحصل على تعويض؟", fr: "Suis-je indemnisé ?", en: "Am I compensated?" },
+    "c.a4": { ar: "نعم — إذا كان المنتج مقلدًا واشتريته من محل موثوق، تُعوَّض بـ50% من سعر المنتج بعد تأكيد البلاغ.", fr: "Oui — si contrefait et acheté dans une boutique de confiance, 50% du prix après confirmation.", en: "Yes — if counterfeit and bought from a trusted shop, 50% of price after confirmation." },
+
+    "t.q1": { ar: "هل النظام آمن؟", fr: "Le système est-il sécurisé ?", en: "Is the system secure?" },
+    "t.a1": { ar: "نعم. كل الأكواد مشفّرة بـAES-256. حتى نحن لا نستطيع قراءتها بدون مفتاح التشفير. قاعدة البيانات محمية بـRLS.", fr: "Oui. Tous les codes sont chiffrés AES-256. Même nous ne pouvons les lire sans clé. Base protégée par RLS.", en: "Yes. All codes are AES-256 encrypted. Even we can't read without the key. DB protected by RLS." },
+    "t.q2": { ar: "هل يعمل بدون إنترنت؟", fr: "Fonctionne hors ligne ?", en: "Works offline?" },
+    "t.a2": { ar: "التطبيق يعمل كـPWA — يمكن تثبيته على الهاتف والوصول لبعض الميزات offline بعد الزيارة الأولى.", fr: "L'appli fonctionne en PWA — installable et fonctionne offline après la première visite.", en: "App works as PWA — installable and works offline after first visit." },
+    "t.q3": { ar: "ما هي الدول التي يعمل فيها؟", fr: "Dans quels pays fonctionne-t-il ?", en: "Which countries is it available in?" },
+    "t.a3": { ar: "النظام متاح عالميًا، لكنه مصمّم خصيصًا للسوق الجزائرية (58 ولاية، عملة دج، لغة عربية).", fr: "Disponible mondialement, mais conçu pour le marché algérien (58 wilayas, DA, arabe).", en: "Available worldwide, designed for the Algerian market (58 wilayas, DA, Arabic)." },
+
+    "final.title": { ar: "لم تجد إجابتك؟", fr: "Pas trouvé votre réponse ?", en: "Didn't find your answer?" },
+    "final.sub": { ar: "تواصل معنا وسنجيبك في أقل من ساعة.", fr: "Contactez-nous, réponse en moins d'une heure.", en: "Contact us, answered in less than an hour." },
+    "final.contact": { ar: "📞 اتصل بنا", fr: "📞 Contactez-nous", en: "📞 Contact us" }
+  },
+
+  // ═══════════ TEAM PAGE ═══════════
+  team: {
+    "hero.badge": { ar: "👥 الفريق", fr: "👥 Équipe", en: "👥 Team" },
+    "hero.title": { ar: "الفريق خلف OriginalDz", fr: "L'équipe derrière OriginalDz", en: "The team behind OriginalDz" },
+    "hero.sub": { ar: "مجموعة من المطورين والمتخصصين الجزائريين، يعملون لخدمة السوق المحلية.", fr: "Un groupe de développeurs et spécialistes algériens, au service du marché local.", en: "A group of Algerian developers and specialists serving the local market." },
+
+    "founder.title": { ar: "👑 المؤسس", fr: "👑 Le fondateur", en: "👑 The founder" },
+    "founder.name": { ar: "مؤسس OriginalDz", fr: "Fondateur d'OriginalDz", en: "Founder of OriginalDz" },
+    "founder.role": { ar: "المؤسس والمدير التقني", fr: "Fondateur et directeur technique", en: "Founder & CTO" },
+    "founder.bio": { ar: "مطوّر جزائري شغوف بحل المشاكل التقنية. بدأ مشروع OriginalDz بعد ملاحظة انتشار المنتجات المقلدة في السوق الجزائرية، وقرّر بناء حل تقني متكامل لحماية المستهلك ودعم العلامات التجارية.", fr: "Développeur algérien passionné par la résolution de problèmes techniques. Il a lancé OriginalDz après avoir constaté la prolifération des contrefaçons sur le marché algérien, décidant de bâtir une solution technique complète.", en: "Algerian developer passionate about solving technical problems. He started OriginalDz after noticing the spread of counterfeits in the Algerian market, deciding to build a complete technical solution." },
+
+    "teams.title": { ar: "🤝 فرق العمل", fr: "🤝 Équipes", en: "🤝 Teams" },
+    "teams.sub": { ar: "كل قسم يعمل بشكل متكامل لخدمتك.", fr: "Chaque département travaille de manière intégrée pour vous servir.", en: "Each department works integrated to serve you." },
+
+    "dev.title": { ar: "فريق التطوير", fr: "Équipe de développement", en: "Development team" },
+    "dev.text": { ar: "مهندسون بخبرة 5+ سنوات في الويب والتطبيقات. يبنون ويحدّثون النظام باستمرار.", fr: "Ingénieurs avec 5+ ans d'expérience web et mobile. Construisent et mettent à jour le système.", en: "Engineers with 5+ years in web and mobile. Build and update the system." },
+    "support.title": { ar: "فريق الدعم", fr: "Équipe de support", en: "Support team" },
+    "support.text": { ar: "متاح 24/7 عبر واتساب. يجيب على استفساراتك في أقل من ساعة.", fr: "Disponible 24/7 sur WhatsApp. Répond en moins d'une heure.", en: "Available 24/7 on WhatsApp. Answers in less than an hour." },
+    "verify.title": { ar: "فريق التحقق", fr: "Équipe de vérification", en: "Verification team" },
+    "verify.text": { ar: "خبراء في مكافحة التقليد. يراجعون البلاغات ويعتمدون التعويضات.", fr: "Experts en anti-contrefaçon. Examiment les signalements et approuvent les compensations.", en: "Anti-counterfeit experts. Review reports and approve compensations." },
+    "data.title": { ar: "فريق البيانات", fr: "Équipe de données", en: "Data team" },
+    "data.text": { ar: "محللون يستخدمون AI لدراسة أنماط التقليد واكتشاف المناطق المشبوهة.", fr: "Analystes utilisant l'IA pour étudier les schémas de contrefaçon.", en: "Analysts using AI to study counterfeiting patterns." },
+    "design.title": { ar: "فريق التصميم", fr: "Équipe de design", en: "Design team" },
+    "design.text": { ar: "مصممون يضعون معايير الملصقات والهوية البصرية للعملاء.", fr: "Designers qui définissent les standards d'étiquettes et l'identité visuelle.", en: "Designers setting label standards and visual identity." },
+    "legal.title": { ar: "الفريق القانوني", fr: "Équipe juridique", en: "Legal team" },
+    "legal.text": { ar: "يضمن التزام النظام بالقوانين الجزائرية، ويصيغ الشروط والعقود.", fr: "Garantit la conformité aux lois algériennes, rédige conditions et contrats.", en: "Ensures compliance with Algerian law, drafts terms and contracts." },
+
+    "cta.title": { ar: "تريد الانضمام لفريقنا؟", fr: "Voulez-vous rejoindre notre équipe ?", en: "Want to join our team?" },
+    "cta.sub": { ar: "نبحث دائمًا عن مواهب جزائرية.", fr: "Nous cherchons toujours des talents algériens.", en: "Always looking for Algerian talents." },
+    "cta.contact": { ar: "📞 أرسل سيرتك الذاتية", fr: "📞 Envoyez votre CV", en: "📞 Send your CV" }
+  },
+
+  // ═══════════ CASE STUDIES PAGE ═══════════
+  "case-studies": {
+    "hero.badge": { ar: "📊 دراسات الحالة", fr: "📊 Études de cas", en: "📊 Case studies" },
+    "hero.title": { ar: "كيف يعمل النظام في الواقع", fr: "Comment le système fonctionne en pratique", en: "How the system works in reality" },
+    "hero.sub": { ar: "أمثلة توضيحية لأنواع مختلفة من العملاء الذين يستفيدون من OriginalDz.", fr: "Exemples illustratifs de différents types de clients bénéficiant d'OriginalDz.", en: "Illustrative examples of different clients benefiting from OriginalDz." },
+
+    "note.title": { ar: "ملاحظة", fr: "Note", en: "Note" },
+    "note.text": { ar: "الدراسات التالية توضيحية — تمثل سيناريوهات واقعية لكن بأسماء وبيانات رمزية.", fr: "Les études suivantes sont illustratives — scénarios réalistes avec noms et données symboliques.", en: "The following studies are illustrative — realistic scenarios with symbolic data." },
+
+    "case1.title": { ar: "ماركة مستحضرات تجميل", fr: "Marque de cosmétiques", en: "Cosmetics brand" },
+    "case1.meta": { ar: "📍 الجزائر العاصمة • 🧴 15 منتجًا • 📦 20,000 وحدة/شهر", fr: "📍 Alger • 🧴 15 produits • 📦 20 000 unités/mois", en: "📍 Algiers • 🧴 15 products • 📦 20,000 units/month" },
+    "case1.stat1": { ar: "التقليد", fr: "Contrefaçon", en: "Counterfeiting" },
+    "case1.stat2": { ar: "ثقة الزبون", fr: "Confiance client", en: "Customer trust" },
+    "case1.stat3": { ar: "تحقق شهريًا", fr: "Vérifications/mois", en: "Verifications/month" },
+    "case1.challenge": { ar: "التحدي:", fr: "Défi :", en: "Challenge:" },
+    "case1.solution": { ar: "الحل:", fr: "Solution :", en: "Solution:" },
+    "case1.result": { ar: "النتيجة:", fr: "Résultat :", en: "Result:" },
+    "case1.text": { ar: "واجهت الماركة موجة تقليد واسعة في ولايات الشرق، أدت لخسائر تقدر بـ30% من المبيعات. تطبيق OriginalDz على كل المنتجات، مع دفعات شهرية من الأكواد. النتيجة: اكتشاف 12 نقطة بيع للمقلد في الشهر الأول، وارتفاع ثقة المستهلك.", fr: "La marque a fait face à une vague de contrefaçon dans l'Est, causant 30% de pertes. Application d'OriginalDz sur tous les produits avec lots mensuels. Résultat : 12 points de vente détectés le 1er mois, confiance client en hausse.", en: "The brand faced a counterfeiting wave in the East, causing 30% losses. Applied OriginalDz on all products with monthly batches. Result: 12 sales points detected in month 1, higher customer trust." },
+
+    "case2.title": { ar: "ماركة أغذية طبيعية", fr: "Marque alimentaire bio", en: "Natural food brand" },
+    "case2.meta": { ar: "📍 سطيف • 🥫 8 منتجات • 📦 50,000 وحدة/شهر", fr: "📍 Sétif • 🥫 8 produits • 📦 50 000 unités/mois", en: "📍 Sétif • 🥫 8 products • 📦 50,000 units/month" },
+    "case2.stat2": { ar: "تحقق شهريًا", fr: "Vérifications/mois", en: "Verifications/month" },
+    "case2.stat3": { ar: "ولاية مغطاة", fr: "Wilayas couvertes", en: "Wilayas covered" },
+    "case2.text": { ar: "منتج شهير لكن بدون أي وسيلة للتحقق من الأصالة. الحل: دفعة كبيرة من الأكواد موزعة على جميع الوكلاء. النتيجة: انخفاض التقليد بنسبة 92% بعد 3 أشهر.", fr: "Produit populaire sans moyen de vérification. Solution : grand lot de codes distribué chez tous les agents. Résultat : -92% de contrefaçon après 3 mois.", en: "Popular product without verification. Solution: large batch of codes distributed. Result: -92% counterfeiting after 3 months." },
+
+    "case3.title": { ar: "محل تجزئة للعطور", fr: "Boutique de parfums", en: "Perfume retail shop" },
+    "case3.meta": { ar: "📍 وهران • 🧴 عطور فرنسية • 📦 3,000 منتج/شهر", fr: "📍 Oran • 🧴 Parfums français • 📦 3 000 produits/mois", en: "📍 Oran • 🧴 French perfumes • 📦 3,000 products/month" },
+    "case3.stat1": { ar: "مبيعات جديدة", fr: "Nouvelles ventes", en: "New sales" },
+    "case3.stat2": { ar: "بلاغات مؤكدة", fr: "Signalements confirmés", en: "Confirmed reports" },
+    "case3.stat3": { ar: "تحقق شهريًا", fr: "Vérifications/mois", en: "Verifications/month" },
+    "case3.text": { ar: "المحل يبيع منتجات أصلية لكن الزبائن يشكّون بسبب وجود مقلدات في محلات أخرى. الحل: تسجيل المحل، والحصول على شارة \"محل موثوق\" على كل منتجاته. النتيجة: زيادة الثقة، ارتفاع المبيعات بـ60%، وعربون كامل مسترد بعد استخدام كل الأكواد.", fr: "La boutique vend des produits authentiques mais les clients doutent à cause des contrefaçons ailleurs. Solution : inscription, badge « boutique de confiance ». Résultat : +60% de ventes, dépôt entièrement remboursé.", en: "Shop sells authentic products but customers doubt due to counterfeits elsewhere. Solution: registration, \"trusted shop\" badge. Result: +60% sales, full deposit refunded." },
+
+    "cta.title": { ar: "تريد تحقيق نتائج مشابهة؟", fr: "Vous voulez des résultats similaires ?", en: "Want similar results?" },
+    "cta.sub": { ar: "انضم إلى قائمة عملائنا الناجحين.", fr: "Rejoignez notre liste de clients à succès.", en: "Join our successful clients list." },
+    "cta.start": { ar: "✨ ابدأ الآن", fr: "✨ Commencer", en: "✨ Start now" }
+  },
+
+  // ═══════════ PRIVACY PAGE ═══════════
+  privacy: {
+    "hero.badge": { ar: "🔒 سياسة الخصوصية", fr: "🔒 Politique de confidentialité", en: "🔒 Privacy policy" },
+    "hero.title": { ar: "خصوصيتك تهمّنا", fr: "Votre vie privée nous importe", en: "Your privacy matters" },
+    "hero.sub": { ar: "نحن نحترم بياناتك ونحميها بأعلى المعايير.", fr: "Nous respectons vos données et les protégeons avec les plus hauts standards.", en: "We respect your data and protect it with the highest standards." },
+
+    "update.label": { ar: "آخر تحديث:", fr: "Dernière mise à jour :", en: "Last updated:" },
+
+    "s1.title": { ar: "1️⃣ المعلومات التي نجمعها", fr: "1️⃣ Informations collectées", en: "1️⃣ Information we collect" },
+    "s1.intro": { ar: "نجمع نوعين من المعلومات:", fr: "Nous collectons deux types d'informations :", en: "We collect two types of information:" },
+    "s1.a": { ar: "أ) معلومات تقدّمها بنفسك:", fr: "a) Informations que vous fournissez :", en: "a) Information you provide:" },
+    "s1.b": { ar: "ب) معلومات تُجمع تلقائيًا:", fr: "b) Informations collectées automatiquement :", en: "b) Automatically collected:" },
+
+    "s2.title": { ar: "2️⃣ كيف نستخدم معلوماتك", fr: "2️⃣ Comment nous utilisons vos informations", en: "2️⃣ How we use your information" },
+    "s3.title": { ar: "3️⃣ حماية البيانات", fr: "3️⃣ Protection des données", en: "3️⃣ Data protection" },
+    "s4.title": { ar: "4️⃣ مشاركة البيانات", fr: "4️⃣ Partage des données", en: "4️⃣ Data sharing" },
+    "s5.title": { ar: "5️⃣ Cookies والتتبّع", fr: "5️⃣ Cookies et traçage", en: "5️⃣ Cookies and tracking" },
+    "s6.title": { ar: "6️⃣ حقوقك", fr: "6️⃣ Vos droits", en: "6️⃣ Your rights" },
+    "s7.title": { ar: "7️⃣ مدة الاحتفاظ بالبيانات", fr: "7️⃣ Durée de conservation", en: "7️⃣ Retention period" },
+    "s8.title": { ar: "8️⃣ الأطفال", fr: "8️⃣ Enfants", en: "8️⃣ Children" },
+    "s9.title": { ar: "9️⃣ التحديثات على هذه السياسة", fr: "9️⃣ Mises à jour", en: "9️⃣ Updates" },
+    "s10.title": { ar: "🔟 التواصل", fr: "🔟 Contact", en: "🔟 Contact" }
+  },
+
+  // ═══════════ TERMS PAGE ═══════════
+  terms: {
+    "hero.badge": { ar: "📜 شروط الاستخدام", fr: "📜 Conditions d'utilisation", en: "📜 Terms of use" },
+    "hero.title": { ar: "قواعد واضحة للجميع", fr: "Des règles claires pour tous", en: "Clear rules for everyone" },
+    "hero.sub": { ar: "باستخدامك لـOriginalDz، أنت توافق على الشروط التالية.", fr: "En utilisant OriginalDz, vous acceptez les conditions suivantes.", en: "By using OriginalDz, you agree to the following terms." },
+
+    "update.label": { ar: "آخر تحديث:", fr: "Dernière mise à jour :", en: "Last updated:" },
+
+    "s1.title": { ar: "1️⃣ قبول الشروط", fr: "1️⃣ Acceptation", en: "1️⃣ Acceptance" },
+    "s2.title": { ar: "2️⃣ وصف الخدمة", fr: "2️⃣ Description du service", en: "2️⃣ Service description" },
+    "s3.title": { ar: "3️⃣ حسابك ومسؤوليتك", fr: "3️⃣ Votre compte", en: "3️⃣ Your account" },
+    "s4.title": { ar: "4️⃣ شروط خاصة بالماركات", fr: "4️⃣ Conditions pour les marques", en: "4️⃣ Brand terms" },
+    "s5.title": { ar: "5️⃣ شروط خاصة بالمحلات", fr: "5️⃣ Conditions pour les boutiques", en: "5️⃣ Shop terms" },
+    "s6.title": { ar: "6️⃣ نظام التعويضات", fr: "6️⃣ Système de compensation", en: "6️⃣ Compensation system" },
+    "s7.title": { ar: "7️⃣ الملكية الفكرية", fr: "7️⃣ Propriété intellectuelle", en: "7️⃣ Intellectual property" },
+    "s8.title": { ar: "8️⃣ حدود المسؤولية", fr: "8️⃣ Limitation de responsabilité", en: "8️⃣ Limitation of liability" },
+    "s9.title": { ar: "9️⃣ إيقاف الخدمة", fr: "9️⃣ Suspension du service", en: "9️⃣ Service suspension" },
+    "s10.title": { ar: "🔟 القانون المُطبَّق", fr: "🔟 Loi applicable", en: "🔟 Applicable law" },
+    "s11.title": { ar: "1️⃣1️⃣ التواصل", fr: "1️⃣1️⃣ Contact", en: "1️⃣1️⃣ Contact" },
+
+    "alert.title": { ar: "تنبيه قانوني:", fr: "Avertissement légal :", en: "Legal warning:" },
+    "alert.text": { ar: "في حال الخروج عن هذه الشروط، يتحمّل المستخدم المسؤولية الكاملة لوحده، ويُعفي OriginalDz من أي مسؤولية قانونية أو تجارية أو جزائية.", fr: "En cas de violation, l'utilisateur assume l'entière responsabilité seul, OriginalDz étant dégagé de toute responsabilité.", en: "In case of violation, the user bears full responsibility alone, OriginalDz being released from any liability." }
+  }
+
 };
