@@ -16,36 +16,14 @@
     })();
   </script>
   <style>
-    .legal h2 {
-      font-size: 20px;
-      font-weight: 900;
-      color: var(--text);
-      margin: 32px 0 14px;
-      padding-bottom: 8px;
-      border-bottom: 2px solid var(--border);
-      display: flex; align-items: center; gap: 10px;
-    }
+    .legal h2 { font-size: 20px; font-weight: 900; color: var(--text); margin: 32px 0 14px; padding-bottom: 8px; border-bottom: 2px solid var(--border); display: flex; align-items: center; gap: 10px; }
     .legal h2:first-child { margin-top: 0; }
-    .legal p, .legal li {
-      font-size: 14.5px;
-      line-height: 1.9;
-      color: var(--text-muted);
-    }
-    .legal ul {
-      padding-right: 24px;
-      margin: 8px 0 16px;
-    }
+    .legal p, .legal li { font-size: 14.5px; line-height: 1.9; color: var(--text-muted); }
+    .legal ul { padding-right: 24px; margin: 8px 0 16px; }
     .legal li { margin-bottom: 6px; }
     .legal strong { color: var(--text); font-weight: 800; }
-    .legal-box {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 32px;
-    }
-    @media (max-width: 640px) {
-      .legal-box { padding: 20px; }
-    }
+    .legal-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px; }
+    @media (max-width: 640px) { .legal-box { padding: 20px; } }
   </style>
 </head>
 <body>
@@ -54,9 +32,9 @@
 
 <section class="page-hero">
   <div class="container page-hero-inner">
-    <div class="page-hero-badge">🔒 سياسة الخصوصية</div>
-    <h1>خصوصيتك تهمّنا</h1>
-    <p>نحن نحترم بياناتك ونحميها بأعلى المعايير.</p>
+    <div class="page-hero-badge" data-i18n="hero.badge">🔒 سياسة الخصوصية</div>
+    <h1 data-i18n="hero.title">خصوصيتك تهمّنا</h1>
+    <p data-i18n="hero.sub">نحن نحترم بياناتك ونحميها بأعلى المعايير.</p>
   </div>
 </section>
 
@@ -65,13 +43,12 @@
     <div class="legal-box legal">
 
       <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">
-        <b>آخر تحديث:</b> <span id="lastUpdate">—</span>
+        <b data-i18n="update.label">آخر تحديث:</b> <span id="lastUpdate">—</span>
       </p>
 
-      <h2>1️⃣ المعلومات التي نجمعها</h2>
-      <p>نجمع نوعين من المعلومات:</p>
-
-      <p style="margin-top:12px;"><strong>أ) معلومات تقدّمها بنفسك:</strong></p>
+      <h2 data-i18n="s1.title">1️⃣ المعلومات التي نجمعها</h2>
+      <p data-i18n="s1.intro">نجمع نوعين من المعلومات:</p>
+      <p style="margin-top:12px;"><strong data-i18n="s1.a">أ) معلومات تقدّمها بنفسك:</strong></p>
       <ul>
         <li>الاسم الكامل</li>
         <li>البريد الإلكتروني</li>
@@ -81,7 +58,7 @@
         <li>الصور المرفقة مع البلاغات</li>
       </ul>
 
-      <p><strong>ب) معلومات تُجمع تلقائيًا:</strong></p>
+      <p><strong data-i18n="s1.b">ب) معلومات تُجمع تلقائيًا:</strong></p>
       <ul>
         <li>عنوان IP</li>
         <li>نوع المتصفح ونظام التشغيل</li>
@@ -89,7 +66,7 @@
         <li>الصفحات التي زرتها</li>
       </ul>
 
-      <h2>2️⃣ كيف نستخدم معلوماتك</h2>
+      <h2 data-i18n="s2.title">2️⃣ كيف نستخدم معلوماتك</h2>
       <ul>
         <li>لتفعيل حسابك وإدارة طلباتك</li>
         <li>للتحقق من الأكواد وكشف التقليد</li>
@@ -99,8 +76,7 @@
         <li>لمنع الاحتيال واستخدام البوتات</li>
       </ul>
 
-      <h2>3️⃣ حماية البيانات</h2>
-      <p>نستخدم أحدث المعايير التقنية لحماية بياناتك:</p>
+      <h2 data-i18n="s3.title">3️⃣ حماية البيانات</h2>
       <ul>
         <li><strong>تشفير AES-256</strong> لكل الأكواد السريّة</li>
         <li><strong>HTTPS/TLS</strong> لكل الاتصالات</li>
@@ -109,17 +85,15 @@
         <li>مراجعة دورية للثغرات الأمنية</li>
       </ul>
 
-      <h2>4️⃣ مشاركة البيانات</h2>
-      <p>
-        <strong>لا نبيع بياناتك لأي طرف ثالث.</strong> قد نشاركها فقط في الحالات التالية:
-      </p>
+      <h2 data-i18n="s4.title">4️⃣ مشاركة البيانات</h2>
+      <p><strong>لا نبيع بياناتك لأي طرف ثالث.</strong> قد نشاركها فقط في الحالات التالية:</p>
       <ul>
         <li>مع موفّري الخدمات الموثوقين (Supabase, Vercel, Brevo) — لتشغيل النظام</li>
         <li>إذا طلبت السلطات القانونية ذلك (بموجب القانون الجزائري)</li>
         <li>بموافقتك الصريحة</li>
       </ul>
 
-      <h2>5️⃣ Cookies والتتبّع</h2>
+      <h2 data-i18n="s5.title">5️⃣ Cookies والتتبّع</h2>
       <p>نستخدم:</p>
       <ul>
         <li><strong>Cookies ضرورية:</strong> للحفاظ على جلسة تسجيل الدخول</li>
@@ -128,7 +102,7 @@
       </ul>
       <p>لا نستخدم cookies إعلانية أو تتبّع عبر مواقع أخرى.</p>
 
-      <h2>6️⃣ حقوقك</h2>
+      <h2 data-i18n="s6.title">6️⃣ حقوقك</h2>
       <p>لك الحق في:</p>
       <ul>
         <li>الوصول إلى بياناتك في أي وقت</li>
@@ -139,7 +113,7 @@
       </ul>
       <p>للتواصل بخصوص أي حق: <b>mepirf@gmail.com</b></p>
 
-      <h2>7️⃣ مدة الاحتفاظ بالبيانات</h2>
+      <h2 data-i18n="s7.title">7️⃣ مدة الاحتفاظ بالبيانات</h2>
       <ul>
         <li><strong>حساب نشط:</strong> نحتفظ ببياناتك طالما حسابك مُفعّل</li>
         <li><strong>حساب محذوف:</strong> نحذف بياناتك خلال 30 يومًا</li>
@@ -147,17 +121,13 @@
         <li><strong>سجلات التحقق:</strong> نحتفظ بها لمدة سنة</li>
       </ul>
 
-      <h2>8️⃣ الأطفال</h2>
-      <p>
-        خدمتنا موجّهة للأشخاص الذين تبلغ أعمارهم 16 عامًا أو أكثر. لا نجمع بيانات الأطفال دون علمنا.
-      </p>
+      <h2 data-i18n="s8.title">8️⃣ الأطفال</h2>
+      <p>خدمتنا موجّهة للأشخاص الذين تبلغ أعمارهم 16 عامًا أو أكثر. لا نجمع بيانات الأطفال دون علمنا.</p>
 
-      <h2>9️⃣ التحديثات على هذه السياسة</h2>
-      <p>
-        قد نُحدّث هذه السياسة من وقت لآخر. في حالة التغييرات الجوهرية، سنُرسل إشعارًا عبر البريد الإلكتروني قبل 30 يومًا من تطبيقها.
-      </p>
+      <h2 data-i18n="s9.title">9️⃣ التحديثات على هذه السياسة</h2>
+      <p>قد نُحدّث هذه السياسة من وقت لآخر. في حالة التغييرات الجوهرية، سنُرسل إشعارًا عبر البريد الإلكتروني قبل 30 يومًا من تطبيقها.</p>
 
-      <h2>🔟 التواصل</h2>
+      <h2 data-i18n="s10.title">🔟 التواصل</h2>
       <p>لأي استفسار حول الخصوصية:</p>
       <ul>
         <li>📧 <b>mepirf@gmail.com</b></li>
@@ -171,6 +141,7 @@
 
 <div id="site-footer"></div>
 
+<script src="/i18n-content.js"></script>
 <script src="/site-layout.js"></script>
 <script>
   document.getElementById('lastUpdate').textContent = new Date().toLocaleDateString('ar-DZ', { year: 'numeric', month: 'long', day: 'numeric' });
