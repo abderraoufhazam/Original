@@ -117,15 +117,9 @@
       border-color: var(--text);
     }
 
-    .logo-wrap {
-      text-align: center;
-      margin-bottom: 18px;
-    }
-
+    .logo-wrap { text-align: center; margin-bottom: 18px; }
     .logo-wrap img {
-      width: 70px;
-      height: 70px;
-      border-radius: 18px;
+      width: 70px; height: 70px; border-radius: 18px;
       box-shadow: 0 12px 28px -8px rgba(15, 23, 42, 0.25);
     }
 
@@ -208,8 +202,8 @@
     }
 
     form { display: flex; flex-direction: column; gap: 12px; }
-
     .field { display: flex; flex-direction: column; gap: 6px; }
+    .field.hidden { display: none; }
 
     label {
       font-size: 11px;
@@ -245,7 +239,6 @@
       box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.12);
     }
 
-    /* Turnstile */
     .turnstile-wrap {
       display: flex;
       justify-content: center;
@@ -350,7 +343,7 @@
 
     <div class="welcome-badge">
       <span>✓</span>
-      <span data-i18n="welcomeBadge">تم إنشاء حسابك بنجاح</span>
+      <span data-i18n="welcomeBadge">مرحبًا بك</span>
     </div>
 
     <h1 data-i18n="title">تواصل معنا</h1>
@@ -375,6 +368,13 @@
 
     <!-- Message Form -->
     <form id="contactForm">
+
+      <!-- 👤 حقل الاسم (للزوار فقط) -->
+      <div class="field hidden" id="nameField">
+        <label for="senderName" data-i18n="nameLabel">👤 اسمك <span class="req">*</span></label>
+        <input id="senderName" type="text" placeholder="مثال: أحمد بن علي" maxlength="100">
+      </div>
+
       <div class="field">
         <label for="subject" data-i18n="subjectLabel">الموضوع <span class="req">*</span></label>
         <input id="subject" type="text" placeholder="مثال: استفسار عن الأسعار" required maxlength="150">
@@ -414,6 +414,7 @@
   </section>
 </main>
 
+
 <script>
   const SUPABASE_URL = "https://qfpmbbntxyrderjlejql.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m";
@@ -434,20 +435,21 @@
 
   const TRANSLATIONS = {
     ar: {
-      welcomeBadge: "تم إنشاء حسابك بنجاح",
+      welcomeBadge: "مرحبًا بك",
       title: "تواصل معنا",
       subtitle: "اختر الطريقة المناسبة للتواصل. سنرد عليك في أسرع وقت.",
       whatsappTitle: "واتساب الأعمال",
       whatsappSub: "+213 556 339 415",
       orDivider: "أو",
+      nameLabel: "👤 اسمك",
       subjectLabel: "الموضوع",
       messageLabel: "رسالتك",
       submitBtn: "إرسال الرسالة",
       sending: "جارٍ الإرسال...",
+      errName: "الرجاء إدخال اسمك (حرفين على الأقل).",
       errSubject: "الرجاء إدخال موضوع الرسالة.",
       errMessage: "الرجاء إدخال الرسالة (10 أحرف على الأقل).",
       errTurnstile: "⚠️ الرجاء إكمال التحقق من الأمان.",
-      errNotLogged: "يجب تسجيل الدخول أولًا.",
       errGeneric: "حدث خطأ. الرجاء المحاولة مجددًا.",
       successMsg: "✓ تم إرسال رسالتك بنجاح! سنرد عليك قريبًا.",
       infoTitle: "📬 كيف تصلك رسالتك؟",
@@ -456,20 +458,21 @@
       adminLink: "دخول"
     },
     fr: {
-      welcomeBadge: "Compte créé avec succès",
+      welcomeBadge: "Bienvenue",
       title: "Contactez-nous",
       subtitle: "Choisissez le moyen de contact. Nous vous répondrons rapidement.",
       whatsappTitle: "WhatsApp Business",
       whatsappSub: "+213 556 339 415",
       orDivider: "OU",
+      nameLabel: "👤 Votre nom",
       subjectLabel: "Sujet",
       messageLabel: "Votre message",
       submitBtn: "Envoyer le message",
       sending: "Envoi...",
+      errName: "Veuillez saisir votre nom (min 2 caractères).",
       errSubject: "Veuillez saisir un sujet.",
       errMessage: "Veuillez saisir un message (10 caractères min).",
       errTurnstile: "⚠️ Veuillez compléter la vérification de sécurité.",
-      errNotLogged: "Vous devez vous connecter d'abord.",
       errGeneric: "Une erreur est survenue. Réessayez.",
       successMsg: "✓ Message envoyé avec succès !",
       infoTitle: "📬 Comment ça marche ?",
@@ -478,20 +481,21 @@
       adminLink: "Connexion"
     },
     en: {
-      welcomeBadge: "Account created successfully",
+      welcomeBadge: "Welcome",
       title: "Contact us",
       subtitle: "Choose how to reach us. We'll respond quickly.",
       whatsappTitle: "WhatsApp Business",
       whatsappSub: "+213 556 339 415",
       orDivider: "OR",
+      nameLabel: "👤 Your name",
       subjectLabel: "Subject",
       messageLabel: "Your message",
       submitBtn: "Send message",
       sending: "Sending...",
+      errName: "Please enter your name (min 2 characters).",
       errSubject: "Please enter a subject.",
       errMessage: "Please enter a message (min 10 characters).",
       errTurnstile: "⚠️ Please complete the security verification.",
-      errNotLogged: "You must be logged in first.",
       errGeneric: "An error occurred. Please try again.",
       successMsg: "✓ Message sent successfully!",
       infoTitle: "📬 How it works",
@@ -549,17 +553,32 @@
   }
   function hideMsg() { $("msg").classList.add("hidden"); }
 
+  // ✅ الصفحة متاحة للجميع — بدون توجيه
   async function checkSession() {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) {
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 1500);
-      showMsg(t("errNotLogged"), "error");
-      return;
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+
+      if (session) {
+        currentUser = session.user;
+        userMeta = session.user.user_metadata || {};
+        // مستخدم مسجل — إخفاء حقل الاسم
+        const nf = $("nameField");
+        if (nf) nf.classList.add("hidden");
+      } else {
+        currentUser = null;
+        userMeta = {};
+        // زائر — إظهار حقل الاسم
+        const nf = $("nameField");
+        if (nf) nf.classList.remove("hidden");
+      }
+    } catch (e) {
+      console.warn("checkSession error:", e);
+      // في حالة الخطأ — نتعامل معه كزائر
+      currentUser = null;
+      userMeta = {};
+      const nf = $("nameField");
+      if (nf) nf.classList.remove("hidden");
     }
-    currentUser = session.user;
-    userMeta = session.user.user_metadata || {};
   }
 
   checkSession();
@@ -568,9 +587,16 @@
     e.preventDefault();
     hideMsg();
 
-    if (!currentUser) {
-      showMsg(t("errNotLogged"), "error");
-      return;
+    // ─── اسم المُرسِل ───
+    let senderName;
+    if (currentUser) {
+      senderName = userMeta.brand_name || currentUser.email || "—";
+    } else {
+      const nameInput = $("senderName");
+      senderName = (nameInput?.value || "").trim();
+      if (!senderName || senderName.length < 2) {
+        return showMsg(t("errName"), "error");
+      }
     }
 
     const subject = $("subject").value.trim();
@@ -594,48 +620,47 @@
     btn.innerHTML = `<span>⏳</span><span>${t("sending")}</span>`;
 
     try {
-      // 1. Enregistrer dans Supabase
-      const { error } = await sb.from("brand_messages").insert({
-        user_id: currentUser.id,
-        brand_name: userMeta.brand_name || "—",
-        email: currentUser.email,
-        phone: userMeta.phone || null,
-        subject: subject,
-        message: message
-      });
-
-      if (error) {
-        console.error(error);
-        showMsg(error.message || t("errGeneric"), "error");
-        btn.disabled = false;
-        btn.innerHTML = `<span>📨</span><span>${t("submitBtn")}</span>`;
-        return;
+      // 1. حفظ في Supabase (فقط إذا كان مسجّلًا)
+      if (currentUser) {
+        try {
+          const { error } = await sb.from("brand_messages").insert({
+            user_id: currentUser.id,
+            brand_name: userMeta.brand_name || "—",
+            email: currentUser.email,
+            phone: userMeta.phone || null,
+            subject: subject,
+            message: message
+          });
+          if (error) console.warn("Supabase insert error:", error);
+        } catch (e) {
+          console.warn("Insert error:", e);
+        }
       }
 
-      // 🔔 إشعار واتساب للأدمن + Turnstile
+      // 2. إشعار واتساب للأدمن (دائمًا)
       try {
         fetch("/api/submit?type=message", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            brand_name: userMeta.brand_name || "—",
-            email: currentUser.email,
-            phone: userMeta.phone || null,
+            brand_name: senderName,
+            email: currentUser ? currentUser.email : "guest@originaldz.online",
+            phone: currentUser ? (userMeta.phone || null) : null,
             subject: subject,
             message: message,
             turnstile_token: turnstileToken
           })
-        }).catch(e => console.warn("Notify error:", e));
+        }).catch(err => console.warn("Notify error:", err));
       } catch (e) {
         console.warn("Notify setup error:", e);
       }
 
-      // 2. Email notification via EmailJS
+      // 3. إشعار EmailJS للأدمن (دائمًا)
       try {
         const emailParams = {
-          brand_name: userMeta.brand_name || "—",
-          email: currentUser.email,
-          phone: userMeta.phone || "—",
+          brand_name: senderName,
+          email: currentUser ? currentUser.email : "guest@originaldz.online",
+          phone: currentUser ? (userMeta.phone || "—") : "—",
           subject: subject,
           message: message,
           to_email: "mepirf@gmail.com"
@@ -646,9 +671,13 @@
         console.warn("⚠️ Email notification failed:", emailErr);
       }
 
+      // ─── نجاح ───
       showMsg(t("successMsg"), "success");
       $("subject").value = "";
       $("message").value = "";
+      const nameInput = $("senderName");
+      if (nameInput && !currentUser) nameInput.value = "";
+
       btn.innerHTML = `<span>✓</span><span>${t("submitBtn")}</span>`;
       setTimeout(() => {
         btn.disabled = false;
