@@ -1,19 +1,30 @@
 // ============================================================
-// OriginalDz — Site Layout System v1.1
-// Header + Footer موحّد لكل الصفحات
+// OriginalDz — Site Layout System v1.2
+// Header + Footer + Dropdown (قانوني)
 // ============================================================
 
 (function() {
-  // ─── الصفحات في القائمة العلوية ───
+  // ─── الصفحات في القائمة ───
   const PAGES = [
-    { id: "home",     url: "/",              ar: "الرئيسية",       fr: "Accueil",             en: "Home" },
-    { id: "how",      url: "/how-it-works",  ar: "كيف يعمل",       fr: "Comment ça marche",   en: "How it works" },
-    { id: "pricing",  url: "/pricing",       ar: "الأسعار",        fr: "Tarifs",              en: "Pricing" },
-    { id: "about",    url: "/about",         ar: "من نحن",         fr: "À propos",            en: "About" },
-    { id: "faq",      url: "/faq",           ar: "الأسئلة",        fr: "FAQ",                 en: "FAQ" },
-    { id: "team",     url: "/team",          ar: "الفريق",         fr: "Équipe",              en: "Team" },
-    { id: "report",   url: "/report",        ar: "الإبلاغ",        fr: "Signaler",            en: "Report" },
-    { id: "contact",  url: "/contact",       ar: "اتصل بنا",       fr: "Contact",             en: "Contact" }
+    { id: "home",     url: "/",              ar: "الرئيسية",   fr: "Accueil",           en: "Home" },
+    { id: "how",      url: "/how-it-works",  ar: "كيف يعمل",   fr: "Comment ça marche", en: "How it works" },
+    { id: "pricing",  url: "/pricing",       ar: "الأسعار",    fr: "Tarifs",            en: "Pricing" },
+    { id: "about",    url: "/about",         ar: "من نحن",     fr: "À propos",          en: "About" },
+    { id: "faq",      url: "/faq",           ar: "الأسئلة",    fr: "FAQ",               en: "FAQ" },
+    { id: "team",     url: "/team",          ar: "الفريق",     fr: "Équipe",            en: "Team" },
+    {
+      id: "legal",
+      isDropdown: true,
+      ar: "قانوني",
+      fr: "Légal",
+      en: "Legal",
+      children: [
+        { id: "privacy", url: "/privacy", ar: "🔒 الخصوصية", fr: "🔒 Confidentialité", en: "🔒 Privacy" },
+        { id: "terms",   url: "/terms",   ar: "📜 الشروط",   fr: "📜 Conditions",     en: "📜 Terms" }
+      ]
+    },
+    { id: "report",   url: "/report",        ar: "الإبلاغ",    fr: "Signaler",          en: "Report" },
+    { id: "contact",  url: "/contact",       ar: "اتصل بنا",   fr: "Contact",           en: "Contact" }
   ];
 
   // ─── الحالة ───
@@ -35,7 +46,7 @@
       about: "من نحن", faq: "الأسئلة", report: "الإبلاغ",
       team: "الفريق", "case-studies": "دراسات الحالة",
       privacy: "الخصوصية", terms: "الشروط",
-      contact: "اتصل بنا",
+      legal: "قانوني", contact: "اتصل بنا",
 
       loginBtn: "دخول",
       signupBtn: "تسجيل",
@@ -46,7 +57,7 @@
       platform: "المنصة",
       company: "الشركة",
       contactCol: "تواصل",
-      legal: "قانوني",
+      legalCol: "قانوني",
 
       verify: "التحقق",
       signupLink: "التسجيل",
@@ -63,7 +74,7 @@
       about: "À propos", faq: "FAQ", report: "Signaler",
       team: "Équipe", "case-studies": "Cas d'étude",
       privacy: "Confidentialité", terms: "Conditions",
-      contact: "Contact",
+      legal: "Légal", contact: "Contact",
 
       loginBtn: "Connexion",
       signupBtn: "Inscription",
@@ -74,7 +85,7 @@
       platform: "Plateforme",
       company: "Entreprise",
       contactCol: "Contact",
-      legal: "Légal",
+      legalCol: "Légal",
 
       verify: "Vérifier",
       signupLink: "Inscription",
@@ -91,7 +102,7 @@
       about: "About", faq: "FAQ", report: "Report",
       team: "Team", "case-studies": "Case studies",
       privacy: "Privacy", terms: "Terms",
-      contact: "Contact",
+      legal: "Legal", contact: "Contact",
 
       loginBtn: "Login",
       signupBtn: "Sign up",
@@ -102,7 +113,7 @@
       platform: "Platform",
       company: "Company",
       contactCol: "Contact",
-      legal: "Legal",
+      legalCol: "Legal",
 
       verify: "Verify",
       signupLink: "Sign up",
@@ -122,13 +133,47 @@
 
   // ─── Header HTML ───
   function buildHeader() {
+    // بناء روابط Nav (مع dropdown)
     const navLinks = PAGES.map(p => {
+      if (p.isDropdown) {
+        const items = p.children.map(c => {
+          const label = (T[currentLang] && T[currentLang][c.id]) || c.ar;
+          return `<a href="${c.url}">${label}</a>`;
+        }).join("");
+        const title = (T[currentLang] && T[currentLang][p.id]) || p.ar;
+        return `
+          <div class="site-nav-dropdown" data-dropdown="true">
+            <button class="site-nav-dropdown-btn" type="button">
+              <span>⚖️ ${title}</span>
+              <span class="site-nav-dropdown-arrow">▾</span>
+            </button>
+            <div class="site-nav-dropdown-menu">${items}</div>
+          </div>
+        `;
+      }
       const label = t(p.id) || p.ar;
       const isActive = currentPage === p.id ? "active" : "";
       return `<a href="${p.url}" class="${isActive}">${label}</a>`;
     }).join("");
 
+    // بناء قائمة الموبايل
     const mobileNavLinks = PAGES.map(p => {
+      if (p.isDropdown) {
+        const items = p.children.map(c => {
+          const label = (T[currentLang] && T[currentLang][c.id]) || c.ar;
+          return `<a href="${c.url}" class="mobile-sub-link">${label}</a>`;
+        }).join("");
+        const title = (T[currentLang] && T[currentLang][p.id]) || p.ar;
+        return `
+          <div class="mobile-nav-group">
+            <button class="mobile-nav-toggle" type="button">
+              <span>⚖️ ${title}</span>
+              <span class="mobile-nav-arrow">▾</span>
+            </button>
+            <div class="mobile-nav-children">${items}</div>
+          </div>
+        `;
+      }
       const label = t(p.id) || p.ar;
       const isActive = currentPage === p.id ? "active" : "";
       return `<a href="${p.url}" class="${isActive}">${label}</a>`;
@@ -241,7 +286,7 @@
           </div>
 
           <div class="site-footer-col">
-            <h5>${t("legal")}</h5>
+            <h5>${t("legalCol")}</h5>
             <ul>
               <li><a href="/privacy">🔒 ${t("privacy")}</a></li>
               <li><a href="/terms">📜 ${t("terms")}</a></li>
@@ -271,7 +316,6 @@
       footerEl.innerHTML = buildFooter();
     }
 
-    // نقل القائمة إلى body
     const mobileMenu = document.getElementById("siteMobileMenu");
     if (mobileMenu && mobileMenu.parentElement) {
       document.body.appendChild(mobileMenu);
@@ -304,7 +348,7 @@
       });
     });
 
-    // Mobile menu
+    // Mobile menu open/close
     const mobileBtn = document.getElementById("siteMobileBtn");
     const mobileMenu = document.getElementById("siteMobileMenu");
     const mobileClose = document.getElementById("siteMobileClose");
@@ -331,6 +375,35 @@
         }
       });
     }
+
+    // ─── Desktop dropdown ───
+    document.querySelectorAll(".site-nav-dropdown").forEach(dd => {
+      const btn = dd.querySelector(".site-nav-dropdown-btn");
+      if (!btn) return;
+
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const wasOpen = dd.classList.contains("open");
+        document.querySelectorAll(".site-nav-dropdown").forEach(other => other.classList.remove("open"));
+        if (!wasOpen) dd.classList.add("open");
+      });
+    });
+
+    // إغلاق عند الضغط خارج
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".site-nav-dropdown")) {
+        document.querySelectorAll(".site-nav-dropdown").forEach(dd => dd.classList.remove("open"));
+      }
+    });
+
+    // ─── Mobile dropdown (قانوني) ───
+    document.querySelectorAll(".mobile-nav-toggle").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const group = btn.closest(".mobile-nav-group");
+        if (group) group.classList.toggle("open");
+      });
+    });
 
     // Set direction
     document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
