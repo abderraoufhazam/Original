@@ -64,9 +64,9 @@ export default async function handler(req, res) {
     // Calculer le hash SHA-256
     const codeHash = hashCode(cleanCode);
 
-    // Appeler verify_code_v2
-    const rpcResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/rpc/verify_code_v3`,
+    // Appeler verify_code_v3 (nouvelle version sécurisée)
+const rpcResponse = await fetch(
+  `${SUPABASE_URL}/rest/v1/rpc/verify_code_v3`,
       {
         method: 'POST',
         headers: {
