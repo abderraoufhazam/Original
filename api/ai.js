@@ -3,15 +3,15 @@
 
 export default async function handler(req, res) {
   // ✅ CORS محمي — قائمة أصول مسموحة
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://originaldz.online,https://www.originaldz.online,https://original-indol.vercel.app')
-  .split(',').map(o => o.trim()).filter(Boolean);
-const _origin = req.headers.origin;
-if (_origin && ALLOWED_ORIGINS.includes(_origin)) {
-  res.setHeader('Access-Control-Allow-Origin', _origin);
-  res.setHeader('Vary', 'Origin');
-}
-res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://originaldz.online,https://www.originaldz.online,https://original-indol.vercel.app')
+    .split(',').map(o => o.trim()).filter(Boolean);
+  const _origin = req.headers.origin;
+  if (_origin && ALLOWED_ORIGINS.includes(_origin)) {
+    res.setHeader('Access-Control-Allow-Origin', _origin);
+    res.setHeader('Vary', 'Origin');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') {
@@ -20,10 +20,28 @@ res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   const mode = (req.query && req.query.mode) || (req.body && req.body.mode);
 
+  // 🔒 Rate Limiting حسب النوع
+  let rateLimit = 30, rateWindow = 60;
+  if (mode === 'analytics') {
+    rateLimit = 5;       // تحليل ثقيل → 5 فقط
+  } else if (mode === 'read-label' || mode === 'analyze') {
+    rateLimit = 10;      // صور → 10/دقيقة
+  } else if (mode === 'chat') {
+    rateLimit = 30;      // محادثة → 30/دقيقة
+  }
+
+  const _allowed = await checkRateLimit(req, 'ai:' + (mode || 'unknown'), rateLimit, rateWindow);
+  if (!_allowed) {
+    return res.status(429).json({
+      status: 'ERROR',
+      message: 'Trop de requêtes. Réessayez dans une minute.'
+    });
+  }
+
   if (mode === 'chat')       return handleChat(req, res);
-if (mode === 'analyze')    return handleAnalyze(req, res);
-if (mode === 'analytics')  return handleAnalytics(req, res);
-if (mode === 'read-label') return handleReadLabel(req, res);
+  if (mode === 'analyze')    return handleAnalyze(req, res);
+  if (mode === 'analytics')  return handleAnalytics(req, res);
+  if (mode === 'read-label') return handleReadLabel(req, res);
 
   return res.status(400).json({
     status: 'ERROR',
@@ -153,7 +171,9 @@ RÈGLES ABSOLUES :
         if (r.ok) {
           geminiData = JSON.parse(text);
           usedModel = model;
-          console.log('✅ Chat success with model:', model);
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('✅ Chat success with model:', model);
+          }
           break;
         } else {
           lastError = { status: r.status, model: model, body: text.slice(0, 200) };
@@ -282,7 +302,9 @@ Ne mets AUCUN texte avant ou après le JSON.`;
         if (geminiRes.ok) {
           geminiData = await geminiRes.json();
           usedModel = model;
-          console.log('✅ Analyze success with model:', model);
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('✅ Analyze success with model:', model);
+          }
           break;
         } else {
           const errText = await geminiRes.text();
@@ -506,7 +528,9 @@ IMPORTANT :
         if (r.ok) {
           geminiData = await r.json();
           usedModel = model;
-          console.log('✅ Analytics success with model:', model);
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('✅ Analytics success with model:', model);
+          }
           break;
         } else {
           const errText = await r.text();
@@ -699,4 +723,42 @@ Si aucun code n'est lisible :
       detail: String(error).slice(0, 200)
     });
   }
+}
+
+// ============================================================
+// RATE LIMIT HELPER — يمنع استنزاف Gemini API
+// ============================================================
+async function checkRateLimit(req, prefix, limit, windowSec) {
+  const SUPABASE_URL = process.env.SUPABASE_URL;
+  const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return true;
+
+  const forwarded = req.headers['x-forwarded-for'];
+  const ip = (Array.isArray(forwarded) ? forwarded[0] : (forwarded || '').split(',')[0]).trim()
+          || req.headers['x-real-ip']
+          || 'unknown';
+
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/check_rate_limit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_SERVICE_ROLE_KEY,
+        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+      },
+      body: JSON.stringify({
+        p_key: `${prefix}:${ip}`,
+        p_limit: limit,
+        p_window_seconds: windowSec
+      })
+    });
+
+    if (r.ok) {
+      const allowed = await r.json();
+      return allowed === true;
+    }
+  } catch (e) {
+    console.warn('Rate limit check failed:', e);
+  }
+  return true; // في حال فشل الفحص، نسمح (لتجنب تعطيل الخدمة)
 }
