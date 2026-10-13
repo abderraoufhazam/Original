@@ -154,6 +154,23 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
+    .back-link-form {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      cursor: pointer;
+      background: none;
+      border: 0;
+      padding: 0;
+      font-family: inherit;
+    }
+
+    .back-link-form:hover { color: var(--text); }
+
     .form-section {
       margin-bottom: 28px;
       padding-bottom: 24px;
@@ -301,14 +318,14 @@
     }
 
     .image-slot input[type="file"] {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
-  z-index: 1;
-}
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 1;
+    }
 
     .images-hint {
       margin-top: 12px;
@@ -462,6 +479,9 @@
       font-weight: 800;
       font-size: 14px;
       margin-top: 24px;
+      cursor: pointer;
+      border: 0;
+      font-family: inherit;
     }
   </style>
 </head>
@@ -483,23 +503,30 @@
       </div>
     </div>
 
+    <!-- ═══════════ CHOICE STEP ═══════════ -->
     <div id="choiceStep">
       <div class="report-choice">
         <div class="choice-card brand" data-type="brand">
           <div class="choice-card-icon">🏢</div>
           <h3>منتج مقلد لعلامة تجارية</h3>
-          <p>إبلاغ عن علامة تجارية</p>
+          <p>أبلغ عن منتج يحمل QR OriginalDz لكنه ليس أصليًا</p>
         </div>
 
         <div class="choice-card shop" data-type="shop">
           <div class="choice-card-icon">🏪</div>
           <h3>منتج مقلد من محل موثوق</h3>
-          <p>إبلاغ عن محل مسجل في OriginalDz</p>
+          <p>محل مسجل في OriginalDz باع منتجًا مقلدًا</p>
         </div>
       </div>
     </div>
 
+    <!-- ═══════════ SHOP FORM ═══════════ -->
     <div id="formStep" class="report-form">
+
+      <button type="button" class="back-link-form" id="backToChoiceFromShop">
+        <span>←</span>
+        <span>الرجوع للاختيار</span>
+      </button>
 
       <form id="reportForm">
 
@@ -588,6 +615,7 @@
       <div id="reportMsg" class="report-msg hidden"></div>
     </div>
 
+    <!-- ═══════════ SHOP SUCCESS ═══════════ -->
     <div id="successStep" class="report-success">
       <div class="report-success-icon">✓</div>
       <h2>تم استلام بلاغك</h2>
@@ -604,21 +632,79 @@
   </div>
 </div>
 
+<!-- ═══════════ BRAND MODAL (wilaya-style) ═══════════ -->
+<div id="brandModal" class="wilaya-modal hidden">
+  <div class="wilaya-modal-overlay" id="brandOverlay"></div>
+  <div class="wilaya-modal-box">
+    <button class="wilaya-close" id="brandClose" aria-label="Fermer">✕</button>
+
+    <div class="wilaya-icon">⚠️</div>
+    <h2 class="wilaya-title">منتج مقلّد</h2>
+    <p class="wilaya-subtitle">
+      ساعدنا في حماية المستهلكين. صوّر المنتج واملأ المعلومات.
+    </p>
+
+    <label class="wilaya-label">📍 الولاية *</label>
+    <select id="brandWilaya" class="wilaya-select">
+      <option value="">-- اختر الولاية --</option>
+    </select>
+
+    <label class="wilaya-label">📸 صورة المنتج *</label>
+    <div class="wilaya-image-section">
+      <input type="file" id="brandImage" accept="image/*" capture="environment" class="wilaya-file-input">
+      <label for="brandImage" class="wilaya-file-btn">
+        <span>📷</span>
+        <span>التقاط صورة أو اختيار من المعرض</span>
+      </label>
+      <div id="brandImagePreview" class="wilaya-image-preview hidden">
+        <img id="brandImagePreviewImg" alt="">
+        <button type="button" id="brandImageRemove" class="wilaya-image-remove">✕</button>
+      </div>
+    </div>
+
+    <div id="brandAiLoading" class="wilaya-ai-loading hidden">
+      <div class="wilaya-ai-spinner"></div>
+      <div class="wilaya-ai-text">
+        <div>🤖 جاري تحليل الصورة...</div>
+        <div style="font-size:10px;opacity:0.7;margin-top:2px">عادة يستغرق 3-5 ثوانٍ</div>
+      </div>
+    </div>
+
+    <div id="brandAiResult" class="wilaya-ai-result hidden">
+      <div class="wilaya-ai-badge">✨ تم التحليل بواسطة AI — يمكنك التعديل</div>
+
+      <label class="wilaya-label">🏷️ العلامة التجارية</label>
+      <input id="brandBrandInput" class="wilaya-textarea" type="text" placeholder="مثال: Rutin" maxlength="100" style="min-height:auto;padding:13px 15px">
+
+      <label class="wilaya-label">📦 اسم المنتج</label>
+      <input id="brandProductName" class="wilaya-textarea" type="text" placeholder="مثال: سيروم ليزر 30 مل" maxlength="200" style="min-height:auto;padding:13px 15px">
+
+      <label class="wilaya-label">📝 وصف المنتج</label>
+      <textarea id="brandDescription" class="wilaya-textarea" placeholder="وصف المنتج المقلد..." maxlength="500" rows="2"></textarea>
+    </div>
+
+    <label class="wilaya-label">💬 تعليق إضافي (اختياري)</label>
+    <textarea id="brandComment" class="wilaya-textarea" placeholder="مثال: اشتريته من سوق باب الزوار..." maxlength="500" rows="2"></textarea>
+
+    <button id="brandSubmit" class="wilaya-submit">📩 إرسال البلاغ</button>
+    <div id="brandMsg" class="wilaya-msg hidden"></div>
+
+    <p class="wilaya-note">بياناتك آمنة ولن تُشارك مع أي طرف.</p>
+  </div>
+</div>
+
 <script>
 const SUPABASE_URL = "https://qfpmbbntxyrderjlejql.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m";
 
 const $ = id => document.getElementById(id);
 
-let reportType = null;
-let uploadedImages = [null, null, null, null, null, null, null];
-
 const WILAYAS = [
   "01 - أدرار","02 - الشلف","03 - الأغواط","04 - أم البواقي","05 - باتنة","06 - بجاية","07 - بسكرة","08 - بشار","09 - البليدة","10 - البويرة","11 - تمنراست","12 - تبسة","13 - تلمسان","14 - تيارت","15 - تيزي وزو","16 - الجزائر","17 - الجلفة","18 - جيجل","19 - سطيف","20 - سعيدة","21 - سكيكدة","22 - سيدي بلعباس","23 - عنابة","24 - قالمة","25 - قسنطينة","26 - المدية","27 - مستغانم","28 - المسيلة","29 - معسكر","30 - ورقلة","31 - وهران","32 - البيض","33 - إليزي","34 - برج بوعريريج","35 - بومرداس","36 - الطارف","37 - تندوف","38 - تيسمسيلت","39 - الوادي","40 - خنشلة","41 - سوق أهراس","42 - تيبازة","43 - ميلة","44 - عين الدفلى","45 - النعامة","46 - عين تموشنت","47 - غرداية","48 - غليزان","49 - تيميمون","50 - برج باجي مختار","51 - أولاد جلال","52 - بني عباس","53 - عين صالح","54 - عين قزام","55 - تقرت","56 - جانت","57 - المغير","58 - المنيعة"
 ];
 
-function fillWilayas() {
-  const sel = $("customerWilaya");
+function fillWilayas(selectId) {
+  const sel = $(selectId);
   if (!sel) return;
   WILAYAS.forEach(w => {
     const opt = document.createElement("option");
@@ -627,6 +713,260 @@ function fillWilayas() {
     sel.appendChild(opt);
   });
 }
+
+// ═══════════════════════════════════════════════════════════
+// CHOICE HANDLING
+// ═══════════════════════════════════════════════════════════
+document.querySelectorAll(".choice-card").forEach(card => {
+  card.addEventListener("click", () => {
+    const type = card.dataset.type;
+
+    document.querySelectorAll(".choice-card").forEach(c => c.classList.remove("active"));
+    card.classList.add("active");
+
+    if (type === "brand") {
+      // ✅ افتح نافذة Wilaya (نفس صفحة التحقق)
+      openBrandModal();
+    } else {
+      // 🏪 افتح نموذج المحل
+      setTimeout(() => {
+        $("choiceStep").style.display = "none";
+        $("formStep").classList.add("active");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }, 200);
+    }
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+// BACK BUTTON (Shop form)
+// ═══════════════════════════════════════════════════════════
+$("backToChoiceFromShop").addEventListener("click", () => {
+  $("formStep").classList.remove("active");
+  $("choiceStep").style.display = "block";
+  document.querySelectorAll(".choice-card").forEach(c => c.classList.remove("active"));
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+// ═══════════════════════════════════════════════════════════
+// BRAND MODAL (wilaya-style)
+// ═══════════════════════════════════════════════════════════
+let brandImageDataUrl = null;
+
+function openBrandModal() {
+  $("brandModal").classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+  resetBrandModal();
+}
+
+function closeBrandModal() {
+  $("brandModal").classList.add("hidden");
+  document.body.style.overflow = "";
+}
+
+function resetBrandModal() {
+  if ($("brandWilaya")) $("brandWilaya").value = "";
+  if ($("brandComment")) $("brandComment").value = "";
+  if ($("brandDescription")) $("brandDescription").value = "";
+  if ($("brandBrandInput")) $("brandBrandInput").value = "";
+  if ($("brandProductName")) $("brandProductName").value = "";
+  if ($("brandMsg")) $("brandMsg").classList.add("hidden");
+  if ($("brandAiResult")) $("brandAiResult").classList.add("hidden");
+  if ($("brandAiLoading")) $("brandAiLoading").classList.add("hidden");
+  removeBrandImage();
+}
+
+function removeBrandImage() {
+  brandImageDataUrl = null;
+  if ($("brandImage")) $("brandImage").value = "";
+  if ($("brandImagePreview")) $("brandImagePreview").classList.add("hidden");
+  if ($("brandImagePreviewImg")) $("brandImagePreviewImg").src = "";
+  if ($("brandAiResult")) $("brandAiResult").classList.add("hidden");
+}
+
+function compressImage(file, maxWidth, quality) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxWidth) {
+          height = Math.round(height * (maxWidth / width));
+          width = maxWidth;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        try {
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        } catch (e) { reject(e); }
+      };
+      img.onerror = reject;
+      img.src = ev.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function analyzeImageWithAI(dataUrl) {
+  if ($("brandAiLoading")) $("brandAiLoading").classList.remove("hidden");
+  if ($("brandAiResult")) $("brandAiResult").classList.add("hidden");
+
+  try {
+    const res = await fetch("/api/ai?mode=analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image: dataUrl })
+    });
+
+    const data = await res.json();
+
+    if (data.status === "OK") {
+      if ($("brandBrandInput")) $("brandBrandInput").value = data.brand || "";
+      if ($("brandProductName")) $("brandProductName").value = data.product_name || "";
+      if ($("brandDescription")) $("brandDescription").value = data.description || "";
+      if ($("brandAiResult")) $("brandAiResult").classList.remove("hidden");
+    } else {
+      if ($("brandMsg")) {
+        $("brandMsg").textContent = "⚠️ " + (data.message || "Erreur inconnue");
+        $("brandMsg").className = "wilaya-msg error";
+        $("brandMsg").classList.remove("hidden");
+      }
+      if ($("brandAiResult")) $("brandAiResult").classList.remove("hidden");
+    }
+  } catch (err) {
+    if ($("brandMsg")) {
+      $("brandMsg").textContent = "❌ Erreur réseau : " + err.message;
+      $("brandMsg").className = "wilaya-msg error";
+      $("brandMsg").classList.remove("hidden");
+    }
+  } finally {
+    if ($("brandAiLoading")) $("brandAiLoading").classList.add("hidden");
+  }
+}
+
+// Events
+$("brandClose").addEventListener("click", closeBrandModal);
+$("brandOverlay").addEventListener("click", closeBrandModal);
+
+$("brandImage").addEventListener("change", async (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+
+  if (file.size > 4 * 1024 * 1024) {
+    $("brandMsg").textContent = "الصورة كبيرة جدًا (الحد الأقصى 4 ميغا).";
+    $("brandMsg").className = "wilaya-msg error";
+    $("brandMsg").classList.remove("hidden");
+    removeBrandImage();
+    return;
+  }
+
+  if (!file.type.startsWith("image/")) {
+    $("brandMsg").textContent = "الرجاء اختيار صورة صالحة.";
+    $("brandMsg").className = "wilaya-msg error";
+    $("brandMsg").classList.remove("hidden");
+    removeBrandImage();
+    return;
+  }
+
+  try {
+    const dataUrl = await compressImage(file, 450, 0.55);
+    brandImageDataUrl = dataUrl;
+    if ($("brandImagePreviewImg")) $("brandImagePreviewImg").src = dataUrl;
+    if ($("brandImagePreview")) $("brandImagePreview").classList.remove("hidden");
+    if ($("brandMsg")) $("brandMsg").classList.add("hidden");
+
+    await analyzeImageWithAI(dataUrl);
+  } catch (err) {
+    console.error("Image error:", err);
+    $("brandMsg").textContent = "خطأ في معالجة الصورة.";
+    $("brandMsg").className = "wilaya-msg error";
+    $("brandMsg").classList.remove("hidden");
+    removeBrandImage();
+  }
+});
+
+$("brandImageRemove").addEventListener("click", (e) => {
+  e.preventDefault();
+  removeBrandImage();
+});
+
+$("brandSubmit").addEventListener("click", async () => {
+  const wilaya = ($("brandWilaya")?.value || "").trim();
+  const comment = ($("brandComment")?.value || "").trim();
+  const description = ($("brandDescription")?.value || "").trim();
+  const brand = ($("brandBrandInput")?.value || "").trim();
+  const productName = ($("brandProductName")?.value || "").trim();
+
+  if (!wilaya) {
+    $("brandMsg").textContent = "الرجاء اختيار الولاية";
+    $("brandMsg").className = "wilaya-msg error";
+    $("brandMsg").classList.remove("hidden");
+    return;
+  }
+
+  if (!brandImageDataUrl) {
+    $("brandMsg").textContent = "الرجاء تصوير المنتج أولًا";
+    $("brandMsg").className = "wilaya-msg error";
+    $("brandMsg").classList.remove("hidden");
+    return;
+  }
+
+  $("brandSubmit").disabled = true;
+  $("brandSubmit").textContent = "جاري الإرسال...";
+  $("brandMsg").classList.add("hidden");
+
+  try {
+    const payload = {
+      attempted_code: null,
+      wilaya: wilaya,
+      comment: comment || null,
+      product_description: description || null,
+      product_brand: brand || null,
+      product_name: productName || null,
+      product_image: brandImageDataUrl || null
+    };
+
+    const res = await fetch("/api/submit?type=report", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (data.status === "OK") {
+      $("brandMsg").textContent = "✓ تم إرسال البلاغ. شكرًا لك!";
+      $("brandMsg").className = "wilaya-msg success";
+
+      setTimeout(() => {
+        closeBrandModal();
+        $("brandSubmit").disabled = false;
+        $("brandSubmit").textContent = "📩 إرسال البلاغ";
+        document.querySelectorAll(".choice-card").forEach(c => c.classList.remove("active"));
+      }, 2000);
+    } else {
+      $("brandMsg").textContent = "Erreur : " + (data.message || "");
+      $("brandMsg").className = "wilaya-msg error";
+      $("brandSubmit").disabled = false;
+      $("brandSubmit").textContent = "📩 إرسال البلاغ";
+    }
+  } catch (e) {
+    $("brandMsg").textContent = "خطأ في الاتصال. الرجاء المحاولة مجددًا.";
+    $("brandMsg").className = "wilaya-msg error";
+    $("brandSubmit").disabled = false;
+    $("brandSubmit").textContent = "📩 إرسال البلاغ";
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
+// SHOP FORM (as-is)
+// ═══════════════════════════════════════════════════════════
+let uploadedImages = [null, null, null, null, null, null, null];
 
 const IMAGE_LABELS = [
   { icon: "📷", label: "الأمام" },
@@ -670,7 +1010,7 @@ function handleImageSelect(e, idx) {
   if (!file.type.startsWith("image/")) { alert("الرجاء اختيار صورة صالحة"); return; }
   if (file.size > 5 * 1024 * 1024) { alert("الصورة كبيرة جدًا (الحد 5MB)"); return; }
 
-  compressImage(file).then(dataUrl => {
+  compressImage(file, 900, 0.5).then(dataUrl => {
     uploadedImages[idx] = dataUrl;
 
     const slot = document.querySelector(`.image-slot[data-idx="${idx}"]`);
@@ -727,59 +1067,15 @@ function removeImage(idx) {
   if (input) input.value = "";
 }
 
-function compressImage(file, maxWidth = 900, quality = 0.5) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const img = new Image();
-      img.onload = () => {
-        let width = img.width;
-        let height = img.height;
-
-        if (width > maxWidth) {
-          height = Math.round(height * (maxWidth / width));
-          width = maxWidth;
-        }
-
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, width, height);
-
-        try {
-          resolve(canvas.toDataURL("image/jpeg", quality));
-        } catch (e) { reject(e); }
-      };
-      img.onerror = reject;
-      img.src = ev.target.result;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+function showReportMsg(text, type) {
+  const msg = $("reportMsg");
+  msg.className = "report-msg " + type;
+  msg.textContent = text;
+  msg.classList.remove("hidden");
+  msg.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
-function initTypeChoice() {
-  document.querySelectorAll(".choice-card").forEach(card => {
-    card.addEventListener("click", () => {
-      reportType = card.dataset.type;
-      document.querySelectorAll(".choice-card").forEach(c => c.classList.remove("active"));
-      card.classList.add("active");
-
-      setTimeout(() => showForm(reportType), 200);
-    });
-  });
-}
-
-function showForm(type) {
-  const choiceStep = $("choiceStep");
-  const formStep = $("formStep");
-  if (choiceStep) choiceStep.style.display = "none";
-  if (formStep) formStep.classList.add("active");
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-async function handleSubmit(e) {
+async function handleShopSubmit(e) {
   e.preventDefault();
   const msg = $("reportMsg");
   const submitBtn = $("submitBtn");
@@ -793,14 +1089,14 @@ async function handleSubmit(e) {
   const customerWilaya = $("customerWilaya").value;
   const notes = $("notes").value.trim();
 
-  if (!productCode || productCode.length < 6) return showMsg("الرجاء إدخال الكود السري (6 أحرف على الأقل)", "error");
-  if (!productPrice || parseFloat(productPrice) <= 0) return showMsg("الرجاء إدخال سعر المنتج", "error");
-  if (!customerName || customerName.length < 2) return showMsg("الرجاء إدخال اسمك الكامل", "error");
-  if (!customerPhone || customerPhone.length < 6) return showMsg("الرجاء إدخال رقم هاتفك", "error");
-  if (!customerWilaya) return showMsg("الرجاء اختيار الولاية", "error");
+  if (!productCode || productCode.length < 6) return showReportMsg("الرجاء إدخال الكود السري (6 أحرف على الأقل)", "error");
+  if (!productPrice || parseFloat(productPrice) <= 0) return showReportMsg("الرجاء إدخال سعر المنتج", "error");
+  if (!customerName || customerName.length < 2) return showReportMsg("الرجاء إدخال اسمك الكامل", "error");
+  if (!customerPhone || customerPhone.length < 6) return showReportMsg("الرجاء إدخال رقم هاتفك", "error");
+  if (!customerWilaya) return showReportMsg("الرجاء اختيار الولاية", "error");
 
   const filledImages = uploadedImages.filter(img => img !== null);
-  if (filledImages.length < 7) return showMsg(`الرجاء إضافة 7 صور كاملة (أضفت ${filledImages.length}/7)`, "error");
+  if (filledImages.length < 7) return showReportMsg(`الرجاء إضافة 7 صور كاملة (أضفت ${filledImages.length}/7)`, "error");
 
   submitBtn.disabled = true;
   submitBtn.innerHTML = `<span>⏳</span><span>جاري الإرسال...</span>`;
@@ -833,34 +1129,32 @@ async function handleSubmit(e) {
       }
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
-      showMsg(data.message || "فشل إرسال البلاغ", "error");
+      showReportMsg(data.message || "فشل إرسال البلاغ", "error");
       submitBtn.disabled = false;
       submitBtn.innerHTML = `<span>📤</span><span>إرسال البلاغ</span>`;
     }
   } catch (err) {
     console.error("Submit error:", err);
-    showMsg("خطأ في الاتصال. حاول مجددًا.", "error");
+    showReportMsg("خطأ في الاتصال. حاول مجددًا.", "error");
     submitBtn.disabled = false;
     submitBtn.innerHTML = `<span>📤</span><span>إرسال البلاغ</span>`;
   }
 }
 
-function showMsg(text, type) {
-  const msg = $("reportMsg");
-  msg.className = "report-msg " + type;
-  msg.textContent = text;
-  msg.classList.remove("hidden");
-  msg.scrollIntoView({ behavior: "smooth", block: "center" });
-}
-
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
 function init() {
-  fillWilayas();
+  // Fill wilayas
+  fillWilayas("customerWilaya");
+  fillWilayas("brandWilaya");
+
   buildImageSlots();
-  initTypeChoice();
 
   const form = $("reportForm");
-  if (form) form.addEventListener("submit", handleSubmit);
+  if (form) form.addEventListener("submit", handleShopSubmit);
 
+  // Check URL parameter for auto-selection
   const params = new URLSearchParams(location.search);
   const typeParam = params.get("type");
   if (typeParam === "shop" || typeParam === "brand") {
