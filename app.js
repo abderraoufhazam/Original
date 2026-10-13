@@ -683,56 +683,32 @@ if (typeof applyTranslations === "function") {
 }
 
 // ============================================================
-// ONLINE / OFFLINE DETECTION (بدون setInterval)
+// ONLINE / OFFLINE DETECTION (بسيط وموثوق)
 // ============================================================
-let isOfflineMode = false;
-
-async function checkRealInternet() {
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
-    const res = await fetch("/icon.png?_=" + Date.now(), {
-      method: "HEAD",
-      cache: "no-store",
-      signal: controller.signal
-    });
-    clearTimeout(timeoutId);
-    return res.ok;
-  } catch (e) {
-    return false;
-  }
-}
-
-async function updateOnlineStatus() {
+function updateOnlineStatus() {
   const banner = document.getElementById("offlineBanner");
   const history = document.getElementById("offlineHistory");
-  const verifyBtn = document.getElementById("verifyBtn");
-  const isReallyOnline = await checkRealInternet();
 
-  if (isReallyOnline) {
-    isOfflineMode = false;
+  const isOnline = navigator.onLine;
+
+  if (isOnline) {
     if (banner) banner.classList.add("hidden");
     if (history) history.classList.add("hidden");
-    if (verifyBtn) verifyBtn.disabled = false;
   } else {
-    isOfflineMode = true;
     if (banner) banner.classList.remove("hidden");
     if (history) {
       history.classList.remove("hidden");
       loadOfflineHistory();
     }
-    if (verifyBtn) verifyBtn.disabled = true;
   }
+  // ⚠️ لا نعطّل زر التحقق أبداً
 }
 
-window.addEventListener("online", () => setTimeout(updateOnlineStatus, 500));
-window.addEventListener("offline", () => setTimeout(updateOnlineStatus, 500));
-setTimeout(updateOnlineStatus, 500);
+window.addEventListener("online", updateOnlineStatus);
+window.addEventListener("offline", updateOnlineStatus);
 
-document.addEventListener("visibilitychange", () => {
-  if (!document.hidden) setTimeout(updateOnlineStatus, 300);
-});
-window.addEventListener("focus", () => setTimeout(updateOnlineStatus, 300));
+// فحص أولي بعد 1 ثانية
+setTimeout(updateOnlineStatus, 1000);
 
 window.__applyOfflineHistory = loadOfflineHistory;
 
