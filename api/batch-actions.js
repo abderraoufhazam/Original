@@ -84,6 +84,24 @@ async function verifyAdmin(supabaseUrl, serviceKey, accessToken) {
 // 📥 جلب كل المستخدمين مع Pagination
 // ============================================================
 async function fetchAllUsers(supabaseUrl, serviceKey) {
+// ✅ Cache في الذاكرة (5 دقائق)
+let _usersCache = null;
+let _usersCacheTime = 0;
+const USERS_CACHE_TTL = 5 * 60 * 1000;
+
+async function fetchAllUsers(supabaseUrl, serviceKey, forceRefresh = false) {
+  const now = Date.now();
+
+  // ✅ استخدام Cache إذا موجود ولم ينته
+  if (!forceRefresh && _usersCache && (now - _usersCacheTime) < USERS_CACHE_TTL) {
+    if (process.env.NODE_ENV !== 'production') {
+      const age = Math.round((now - _usersCacheTime) / 1000);
+      console.log(`✅ fetchAllUsers: cache HIT (${_usersCache.length} users, ${age}s old)`);
+    }
+    return _usersCache;
+  }
+
+  // 🔄 جلب من Supabase
   const allUsers = [];
   const perPage = 1000;
   let page = 1;
@@ -122,7 +140,14 @@ async function fetchAllUsers(supabaseUrl, serviceKey) {
     }
   }
 
-  console.log(`fetchAllUsers: loaded ${allUsers.length} users`);
+  // ✅ حفظ في Cache
+  _usersCache = allUsers;
+  _usersCacheTime = now;
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`📥 fetchAllUsers: loaded ${allUsers.length} users`);
+  }
+
   return allUsers;
 }
 
