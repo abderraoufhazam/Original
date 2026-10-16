@@ -1,9 +1,6 @@
 // ============================================================
 // ORIGINAL — ADMIN.JS (v6 — Full)
 // ============================================================
-const SUPABASE_URL = "https://qfpmbbntxyrderjlejql.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m";
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ═══════════ EmailJS Config (احتياطي) ═══════════
 const EMAILJS_PUBLIC_KEY = "-u23EBBOrhdGM3uwm";
