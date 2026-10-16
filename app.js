@@ -40,12 +40,6 @@ function vibrate(pattern = 30) {
   }
 }
 
-function escapeHtml(v = "") {
-  return String(v).replace(/[&<>"']/g, c => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
-  }[c]));
-}
-
 function show(type, html) {
   result.className = "result " + type;
   result.innerHTML = html;
