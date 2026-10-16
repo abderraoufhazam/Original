@@ -21,12 +21,6 @@
     return window.__lastVerifiedProduct || null;
   }
 
-  function escapeHtml(v = "") {
-    return String(v).replace(/[&<>"']/g, c => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
-    }[c]));
-  }
-
   function addMessage(text, role) {
     const div = document.createElement("div");
     div.className = "chat-msg chat-msg-" + (role === "user" ? "user" : "bot");
