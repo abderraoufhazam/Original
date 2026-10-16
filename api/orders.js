@@ -694,22 +694,25 @@ async function handleSaveContact(req, res, auth) {
 // ============================================================
 async function handleListBrands(req, res, auth) {
   try {
-    // 1. الماركات من qr_codes
-    const codesRes = await fetch(
-      `${auth.supabaseUrl}/rest/v1/qr_codes?select=brand&limit=10000`,
+    // 1. ✅ RPC محسّن — يُرجع فقط brand + count (بدل 10,000 صف)
+    const statsRes = await fetch(
+      `${auth.supabaseUrl}/rest/v1/rpc/admin_get_brand_stats`,
       {
+        method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'apikey': auth.serviceKey,
           'Authorization': `Bearer ${auth.serviceKey}`
-        }
+        },
+        body: JSON.stringify({})
       }
     );
 
-    const codes = codesRes.ok ? await codesRes.json() : [];
+    const stats = statsRes.ok ? await statsRes.json() : [];
     const brandsFromCodes = {};
-    codes.forEach(c => {
-      if (c.brand) {
-        brandsFromCodes[c.brand] = (brandsFromCodes[c.brand] || 0) + 1;
+    stats.forEach(s => {
+      if (s.brand) {
+        brandsFromCodes[s.brand] = parseInt(s.codes_count, 10) || 0;
       }
     });
 
