@@ -739,23 +739,33 @@ function getChartColors() {
 }
 
 async function loadCharts() {
+  // ═══════════════════════════════════════════════════════════
+  // Chart 1: Daily Verifications (14 days) — via RPC
+  // ═══════════════════════════════════════════════════════════
   try {
-    const since = new Date();
-    since.setDate(since.getDate() - 13);
-    since.setHours(0, 0, 0, 0);
-    const { data: verifs } = await sb.from("qr_verifications").select("created_at, result").gte("created_at", since.toISOString()).limit(10000);
+    const { data, error } = await sb.rpc("admin_get_daily_verifications");
+    if (error) throw error;
 
-    const days = [], counts = { total: [] };
-    for (let i = 0; i < 14; i++) {
-      const d = new Date(since); d.setDate(d.getDate() + i);
-      days.push(d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }));
-      counts.total.push(0);
-    }
-    (verifs || []).forEach(v => {
-      const d = new Date(v.created_at); d.setHours(0, 0, 0, 0);
-      const idx = Math.round((d - since) / (1000 * 60 * 60 * 24));
-      if (idx >= 0 && idx < 14) counts.total[idx]++;
+    // بناء مصفوفة 14 يوم حتى لو بعض الأيام بدون بيانات
+    const days = [];
+    const counts = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const dataMap = {};
+    (data || []).forEach(d => {
+      // day يأتي كـ string من PostgreSQL
+      const dayStr = typeof d.day === 'string' ? d.day : new Date(d.day).toISOString().split('T')[0];
+      dataMap[dayStr] = parseInt(d.count, 10) || 0;
     });
+
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().split('T')[0];
+      days.push(d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }));
+      counts.push(dataMap[key] || 0);
+    }
 
     const colors = getChartColors();
     const ctx = $("chartDaily");
@@ -763,51 +773,155 @@ async function loadCharts() {
       if (chartDaily) chartDaily.destroy();
       chartDaily = new Chart(ctx, {
         type: "line",
-        data: { labels: days, datasets: [{ label: "Vérifications", data: counts.total, borderColor: "#3b82f6", backgroundColor: "rgba(59,130,246,0.15)", borderWidth: 3, fill: true, tension: 0.4, pointBackgroundColor: "#3b82f6", pointBorderColor: "#fff", pointBorderWidth: 2, pointRadius: 4 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: colors.text, precision: 0 }, grid: { color: colors.grid } }, x: { ticks: { color: colors.text, font: { size: 10 } }, grid: { display: false } } } }
+        data: {
+          labels: days,
+          datasets: [{
+            label: "Vérifications",
+            data: counts,
+            borderColor: "#3b82f6",
+            backgroundColor: "rgba(59,130,246,0.15)",
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: "#3b82f6",
+            pointBorderColor: "#fff",
+            pointBorderWidth: 2,
+            pointRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { color: colors.text, precision: 0 }, grid: { color: colors.grid } },
+            x: { ticks: { color: colors.text, font: { size: 10 } }, grid: { display: false } }
+          }
+        }
       });
     }
-  } catch (e) { console.warn("chartDaily:", e); }
+  } catch (e) {
+    console.warn("chartDaily:", e);
+  }
 
+  // ═══════════════════════════════════════════════════════════
+  // Chart 2: Results Distribution — via RPC
+  // ═══════════════════════════════════════════════════════════
   try {
-    const { data: allVerifs } = await sb.from("qr_verifications").select("result").limit(10000);
+    const { data, error } = await sb.rpc("admin_get_results_distribution");
+    if (error) throw error;
+
     const dist = { ORIGINAL: 0, USED: 0, NOT_FOUND: 0 };
-    (allVerifs || []).forEach(v => { if (dist[v.result] !== undefined) dist[v.result]++; else dist.NOT_FOUND++; });
+    (data || []).forEach(r => {
+      const key = r.result || 'NOT_FOUND';
+      if (dist[key] !== undefined) {
+        dist[key] = parseInt(r.count, 10) || 0;
+      } else {
+        dist.NOT_FOUND += parseInt(r.count, 10) || 0;
+      }
+    });
 
     const ctx = $("chartResults");
     if (ctx) {
       if (chartResults) chartResults.destroy();
       chartResults = new Chart(ctx, {
         type: "doughnut",
-        data: { labels: ["✓ Original", "⚠ Déjà utilisé", "✗ Non original"], datasets: [{ data: [dist.ORIGINAL, dist.USED, dist.NOT_FOUND], backgroundColor: ["#10b981", "#f59e0b", "#ef4444"], borderColor: "#fff", borderWidth: 3, hoverOffset: 8 }] },
-        options: { responsive: true, maintainAspectRatio: false, cutout: "62%", plugins: { legend: { position: "bottom", labels: { color: getChartColors().text, padding: 14, font: { size: 12, weight: "600" }, usePointStyle: true, pointStyle: "circle" } } } }
+        data: {
+          labels: ["✓ Original", "⚠ Déjà utilisé", "✗ Non original"],
+          datasets: [{
+            data: [dist.ORIGINAL, dist.USED, dist.NOT_FOUND],
+            backgroundColor: ["#10b981", "#f59e0b", "#ef4444"],
+            borderColor: "#fff",
+            borderWidth: 3,
+            hoverOffset: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: "62%",
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: {
+                color: getChartColors().text,
+                padding: 14,
+                font: { size: 12, weight: "600" },
+                usePointStyle: true,
+                pointStyle: "circle"
+              }
+            }
+          }
+        }
       });
     }
-  } catch (e) { console.warn("chartResults:", e); }
+  } catch (e) {
+    console.warn("chartResults:", e);
+  }
 
+  // ═══════════════════════════════════════════════════════════
+  // Chart 3: Top 5 Lots — via RPC
+  // ═══════════════════════════════════════════════════════════
   try {
-    const { data: verifs } = await sb.from("qr_verifications").select("lot, result").eq("result", "ORIGINAL").limit(10000);
-    const lotCounts = {};
-    (verifs || []).forEach(v => { if (v.lot) lotCounts[v.lot] = (lotCounts[v.lot] || 0) + 1; });
-    const top = Object.entries(lotCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-    const labels = top.map(t => t[0] || "—");
-    const data = top.map(t => t[1]);
+    const { data, error } = await sb.rpc("admin_get_top_lots");
+    if (error) throw error;
+
+    const labels = (data || []).map(t => t.lot || "—");
+    const values = (data || []).map(t => parseInt(t.count, 10) || 0);
 
     const ctx = $("chartTopLots");
     if (ctx) {
       if (chartTopLots) chartTopLots.destroy();
+
       if (labels.length === 0) {
         const parent = ctx.parentElement;
-        if (parent && !parent.querySelector(".empty-msg")) parent.innerHTML = `<p class="muted empty-msg" style="text-align:center;padding:40px 0">Aucune donnée.</p>`;
+        if (parent && !parent.querySelector(".empty-msg")) {
+          parent.innerHTML = `<p class="muted empty-msg" style="text-align:center;padding:40px 0">Aucune donnée.</p>`;
+        }
         return;
       }
+
       chartTopLots = new Chart(ctx, {
         type: "bar",
-        data: { labels, datasets: [{ label: "Vérifications", data, backgroundColor: ["rgba(16,185,129,0.85)", "rgba(59,130,246,0.85)", "rgba(245,158,11,0.85)", "rgba(168,85,247,0.85)", "rgba(236,72,153,0.85)"], borderRadius: 8, borderSkipped: false, barThickness: 40 }] },
-        options: { responsive: true, maintainAspectRatio: false, indexAxis: "y", plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { color: getChartColors().text, precision: 0 }, grid: { color: getChartColors().grid } }, y: { ticks: { color: getChartColors().text, font: { size: 12, weight: "600" } }, grid: { display: false } } } }
+        data: {
+          labels,
+          datasets: [{
+            label: "Vérifications",
+            data: values,
+            backgroundColor: [
+              "rgba(16,185,129,0.85)",
+              "rgba(59,130,246,0.85)",
+              "rgba(245,158,11,0.85)",
+              "rgba(168,85,247,0.85)",
+              "rgba(236,72,153,0.85)"
+            ],
+            borderRadius: 8,
+            borderSkipped: false,
+            barThickness: 40
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: "y",
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              beginAtZero: true,
+              ticks: { color: getChartColors().text, precision: 0 },
+              grid: { color: getChartColors().grid }
+            },
+            y: {
+              ticks: { color: getChartColors().text, font: { size: 12, weight: "600" } },
+              grid: { display: false }
+            }
+          }
+        }
       });
     }
-  } catch (e) { console.warn("chartTopLots:", e); }
+  } catch (e) {
+    console.warn("chartTopLots:", e);
+  }
 }
 window.__reloadCharts = loadCharts;
 
