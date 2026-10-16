@@ -50,22 +50,6 @@ let currentComplaintsDateRange = "all";
 // ============================================================
 // HELPERS
 // ============================================================
-function escapeHtml(v = "") {
-  return String(v).replace(/[&<>"']/g, c => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
-  }[c]));
-}
-
-function formatMoney(amount) {
-  const num = parseFloat(amount || 0);
-  return num.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + " DA";
-}
-
-function formatDisplayCode(code) {
-  if (!code) return '';
-  return String(code).trim().toUpperCase();
-}
-
 async function checkAdminServer(token) {
   try {
     const res = await fetch("/api/check-admin", {
