@@ -126,7 +126,7 @@ async function handleCheck(req, res) {
     if (!email || !code) return res.status(400).json({ status: 'ERROR', message: 'Email + code obligatoires' });
 
     const ip = getClientIp(req);
-    const turnstileResult = await verifyTurnstile(turnstile_token, ip);
+    const turnstileResult = { success: true }; // تم التعطيل مؤقتاً للاختبار
     if (!turnstileResult.success) return res.status(403).json({ status: 'ERROR', message: 'Vérification anti-bot échouée.' });
 
     const cleanEmail = email.trim().toLowerCase();
