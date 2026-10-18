@@ -121,7 +121,31 @@ async function handleSend(req, res) {
       });
     }
 
-    const emailRes = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+const emailRes = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    service_id: EMAILJS_SERVICE_ID,
+    template_id: EMAILJS_TEMPLATE_ID,
+    user_id: EMAILJS_PUBLIC_KEY,
+    template_params: {
+      to_email: cleanEmail,
+      brand_name: cleanBrand,
+      code: code
+    }
+  })
+});
+
+// ✅ الآن نفحص النتيجة بعد انتهاء الـ fetch
+const emailText = await emailRes.text();
+if (!emailRes.ok) {
+  console.log("EmailJS Error:", emailRes.status, emailText);
+  return res.status(500).json({
+    status: 'ERROR',
+    message: 'Erreur envoi email',
+    detail: emailText.slice(0, 200)
+  });
+}
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
