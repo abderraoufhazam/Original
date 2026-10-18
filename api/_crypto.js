@@ -52,7 +52,7 @@ export function decryptCode(encryptedBase64) {
 
 // ✅ 7 caractères — sans 0/O, 1/I/L
 export function generateSecretCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
   const bytes = crypto.randomBytes(CODE_LENGTH);
   let s = '';
   for (let i = 0; i < CODE_LENGTH; i++) {
