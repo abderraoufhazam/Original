@@ -5,9 +5,9 @@
 
 :root {
   /* ─── الألوان الأساسية ─── */
-  --color-brand-green: #16a34a;
-  --color-brand-green-light: #22c55e;
-  --color-brand-green-soft: rgba(22, 163, 74, 0.1);
+  --color-brand-green: #d4b895;
+  --color-brand-green-light: #e8d8b3;
+  --color-brand-green-soft: rgba(212, 184, 149, 0.1);
   
   --color-brand-navy: #0f172a;
   --color-brand-navy-light: #1e293b;
