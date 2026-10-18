@@ -45,7 +45,7 @@ describe('generateSecretCode', () => {
   it('only uses allowed characters (no I, O, L, 0, 1)', () => {
     for (let i = 0; i < 100; i++) {
       const code = generateSecretCode();
-      expect(code).toMatch(/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]+$/);
+      expect(code).toMatch(/^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]+$/);
       expect(code).not.toContain('I');
       expect(code).not.toContain('O');
       expect(code).not.toContain('L');
