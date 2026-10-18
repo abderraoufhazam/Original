@@ -6,16 +6,9 @@ import crypto from 'crypto';
 import { verifyTurnstile, getClientIp } from './_turnstile.js';
 
 export default async function handler(req, res) {
-  // ✅ CORS محمي — قائمة أصول مسموحة
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://originaldz.online,https://www.originaldz.online,https://original-indol.vercel.app')
-  .split(',').map(o => o.trim()).filter(Boolean);
-const _origin = req.headers.origin;
-if (_origin && ALLOWED_ORIGINS.includes(_origin)) {
-  res.setHeader('Access-Control-Allow-Origin', _origin);
-  res.setHeader('Vary', 'Origin');
-}
-res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') {
@@ -41,14 +34,10 @@ async function handleSend(req, res) {
       return res.status(400).json({ status: 'ERROR', message: 'Email invalide' });
     }
 
-    // 🔒 التحقق من Turnstile
     const ip = getClientIp(req);
     const turnstileResult = await verifyTurnstile(turnstile_token, ip);
     if (!turnstileResult.success) {
-      return res.status(403).json({
-        status: 'ERROR',
-        message: 'Vérification anti-bot échouée. Rechargez la page.'
-      });
+      return res.status(403).json({ status: 'ERROR', message: 'Vérification anti-bot échouée.' });
     }
 
     const cleanEmail = email.trim().toLowerCase();
@@ -61,91 +50,40 @@ async function handleSend(req, res) {
       return res.status(500).json({ status: 'ERROR', message: 'Config manquante' });
     }
 
-    // 🚦 Rate limiting: 3 max par 15 min
     const since = new Date(Date.now() - 15 * 60 * 1000).toISOString();
     const countRes = await fetch(
       `${SUPABASE_URL}/rest/v1/email_verifications?email=eq.${encodeURIComponent(cleanEmail)}&created_at=gte.${since}&select=id`,
-      {
-        headers: {
-          'apikey': SUPABASE_SERVICE_ROLE_KEY,
-          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-          'Prefer': 'count=exact'
-        }
-      }
+      { headers: { 'apikey': SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`, 'Prefer': 'count=exact' } }
     );
     const count = parseInt(countRes.headers.get('content-range')?.split('/')[1] || '0', 10);
 
     if (count >= 3) {
-      return res.status(429).json({
-        status: 'ERROR',
-        message: 'Trop de demandes. Réessayez dans 15 minutes.'
-      });
+      return res.status(429).json({ status: 'ERROR', message: 'Trop de demandes. Réessayez dans 15 minutes.' });
     }
 
-    // 🔐 كود 6 أرقام آمن
     const code = String(crypto.randomInt(100000, 1000000));
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
-    // 💾 حفظ الكود
     const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/email_verifications`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_SERVICE_ROLE_KEY,
-        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({
-        email: cleanEmail,
-        code: code,
-        expires_at: expiresAt,
-        ip: ip || 'unknown'
-      })
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ email: cleanEmail, code: code, expires_at: expiresAt, ip: ip || 'unknown' })
     });
 
     if (!insertRes.ok) {
-      const err = await insertRes.text();
-      console.error('Insert error:', err);
       return res.status(500).json({ status: 'ERROR', message: 'Erreur sauvegarde' });
     }
 
-    // 📧 إرسال عبر EmailJS
     const EMAILJS_SERVICE_ID = process.env.EMAILJS_SERVICE_ID || 'service_42s5mbn';
     const EMAILJS_TEMPLATE_ID = process.env.EMAILJS_TEMPLATE_VERIFY;
     const EMAILJS_PUBLIC_KEY = process.env.EMAILJS_PUBLIC_KEY || 'juoh_rOKaec16kxrH';
 
     if (!EMAILJS_TEMPLATE_ID) {
-      return res.status(500).json({
-        status: 'ERROR',
-        message: 'EMAILJS_TEMPLATE_VERIFY manquant dans Vercel'
-      });
+      return res.status(500).json({ status: 'ERROR', message: 'EMAILJS_TEMPLATE_VERIFY manquant dans Vercel' });
     }
 
-const emailRes = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    service_id: EMAILJS_SERVICE_ID,
-    template_id: EMAILJS_TEMPLATE_ID,
-    user_id: EMAILJS_PUBLIC_KEY,
-    template_params: {
-      to_email: cleanEmail,
-      brand_name: cleanBrand,
-      code: code
-    }
-  })
-});
-
-// ✅ الآن نفحص النتيجة بعد انتهاء الـ fetch
-const emailText = await emailRes.text();
-if (!emailRes.ok) {
-  console.log("EmailJS Error:", emailRes.status, emailText);
-  return res.status(500).json({
-    status: 'ERROR',
-    message: 'Erreur envoi email',
-    detail: emailText.slice(0, 200)
-  });
-}
+    // ✅ إرسال عبر EmailJS (تم إصلاح الخطأ البرمجي هنا)
+    const emailRes = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -161,19 +99,16 @@ if (!emailRes.ok) {
     });
 
     if (!emailRes.ok) {
-      const err = await emailRes.text();
-      console.error('EmailJS error:', err);
+      const emailText = await emailRes.text();
+      console.error("EmailJS Error:", emailRes.status, emailText);
       return res.status(500).json({
         status: 'ERROR',
         message: 'Erreur envoi email',
-        detail: err.slice(0, 200)
+        detail: emailText.slice(0, 200)
       });
     }
 
-    return res.status(200).json({
-      status: 'OK',
-      message: 'Code envoyé à ' + cleanEmail
-    });
+    return res.status(200).json({ status: 'OK', message: 'Code envoyé à ' + cleanEmail });
 
   } catch (e) {
     console.error('handleSend error:', e);
@@ -182,62 +117,35 @@ if (!emailRes.ok) {
 }
 
 // ============================================================
-// ✅ التحقق من الكود — ذرّي (Atomic via RPC)
+// ✅ التحقق من الكود
 // ============================================================
 async function handleCheck(req, res) {
   try {
     const { email, code, turnstile_token } = req.body || {};
 
-    if (!email || !code) {
-      return res.status(400).json({ status: 'ERROR', message: 'Email + code obligatoires' });
-    }
+    if (!email || !code) return res.status(400).json({ status: 'ERROR', message: 'Email + code obligatoires' });
 
-    // 🔒 التحقق من Turnstile
     const ip = getClientIp(req);
     const turnstileResult = await verifyTurnstile(turnstile_token, ip);
-    if (!turnstileResult.success) {
-      return res.status(403).json({
-        status: 'ERROR',
-        message: 'Vérification anti-bot échouée. Rechargez la page.'
-      });
-    }
+    if (!turnstileResult.success) return res.status(403).json({ status: 'ERROR', message: 'Vérification anti-bot échouée.' });
 
     const cleanEmail = email.trim().toLowerCase();
     const cleanCode = String(code).trim();
 
-    if (!/^\d{6}$/.test(cleanCode)) {
-      return res.status(400).json({ status: 'ERROR', message: 'Code invalide (6 chiffres)' });
-    }
+    if (!/^\d{6}$/.test(cleanCode)) return res.status(400).json({ status: 'ERROR', message: 'Code invalide (6 chiffres)' });
 
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      return res.status(500).json({ status: 'ERROR', message: 'Config manquante' });
-    }
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return res.status(500).json({ status: 'ERROR', message: 'Config manquante' });
 
-    // 🔐 استدعاء الدالة الذرّية
-    const rpcRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/rpc/verify_email_code`,
-      {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_SERVICE_ROLE_KEY,
-          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          p_email: cleanEmail,
-          p_code: cleanCode
-        })
-      }
-    );
+    const rpcRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/verify_email_code`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_email: cleanEmail, p_code: cleanCode })
+    });
 
-    if (!rpcRes.ok) {
-      const err = await rpcRes.text();
-      console.error('RPC error:', err);
-      return res.status(500).json({ status: 'ERROR', message: 'Erreur serveur' });
-    }
+    if (!rpcRes.ok) return res.status(500).json({ status: 'ERROR', message: 'Erreur serveur' });
 
     const result = await rpcRes.json();
     return res.status(result.status === 'OK' ? 200 : 400).json(result);
