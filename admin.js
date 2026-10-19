@@ -3429,15 +3429,12 @@ async function loadUnassignedReports() {
       .from("fake_reports")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(500);
+      .limit(50); // جلب آخر 50 بلاغ فقط
 
     if (error) throw error;
 
-    // فلترة البلاغات التي ليس لها ماركة
-    const unassigned = (data || []).filter(r => {
-      const brand = (r.product_brand || "").trim();
-      return brand === "";
-    });
+    // ✅ عرض كل البلاغات مؤقتاً للتجربة
+    const unassigned = (data || []);
 
     const badge = $("unassignedBadge");
     if (badge) {
