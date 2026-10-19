@@ -127,13 +127,39 @@ async function handleAnalyze(req, res) {
 
     if (!geminiData) return res.status(500).json({ status: 'ERROR', message: 'Erreur analyse IA', detail: lastError });
 
+        // ✅ استخراج ذكي للـ JSON
     let result = null;
     try {
-      const text = geminiData.candidates[0].content.parts.map(p => p.text || '').join('');
-      const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      const candidate = geminiData.candidates[0];
+      if (!candidate || !candidate.content || !candidate.content.parts) {
+        throw new Error("Structure de réponse Gemini invalide");
+      }
+
+      const text = candidate.content.parts.map(p => p.text || '').join('');
+      console.log("Gemini Raw Response:", text); // للتشخيص
+
+      // محاولة استخراج JSON حتى لو كان النص يحتوي على كلام إضافي
+      let cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      
+      // إذا لم يبدأ بـ {، نحاول إيجاد أول { وآخر }
+      if (!cleaned.startsWith('{')) {
+        const start = cleaned.indexOf('{');
+        const end = cleaned.lastIndexOf('}');
+        if (start !== -1 && end !== -1) {
+          cleaned = cleaned.substring(start, end + 1);
+        }
+      }
+
       result = JSON.parse(cleaned);
     } catch (e) {
-      return res.status(500).json({ status: 'ERROR', message: 'Réponse IA invalide' });
+      console.error("Parse Error:", e);
+      // في حال فشل التحليل، نعيد قيم افتراضية بدلاً من إظهار خطأ
+      result = { 
+        brand: "", 
+        product_name: "", 
+        description: "تعذر قراءة تفاصيل المنتج، يرجى إدخالها يدوياً.", 
+        confidence: "low" 
+      };
     }
 
     let correctedBrand = (result.brand || '').trim();
@@ -286,7 +312,13 @@ async function handleReadLabel(req, res) {
     let result = null;
     try {
       const text = geminiData.candidates[0].content.parts.map(p => p.text || '').join('');
-      result = JSON.parse(text.replace(/```json/g, '').replace(/```/g, '').trim());
+            let cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      if (!cleaned.startsWith('{')) {
+        const start = cleaned.indexOf('{');
+        const end = cleaned.lastIndexOf('}');
+        if (start !== -1 && end !== -1) cleaned = cleaned.substring(start, end + 1);
+      }
+      result = JSON.parse(cleaned);
     } catch (e) {
       return res.status(500).json({ status: 'ERROR', message: 'Réponse IA invalide' });
     }
