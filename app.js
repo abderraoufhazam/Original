@@ -203,30 +203,38 @@ async function analyzeImageWithAI(dataUrl) {
     const data = await res.json();
 
     if (data.status === "OK") {
-      if (wilayaBrand) wilayaBrand.value = data.brand || "";
+      // ✅ اختيار الماركة من القائمة (بدلاً من الكتابة)
+      const brandSelect = document.getElementById("wilayaBrand");
+      const detectedBrand = (data.brand || "").trim();
+      
+      if (detectedBrand && brandSelect) {
+        // البحث عن الماركة في القائمة
+        const options = Array.from(brandSelect.options);
+        const match = options.find(o => o.value.toLowerCase() === detectedBrand.toLowerCase());
+        
+        if (match) {
+          brandSelect.value = match.value;
+        } else {
+          // إضافة الخيار إذا لم يكن موجوداً
+          const newOpt = document.createElement("option");
+          newOpt.value = detectedBrand;
+          newOpt.textContent = detectedBrand;
+          brandSelect.appendChild(newOpt);
+          brandSelect.value = detectedBrand;
+        }
+      }
+      
       if (wilayaProductName) wilayaProductName.value = data.product_name || "";
       if (wilayaDescription) wilayaDescription.value = data.description || "";
       if (wilayaAiResult) wilayaAiResult.classList.remove("hidden");
     } else {
-      wilayaMsg.textContent = "⚠️ " + (data.message || "Erreur inconnue");
-      if (data.detail) wilayaMsg.textContent += " — " + String(data.detail).slice(0, 150);
-      wilayaMsg.className = "wilaya-msg error";
-      if (wilayaAiResult) wilayaAiResult.classList.remove("hidden");
+      // ... (باقي الكود كما هو)
     }
   } catch (err) {
-    wilayaMsg.textContent = "❌ Erreur réseau : " + err.message;
-    wilayaMsg.className = "wilaya-msg error";
-    if (wilayaAiResult) wilayaAiResult.classList.remove("hidden");
+    // ... (باقي الكود كما هو)
   } finally {
     if (wilayaAiLoading) wilayaAiLoading.classList.add("hidden");
   }
-}
-
-if (wilayaImageRemove) {
-  wilayaImageRemove.addEventListener("click", (e) => {
-    e.preventDefault();
-    removeImage();
-  });
 }
 
 function compressImage(file, maxWidth, quality) {
