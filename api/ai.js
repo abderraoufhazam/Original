@@ -488,13 +488,22 @@ IMPORTANT :
 - Sois précis et concret
 - Ne mets AUCUN texte avant ou après le JSON`;
 
-    // جرّب الموديلات بالترتيب
-    const MODELS = [
+   // جلب الموديلات المتاحة ديناميكياً
+let availableModels = [];
+try {
+  const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
+  if (listRes.ok) {
+    const listData = await listRes.json();
+    availableModels = (listData.models || [])
+      .filter(m => (m.supportedGenerationMethods || []).includes('generateContent'))
+      .map(m => m.name.replace('models/', ''));
+  }
+} catch (e) { console.warn("List models error:", e); }
+
+const MODELS = availableModels.length > 0 ? availableModels : [
   'gemini-1.5-flash',
-  'gemini-1.5-flash-8b',
   'gemini-1.5-pro',
-  'gemini-2.0-flash-exp',
-  'gemini-2.0-flash'
+  'gemini-pro'
 ];
 
     let lastError = null;
