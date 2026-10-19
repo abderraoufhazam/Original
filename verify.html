@@ -4,20 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
   <title>Vérification d'authenticité — Original</title>
-
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#111111">
   <link rel="icon" type="image/svg+xml" href="/icon.png">
   <link rel="apple-touch-icon" href="/icon.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Original">
-
   <link rel="stylesheet" href="/style.css">
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/supabase-client.js"></script>
-
   <script>
     (function() {
       const isDark = localStorage.getItem("theme") === "dark" ||
@@ -44,12 +35,9 @@
   <div class="wilaya-modal-overlay"></div>
   <div class="wilaya-modal-box">
     <button class="wilaya-close" id="wilayaClose" aria-label="Fermer">✕</button>
-
     <div class="wilaya-icon">⚠️</div>
     <h2 class="wilaya-title">منتج مقلّد</h2>
-    <p class="wilaya-subtitle">
-      ساعدنا في حماية المستهلكين. صوّر المنتج واملأ المعلومات.
-    </p>
+    <p class="wilaya-subtitle">ساعدنا في حماية المستهلكين. صوّر المنتج واملأ المعلومات.</p>
 
     <label class="wilaya-label">📍 الولاية *</label>
     <select id="wilayaSelect" class="wilaya-select">
@@ -139,6 +127,7 @@
       <div class="wilaya-ai-badge">✨ تم التحليل بواسطة AI — يمكنك التعديل</div>
 
       <label class="wilaya-label">🏷️ العلامة التجارية</label>
+      <!-- هنا القائمة المنسدلة، سيملؤها الذكاء الاصطناعي تلقائياً -->
       <select id="wilayaBrand" class="wilaya-textarea" style="min-height:auto;padding:13px 15px">
         <option value="">-- اختر العلامة التجارية --</option>
       </select>
@@ -155,14 +144,12 @@
 
     <button id="wilayaSubmit" class="wilaya-submit">📩 إرسال البلاغ</button>
     <div id="wilayaMsg" class="wilaya-msg hidden"></div>
-
     <p class="wilaya-note">بياناتك آمنة ولن تُشارك مع أي طرف.</p>
   </div>
 </div>
 
 <main class="page">
   <section class="card">
-
     <div class="lang-switcher">
       <button class="lang-btn" data-lang="fr">FR</button>
       <button class="lang-btn" data-lang="ar">ع</button>
@@ -171,9 +158,7 @@
     </div>
 
     <div class="brand">Original</div>
-
     <img src="/icon.png" alt="Original" class="app-logo">
-
     <h1 data-i18n="title">Vérification d'authenticité</h1>
     <p class="muted" data-i18n="subtitle">Entrez le code de sécurité caché sous la zone à gratter.</p>
 
@@ -212,15 +197,8 @@
     </div>
 
     <p class="small" data-i18n="footerSmall">Le code de sécurité ne peut être vérifié qu'une seule fois.</p>
-
-    <button id="installBtn" class="hidden" data-i18n="installBtn" style="margin-top:20px;background:#16a34a;color:#fff;border:0;padding:12px 20px;border-radius:8px;font-weight:bold;cursor:pointer;width:100%">
-      📱 INSTALLER L'APPLICATION
-    </button>
-
-    <p class="small" style="margin-top:15px;font-size:11px;color:#999">
-      <span data-i18n="footerBy">Application vérifiée par</span>
-      <b>Original</b>
-    </p>
+    <button id="installBtn" class="hidden" data-i18n="installBtn" style="margin-top:20px;background:#16a34a;color:#fff;border:0;padding:12px 20px;border-radius:8px;font-weight:bold;cursor:pointer;width:100%">📱 INSTALLER L'APPLICATION</button>
+    <p class="small" style="margin-top:15px;font-size:11px;color:#999"><span data-i18n="footerBy">Application vérifiée par</span> <b>Original</b></p>
   </section>
 
   <section class="offline-history hidden" id="offlineHistory">
@@ -243,48 +221,22 @@
     </div>
     <button id="chatClose" class="chat-close" aria-label="Fermer">✕</button>
   </div>
-
   <div id="chatMessages" class="chat-messages">
     <div class="chat-msg chat-msg-bot">
       <div class="chat-bubble">Bonjour 👋 Je suis l'assistant virtuel. Comment puis-je vous aider ?</div>
     </div>
   </div>
-
   <form id="chatForm" class="chat-form">
     <input id="chatInput" class="chat-input" placeholder="Écrivez votre message..." autocomplete="off" maxlength="500">
     <button type="submit" id="chatSend" class="chat-send" aria-label="Envoyer">➤</button>
   </form>
 </div>
 
-<!-- Scripts -->
 <script src="/i18n.js"></script>
 <script src="/app.js"></script>
 <script src="/chat.js?v=3"></script>
 
 <script>
-  // ✅ كود جلب الماركات لتعبئة القائمة المنسدلة
-  async function loadBrandsForSelect() {
-    try {
-      if (typeof sb === 'undefined') return;
-      const { data } = await sb.from('qr_codes').select('brand').limit(1000);
-      const brands = [...new Set((data || []).map(d => d.brand).filter(Boolean))];
-      brands.sort();
-      
-      const select = document.getElementById('wilayaBrand');
-      if (!select) return;
-      
-      brands.forEach(b => {
-        const opt = document.createElement('option');
-        opt.value = b;
-        opt.textContent = b;
-        select.appendChild(opt);
-      });
-    } catch (e) {
-      console.warn('Load brands error:', e);
-    }
-  }
-  window.addEventListener('load', loadBrandsForSelect);
-
   // Service Worker
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
