@@ -106,9 +106,14 @@ async function handleAnalyze(req, res) {
     const match = image.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
     if (!match) return res.status(400).json({ status: 'ERROR', message: 'Format invalide' });
 
-    const prompt = `Tu es un expert. Analyse cette image.
+    const prompt = `Tu es un expert en contrefaçon. Analyse cette image avec précision.
 Réponds UNIQUEMENT avec un objet JSON valide :
-{"brand": "nom de la marque", "product_name": "nom", "description": "courte description", "confidence": "high|medium|low"}
+{
+  "brand": "nom de la marque", 
+  "product_name": "nom complet du produit", 
+  "description": "Décris le produit en détail (couleur, forme, taille, type de packaging, tout texte visible, particularités)", 
+  "confidence": "high|medium|low"
+}
 Ne mets AUCUN texte avant ou après le JSON.`;
 
     const models = await getAvailableModels(GEMINI_API_KEY);
