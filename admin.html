@@ -809,6 +809,7 @@
       <div class="nav-group">
         <div class="nav-group-label">Sécurité</div>
         <button class="nav-item" data-panel="visitors"><span class="nav-icon">👥</span><span>Visiteurs</span></button>
+        <button class="nav-item" data-panel="unassigned"><span class="nav-icon">📥</span><span>بلاغات غير موجهة</span><span class="nav-badge hidden" id="unassignedBadge">0</span></button>
         <button class="nav-item" data-panel="fakes"><span class="nav-icon">🚨</span><span>Contrefaçons</span><span class="nav-badge hidden" id="fakesBadge">0</span></button>
         <button class="nav-item" data-panel="log"><span class="nav-icon">📜</span><span>Journal</span></button>
       </div>
@@ -1293,6 +1294,16 @@
         <div id="faqList"></div>
       </section>
 
+      <!-- UNASSIGNED REPORTS -->
+      <section class="panel" id="panel-unassigned">
+        <div class="panel-header">
+          <h1 class="panel-title"><span class="panel-title-icon">📥</span><span>بلاغات غير موجهة</span></h1>
+          <p class="panel-sub">بلاغات لم يتم التعرف على ماركتها، تحتاج إلى مراجعة وتوجيه يدوي.</p>
+        </div>
+        <button id="refreshUnassignedBtn" class="btn btn-ghost btn-block" style="margin-bottom:14px;">🔄 تحديث</button>
+        <div id="unassignedList"></div>
+      </section>
+      
       <!-- FAKES -->
       <section class="panel" id="panel-fakes">
         <div class="panel-header">
@@ -1521,3 +1532,123 @@
 <script src="/bot-guard.js"></script>
 </body>
 </html>
+// ============================================================
+// UNASSIGNED REPORTS (البلاغات المجهولة)
+// ============================================================
+async function loadUnassignedReports() {
+  const container = $("unassignedList");
+  if (!container) return;
+  container.innerHTML = `<p class="muted">Chargement...</p>`;
+
+  try {
+    const { data, error } = await sb
+      .from("fake_reports")
+      .select("*")
+      .or('product_brand.is.null,product_brand.eq.')
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    if (error) throw error;
+
+    const badge = $("unassignedBadge");
+    if (badge) {
+      if (data && data.length > 0) { badge.textContent = data.length; badge.style.display = "inline-block"; }
+      else badge.style.display = "none";
+    }
+
+    if (!data || data.length === 0) {
+      container.innerHTML = `<p class="muted" style="text-align:center;padding:40px 0;color:var(--success);">🎉 لا توجد بلاغات مجهولة حالياً.</p>`;
+      return;
+    }
+
+    let html = "";
+    data.forEach(r => {
+      const date = r.created_at ? new Date(r.created_at).toLocaleString("fr-FR") : "—";
+      html += `
+        <div class="log-row log-warning" style="padding:16px; margin-bottom:12px; border-left:4px solid var(--warning);">
+          <div class="log-top">
+            <span class="log-result log-result-warning">⚠️ غير موجه</span>
+            <span class="log-date">${escapeHtml(date)}</span>
+          </div>
+          <div style="display:flex; gap:12px; margin-top:12px;">
+            ${r.product_image ? `<img src="${escapeHtml(r.product_image)}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;">` : ""}
+            <div style="flex:1;">
+              <div style="font-size:13px; font-weight:800;">📦 ${escapeHtml(r.product_name || 'منتج غير معروف')}</div>
+              <div style="font-size:12px; color:var(--text-secondary); margin-top:4px;">📍 ${escapeHtml(r.wilaya || '—')}</div>
+            </div>
+          </div>
+          <div style="margin-top:12px; padding:10px; background:var(--bg-secondary); border-radius:8px; font-size:12px;">
+            💬 ${escapeHtml(r.comment || 'لا يوجد تعليق')}
+          </div>
+          <div style="margin-top:14px; padding-top:14px; border-top:1px dashed var(--border);">
+            <label style="font-size:11px; font-weight:800; color:var(--text-secondary); display:block; margin-bottom:6px;">توجيه إلى علامة تجارية:</label>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="brand-assign-${r.id}" class="form-input" placeholder="اسم الماركة" style="flex:1; padding:8px 12px; font-size:13px;">
+              <button onclick="assignReportToBrand(${r.id})" class="btn btn-success" style="padding:8px 16px; font-size:12px;">✅ توجيه</button>
+              <button onclick="deleteUnassignedReport(${r.id})" class="btn btn-danger" style="padding:8px 16px; font-size:12px;">🗑️</button>
+            </div>
+          </div>
+        </div>`;
+    });
+    container.innerHTML = html;
+
+  } catch (err) {
+    console.error("loadUnassignedReports error:", err);
+    container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(err.message)}</p>`;
+  }
+}
+
+window.assignReportToBrand = async function(reportId) {
+  const input = document.getElementById(`brand-assign-${reportId}`);
+  const newBrand = (input?.value || "").trim();
+  if (!newBrand) { window.toast("الرجاء كتابة اسم الماركة", "error"); return; }
+
+  try {
+    const { error } = await sb.from("fake_reports").update({ product_brand: newBrand }).eq("id", reportId);
+    if (error) throw error;
+    window.toast(`✅ تم توجيه البلاغ إلى ${newBrand}`, "success");
+    loadUnassignedReports();
+  } catch (e) { window.toast("خطأ: " + e.message, "error"); }
+};
+
+window.deleteUnassignedReport = async function(reportId) {
+  if (!confirm("حذف هذا البلاغ نهائياً؟")) return;
+  try {
+    const { error } = await sb.from("fake_reports").delete().eq("id", reportId);
+    if (error) throw error;
+    window.toast("✅ تم الحذف", "success");
+    loadUnassignedReports();
+  } catch (e) { window.toast("خطأ: " + e.message, "error"); }
+};
+
+// ربط زر التحديث
+const _ruab = $("refreshUnassignedBtn");
+if (_ruab) _ruab.onclick = () => loadUnassignedReports();
+
+// ✅ ربط الزر الجديد بدالة showPanel
+// نبحث عن الزر الذي أضفناه في HTML، ونربطه تلقائياً
+document.querySelectorAll(".sidebar-nav button").forEach(btn => {
+  if (btn.dataset.panel === "unassigned") {
+    btn.addEventListener("click", () => {
+      // إخفاء كل الأقسام
+      document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+      document.querySelectorAll(".sidebar-nav button").forEach(b => b.classList.remove("active"));
+      
+      // إظهار قسم البلاغات المجهولة
+      const panel = $("panel-unassigned");
+      if (panel) panel.classList.add("active");
+      btn.classList.add("active");
+      
+      // تحديث العنوان
+      const mt = $("mobileTitle");
+      if (mt) mt.textContent = "بلاغات غير موجهة";
+
+      // إغلاق القائمة في الهاتف
+      const sb1 = $("sidebar"); if (sb1) sb1.classList.remove("open");
+      const ov = $("overlay"); if (ov) ov.classList.remove("show");
+      
+      // جلب البيانات
+      loadUnassignedReports();
+    });
+  }
+});
