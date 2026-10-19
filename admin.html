@@ -14,8 +14,7 @@
       if (isDark) document.documentElement.classList.add("dark");
     })();
   </script>
-<link rel="stylesheet" href="/design-tokens.css">
-<style>
+  <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -809,8 +808,8 @@
       <div class="nav-group">
         <div class="nav-group-label">Sécurité</div>
         <button class="nav-item" data-panel="visitors"><span class="nav-icon">👥</span><span>Visiteurs</span></button>
-        <button class="nav-item" data-panel="unassigned"><span class="nav-icon">📥</span><span>بلاغات غير موجهة</span><span class="nav-badge hidden" id="unassignedBadge">0</span></button>
         <button class="nav-item" data-panel="fakes"><span class="nav-icon">🚨</span><span>Contrefaçons</span><span class="nav-badge hidden" id="fakesBadge">0</span></button>
+        <button class="nav-item" data-panel="unassigned"><span class="nav-icon">📥</span><span>بلاغات غير موجهة</span><span class="nav-badge hidden" id="unassignedBadge">0</span></button>
         <button class="nav-item" data-panel="log"><span class="nav-icon">📜</span><span>Journal</span></button>
       </div>
       <div class="nav-group">
@@ -1294,16 +1293,6 @@
         <div id="faqList"></div>
       </section>
 
-      <!-- UNASSIGNED REPORTS -->
-      <section class="panel" id="panel-unassigned">
-        <div class="panel-header">
-          <h1 class="panel-title"><span class="panel-title-icon">📥</span><span>بلاغات غير موجهة</span></h1>
-          <p class="panel-sub">بلاغات لم يتم التعرف على ماركتها، تحتاج إلى مراجعة وتوجيه يدوي.</p>
-        </div>
-        <button id="refreshUnassignedBtn" class="btn btn-ghost btn-block" style="margin-bottom:14px;">🔄 تحديث</button>
-        <div id="unassignedList"></div>
-      </section>
-      
       <!-- FAKES -->
       <section class="panel" id="panel-fakes">
         <div class="panel-header">
@@ -1324,6 +1313,16 @@
         <div id="wilayaHeatmap" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;"></div>
         <h3 style="font-size:15px;font-weight:800;color:var(--text);margin:32px 0 14px;">📋 Derniers signalements</h3>
         <div id="fakesList"></div>
+      </section>
+
+      <!-- UNASSIGNED REPORTS -->
+      <section class="panel" id="panel-unassigned">
+        <div class="panel-header">
+          <h1 class="panel-title"><span class="panel-title-icon">📥</span><span>بلاغات غير موجهة</span></h1>
+          <p class="panel-sub">بلاغات لم يتم التعرف على ماركتها، تحتاج إلى مراجعة وتوجيه يدوي.</p>
+        </div>
+        <button id="refreshUnassignedBtn" class="btn btn-ghost btn-block" style="margin-bottom:14px;">🔄 تحديث</button>
+        <div id="unassignedList"></div>
       </section>
 
       <!-- DELETE -->
@@ -1473,8 +1472,6 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="/helpers.js"></script>
-<script src="/supabase-client.js"></script>
 <script src="/admin.js"></script>
 <script>
   // SERVICE WORKER
