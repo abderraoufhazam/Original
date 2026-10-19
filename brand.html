@@ -1726,69 +1726,99 @@ function renderReportCard(r) {
     </div>`;
 }
 
+// قائمة الولايات الـ 58
+const ALL_WILAYAS = ["01 - أدرار","02 - الشلف","03 - الأغواط","04 - أم البواقي","05 - باتنة","06 - بجاية","07 - بسكرة","08 - بشار","09 - البليدة","10 - البويرة","11 - تمنراست","12 - تبسة","13 - تلمسان","14 - تيارت","15 - تيزي وزو","16 - الجزائر","17 - الجلفة","18 - جيجل","19 - سطيف","20 - سعيدة","21 - سكيكدة","22 - سيدي بلعباس","23 - عنابة","24 - قالمة","25 - قسنطينة","26 - المدية","27 - مستغانم","28 - المسيلة","29 - معسكر","30 - ورقلة","31 - وهران","32 - البيض","33 - إليزي","34 - برج بوعريريج","35 - بومرداس","36 - الطارف","37 - تندوف","38 - تيسمسيلت","39 - الوادي","40 - خنشلة","41 - سوق أهراس","42 - تيبازة","43 - ميلة","44 - عين الدفلى","45 - النعامة","46 - عين تموشنت","47 - غرداية","48 - غليزان","49 - تيميمون","50 - برج باجي مختار","51 - أولاد جلال","52 - بني عباس","53 - عين صالح","54 - عين قزام","55 - تقرت","56 - جانت","57 - المغير","58 - المنيعة"];
+
 function renderReports() {
   const container = $("reportsList");
   if (!container) return;
 
-  if (!allReports || allReports.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-state-icon">🎉</div>
-        <div class="empty-state-title">Aucun signalement</div>
-        <div class="empty-state-text">Votre marque n'a aucun signalement pour le moment</div>
-      </div>`;
-    return;
+  // 1. تجميع البلاغات حسب الولاية
+  const groups = {};
+  if (allReports && allReports.length > 0) {
+    allReports.forEach(r => {
+      const w = r.wilaya || "غير محدد";
+      if (!groups[w]) groups[w] = [];
+      groups[w].push(r);
+    });
   }
 
-  const groups = {};
-  allReports.forEach(r => {
-    const w = r.wilaya || "Wilaya inconnue";
-    if (!groups[w]) groups[w] = { wilaya: w, reports: [], newCount: 0, reviewedCount: 0 };
-    groups[w].reports.push(r);
-    if (r.status === "NEW") groups[w].newCount++;
-    else groups[w].reviewedCount++;
-  });
-
-  const sortedGroups = Object.values(groups).sort((a, b) => b.reports.length - a.reports.length);
-
-  let html = "";
-  sortedGroups.forEach((group, idx) => {
-    const hasNew = group.newCount > 0;
-    const groupClass = hasNew ? "has-new" : "all-reviewed";
-    const isOpen = idx === 0;
-
-    group.reports.sort((a, b) => {
-      if (a.status === "NEW" && b.status !== "NEW") return -1;
-      if (a.status !== "NEW" && b.status === "NEW") return 1;
-      return new Date(b.created_at) - new Date(a.created_at);
-    });
-
-    let pills = "";
-    if (group.newCount > 0)      pills += `<span class="wilaya-count-pill new">🔴 ${group.newCount}</span>`;
-    if (group.reviewedCount > 0) pills += `<span class="wilaya-count-pill reviewed">✓ ${group.reviewedCount}</span>`;
+  // 2. بناء الجدول (عمودين)
+  let html = `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">`;
+  
+  ALL_WILAYAS.forEach(w => {
+    const count = groups[w] ? groups[w].length : 0;
+    const hasReports = count > 0;
+    const color = hasReports ? "var(--danger)" : "var(--text-tertiary)";
+    const bg = hasReports ? "var(--danger-soft)" : "var(--bg-secondary)";
+    const cursor = hasReports ? "pointer" : "default";
 
     html += `
-      <div class="wilaya-group ${groupClass} ${isOpen ? "open" : ""}">
-        <div class="wilaya-header">
-          <span style="font-size: 18px">📍</span>
-          <span class="wilaya-header-name">${escapeHtml(group.wilaya)}</span>
-          <span style="display: flex; gap: 6px">${pills}</span>
-          <span class="wilaya-arrow">▼</span>
-        </div>
-        <div class="wilaya-body">
-          <div class="wilaya-body-inner">
-            ${group.reports.map(renderReportCard).join("")}
-          </div>
-        </div>
-      </div>`;
+      <div onclick="${hasReports ? `openWilayaReports('${w}')` : ''}" 
+           style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: ${bg}; border: 1px solid var(--border); border-radius: 10px; cursor: ${cursor}; transition: all 0.2s;">
+        <span style="font-size: 13px; font-weight: 700; color: var(--text);">${w}</span>
+        <span style="font-size: 14px; font-weight: 900; color: ${color};">${hasReports ? count : '-'}</span>
+      </div>
+    `;
   });
+  
+  html += `</div>`;
   container.innerHTML = html;
 
-  container.querySelectorAll(".wilaya-group").forEach(el => {
-    const header = el.querySelector(".wilaya-header");
-    header.onclick = () => el.classList.toggle("open");
-  });
+  // إضافة نافذة منبثقة (Modal) في أسفل الصفحة إذا لم تكن موجودة
+  if (!document.getElementById('wilayaReportsModal')) {
+    const modalHtml = `
+      <div id="wilayaReportsModal" class="hidden" style="position: fixed; inset: 0; background: rgba(10, 14, 26, 0.75); backdrop-filter: blur(6px); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: var(--card); width: 100%; max-width: 600px; max-height: 80vh; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--border);">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border);">
+            <h3 id="wilayaModalTitle" style="margin: 0; font-size: 16px; font-weight: 900;">تفاصيل البلاغات</h3>
+            <button onclick="closeWilayaModal()" style="background: var(--bg-secondary); border: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: var(--text);">✕</button>
+          </div>
+          <div id="wilayaModalBody" style="padding: 16px 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 10px;"></div>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+  }
 }
+
+// دوال فتح وإغلاق النافذة
+window.openWilayaReports = function(wilayaName) {
+  if (!allReports) return;
+  const reports = allReports.filter(r => (r.wilaya || "غير محدد") === wilayaName);
+  
+  const modal = document.getElementById('wilayaReportsModal');
+  const title = document.getElementById('wilayaModalTitle');
+  const body = document.getElementById('wilayaModalBody');
+  
+  title.textContent = `بلاغات ${wilayaName} (${reports.length})`;
+  
+  let html = "";
+  reports.forEach(r => {
+    const isNew = r.status === "NEW";
+    const statusClass = isNew ? "danger" : "success";
+    const statusLabel = isNew ? "🔴 جديد" : "✓ معالج";
+    const date = r.created_at ? new Date(r.created_at).toLocaleDateString("fr-FR") : "—";
+    
+    html += `
+      <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 12px; border-left: 4px solid ${isNew ? 'var(--danger)' : 'var(--success)'};">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <span style="font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; background: var(--${statusClass}-soft); color: var(--${statusClass});">${statusLabel}</span>
+          <span style="font-size: 11px; color: var(--text-tertiary);">${date}</span>
+        </div>
+        ${r.product_name ? `<div style="font-size: 13px; font-weight: 700; margin-bottom: 4px;">📦 ${r.product_name}</div>` : ""}
+        ${r.comment ? `<div style="font-size: 12px; color: var(--text-secondary); line-height: 1.6; padding: 8px; background: var(--bg); border-radius: 8px;">💬 ${r.comment}</div>` : ""}
+      </div>
+    `;
+  });
+  
+  body.innerHTML = html;
+  modal.classList.remove('hidden');
+};
+
+window.closeWilayaModal = function() {
+  document.getElementById('wilayaReportsModal').classList.add('hidden');
+};
 
 async function loadReports() {
   const container = $("reportsList");
