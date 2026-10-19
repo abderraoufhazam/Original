@@ -154,9 +154,11 @@ function showPanel(name) {
   if (name === "unassigned") loadUnassignedReports();
 }
 
-document.querySelectorAll(".sidebar-nav button").forEach(btn => {
-  btn.addEventListener("click", () => showPanel(btn.dataset.panel));
-});
+// ربط زر التحديث في قسم البلاغات غير الموجهة
+const _ruab = $("refreshUnassignedBtn");
+if (_ruab) {
+  _ruab.onclick = () => loadUnassignedReports();
+}
 
 const _mt = $("menuToggle");
 if (_mt) _mt.addEventListener("click", () => {
