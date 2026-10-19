@@ -3429,12 +3429,15 @@ async function loadUnassignedReports() {
       .from("fake_reports")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(50); // جلب آخر 50 بلاغ فقط
+      .limit(500);
 
     if (error) throw error;
 
-    // ✅ عرض كل البلاغات مؤقتاً للتجربة
-    const unassigned = (data || []);
+    // فلترة البلاغات التي ليس لها ماركة (سواء NULL أو نص فارغ أو مسافات)
+    const unassigned = (data || []).filter(r => {
+      const brand = (r.product_brand || "").trim();
+      return brand === "";
+    });
 
     const badge = $("unassignedBadge");
     if (badge) {
@@ -3508,24 +3511,26 @@ window.deleteUnassignedReport = async function(reportId) {
 };
 
 // ربط الزر
-setTimeout(() => {
-  const unassignedBtn = document.querySelector('.sidebar-nav button[data-panel="unassigned"]');
-  if (unassignedBtn) {
-    unassignedBtn.onclick = () => {
-      document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
-      document.querySelectorAll(".sidebar-nav button").forEach(b => b.classList.remove("active"));
-      const panel = $("panel-unassigned");
-      if (panel) panel.classList.add("active");
-      unassignedBtn.classList.add("active");
-      const mt = $("mobileTitle");
-      if (mt) mt.textContent = "بلاغات غير موجهة";
-      const sb1 = $("sidebar"); if (sb1) sb1.classList.remove("open");
-      const ov = $("overlay"); if (ov) ov.classList.remove("show");
-      loadUnassignedReports();
-    };
-  }
-  const refreshBtn = $("refreshUnassignedBtn");
-  if (refreshBtn) {
-    refreshBtn.onclick = () => loadUnassignedReports();
-  }
-}, 1000);
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => {
+    const unassignedBtn = document.querySelector('button[data-panel="unassigned"]');
+    if (unassignedBtn) {
+      unassignedBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+        document.querySelectorAll(".sidebar-nav button").forEach(b => b.classList.remove("active"));
+        const panel = $("panel-unassigned");
+        if (panel) panel.classList.add("active");
+        unassignedBtn.classList.add("active");
+        const mt = $("mobileTitle"); if (mt) mt.textContent = "بلاغات غير موجهة";
+        const sb1 = $("sidebar"); if (sb1) sb1.classList.remove("open");
+        const ov = $("overlay"); if (ov) ov.classList.remove("show");
+        loadUnassignedReports();
+      });
+    }
+    const refreshBtn = $("refreshUnassignedBtn");
+    if (refreshBtn) {
+      refreshBtn.addEventListener("click", () => loadUnassignedReports());
+    }
+  }, 1000);
+});
