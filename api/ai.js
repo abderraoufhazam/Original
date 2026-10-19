@@ -91,7 +91,24 @@ async function handleAnalyze(req, res) {
 
     let lastError = null;
     let geminiData = null;
-    const MODELS = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
+        // ✅ جلب الموديلات المتاحة ديناميكياً
+    let MODELS = [];
+    try {
+      const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
+      if (listRes.ok) {
+        const listData = await listRes.json();
+        MODELS = (listData.models || [])
+          .filter(m => (m.supportedGenerationMethods || []).includes('generateContent'))
+          .map(m => m.name.replace('models/', ''));
+      }
+    } catch (e) {
+      console.warn('List models error:', e);
+    }
+
+    // إذا فشل الجلب، نستخدم هذه الموديلات كاحتياط
+    if (MODELS.length === 0) {
+      MODELS = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-2.0-flash-exp'];
+    }
 
     for (const model of MODELS) {
       try {
