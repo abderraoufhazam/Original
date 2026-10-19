@@ -1,5 +1,5 @@
 // api/ai.js
-// Gemini AI موحّد: chat (محادثة) + analyze (تحليل صور) + analytics (تحليل بلاغات)
+// Gemini AI موحّد: chat + analyze + analytics + read-label
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -45,24 +45,15 @@ async function handleChat(req, res) {
     }
     contents.push({ role: 'user', parts: [{ text: message.trim().slice(0, 1000) }] });
 
-    let availableModels = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
-    let lastError = null;
-    let geminiData = null;
+    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ systemInstruction: { parts: [{ text: systemPrompt }] }, contents: contents })
+    });
 
-    for (const model of availableModels) {
-      try {
-        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ systemInstruction: { parts: [{ text: systemPrompt }] }, contents: contents })
-        });
-        if (r.ok) { geminiData = await r.json(); break; }
-        else { lastError = await r.text(); }
-      } catch (e) { lastError = String(e); }
-    }
+    if (!geminiRes.ok) return res.status(500).json({ status: 'ERROR', message: 'Gemini error' });
 
-    if (!geminiData) return res.status(500).json({ status: 'ERROR', message: 'Gemini error', detail: lastError });
-
+    const geminiData = await geminiRes.json();
     let reply = geminiData.candidates[0].content.parts.map(p => p.text || '').join('').trim();
     if (!reply) reply = "Désolé, je n'ai pas compris.";
 
@@ -74,7 +65,7 @@ async function handleChat(req, res) {
 }
 
 // ============================================================
-// MODE 2: ANALYZE (مع التصحيح التلقائي للأسماء)
+// MODE 2: ANALYZE (سريع + تصحيح تلقائي)
 // ============================================================
 async function handleAnalyze(req, res) {
   try {
@@ -87,84 +78,46 @@ async function handleAnalyze(req, res) {
     const match = image.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
     if (!match) return res.status(400).json({ status: 'ERROR', message: 'Format invalide' });
 
-    const prompt = `Analyse cette image et identifie le produit. Réponds UNIQUEMENT en JSON valide : {"brand": "nom", "product_name": "nom", "description": "desc", "confidence": "high|medium|low"}`;
+    const prompt = `Tu es un expert. Analyse cette image.
+Réponds UNIQUEMENT avec un objet JSON valide :
+{"brand": "nom de la marque", "product_name": "nom", "description": "courte description", "confidence": "high|medium|low"}
+Ne mets AUCUN texte avant ou après le JSON.`;
 
-    let lastError = null;
-    let geminiData = null;
-        // ✅ جلب الموديلات المتاحة ديناميكياً
-    let MODELS = [];
-    try {
-      const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
-      if (listRes.ok) {
-        const listData = await listRes.json();
-        MODELS = (listData.models || [])
-          .filter(m => (m.supportedGenerationMethods || []).includes('generateContent'))
-          .map(m => m.name.replace('models/', ''));
-      }
-    } catch (e) {
-      console.warn('List models error:', e);
+    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: match[1], data: match[2] } }] }],
+        generationConfig: { 
+          responseMimeType: "application/json",
+          temperature: 0.1,
+          maxOutputTokens: 200
+        }
+      })
+    });
+
+    if (!geminiRes.ok) {
+      const err = await geminiRes.text();
+      return res.status(500).json({ status: 'ERROR', message: 'Erreur analyse IA', detail: err });
     }
 
-    // إذا فشل الجلب، نستخدم هذه الموديلات كاحتياط
-    if (MODELS.length === 0) {
-      MODELS = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-2.0-flash-exp'];
-    }
-
-    for (const model of MODELS) {
-      try {
-        const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: match[1], data: match[2] } }] }],
-            generationConfig: { responseMimeType: "application/json" }
-          })
-        });
-        if (geminiRes.ok) { geminiData = await geminiRes.json(); break; }
-        else { lastError = await geminiRes.text(); }
-      } catch (err) { lastError = String(err); }
-    }
-
-    if (!geminiData) return res.status(500).json({ status: 'ERROR', message: 'Erreur analyse IA', detail: lastError });
-
-            // ✅ استخراج ذكي للـ JSON (يتجاهل تفكير Gemini)
+    const geminiData = await geminiRes.json();
     let result = null;
     try {
-      const candidate = geminiData.candidates[0];
-      if (!candidate || !candidate.content || !candidate.content.parts) {
-        throw new Error("Structure de réponse Gemini invalide");
-      }
-
-      const text = candidate.content.parts.map(p => p.text || '').join('');
-      console.log("Gemini Raw Response:", text);
-
-      // إزالة علامات ```json
+      const text = geminiData.candidates[0].content.parts.map(p => p.text || '').join('');
       let cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
-      
-      // إيجاد أول كائن JSON صالح وتجاهل أي تفكير قبله أو مصفوفات بعده
       const start = cleaned.indexOf('{');
       if (start !== -1) {
-        let depth = 0;
-        let end = -1;
+        let depth = 0, end = -1;
         for (let i = start; i < cleaned.length; i++) {
           if (cleaned[i] === '{') depth++;
-          else if (cleaned[i] === '}') {
-            depth--;
-            if (depth === 0) { end = i + 1; break; }
-          }
+          else if (cleaned[i] === '}') { depth--; if (depth === 0) { end = i + 1; break; } }
         }
         if (end !== -1) cleaned = cleaned.substring(start, end);
       }
-
       result = JSON.parse(cleaned);
     } catch (e) {
-      console.error("Parse Error:", e);
-      result = { 
-        brand: "", 
-        product_name: "", 
-        description: "تعذر قراءة تفاصيل المنتج، يرجى إدخالها يدوياً.", 
-        confidence: "low" 
-      };
+      return res.status(500).json({ status: 'ERROR', message: 'Réponse IA invalide' });
     }
 
     let correctedBrand = (result.brand || '').trim();
@@ -251,22 +204,15 @@ async function handleAnalytics(req, res) {
 
     const prompt = `Tu es un analyste expert pour la marque "${brand_name}". Voici ${reports.length} signalements. Analyse-les et réponds en JSON: {"summary": "en arabe", "patterns": ["en arabe"], "recommendations": ["en arabe"], "risk_level": "LOW|MEDIUM|HIGH|CRITICAL"}`;
     
-    let geminiData = null;
-    const MODELS = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
-    
-    for (const model of MODELS) {
-      try {
-        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt + "\n\nData: " + JSON.stringify(reports.slice(0, 30)) }] }], generationConfig: { responseMimeType: "application/json" } })
-        });
-        if (r.ok) { geminiData = await r.json(); break; }
-      } catch (err) { }
-    }
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt + "\n\nData: " + JSON.stringify(reports.slice(0, 30)) }] }], generationConfig: { responseMimeType: "application/json" } })
+    });
 
-    if (!geminiData) return res.status(500).json({ status: 'ERROR', message: 'Erreur analyse IA' });
+    if (!r.ok) return res.status(500).json({ status: 'ERROR', message: 'Erreur analyse IA' });
 
+    const geminiData = await r.json();
     let analysis = null;
     try {
       const text = geminiData.candidates[0].content.parts.map(p => p.text || '').join('');
@@ -298,26 +244,19 @@ async function handleReadLabel(req, res) {
 
     const prompt = `Lis le code secret sur cette image (7 caractères, sans I, O, L). Réponds en JSON: {"code": "XXXXXXX", "confidence": "high|medium|low"}`;
     
-    let geminiData = null;
-    const MODELS = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: match[1], data: match[2] } }] }], generationConfig: { responseMimeType: "application/json" } })
+    });
 
-    for (const model of MODELS) {
-      try {
-        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: match[1], data: match[2] } }] }], generationConfig: { responseMimeType: "application/json" } })
-        });
-        if (r.ok) { geminiData = await r.json(); break; }
-      } catch (err) { }
-    }
+    if (!r.ok) return res.status(500).json({ status: 'ERROR', message: 'Erreur lecture IA' });
 
-    if (!geminiData) return res.status(500).json({ status: 'ERROR', message: 'Erreur lecture IA' });
-
+    const geminiData = await r.json();
     let result = null;
     try {
       const text = geminiData.candidates[0].content.parts.map(p => p.text || '').join('');
-            let cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      let cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
       if (!cleaned.startsWith('{')) {
         const start = cleaned.indexOf('{');
         const end = cleaned.lastIndexOf('}');
