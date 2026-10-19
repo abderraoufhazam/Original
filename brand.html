@@ -1791,7 +1791,7 @@ window.openWilayaReports = function(wilayaName) {
   const title = document.getElementById('wilayaModalTitle');
   const body = document.getElementById('wilayaModalBody');
   
-  title.textContent = `بلاغات ${wilayaName} (${reports.length})`;
+  title.textContent = `تفاصيل بلاغات ${wilayaName} (${reports.length})`;
   
   let html = "";
   reports.forEach(r => {
@@ -1800,24 +1800,34 @@ window.openWilayaReports = function(wilayaName) {
     const statusLabel = isNew ? "🔴 جديد" : "✓ معالج";
     const date = r.created_at ? new Date(r.created_at).toLocaleDateString("fr-FR") : "—";
     
+    // جلب التفاصيل
+    const productName = r.product_name || "غير محدد";
+    const productBrand = r.product_brand || "غير محدد";
+    const comment = r.comment || "لا يوجد تعليق";
+    
     html += `
-      <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 12px; border-left: 4px solid ${isNew ? 'var(--danger)' : 'var(--success)'};">
+      <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 12px; border-right: 4px solid var(--${statusClass}); margin-bottom: 8px;">
         <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
           <span style="font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; background: var(--${statusClass}-soft); color: var(--${statusClass});">${statusLabel}</span>
-          <span style="font-size: 11px; color: var(--text-tertiary);">${date}</span>
+          <span style="font-size: 11px; color: var(--text-tertiary);">📅 ${date}</span>
         </div>
-        ${r.product_name ? `<div style="font-size: 13px; font-weight: 700; margin-bottom: 4px;">📦 ${r.product_name}</div>` : ""}
-        ${r.comment ? `<div style="font-size: 12px; color: var(--text-secondary); line-height: 1.6; padding: 8px; background: var(--bg); border-radius: 8px;">💬 ${r.comment}</div>` : ""}
+        
+        <div style="font-size: 12px; color: var(--text); margin-bottom: 4px;">
+          🏢 <b>الماركة:</b> ${productBrand}
+        </div>
+        <div style="font-size: 12px; color: var(--text); margin-bottom: 4px;">
+          📦 <b>المنتج:</b> ${productName}
+        </div>
+        
+        <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.6; padding: 8px; background: var(--card); border-radius: 8px; margin-top: 8px;">
+          💬 ${comment}
+        </div>
       </div>
     `;
   });
   
   body.innerHTML = html;
   modal.classList.remove('hidden');
-};
-
-window.closeWilayaModal = function() {
-  document.getElementById('wilayaReportsModal').classList.add('hidden');
 };
 
 async function loadReports() {
