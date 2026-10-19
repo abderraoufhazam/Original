@@ -2,14 +2,7 @@
 // Gemini AI موحّد: chat (محادثة) + analyze (تحليل صور) + analytics (تحليل بلاغات)
 
 export default async function handler(req, res) {
-  // ✅ CORS محمي — قائمة أصول مسموحة
-  const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://originaldz.online,https://www.originaldz.online,https://original-indol.vercel.app')
-    .split(',').map(o => o.trim()).filter(Boolean);
-  const _origin = req.headers.origin;
-  if (_origin && ALLOWED_ORIGINS.includes(_origin)) {
-    res.setHeader('Access-Control-Allow-Origin', _origin);
-    res.setHeader('Vary', 'Origin');
-  }
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -20,326 +13,152 @@ export default async function handler(req, res) {
 
   const mode = (req.query && req.query.mode) || (req.body && req.body.mode);
 
-  // 🔒 Rate Limiting حسب النوع
-  let rateLimit = 30, rateWindow = 60;
-  if (mode === 'analytics') {
-    rateLimit = 5;       // تحليل ثقيل → 5 فقط
-  } else if (mode === 'read-label' || mode === 'analyze') {
-    rateLimit = 10;      // صور → 10/دقيقة
-  } else if (mode === 'chat') {
-    rateLimit = 30;      // محادثة → 30/دقيقة
-  }
-
-  const _allowed = await checkRateLimit(req, 'ai:' + (mode || 'unknown'), rateLimit, rateWindow);
-  if (!_allowed) {
-    return res.status(429).json({
-      status: 'ERROR',
-      message: 'Trop de requêtes. Réessayez dans une minute.'
-    });
-  }
-
   if (mode === 'chat')       return handleChat(req, res);
   if (mode === 'analyze')    return handleAnalyze(req, res);
   if (mode === 'analytics')  return handleAnalytics(req, res);
   if (mode === 'read-label') return handleReadLabel(req, res);
 
-  return res.status(400).json({
-    status: 'ERROR',
-    message: 'Mode invalide. Utilisez ?mode=chat, ?mode=analyze ou ?mode=analytics'
-  });
+  return res.status(400).json({ status: 'ERROR', message: 'Mode invalide' });
 }
 
 // ============================================================
-// MODE 1: CHAT — روبوت الدردشة
+// MODE 1: CHAT
 // ============================================================
 async function handleChat(req, res) {
   try {
     const { message, history, context } = req.body || {};
-
-    if (!message || typeof message !== 'string' || message.trim() === '') {
-      return res.status(400).json({ status: 'ERROR', message: 'Message manquant' });
-    }
+    if (!message || typeof message !== 'string') return res.status(400).json({ status: 'ERROR', message: 'Message manquant' });
 
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-    if (!GEMINI_API_KEY) {
-      return res.status(500).json({
-        status: 'ERROR',
-        message: 'Configuration manquante',
-        detail: 'GEMINI_API_KEY not set'
-      });
-    }
+    if (!GEMINI_API_KEY) return res.status(500).json({ status: 'ERROR', message: 'Config manquante' });
 
-    let systemPrompt = `Tu es l'assistant virtuel officiel de "Produit dz ORG", un service algérien de vérification d'authenticité de produits par QR code.
-Aide les clients avec la vérification d'authenticité, le scan du QR, la zone à gratter, et les résultats (PRODUIT ORIGINAL, CODE DÉJÀ UTILISÉ, PRODUIT NON ORIGINAL).
-
-RÈGLES ABSOLUES :
-- Réponds UNIQUEMENT avec la réponse finale pour le client.
-- N'affiche JAMAIS ton raisonnement, tes brouillons, tes notes, ton "thinking", tes préfixes ou tes listes internes.
-- Pas de "* Role:", "* Goal:", "* User says:", "* Constraints:", "* Draft:", etc.
-- Réponds en 2-3 phrases maximum.
-- Adapte-toi à la langue du client (français, arabe ou anglais).
-- Sois chaleureux et professionnel.`;
-
+    let systemPrompt = `Tu es l'assistant virtuel officiel de "OriginalDz". Réponds en 2-3 phrases maximum, dans la langue du client.`;
     if (context && context.brand) {
-      systemPrompt += `\n\nProduit actuellement vérifié par le client :
-- Marque : ${context.brand}
-- Nom : ${context.product_name || '—'}
-- Référence : ${context.reference || '—'}
-- Lot : ${context.lot || '—'}`;
+      systemPrompt += `\nProduit actuel: ${context.brand} - ${context.product_name || ''}`;
     }
 
     const contents = [];
     if (Array.isArray(history)) {
       history.slice(-6).forEach(h => {
-        if (h.role === 'user' || h.role === 'model') {
-          contents.push({ role: h.role, parts: [{ text: String(h.text || '').slice(0, 500) }] });
-        }
+        if (h.role === 'user' || h.role === 'model') contents.push({ role: h.role, parts: [{ text: String(h.text || '').slice(0, 500) }] });
       });
     }
     contents.push({ role: 'user', parts: [{ text: message.trim().slice(0, 1000) }] });
 
-    // جلب قائمة الموديلات
-    let availableModels = [];
-    try {
-      const listRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`
-      );
-      if (listRes.ok) {
-        const listData = await listRes.json();
-        availableModels = (listData.models || [])
-          .filter(m => (m.supportedGenerationMethods || []).includes('generateContent'))
-          .map(m => m.name.replace('models/', ''));
-      }
-    } catch (e) { /* ignore */ }
-
-    if (availableModels.length === 0) {
-      availableModels = [
-        'gemini-2.0-flash',
-        'gemini-2.0-flash-001',
-        'gemini-2.5-flash',
-        'gemini-1.5-flash',
-        'gemini-1.5-flash-latest'
-      ];
-    }
-
-    const preferred = [
-      'gemini-2.0-flash',
-      'gemini-2.0-flash-001',
-      'gemini-2.0-flash-lite',
-      'gemini-1.5-flash',
-      'gemini-1.5-flash-latest',
-      'gemini-2.5-flash',
-      'gemini-2.5-flash-lite'
-    ];
-    availableModels.sort((a, b) => {
-      const ai = preferred.indexOf(a);
-      const bi = preferred.indexOf(b);
-      if (ai !== -1 && bi === -1) return -1;
-      if (bi !== -1 && ai === -1) return 1;
-      if (ai !== -1 && bi !== -1) return ai - bi;
-      return 0;
-    });
-
+    let availableModels = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
     let lastError = null;
     let geminiData = null;
-    let usedModel = null;
 
     for (const model of availableModels) {
       try {
-        const is25 = model.includes('2.5');
-        const generationConfig = {
-          temperature: 0.7,
-          maxOutputTokens: 500
-        };
-        if (is25) {
-          generationConfig.thinkingConfig = { thinkingBudget: 0 };
-        }
-
-        const r = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              systemInstruction: { parts: [{ text: systemPrompt }] },
-              contents: contents,
-              generationConfig
-            })
-          }
-        );
-        const text = await r.text();
-        if (r.ok) {
-          geminiData = JSON.parse(text);
-          usedModel = model;
-          if (process.env.NODE_ENV !== 'production') {
-            console.log('✅ Chat success with model:', model);
-          }
-          break;
-        } else {
-          lastError = { status: r.status, model: model, body: text.slice(0, 200) };
-        }
-      } catch (e) {
-        lastError = { status: 'exception', model: model, body: String(e).slice(0, 200) };
-      }
+        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ systemInstruction: { parts: [{ text: systemPrompt }] }, contents: contents })
+        });
+        if (r.ok) { geminiData = await r.json(); break; }
+        else { lastError = await r.text(); }
+      } catch (e) { lastError = String(e); }
     }
 
-    if (!geminiData) {
-      return res.status(500).json({
-        status: 'ERROR',
-        message: 'Gemini error',
-        detail: JSON.stringify(lastError)
-      });
-    }
+    if (!geminiData) return res.status(500).json({ status: 'ERROR', message: 'Gemini error', detail: lastError });
 
-    let reply = '';
-    try {
-      const candidate = geminiData.candidates[0];
-      const allParts = candidate.content.parts || [];
-      const realParts = allParts.filter(p => !p.thought);
-      const fullText = realParts.map(p => p.text || '').join('').trim();
+    let reply = geminiData.candidates[0].content.parts.map(p => p.text || '').join('').trim();
+    if (!reply) reply = "Désolé, je n'ai pas compris.";
 
-      reply = fullText
-        .replace(/^\*\s*(User says|Role|Goal|Constraints|The user|I need|Language|Draft\s*\d*|Brief|Refining|Acknowledge|Explain|Mention|Max\s+\d)[^\n]*\n?/gim, '')
-        .replace(/\*\s*Draft\s*\d*\s*\([^)]*\):?\*?\s*/gi, '')
-        .replace(/^\*+\s*/gm, '')
-        .replace(/\n{3,}/g, '\n\n')
-        .trim();
-
-      if (!reply) reply = fullText;
-      if (!reply) reply = "Désolé, je n'ai pas compris. Pouvez-vous reformuler ?";
-    } catch (e) {
-      reply = "Désolé, je n'ai pas compris. Pouvez-vous reformuler ?";
-    }
-
-    return res.status(200).json({
-      status: 'OK',
-      reply: reply,
-      model: usedModel
-    });
+    return res.status(200).json({ status: 'OK', reply: reply });
 
   } catch (error) {
-    return res.status(500).json({
-      status: 'ERROR',
-      message: 'Erreur inattendue',
-      detail: String(error).slice(0, 300)
-    });
+    return res.status(500).json({ status: 'ERROR', message: String(error).slice(0, 200) });
   }
 }
 
 // ============================================================
-// MODE 2: ANALYZE — تحليل صور المنتجات
+// MODE 2: ANALYZE (مع التصحيح التلقائي للأسماء)
 // ============================================================
 async function handleAnalyze(req, res) {
   try {
     const { image } = req.body || {};
-
-    if (!image || typeof image !== 'string' || !image.startsWith('data:image/')) {
-      return res.status(400).json({ status: 'ERROR', message: 'Image manquante' });
-    }
+    if (!image || !image.startsWith('data:image/')) return res.status(400).json({ status: 'ERROR', message: 'Image manquante' });
 
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-    if (!GEMINI_API_KEY) {
-      return res.status(500).json({ status: 'ERROR', message: 'Configuration manquante' });
-    }
+    if (!GEMINI_API_KEY) return res.status(500).json({ status: 'ERROR', message: 'Config manquante' });
 
     const match = image.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
-    if (!match) {
-      return res.status(400).json({ status: 'ERROR', message: 'Format image invalide' });
-    }
+    if (!match) return res.status(400).json({ status: 'ERROR', message: 'Format invalide' });
 
-    const mimeType = match[1];
-    const base64Data = match[2];
-
-    const prompt = `Tu es un expert en identification de produits.
-Analyse cette image et identifie le produit.
-
-Réponds UNIQUEMENT en JSON valide :
-{
-  "brand": "nom de la marque si visible, sinon vide",
-  "product_name": "nom court du produit",
-  "description": "description en 1-2 phrases: type, taille, couleur, packaging",
-  "confidence": "high|medium|low"
-}
-
-Ne mets AUCUN texte avant ou après le JSON.`;
-
-    const MODELS = [
-      'gemini-2.5-flash-lite',
-      'gemini-2.5-flash',
-      'gemini-flash-lite-latest',
-      'gemini-flash-latest'
-    ];
+    const prompt = `Analyse cette image et identifie le produit. Réponds UNIQUEMENT en JSON valide : {"brand": "nom", "product_name": "nom", "description": "desc", "confidence": "high|medium|low"}`;
 
     let lastError = null;
     let geminiData = null;
-    let usedModel = null;
+    const MODELS = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
 
     for (const model of MODELS) {
       try {
-        const geminiRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [
-                {
-                  parts: [
-                    { text: prompt },
-                    { inline_data: { mime_type: mimeType, data: base64Data } }
-                  ]
-                }
-              ],
-              generationConfig: {
-                temperature: 0.2,
-                maxOutputTokens: 300,
-                responseMimeType: "application/json"
-              }
-            })
-          }
-        );
-
-        if (geminiRes.ok) {
-          geminiData = await geminiRes.json();
-          usedModel = model;
-          if (process.env.NODE_ENV !== 'production') {
-            console.log('✅ Analyze success with model:', model);
-          }
-          break;
-        } else {
-          const errText = await geminiRes.text();
-          lastError = { status: geminiRes.status, model, body: errText.slice(0, 250) };
-        }
-      } catch (err) {
-        lastError = { status: 'exception', model, body: String(err).slice(0, 250) };
-      }
+        const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: match[1], data: match[2] } }] }],
+            generationConfig: { responseMimeType: "application/json" }
+          })
+        });
+        if (geminiRes.ok) { geminiData = await geminiRes.json(); break; }
+        else { lastError = await geminiRes.text(); }
+      } catch (err) { lastError = String(err); }
     }
 
-    if (!geminiData) {
-      const isOverload = lastError && (lastError.status === 503 || lastError.status === 429);
-      return res.status(isOverload ? 503 : 500).json({
-        status: 'ERROR',
-        message: isOverload
-          ? 'IA temporairement surchargée. Réessayez dans 1 minute.'
-          : 'Erreur analyse IA',
-        detail: JSON.stringify(lastError).slice(0, 300)
-      });
-    }
+    if (!geminiData) return res.status(500).json({ status: 'ERROR', message: 'Erreur analyse IA', detail: lastError });
 
     let result = null;
     try {
-      const candidate = geminiData.candidates[0];
-      const allParts = candidate.content.parts || [];
-      const realParts = allParts.filter(p => !p.thought);
-      const text = realParts.map(p => p.text || '').join('');
+      const text = geminiData.candidates[0].content.parts.map(p => p.text || '').join('');
       const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
       result = JSON.parse(cleaned);
     } catch (e) {
-      return res.status(500).json({
-        status: 'ERROR',
-        message: 'Réponse IA invalide',
-        model: usedModel
-      });
+      return res.status(500).json({ status: 'ERROR', message: 'Réponse IA invalide' });
+    }
+
+    let correctedBrand = (result.brand || '').trim();
+    
+    // التصحيح التلقائي (Fuzzy Matching)
+    if (correctedBrand) {
+      const SUPABASE_URL = process.env.SUPABASE_URL;
+      const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+        try {
+          const brandsRes = await fetch(`${SUPABASE_URL}/rest/v1/qr_codes?select=brand&limit=1000`, {
+            headers: { 'apikey': SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` }
+          });
+          if (brandsRes.ok) {
+            const codes = await brandsRes.json();
+            const knownBrands = [...new Set(codes.map(c => c.brand).filter(Boolean))];
+            
+            function similarity(a, b) {
+              if (!a || !b) return 0;
+              a = a.toLowerCase(); b = b.toLowerCase();
+              if (a === b) return 1;
+              if (a.includes(b) || b.includes(a)) return 0.8;
+              const matrix = [];
+              for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+              for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+              for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                  matrix[i][j] = b.charAt(i - 1) === a.charAt(j - 1) ? matrix[i - 1][j - 1] : Math.min(matrix[i - 1][j - 1] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j] + 1);
+                }
+              }
+              return 1 - (matrix[b.length][a.length] / Math.max(a.length, b.length));
+            }
+            
+            let bestMatch = null, bestScore = 0;
+            knownBrands.forEach(kb => {
+              const score = similarity(correctedBrand, kb);
+              if (score > bestScore) { bestScore = score; bestMatch = kb; }
+            });
+            if (bestMatch && bestScore > 0.7) correctedBrand = bestMatch;
+          }
+        } catch (e) { console.warn('Brand correction error:', e); }
+      }
     }
 
     return res.status(200).json({
@@ -347,505 +166,120 @@ Ne mets AUCUN texte avant ou après le JSON.`;
       brand: correctedBrand.slice(0, 100),
       product_name: (result.product_name || '').trim().slice(0, 200),
       description: (result.description || '').trim().slice(0, 500),
-      confidence: result.confidence || 'medium',
-      model: usedModel
+      confidence: result.confidence || 'medium'
     });
 
   } catch (error) {
-        // ✅ تصحيح اسم الماركة (Fuzzy Matching)
-    let correctedBrand = (result.brand || '').trim();
-    
-    if (correctedBrand) {
-      // جلب قائمة الماركات من قاعدة البيانات
-      const SUPABASE_URL = process.env.SUPABASE_URL;
-      const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-      
-      if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
-        try {
-          const brandsRes = await fetch(
-            `${SUPABASE_URL}/rest/v1/qr_codes?select=brand&limit=1000`,
-            {
-              headers: {
-                'apikey': SUPABASE_SERVICE_ROLE_KEY,
-                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-              }
-            }
-          );
-          
-          if (brandsRes.ok) {
-            const codes = await brandsRes.json();
-            const knownBrands = [...new Set(codes.map(c => c.brand).filter(Boolean))];
-            
-            // خوارزمية Levenshtein
-            function similarity(a, b) {
-              if (!a || !b) return 0;
-              a = a.toLowerCase(); b = b.toLowerCase();
-              if (a === b) return 1;
-              if (a.includes(b) || b.includes(a)) return 0.8;
-              
-              const matrix = [];
-              for (let i = 0; i <= b.length; i++) matrix[i] = [i];
-              for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
-              
-              for (let i = 1; i <= b.length; i++) {
-                for (let j = 1; j <= a.length; j++) {
-                  if (b.charAt(i - 1) === a.charAt(j - 1)) {
-                    matrix[i][j] = matrix[i - 1][j - 1];
-                  } else {
-                    matrix[i][j] = Math.min(
-                      matrix[i - 1][j - 1] + 1,
-                      matrix[i][j - 1] + 1,
-                      matrix[i - 1][j] + 1
-                    );
-                  }
-                }
-              }
-              
-              const distance = matrix[b.length][a.length];
-              const maxLen = Math.max(a.length, b.length);
-              return 1 - (distance / maxLen);
-            }
-            
-            // إيجاد أفضل تطابق
-            let bestMatch = null;
-            let bestScore = 0;
-            
-            knownBrands.forEach(kb => {
-              const score = similarity(correctedBrand, kb);
-              if (score > bestScore) {
-                bestScore = score;
-                bestMatch = kb;
-              }
-            });
-            
-            // إذا كان التشابه > 70%، نصحح الاسم
-            if (bestMatch && bestScore > 0.7) {
-              console.log(`Brand corrected: "${correctedBrand}" → "${bestMatch}" (${Math.round(bestScore * 100)}%)`);
-              correctedBrand = bestMatch;
-            }
-          }
-        } catch (e) {
-          console.warn('Brand correction error:', e);
-        }
-      }
-    }
-    return res.status(500).json({
-      status: 'ERROR',
-      message: 'Erreur inattendue',
-      detail: String(error).slice(0, 200)
-    });
+    return res.status(500).json({ status: 'ERROR', message: String(error).slice(0, 200) });
   }
 }
 
 // ============================================================
-// MODE 3: ANALYTICS — تحليل بلاغات التقليد
+// MODE 3: ANALYTICS
 // ============================================================
 async function handleAnalytics(req, res) {
   try {
     const { brand_name, days = 30 } = req.body || {};
-
-    if (!brand_name || typeof brand_name !== 'string' || brand_name.trim() === '') {
-      return res.status(400).json({ status: 'ERROR', message: 'brand_name obligatoire' });
-    }
+    if (!brand_name) return res.status(400).json({ status: 'ERROR', message: 'brand_name obligatoire' });
 
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!GEMINI_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return res.status(500).json({ status: 'ERROR', message: 'Config manquante' });
 
-    if (!GEMINI_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      return res.status(500).json({ status: 'ERROR', message: 'Config manquante' });
-    }
-
-    // اجلب البلاغات للفترة المطلوبة
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-    const cleanBrand = brand_name.trim();
-
-    const reportsRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/fake_reports?select=wilaya,comment,product_name,product_brand,status,created_at,ai_analyzed&order=created_at.desc&limit=500&created_at=gte.${since}`,
-      {
-        headers: {
-          'apikey': SUPABASE_SERVICE_ROLE_KEY,
-          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-        }
-      }
-    );
-
-    if (!reportsRes.ok) {
-      return res.status(500).json({ status: 'ERROR', message: 'Erreur récupération' });
-    }
-
+    const reportsRes = await fetch(`${SUPABASE_URL}/rest/v1/fake_reports?select=wilaya,comment,product_name,product_brand,status,created_at&order=created_at.desc&limit=500&created_at=gte.${since}`, {
+      headers: { 'apikey': SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` }
+    });
     const allReports = await reportsRes.json();
-
-    // فلترة بحسب اسم الماركة (fuzzy match)
+    
     const reports = (allReports || []).filter(r => {
       const brand = (r.product_brand || '').toLowerCase();
-      const name = (r.product_name || '').toLowerCase();
-      const target = cleanBrand.toLowerCase();
-      return brand.includes(target) || target.includes(brand) || name.includes(target);
+      const target = brand_name.trim().toLowerCase();
+      return brand.includes(target) || target.includes(brand);
     });
 
-    if (reports.length === 0) {
-      return res.status(200).json({
-        status: 'OK',
-        report_count: 0,
-        analysis: {
-          summary: `لا توجد بلاغات تقليد على "${cleanBrand}" خلال آخر ${days} يومًا.`,
-          patterns: [],
-          recommendations: ['استمر في المراقبة الدورية'],
-          risk_level: 'LOW'
-        }
-      });
-    }
+    if (reports.length === 0) return res.status(200).json({ status: 'OK', report_count: 0, analysis: { summary: "لا توجد بلاغات", patterns: [], recommendations: [], risk_level: 'LOW' } });
 
-    // إحصائيات أساسية
-    const wilayaCounts = {};
-    let totalWithImage = 0;
-    let totalAnalyzed = 0;
-
-    reports.forEach(r => {
-      if (r.wilaya) wilayaCounts[r.wilaya] = (wilayaCounts[r.wilaya] || 0) + 1;
-      if (r.ai_analyzed) totalAnalyzed++;
-      if (r.comment) totalWithImage++;
-    });
-
-    const topWilayas = Object.entries(wilayaCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-      .map(([name, count]) => `${name} (${count})`);
-
-    // جهّز ملخص للـ AI
-    const reportsSummary = reports.slice(0, 30).map(r => ({
-      wilaya: r.wilaya || '—',
-      brand: r.product_brand || '—',
-      product: r.product_name || '—',
-      comment: (r.comment || '').slice(0, 150),
-      date: r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : '—'
-    }));
-
-    const dataSummary = `
-Brand: ${cleanBrand}
-Période: derniers ${days} jours
-Total signalements: ${reports.length}
-Top wilayas: ${topWilayas.join(', ') || 'aucune'}
-Signalements analysés par IA: ${totalAnalyzed}
-`;
-
-    const prompt = `Tu es un analyste expert en détection de contrefaçon pour la marque "${cleanBrand}".
-
-Voici les données des signalements reçus :
-
-${dataSummary}
-
-Détails des derniers signalements :
-${JSON.stringify(reportsSummary, null, 2)}
-
-Analyse ces données et identifie :
-1. Les tendances géographiques (où se concentre la contrefaçon ?)
-2. Les patterns temporels (périodes d'activité accrue ?)
-3. Les types de produits visés
-4. Le niveau de risque global
-
-Réponds UNIQUEMENT en JSON valide avec cette structure exacte :
-{
-  "summary": "résumé en 2-3 phrases en arabe",
-  "patterns": [
-    "pattern 1 en arabe",
-    "pattern 2 en arabe"
-  ],
-  "recommendations": [
-    "recommandation 1 en arabe",
-    "recommandation 2 en arabe"
-  ],
-  "risk_level": "LOW|MEDIUM|HIGH|CRITICAL",
-  "top_wilayas": ["wilaya1", "wilaya2"]
-}
-
-IMPORTANT :
-- Réponds en arabe dans les champs texte
-- Sois précis et concret
-- Ne mets AUCUN texte avant ou après le JSON`;
-
-   // جلب الموديلات المتاحة ديناميكياً
-let availableModels = [];
-try {
-  const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
-  if (listRes.ok) {
-    const listData = await listRes.json();
-    availableModels = (listData.models || [])
-      .filter(m => (m.supportedGenerationMethods || []).includes('generateContent'))
-      .map(m => m.name.replace('models/', ''));
-  }
-} catch (e) { console.warn("List models error:", e); }
-
-const MODELS = availableModels.length > 0 ? availableModels : [
-  'gemini-1.5-flash',
-  'gemini-1.5-pro',
-  'gemini-pro'
-];
-
-    let lastError = null;
+    const prompt = `Tu es un analyste expert pour la marque "${brand_name}". Voici ${reports.length} signalements. Analyse-les et réponds en JSON: {"summary": "en arabe", "patterns": ["en arabe"], "recommendations": ["en arabe"], "risk_level": "LOW|MEDIUM|HIGH|CRITICAL"}`;
+    
     let geminiData = null;
-    let usedModel = null;
-
+    const MODELS = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
+    
     for (const model of MODELS) {
       try {
-        const is25 = model.includes('2.5');
-        const generationConfig = {
-          temperature: 0.3,
-          maxOutputTokens: 800,
-          responseMimeType: "application/json"
-        };
-        if (is25) {
-          generationConfig.thinkingConfig = { thinkingBudget: 0 };
-        }
-
-        const r = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }],
-              generationConfig
-            })
-          }
-        );
-
-        if (r.ok) {
-          geminiData = await r.json();
-          usedModel = model;
-          if (process.env.NODE_ENV !== 'production') {
-            console.log('✅ Analytics success with model:', model);
-          }
-          break;
-        } else {
-          const errText = await r.text();
-          lastError = { status: r.status, model, body: errText.slice(0, 250) };
-        }
-      } catch (err) {
-        lastError = { status: 'exception', model, body: String(err).slice(0, 250) };
-      }
+        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt + "\n\nData: " + JSON.stringify(reports.slice(0, 30)) }] }], generationConfig: { responseMimeType: "application/json" } })
+        });
+        if (r.ok) { geminiData = await r.json(); break; }
+      } catch (err) { }
     }
 
-    if (!geminiData) {
-  console.error("Gemini Analytics Failure Detail:", lastError);
-  return res.status(500).json({
-    status: 'ERROR',
-    message: 'Erreur analyse IA',
-    detail: lastError ? lastError.body : "Unknown error"
-  });
-}
+    if (!geminiData) return res.status(500).json({ status: 'ERROR', message: 'Erreur analyse IA' });
 
-    // استخرج JSON
     let analysis = null;
     try {
-      const candidate = geminiData.candidates[0];
-      const allParts = candidate.content.parts || [];
-      const realParts = allParts.filter(p => !p.thought);
-      const text = realParts.map(p => p.text || '').join('');
-      const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
-      analysis = JSON.parse(cleaned);
+      const text = geminiData.candidates[0].content.parts.map(p => p.text || '').join('');
+      analysis = JSON.parse(text.replace(/```json/g, '').replace(/```/g, '').trim());
     } catch (e) {
-      console.error('Analytics parse error:', e);
-      analysis = {
-        summary: `تم استلام ${reports.length} بلاغ على "${cleanBrand}".`,
-        patterns: [`التركيز الجغرافي: ${topWilayas.join(', ')}`],
-        recommendations: ['راجع الموردين في المناطق المذكورة'],
-        risk_level: reports.length > 20 ? 'HIGH' : 'MEDIUM',
-        top_wilayas: topWilayas
-      };
+      analysis = { summary: "تم استلام البلاغات.", patterns: [], recommendations: [], risk_level: 'MEDIUM' };
     }
 
-    return res.status(200).json({
-      status: 'OK',
-      report_count: reports.length,
-      analysis: analysis,
-      model: usedModel
-    });
+    return res.status(200).json({ status: 'OK', report_count: reports.length, analysis: analysis });
 
   } catch (error) {
-    console.error('Analytics error:', error);
-    return res.status(500).json({
-      status: 'ERROR',
-      message: 'Erreur inattendue',
-      detail: String(error).slice(0, 300)
-    });
+    return res.status(500).json({ status: 'ERROR', message: String(error).slice(0, 200) });
   }
 }
 
 // ============================================================
-// MODE 4: READ LABEL — قراءة الكود من صورة الملصق
+// MODE 4: READ LABEL
 // ============================================================
 async function handleReadLabel(req, res) {
   try {
     const { image } = req.body || {};
-
-    if (!image || typeof image !== 'string' || !image.startsWith('data:image/')) {
-      return res.status(400).json({ status: 'ERROR', message: 'Image manquante' });
-    }
+    if (!image) return res.status(400).json({ status: 'ERROR', message: 'Image manquante' });
 
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-    if (!GEMINI_API_KEY) {
-      return res.status(500).json({ status: 'ERROR', message: 'Config manquante' });
-    }
+    if (!GEMINI_API_KEY) return res.status(500).json({ status: 'ERROR', message: 'Config manquante' });
 
     const match = image.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
-    if (!match) {
-      return res.status(400).json({ status: 'ERROR', message: 'Format invalide' });
-    }
+    if (!match) return res.status(400).json({ status: 'ERROR', message: 'Format invalide' });
 
-    const mimeType = match[1];
-    const base64Data = match[2];
-
-    const prompt = `Tu es un expert en lecture de codes d'authentification.
-
-Lis le code secret visible sur cette image (sous la zone à gratter ou imprimé sur le label).
-
-RÈGLES :
-- Le code contient exactement 7 caractères
-- Caractères autorisés : A-Z (sauf I, O, L) et 2-9 (sauf 0, 1)
-- Peut contenir un tiret (ex: DHY-583T) → ignore-le
-- Réponds UNIQUEMENT en JSON valide
-
-Format de réponse :
-{
-  "code": "XXXXXXX",
-  "confidence": "high|medium|low",
-  "notes": "raison si low"
-}
-
-Si aucun code n'est lisible :
-{ "code": "", "confidence": "low", "notes": "aucun code visible" }`;
-
-    const MODELS = [
-      'gemini-2.5-flash-lite',
-      'gemini-2.5-flash',
-      'gemini-flash-lite-latest',
-      'gemini-flash-latest'
-    ];
-
-    let lastError = null;
+    const prompt = `Lis le code secret sur cette image (7 caractères, sans I, O, L). Réponds en JSON: {"code": "XXXXXXX", "confidence": "high|medium|low"}`;
+    
     let geminiData = null;
-    let usedModel = null;
+    const MODELS = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
 
     for (const model of MODELS) {
       try {
-        const geminiRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                parts: [
-                  { text: prompt },
-                  { inline_data: { mime_type: mimeType, data: base64Data } }
-                ]
-              }],
-              generationConfig: {
-                temperature: 0.1,
-                maxOutputTokens: 200,
-                responseMimeType: "application/json"
-              }
-            })
-          }
-        );
-
-        if (geminiRes.ok) {
-          geminiData = await geminiRes.json();
-          usedModel = model;
-          break;
-        } else {
-          const errText = await geminiRes.text();
-          lastError = { status: geminiRes.status, model, body: errText.slice(0, 200) };
-        }
-      } catch (err) {
-        lastError = { status: 'exception', model, body: String(err).slice(0, 200) };
-      }
+        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: match[1], data: match[2] } }] }], generationConfig: { responseMimeType: "application/json" } })
+        });
+        if (r.ok) { geminiData = await r.json(); break; }
+      } catch (err) { }
     }
 
-    if (!geminiData) {
-      return res.status(500).json({
-        status: 'ERROR',
-        message: 'Erreur lecture IA',
-        detail: JSON.stringify(lastError).slice(0, 200)
-      });
-    }
+    if (!geminiData) return res.status(500).json({ status: 'ERROR', message: 'Erreur lecture IA' });
 
     let result = null;
     try {
-      const candidate = geminiData.candidates[0];
-      const allParts = candidate.content.parts || [];
-      const realParts = allParts.filter(p => !p.thought);
-      const text = realParts.map(p => p.text || '').join('');
-      const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
-      result = JSON.parse(cleaned);
+      const text = geminiData.candidates[0].content.parts.map(p => p.text || '').join('');
+      result = JSON.parse(text.replace(/```json/g, '').replace(/```/g, '').trim());
     } catch (e) {
       return res.status(500).json({ status: 'ERROR', message: 'Réponse IA invalide' });
     }
 
     let cleanCode = String(result.code || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (!cleanCode || cleanCode.length < 6) return res.status(200).json({ status: 'OK', code: '', confidence: 'low' });
 
-    if (!cleanCode || cleanCode.length < 6) {
-      return res.status(200).json({
-        status: 'OK',
-        code: '',
-        confidence: 'low',
-        message: 'لم نتمكن من قراءة الكود، اكتبه يدويًا'
-      });
-    }
-
-    return res.status(200).json({
-      status: 'OK',
-      code: cleanCode,
-      confidence: result.confidence || 'medium',
-      notes: result.notes || '',
-      model: usedModel
-    });
+    return res.status(200).json({ status: 'OK', code: cleanCode, confidence: result.confidence || 'medium' });
 
   } catch (error) {
-    return res.status(500).json({
-      status: 'ERROR',
-      message: 'Erreur inattendue',
-      detail: String(error).slice(0, 200)
-    });
+    return res.status(500).json({ status: 'ERROR', message: String(error).slice(0, 200) });
   }
-}
-
-// ============================================================
-// RATE LIMIT HELPER — يمنع استنزاف Gemini API
-// ============================================================
-async function checkRateLimit(req, prefix, limit, windowSec) {
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return true;
-
-  const forwarded = req.headers['x-forwarded-for'];
-  const ip = (Array.isArray(forwarded) ? forwarded[0] : (forwarded || '').split(',')[0]).trim()
-          || req.headers['x-real-ip']
-          || 'unknown';
-
-  try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/check_rate_limit`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_SERVICE_ROLE_KEY,
-        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-      },
-      body: JSON.stringify({
-        p_key: `${prefix}:${ip}`,
-        p_limit: limit,
-        p_window_seconds: windowSec
-      })
-    });
-
-    if (r.ok) {
-      const allowed = await r.json();
-      return allowed === true;
-    }
-  } catch (e) {
-    console.warn('Rate limit check failed:', e);
-  }
-  return true; // في حال فشل الفحص، نسمح (لتجنب تعطيل الخدمة)
 }
