@@ -151,6 +151,7 @@ function showPanel(name) {
   if (name === "orders") loadOrders();
   if (name === "debts") loadDebts();
   if (name === "inventory") loadInventory();
+  if (name === "unassigned") loadUnassignedReports();
 }
 
 document.querySelectorAll(".sidebar-nav button").forEach(btn => {
