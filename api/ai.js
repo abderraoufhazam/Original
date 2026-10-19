@@ -490,12 +490,12 @@ IMPORTANT :
 
     // جرّب الموديلات بالترتيب
     const MODELS = [
-      'gemini-2.0-flash',
-      'gemini-2.0-flash-001',
-      'gemini-2.5-flash',
-      'gemini-1.5-flash',
-      'gemini-1.5-flash-latest'
-    ];
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-8b',
+  'gemini-1.5-pro',
+  'gemini-2.0-flash-exp',
+  'gemini-2.0-flash'
+];
 
     let lastError = null;
     let geminiData = null;
@@ -542,12 +542,13 @@ IMPORTANT :
     }
 
     if (!geminiData) {
-      return res.status(500).json({
-        status: 'ERROR',
-        message: 'Erreur analyse IA',
-        detail: JSON.stringify(lastError).slice(0, 300)
-      });
-    }
+  console.error("Gemini Analytics Failure Detail:", lastError);
+  return res.status(500).json({
+    status: 'ERROR',
+    message: 'Erreur analyse IA',
+    detail: lastError ? lastError.body : "Unknown error"
+  });
+}
 
     // استخرج JSON
     let analysis = null;
