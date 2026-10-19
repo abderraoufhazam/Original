@@ -127,7 +127,7 @@ async function handleAnalyze(req, res) {
 
     if (!geminiData) return res.status(500).json({ status: 'ERROR', message: 'Erreur analyse IA', detail: lastError });
 
-        // ✅ استخراج ذكي للـ JSON
+            // ✅ استخراج ذكي للـ JSON (يتجاهل تفكير Gemini)
     let result = null;
     try {
       const candidate = geminiData.candidates[0];
@@ -136,24 +136,29 @@ async function handleAnalyze(req, res) {
       }
 
       const text = candidate.content.parts.map(p => p.text || '').join('');
-      console.log("Gemini Raw Response:", text); // للتشخيص
+      console.log("Gemini Raw Response:", text);
 
-      // محاولة استخراج JSON حتى لو كان النص يحتوي على كلام إضافي
+      // إزالة علامات ```json
       let cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
       
-      // إذا لم يبدأ بـ {، نحاول إيجاد أول { وآخر }
-      if (!cleaned.startsWith('{')) {
-        const start = cleaned.indexOf('{');
-        const end = cleaned.lastIndexOf('}');
-        if (start !== -1 && end !== -1) {
-          cleaned = cleaned.substring(start, end + 1);
+      // إيجاد أول كائن JSON صالح وتجاهل أي تفكير قبله أو مصفوفات بعده
+      const start = cleaned.indexOf('{');
+      if (start !== -1) {
+        let depth = 0;
+        let end = -1;
+        for (let i = start; i < cleaned.length; i++) {
+          if (cleaned[i] === '{') depth++;
+          else if (cleaned[i] === '}') {
+            depth--;
+            if (depth === 0) { end = i + 1; break; }
+          }
         }
+        if (end !== -1) cleaned = cleaned.substring(start, end);
       }
 
       result = JSON.parse(cleaned);
     } catch (e) {
       console.error("Parse Error:", e);
-      // في حال فشل التحليل، نعيد قيم افتراضية بدلاً من إظهار خطأ
       result = { 
         brand: "", 
         product_name: "", 
