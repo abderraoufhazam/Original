@@ -3510,10 +3510,34 @@ window.deleteUnassignedReport = async function(reportId) {
   } catch (e) { window.toast("خطأ: " + e.message, "error"); }
 };
 
-// ربط الزر
+// ✅ ربط الزر (فقط إذا كنا في لوحة التحكم)
 document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
+    // التحقق من أننا في لوحة التحكم (وليس صفحة تسجيل الدخول)
+    const adminApp = document.getElementById("adminApp");
+    if (!adminApp || adminApp.classList.contains("hidden")) return;
+
     const unassignedBtn = document.querySelector('button[data-panel="unassigned"]');
+    if (unassignedBtn) {
+      unassignedBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+        document.querySelectorAll(".sidebar-nav button").forEach(b => b.classList.remove("active"));
+        const panel = $("panel-unassigned");
+        if (panel) panel.classList.add("active");
+        unassignedBtn.classList.add("active");
+        const mt = $("mobileTitle"); if (mt) mt.textContent = "بلاغات غير موجهة";
+        const sb1 = $("sidebar"); if (sb1) sb1.classList.remove("open");
+        const ov = $("overlay"); if (ov) ov.classList.remove("show");
+        loadUnassignedReports();
+      });
+    }
+    const refreshBtn = $("refreshUnassignedBtn");
+    if (refreshBtn) {
+      refreshBtn.addEventListener("click", () => loadUnassignedReports());
+    }
+  }, 1000);
+});
     if (unassignedBtn) {
       unassignedBtn.addEventListener("click", (e) => {
         e.preventDefault();
