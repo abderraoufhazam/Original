@@ -22,6 +22,25 @@ export default async function handler(req, res) {
 }
 
 // ============================================================
+// دالة مساعدة: جلب الموديلات المتاحة لمفتاحك
+// ============================================================
+async function getAvailableModels(apiKey) {
+  try {
+    const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+    if (listRes.ok) {
+      const listData = await listRes.json();
+      const models = (listData.models || [])
+        .filter(m => (m.supportedGenerationMethods || []).includes('generateContent'))
+        .map(m => m.name.replace('models/', ''));
+      if (models.length > 0) return models;
+    }
+  } catch (e) { console.warn("List models error:", e); }
+  
+  // احتياط في حال فشل الجلب
+  return ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro', 'gemini-2.0-flash'];
+}
+
+// ============================================================
 // MODE 1: CHAT
 // ============================================================
 async function handleChat(req, res) {
@@ -45,15 +64,24 @@ async function handleChat(req, res) {
     }
     contents.push({ role: 'user', parts: [{ text: message.trim().slice(0, 1000) }] });
 
-    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ systemInstruction: { parts: [{ text: systemPrompt }] }, contents: contents })
-    });
+    const models = await getAvailableModels(GEMINI_API_KEY);
+    let geminiData = null;
+    let lastError = null;
 
-    if (!geminiRes.ok) return res.status(500).json({ status: 'ERROR', message: 'Gemini error' });
+    for (const model of models) {
+      try {
+        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ systemInstruction: { parts: [{ text: systemPrompt }] }, contents: contents })
+        });
+        if (r.ok) { geminiData = await r.json(); break; }
+        else { lastError = await r.text(); }
+      } catch (e) { lastError = String(e); }
+    }
 
-    const geminiData = await geminiRes.json();
+    if (!geminiData) return res.status(500).json({ status: 'ERROR', message: 'Gemini error', detail: lastError });
+
     let reply = geminiData.candidates[0].content.parts.map(p => p.text || '').join('').trim();
     if (!reply) reply = "Désolé, je n'ai pas compris.";
 
@@ -83,25 +111,32 @@ Réponds UNIQUEMENT avec un objet JSON valide :
 {"brand": "nom de la marque", "product_name": "nom", "description": "courte description", "confidence": "high|medium|low"}
 Ne mets AUCUN texte avant ou après le JSON.`;
 
-    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: match[1], data: match[2] } }] }],
-        generationConfig: { 
-          responseMimeType: "application/json",
-          temperature: 0.1,
-          maxOutputTokens: 200
-        }
-      })
-    });
+    const models = await getAvailableModels(GEMINI_API_KEY);
+    let geminiData = null;
+    let lastError = null;
 
-    if (!geminiRes.ok) {
-      const err = await geminiRes.text();
-      return res.status(500).json({ status: 'ERROR', message: 'Erreur analyse IA', detail: err });
+    for (const model of models) {
+      try {
+        const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: match[1], data: match[2] } }] }],
+            generationConfig: { responseMimeType: "application/json" }
+          })
+        });
+        if (geminiRes.ok) {
+          geminiData = await geminiRes.json();
+          console.log(`✅ Analyze success with model: ${model}`);
+          break;
+        } else {
+          lastError = await geminiRes.text();
+        }
+      } catch (err) { lastError = String(err); }
     }
 
-    const geminiData = await geminiRes.json();
+    if (!geminiData) return res.status(500).json({ status: 'ERROR', message: 'Erreur analyse IA', detail: lastError });
+
     let result = null;
     try {
       const text = geminiData.candidates[0].content.parts.map(p => p.text || '').join('');
@@ -117,7 +152,7 @@ Ne mets AUCUN texte avant ou après le JSON.`;
       }
       result = JSON.parse(cleaned);
     } catch (e) {
-      return res.status(500).json({ status: 'ERROR', message: 'Réponse IA invalide' });
+      return res.status(500).json({ status: 'ERROR', message: 'Réponse IA invalide', detail: String(e) });
     }
 
     let correctedBrand = (result.brand || '').trim();
@@ -204,15 +239,24 @@ async function handleAnalytics(req, res) {
 
     const prompt = `Tu es un analyste expert pour la marque "${brand_name}". Voici ${reports.length} signalements. Analyse-les et réponds en JSON: {"summary": "en arabe", "patterns": ["en arabe"], "recommendations": ["en arabe"], "risk_level": "LOW|MEDIUM|HIGH|CRITICAL"}`;
     
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt + "\n\nData: " + JSON.stringify(reports.slice(0, 30)) }] }], generationConfig: { responseMimeType: "application/json" } })
-    });
+    const models = await getAvailableModels(GEMINI_API_KEY);
+    let geminiData = null;
+    let lastError = null;
 
-    if (!r.ok) return res.status(500).json({ status: 'ERROR', message: 'Erreur analyse IA' });
+    for (const model of models) {
+      try {
+        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt + "\n\nData: " + JSON.stringify(reports.slice(0, 30)) }] }], generationConfig: { responseMimeType: "application/json" } })
+        });
+        if (r.ok) { geminiData = await r.json(); break; }
+        else { lastError = await r.text(); }
+      } catch (err) { lastError = String(err); }
+    }
 
-    const geminiData = await r.json();
+    if (!geminiData) return res.status(500).json({ status: 'ERROR', message: 'Erreur analyse IA', detail: lastError });
+
     let analysis = null;
     try {
       const text = geminiData.candidates[0].content.parts.map(p => p.text || '').join('');
@@ -244,15 +288,24 @@ async function handleReadLabel(req, res) {
 
     const prompt = `Lis le code secret sur cette image (7 caractères, sans I, O, L). Réponds en JSON: {"code": "XXXXXXX", "confidence": "high|medium|low"}`;
     
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: match[1], data: match[2] } }] }], generationConfig: { responseMimeType: "application/json" } })
-    });
+    const models = await getAvailableModels(GEMINI_API_KEY);
+    let geminiData = null;
+    let lastError = null;
 
-    if (!r.ok) return res.status(500).json({ status: 'ERROR', message: 'Erreur lecture IA' });
+    for (const model of models) {
+      try {
+        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: match[1], data: match[2] } }] }], generationConfig: { responseMimeType: "application/json" } })
+        });
+        if (r.ok) { geminiData = await r.json(); break; }
+        else { lastError = await r.text(); }
+      } catch (err) { lastError = String(err); }
+    }
 
-    const geminiData = await r.json();
+    if (!geminiData) return res.status(500).json({ status: 'ERROR', message: 'Erreur lecture IA', detail: lastError });
+
     let result = null;
     try {
       const text = geminiData.candidates[0].content.parts.map(p => p.text || '').join('');
