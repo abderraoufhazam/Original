@@ -344,7 +344,7 @@ Ne mets AUCUN texte avant ou après le JSON.`;
 
     return res.status(200).json({
       status: 'OK',
-      brand: (result.brand || '').trim().slice(0, 100),
+      brand: correctedBrand.slice(0, 100),
       product_name: (result.product_name || '').trim().slice(0, 200),
       description: (result.description || '').trim().slice(0, 500),
       confidence: result.confidence || 'medium',
@@ -352,6 +352,83 @@ Ne mets AUCUN texte avant ou après le JSON.`;
     });
 
   } catch (error) {
+        // ✅ تصحيح اسم الماركة (Fuzzy Matching)
+    let correctedBrand = (result.brand || '').trim();
+    
+    if (correctedBrand) {
+      // جلب قائمة الماركات من قاعدة البيانات
+      const SUPABASE_URL = process.env.SUPABASE_URL;
+      const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      
+      if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+        try {
+          const brandsRes = await fetch(
+            `${SUPABASE_URL}/rest/v1/qr_codes?select=brand&limit=1000`,
+            {
+              headers: {
+                'apikey': SUPABASE_SERVICE_ROLE_KEY,
+                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+              }
+            }
+          );
+          
+          if (brandsRes.ok) {
+            const codes = await brandsRes.json();
+            const knownBrands = [...new Set(codes.map(c => c.brand).filter(Boolean))];
+            
+            // خوارزمية Levenshtein
+            function similarity(a, b) {
+              if (!a || !b) return 0;
+              a = a.toLowerCase(); b = b.toLowerCase();
+              if (a === b) return 1;
+              if (a.includes(b) || b.includes(a)) return 0.8;
+              
+              const matrix = [];
+              for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+              for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+              
+              for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                  if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                    matrix[i][j] = matrix[i - 1][j - 1];
+                  } else {
+                    matrix[i][j] = Math.min(
+                      matrix[i - 1][j - 1] + 1,
+                      matrix[i][j - 1] + 1,
+                      matrix[i - 1][j] + 1
+                    );
+                  }
+                }
+              }
+              
+              const distance = matrix[b.length][a.length];
+              const maxLen = Math.max(a.length, b.length);
+              return 1 - (distance / maxLen);
+            }
+            
+            // إيجاد أفضل تطابق
+            let bestMatch = null;
+            let bestScore = 0;
+            
+            knownBrands.forEach(kb => {
+              const score = similarity(correctedBrand, kb);
+              if (score > bestScore) {
+                bestScore = score;
+                bestMatch = kb;
+              }
+            });
+            
+            // إذا كان التشابه > 70%، نصحح الاسم
+            if (bestMatch && bestScore > 0.7) {
+              console.log(`Brand corrected: "${correctedBrand}" → "${bestMatch}" (${Math.round(bestScore * 100)}%)`);
+              correctedBrand = bestMatch;
+            }
+          }
+        } catch (e) {
+          console.warn('Brand correction error:', e);
+        }
+      }
+    }
     return res.status(500).json({
       status: 'ERROR',
       message: 'Erreur inattendue',
