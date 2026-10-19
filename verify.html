@@ -137,8 +137,9 @@
       <div class="wilaya-ai-badge">✨ تم التحليل بواسطة AI — يمكنك التعديل</div>
 
       <label class="wilaya-label">🏷️ العلامة التجارية</label>
-      <input id="wilayaBrand" class="wilaya-textarea" type="text" placeholder="مثال: Rutin" maxlength="100" style="min-height:auto;padding:13px 15px">
-
+      <select id="wilayaBrand" class="wilaya-textarea" style="min-height:auto;padding:13px 15px">
+  <option value="">-- اختر العلامة التجارية --</option>
+</select>
       <label class="wilaya-label">📦 اسم المنتج</label>
       <input id="wilayaProductName" class="wilaya-textarea" type="text" placeholder="مثال: سيروم ليزر 30 مل" maxlength="200" style="min-height:auto;padding:13px 15px">
 
@@ -254,6 +255,34 @@
 
 <script src="/helpers.js"></script>
 <script src="/i18n.js"></script>
+<script>
+
+  // جلب قائمة الماركات المسجلة
+  async function loadBrandsForSelect() {
+    try {
+      const { data } = await supabase
+        .from('qr_codes')
+        .select('brand')
+        .limit(1000);
+      
+      const brands = [...new Set((data || []).map(d => d.brand).filter(Boolean))];
+      brands.sort();
+      
+      const select = document.getElementById('wilayaBrand');
+      brands.forEach(b => {
+        const opt = document.createElement('option');
+        opt.value = b;
+        opt.textContent = b;
+        select.appendChild(opt);
+      });
+    } catch (e) {
+      console.warn('Load brands error:', e);
+    }
+  }
+  
+  // استدعاء الدالة بعد تحميل SDK Supabase
+  window.addEventListener('load', loadBrandsForSelect);
+</script>
 <script src="/app.js"></script>
 <script src="/chat.js?v=3"></script>
 
