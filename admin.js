@@ -523,71 +523,99 @@ async function loadFakes() {
   if (heatmapBox) heatmapBox.innerHTML = "";
 
   try {
-    let query = sb.from("fake_reports").select("*").order("created_at", { ascending: false }).limit(500);
-    if (currentFakesFilter !== "all") query = query.eq("status", currentFakesFilter);
+    let data = [];
+    let error = null;
 
-    const { data, error } = await query;
+    if (currentFakesFilter === "unassigned") {
+      // ✅ جلب البلاغات غير الموجهة فقط
+      const res = await sb.from("fake_reports").select("*").order("created_at", { ascending: false }).limit(500);
+      if (res.error) error = res.error;
+      else data = (res.data || []).filter(r => (r.product_brand || "").trim() === "");
+    } else {
+      // ✅ جلب البلاغات العادية
+      let query = sb.from("fake_reports").select("*").order("created_at", { ascending: false }).limit(500);
+      if (currentFakesFilter !== "all") query = query.eq("status", currentFakesFilter);
+      const res = await query;
+      data = res.data;
+      error = res.error;
+    }
+
     if (error) { container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(error.message)}</p>`; return; }
 
-    const { data: allData } = await sb.from("fake_reports").select("wilaya, status, ai_analyzed").limit(5000);
+    // إحصائيات
+    if (statsBox && currentFakesFilter !== "unassigned") {
+      const { data: allData } = await sb.from("fake_reports").select("wilaya, status, ai_analyzed").limit(5000);
+      const total = (allData || []).length;
+      const newCount = (allData || []).filter(r => r.status === "NEW").length;
+      const reviewedCount = (allData || []).filter(r => r.status === "REVIEWED").length;
+      const aiCount = (allData || []).filter(r => r.ai_analyzed).length;
 
-    const total = (allData || []).length;
-    const newCount = (allData || []).filter(r => r.status === "NEW").length;
-    const reviewedCount = (allData || []).filter(r => r.status === "REVIEWED").length;
-    const aiCount = (allData || []).filter(r => r.ai_analyzed).length;
-
-    if (statsBox) {
       statsBox.innerHTML = `
         <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">TOTAL</div></div>
         <div class="stat-card"><div class="stat-value" style="color:var(--danger)">${newCount}</div><div class="stat-label">🔴 NOUVEAUX</div></div>
         <div class="stat-card"><div class="stat-value" style="color:var(--success)">${reviewedCount}</div><div class="stat-label">✓ TRAITÉS</div></div>
         <div class="stat-card"><div class="stat-value" style="color:var(--primary)">${aiCount}</div><div class="stat-label">🤖 IA</div></div>`;
+
+      // خريطة حرارية
+      if (heatmapBox) {
+        const wilayaCounts = {};
+        (allData || []).forEach(r => { if (r.wilaya) wilayaCounts[r.wilaya] = (wilayaCounts[r.wilaya] || 0) + 1; });
+        const maxCount = Math.max(1, ...Object.values(wilayaCounts));
+        let heatHtml = "";
+        WILAYA_NAMES.forEach(w => {
+          const c = wilayaCounts[w] || 0;
+          let bg, color;
+          if (c === 0) { bg = "rgba(148,163,184,0.08)"; color = "#94a3b8"; }
+          else {
+            const intensity = c / maxCount;
+            if (intensity > 0.7) { bg = "linear-gradient(135deg,#dc2626,#ef4444)"; color = "#fff"; }
+            else if (intensity > 0.4) { bg = "linear-gradient(135deg,#f59e0b,#fbbf24)"; color = "#fff"; }
+            else if (intensity > 0.15) { bg = "linear-gradient(135deg,#fbbf24,#fde047)"; color = "#78350f"; }
+            else { bg = "linear-gradient(135deg,#fef3c7,#fef9c3)"; color = "#a16207"; }
+          }
+          heatHtml += `<div style="padding:10px 12px;border-radius:10px;background:${bg};color:${color};text-align:center;font-weight:700;font-size:12px;border:1px solid rgba(0,0,0,0.06)"><div>${escapeHtml(w)}</div><div style="font-size:18px;font-weight:900;margin-top:4px">${c}</div></div>`;
+        });
+        heatmapBox.innerHTML = heatHtml;
+      }
     }
 
-    const wilayaCounts = {};
-    (allData || []).forEach(r => { if (r.wilaya) wilayaCounts[r.wilaya] = (wilayaCounts[r.wilaya] || 0) + 1; });
-    const maxCount = Math.max(1, ...Object.values(wilayaCounts));
-
-    if (heatmapBox) {
-      let heatHtml = "";
-      WILAYA_NAMES.forEach(w => {
-        const c = wilayaCounts[w] || 0;
-        let bg, color;
-        if (c === 0) { bg = "rgba(148,163,184,0.08)"; color = "#94a3b8"; }
-        else {
-          const intensity = c / maxCount;
-          if (intensity > 0.7) { bg = "linear-gradient(135deg,#dc2626,#ef4444)"; color = "#fff"; }
-          else if (intensity > 0.4) { bg = "linear-gradient(135deg,#f59e0b,#fbbf24)"; color = "#fff"; }
-          else if (intensity > 0.15) { bg = "linear-gradient(135deg,#fbbf24,#fde047)"; color = "#78350f"; }
-          else { bg = "linear-gradient(135deg,#fef3c7,#fef9c3)"; color = "#a16207"; }
-        }
-        heatHtml += `<div style="padding:10px 12px;border-radius:10px;background:${bg};color:${color};text-align:center;font-weight:700;font-size:12px;border:1px solid rgba(0,0,0,0.06)">
-          <div>${escapeHtml(w)}</div>
-          <div style="font-size:18px;font-weight:900;margin-top:4px">${c}</div>
-        </div>`;
-      });
-      heatmapBox.innerHTML = heatHtml;
+    if (!data || data.length === 0) {
+      container.innerHTML = `<p class="muted" style="text-align:center;padding:40px 0">Aucun signalement.</p>`;
+      return;
     }
 
-    if (!data || data.length === 0) { container.innerHTML = `<p class="muted">Aucun signalement.</p>`; return; }
-
+    // عرض البلاغات
     let html = "";
     data.forEach(r => {
       const isNew = r.status === "NEW";
-      const cls = isNew ? "danger" : "success";
+      const isUnassigned = !r.product_brand || r.product_brand.trim() === "";
+      const cls = isNew ? "danger" : isUnassigned ? "warning" : "success";
       const date = r.created_at ? new Date(r.created_at).toLocaleString() : "—";
+
       html += `
         <div class="log-row log-${cls}" style="padding:18px">
-          <div class="log-top"><span class="log-result log-result-${cls}">${isNew ? "🔴 NOUVEAU" : "✓ TRAITÉ"}</span><span class="log-date">${escapeHtml(date)}</span></div>
+          <div class="log-top">
+            <span class="log-result log-result-${cls}">${isNew ? "🔴 NOUVEAU" : isUnassigned ? "⚠️ غير موجه" : "✓ TRAITÉ"}</span>
+            <span class="log-date">${escapeHtml(date)}</span>
+          </div>
           ${r.product_image ? `<img src="${escapeHtml(r.product_image)}" alt="" style="max-width:200px;max-height:200px;display:block;margin:10px auto;border-radius:12px;border:1px solid var(--border)">` : ""}
-          ${r.product_brand ? `<div style="font-size:14px;font-weight:800;margin:8px 0 4px">🏷️ ${escapeHtml(r.product_brand)}</div>` : ""}
-          ${r.product_name ? `<div style="font-size:13px;font-weight:700;margin-bottom:6px">📦 ${escapeHtml(r.product_name)}</div>` : ""}
+          
+          ${isUnassigned ? `
+            <div style="display:flex; gap:8px; margin: 12px 0;">
+              <input type="text" id="brand-assign-${r.id}" class="form-input" placeholder="اكتب اسم الماركة (مثال: Rutin)" style="flex:1; padding:10px; font-size:13px;">
+              <button onclick="assignFakeBrand(${r.id})" class="btn btn-primary" style="padding:10px 16px; font-size:12px;">✅ توجيه</button>
+            </div>
+          ` : `
+            ${r.product_brand ? `<div style="font-size:14px;font-weight:800;margin:8px 0 4px">🏷️ ${escapeHtml(r.product_brand)}</div>` : ""}
+            ${r.product_name ? `<div style="font-size:13px;font-weight:700;margin-bottom:6px">📦 ${escapeHtml(r.product_name)}</div>` : ""}
+          `}
+
           <div class="details">
             ${r.wilaya ? `<div><b>📍 Wilaya</b><span>${escapeHtml(r.wilaya)}</span></div>` : ""}
-            ${r.attempted_code ? `<div><b>Code essayé</b><span style="font-family:monospace">${escapeHtml(r.attempted_code)}</span></div>` : ""}
             ${r.ip ? `<div><b>IP</b><span style="font-family:monospace;font-size:11px">${escapeHtml(r.ip)}</span></div>` : ""}
           </div>
           ${r.comment ? `<div style="font-size:12px;line-height:1.6;padding:10px 12px;background:var(--bg-secondary);border-radius:10px;margin-top:10px">💬 ${escapeHtml(r.comment)}</div>` : ""}
+          
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
             ${isNew ? `<button onclick="markFakeReviewed(${r.id})" class="btn btn-success" style="flex:1;min-width:110px;font-size:12px;padding:8px 12px">✓ Marquer traité</button>` : ""}
             <button onclick="deleteFake(${r.id})" class="btn btn-danger" style="flex:1;min-width:110px;font-size:12px;padding:8px 12px">🗑️ Supprimer</button>
@@ -595,22 +623,23 @@ async function loadFakes() {
         </div>`;
     });
     container.innerHTML = html;
-  } catch (err) { container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(err.message)}</p>`; }
+
+  } catch (err) {
+    console.error("loadFakes error:", err);
+    container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(err.message)}</p>`;
+  }
 }
 
-window.markFakeReviewed = async function(id) {
-  const { error } = await sb.from("fake_reports").update({ status: "REVIEWED" }).eq("id", id);
-  if (error) { window.toast("Erreur : " + error.message, "error"); return; }
-  loadFakes();
-  loadFakesBadge();
-};
-
-window.deleteFake = async function(id) {
-  if (!confirm("Supprimer ce signalement ?")) return;
-  const { error } = await sb.from("fake_reports").delete().eq("id", id);
-  if (error) { window.toast("Erreur : " + error.message, "error"); return; }
-  loadFakes();
-  loadFakesBadge();
+window.assignFakeBrand = async function(reportId) {
+  const input = document.getElementById(`brand-assign-${reportId}`);
+  const newBrand = (input?.value || "").trim();
+  if (!newBrand) { window.toast("الرجاء كتابة اسم الماركة", "error"); return; }
+  try {
+    const { error } = await sb.from("fake_reports").update({ product_brand: newBrand }).eq("id", reportId);
+    if (error) throw error;
+    window.toast(`✅ تم توجيه البلاغ إلى ${newBrand}`, "success");
+    loadFakes(); // إعادة تحميل
+  } catch (e) { window.toast("خطأ: " + e.message, "error"); }
 };
 
 // ============================================================
