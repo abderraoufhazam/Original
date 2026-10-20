@@ -151,6 +151,8 @@ function showPanel(name) {
   if (name === "orders") loadOrders();
   if (name === "debts") loadDebts();
   if (name === "inventory") loadInventory();
+  if (name === "feedback") loadFeedback();
+  if (name === "log") loadLog();
   if (name === "unassigned") loadUnassignedReports();
 }
 
