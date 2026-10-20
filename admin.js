@@ -151,8 +151,6 @@ function showPanel(name) {
   if (name === "orders") loadOrders();
   if (name === "debts") loadDebts();
   if (name === "inventory") loadInventory();
-  if (name === "feedback") loadFeedback();
-  if (name === "log") loadLog();
   if (name === "unassigned") loadUnassignedReports();
 }
 
@@ -532,7 +530,7 @@ async function loadFakes() {
       // ✅ جلب البلاغات غير الموجهة فقط
       const res = await sb.from("fake_reports").select("*").order("created_at", { ascending: false }).limit(500);
       if (res.error) error = res.error;
-      else data = (res.data || []); // عرض كل البلاغات مؤقتاً
+      else data = (res.data || []).filter(r => (r.product_brand || "").trim() === "");
     } else {
       // ✅ جلب البلاغات العادية
       let query = sb.from("fake_reports").select("*").order("created_at", { ascending: false }).limit(500);
