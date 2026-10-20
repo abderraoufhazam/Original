@@ -530,7 +530,7 @@ async function loadFakes() {
       // ✅ جلب البلاغات غير الموجهة فقط
       const res = await sb.from("fake_reports").select("*").order("created_at", { ascending: false }).limit(500);
       if (res.error) error = res.error;
-      else data = (res.data || []).filter(r => (r.product_brand || "").trim() === "");
+      else data = (res.data || []); // عرض كل البلاغات مؤقتاً
     } else {
       // ✅ جلب البلاغات العادية
       let query = sb.from("fake_reports").select("*").order("created_at", { ascending: false }).limit(500);
