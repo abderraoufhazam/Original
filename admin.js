@@ -1,15 +1,13 @@
 // ============================================================
-// ORIGINAL — ADMIN.JS (v6 — Full)
+// ORIGINAL — ADMIN.JS (v6.2 — Full Fixed Version)
 // ============================================================
 
-// ═══════════ EmailJS Config (احتياطي) ═══════════
 const EMAILJS_PUBLIC_KEY = "-u23EBBOrhdGM3uwm";
 const EMAILJS_SERVICE_ID = "service_jzvkogk";
 const EMAILJS_TEMPLATE_ID = "template_0yy00zs";
 
 const $ = id => document.getElementById(id);
 
-// ═══════════ GLOBAL STATE ═══════════
 let lastCodes = [];
 let lastLogo = "";
 let loadedLot = null;
@@ -44,9 +42,6 @@ let allComplaints = [];
 let currentComplaintsWilaya = "";
 let currentComplaintsDateRange = "all";
 
-// ============================================================
-// HELPERS
-// ============================================================
 async function checkAdminServer(token) {
   try {
     const res = await fetch("/api/check-admin", {
@@ -67,9 +62,6 @@ async function getAdminToken() {
   return session ? session.access_token : null;
 }
 
-// ============================================================
-// TOAST
-// ============================================================
 window.toast = function(message, type = "info") {
   const container = $("toastContainer");
   if (!container) { console.log(`[${type}] ${message}`); return; }
@@ -98,9 +90,6 @@ window.alert = function(msg) {
   window.toast(msg, toastType(msg));
 };
 
-// ============================================================
-// PANEL TITLES
-// ============================================================
 const PANEL_TITLES = {
   dashboard: "Tableau de bord",
   create: "Créer un lot",
@@ -123,18 +112,19 @@ const PANEL_TITLES = {
   settings: "Impression"
 };
 
-// ============================================================
-// NAVIGATION
-// ============================================================
 function showPanel(name) {
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
   document.querySelectorAll(".sidebar-nav button").forEach(b => b.classList.remove("active"));
+  
   const p = $("panel-" + name);
   const b = document.querySelector('.sidebar-nav button[data-panel="' + name + '"]');
+  
   if (p) p.classList.add("active");
   if (b) b.classList.add("active");
+  
   const mt = $("mobileTitle");
   if (mt) mt.textContent = PANEL_TITLES[name] || "Admin";
+  
   const sb1 = $("sidebar"); if (sb1) sb1.classList.remove("open");
   const ov = $("overlay"); if (ov) ov.classList.remove("show");
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -154,11 +144,15 @@ function showPanel(name) {
   if (name === "unassigned") loadUnassignedReports();
 }
 
-// ربط زر التحديث في قسم البلاغات غير الموجهة
+document.querySelectorAll('.sidebar-nav button[data-panel]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const panelName = btn.dataset.panel;
+    showPanel(panelName);
+  });
+});
+
 const _ruab = $("refreshUnassignedBtn");
-if (_ruab) {
-  _ruab.onclick = () => loadUnassignedReports();
-}
+if (_ruab) _ruab.onclick = () => loadUnassignedReports();
 
 const _mt = $("menuToggle");
 if (_mt) _mt.addEventListener("click", () => {
@@ -180,10 +174,7 @@ if (_ov) _ov.addEventListener("click", () => {
 async function loadStats() {
   const statuses = ["UNUSED", "USED", "DISABLED", "EXPIRED"];
   for (const st of statuses) {
-    const { count, error } = await sb
-      .from("qr_codes")
-      .select("*", { count: "exact", head: true })
-      .eq("secret_status", st);
+    const { count, error } = await sb.from("qr_codes").select("*", { count: "exact", head: true }).eq("secret_status", st);
     const el = $("stat" + st.charAt(0) + st.slice(1).toLowerCase());
     if (el) el.textContent = error ? "—" : (count ?? 0);
   }
@@ -193,39 +184,13 @@ async function loadLog() {
   const container = $("logList");
   if (!container) return;
   container.innerHTML = `<p class="muted">Chargement...</p>`;
-
-  const { data, error } = await sb
-    .from("qr_verifications")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(100);
-
-  if (error) {
-    container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(error.message)}</p>`;
-    return;
-  }
-  if (!data || data.length === 0) {
-    container.innerHTML = `<p class="muted">Aucune vérification enregistrée.</p>`;
-    return;
-  }
-
+  const { data, error } = await sb.from("qr_verifications").select("*").order("created_at", { ascending: false }).limit(100);
+  if (error || !data || data.length === 0) { container.innerHTML = `<p class="muted">Aucune vérification.</p>`; return; }
   let html = "";
   data.forEach(r => {
     const statusClass = r.result === "ORIGINAL" ? "success" : r.result === "USED" ? "warning" : "danger";
     const date = r.created_at ? new Date(r.created_at).toLocaleString() : "—";
-    html += `
-      <div class="log-row log-${statusClass}">
-        <div class="log-top">
-          <span class="log-result log-result-${statusClass}">${escapeHtml(r.result || "—")}</span>
-          <span class="log-date">${escapeHtml(date)}</span>
-        </div>
-        <div class="log-code">${escapeHtml(r.secret_code || "")}</div>
-        <div class="log-meta">
-          ${r.brand ? `<span>🏷 ${escapeHtml(r.brand)}</span>` : ""}
-          ${r.lot ? `<span>📦 ${escapeHtml(r.lot)}</span>` : ""}
-          ${r.ip ? `<span>🌐 ${escapeHtml(r.ip)}</span>` : ""}
-        </div>
-      </div>`;
+    html += `<div class="log-row log-${statusClass}"><div class="log-top"><span class="log-result log-result-${statusClass}">${escapeHtml(r.result || "—")}</span><span class="log-date">${escapeHtml(date)}</span></div><div class="log-code">${escapeHtml(r.secret_code || "")}</div><div class="log-meta">${r.brand ? `<span>🏷 ${escapeHtml(r.brand)}</span>` : ""}${r.lot ? `<span>📦 ${escapeHtml(r.lot)}</span>` : ""}${r.ip ? `<span>🌐 ${escapeHtml(r.ip)}</span>` : ""}</div></div>`;
   });
   container.innerHTML = html;
 }
@@ -234,54 +199,28 @@ async function loadFeedback() {
   const container = $("feedbackList");
   if (!container) return;
   container.innerHTML = `<p class="muted">Chargement...</p>`;
-
   let query = sb.from("qr_feedback").select("*").order("created_at", { ascending: false }).limit(200);
   if (currentFeedbackFilter !== "all") query = query.eq("type", currentFeedbackFilter);
-
   const { data, error } = await query;
-  if (error || !data || data.length === 0) {
-    container.innerHTML = `<p class="muted">Aucun avis.</p>`;
-    return;
-  }
-
+  if (error || !data || data.length === 0) { container.innerHTML = `<p class="muted">Aucun avis.</p>`; return; }
   let html = "";
   data.forEach(r => {
     const isRating = r.type === "rating";
     const typeClass = isRating ? "success" : "danger";
     const date = r.created_at ? new Date(r.created_at).toLocaleString() : "—";
     let stars = "";
-    if (isRating && r.rating) {
-      for (let i = 1; i <= 5; i++) stars += `<span style="color:${i <= r.rating ? "#fbbf24" : "#cbd5e1"};font-size:18px">★</span>`;
-    }
-    html += `
-      <div class="log-row log-${typeClass}">
-        <div class="log-top">
-          <span class="log-result log-result-${typeClass}">${isRating ? "⭐ AVIS" : "🚨 SIGNALEMENT"}</span>
-          <span class="log-date">${escapeHtml(date)}</span>
-        </div>
-        ${stars ? `<div style="margin:6px 0">${stars} <span style="font-weight:700;margin-left:6px">${r.rating}/5</span></div>` : ""}
-        ${r.comment ? `<div style="font-size:13px;line-height:1.6;margin:8px 0;padding:10px 12px;background:var(--bg-secondary);border-radius:10px">${escapeHtml(r.comment)}</div>` : ""}
-        <div class="log-meta">
-          ${r.secret_code ? `<span style="font-family:monospace;font-weight:700">🔑 ${escapeHtml(r.secret_code)}</span>` : ""}
-          ${r.ip ? `<span>🌐 ${escapeHtml(r.ip)}</span>` : ""}
-        </div>
-      </div>`;
+    if (isRating && r.rating) { for (let i = 1; i <= 5; i++) stars += `<span style="color:${i <= r.rating ? "#fbbf24" : "#cbd5e1"};font-size:18px">★</span>`; }
+    html += `<div class="log-row log-${typeClass}"><div class="log-top"><span class="log-result log-result-${typeClass}">${isRating ? "⭐ AVIS" : "🚨 SIGNALEMENT"}</span><span class="log-date">${escapeHtml(date)}</span></div>${stars ? `<div style="margin:6px 0">${stars} <span style="font-weight:700;margin-left:6px">${r.rating}/5</span></div>` : ""}${r.comment ? `<div style="font-size:13px;line-height:1.6;margin:8px 0;padding:10px 12px;background:var(--bg-secondary);border-radius:10px">${escapeHtml(r.comment)}</div>` : ""}<div class="log-meta">${r.secret_code ? `<span style="font-family:monospace;font-weight:700">🔑 ${escapeHtml(r.secret_code)}</span>` : ""}${r.ip ? `<span>🌐 ${escapeHtml(r.ip)}</span>` : ""}</div></div>`;
   });
   container.innerHTML = html;
 }
 
-// ============================================================
-// MESSAGES
-// ============================================================
 async function loadMessagesBadge() {
   try {
     const { count } = await sb.from("brand_messages").select("*", { count: "exact", head: true }).eq("status", "NEW");
     unreadMessagesCount = count || 0;
     const badge = $("messagesBadge");
-    if (badge) {
-      if (unreadMessagesCount > 0) { badge.textContent = unreadMessagesCount; badge.style.display = "inline-block"; }
-      else { badge.style.display = "none"; }
-    }
+    if (badge) { if (unreadMessagesCount > 0) { badge.textContent = unreadMessagesCount; badge.style.display = "inline-block"; } else { badge.style.display = "none"; } }
   } catch (e) { console.warn(e); }
 }
 
@@ -289,39 +228,16 @@ async function loadMessages() {
   const container = $("messagesList");
   if (!container) return;
   container.innerHTML = `<p class="muted">Chargement...</p>`;
-
   let query = sb.from("brand_messages").select("*").order("created_at", { ascending: false }).limit(100);
   if (currentMessagesFilter !== "all") query = query.eq("status", currentMessagesFilter);
-
   const { data, error } = await query;
-  if (error || !data || data.length === 0) {
-    container.innerHTML = `<p class="muted">Aucun message.</p>`;
-    return;
-  }
-
+  if (error || !data || data.length === 0) { container.innerHTML = `<p class="muted">Aucun message.</p>`; return; }
   let html = "";
   data.forEach(m => {
     const isNew = m.status === "NEW";
     const statusClass = isNew ? "danger" : "success";
     const date = m.created_at ? new Date(m.created_at).toLocaleString() : "—";
-    html += `
-      <div class="log-row log-${statusClass}" style="padding:18px">
-        <div class="log-top">
-          <span class="log-result log-result-${statusClass}">${isNew ? "🔴 NOUVEAU" : "✓ LU"}</span>
-          <span class="log-date">${escapeHtml(date)}</span>
-        </div>
-        <div style="font-weight:800;font-size:14px;margin:8px 0 4px">${escapeHtml(m.brand_name || "—")}</div>
-        <div style="font-size:11px;color:var(--text-secondary);margin-bottom:10px">
-          📧 ${escapeHtml(m.email || "—")}${m.phone ? ` &nbsp;|&nbsp; 📱 ${escapeHtml(m.phone)}` : ""}
-        </div>
-        <div style="font-size:13px;font-weight:700;margin-bottom:6px">📌 ${escapeHtml(m.subject || "(sans sujet)")}</div>
-        <div style="font-size:13px;line-height:1.6;padding:10px 12px;background:var(--bg-secondary);border-radius:10px;margin-bottom:12px">${escapeHtml(m.message || "")}</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          ${isNew ? `<button onclick="markMessageRead(${m.id})" class="btn btn-success" style="flex:1;min-width:120px;padding:8px 12px;font-size:12px">✓ Marquer lu</button>` : ""}
-          ${m.phone ? `<a href="https://wa.me/${encodeURIComponent(m.phone.replace(/[^0-9]/g,''))}" target="_blank" rel="noopener" class="btn btn-ghost" style="flex:1;min-width:120px;padding:8px 12px;font-size:12px;background:#25D366;color:#fff;border:0">💬 WhatsApp</a>` : ""}
-          <a href="mailto:${escapeHtml(m.email)}?subject=${encodeURIComponent('Re: ' + (m.subject || ''))}" class="btn btn-ghost" style="flex:1;min-width:120px;padding:8px 12px;font-size:12px">📧 Email</a>
-        </div>
-      </div>`;
+    html += `<div class="log-row log-${statusClass}" style="padding:18px"><div class="log-top"><span class="log-result log-result-${statusClass}">${isNew ? "🔴 NOUVEAU" : "✓ LU"}</span><span class="log-date">${escapeHtml(date)}</span></div><div style="font-weight:800;font-size:14px;margin:8px 0 4px">${escapeHtml(m.brand_name || "—")}</div><div style="font-size:11px;color:var(--text-secondary);margin-bottom:10px">📧 ${escapeHtml(m.email || "—")}${m.phone ? ` &nbsp;|&nbsp; 📱 ${escapeHtml(m.phone)}` : ""}</div><div style="font-size:13px;font-weight:700;margin-bottom:6px">📌 ${escapeHtml(m.subject || "(sans sujet)")}</div><div style="font-size:13px;line-height:1.6;padding:10px 12px;background:var(--bg-secondary);border-radius:10px;margin-bottom:12px">${escapeHtml(m.message || "")}</div><div style="display:flex;gap:8px;flex-wrap:wrap">${isNew ? `<button onclick="markMessageRead(${m.id})" class="btn btn-success" style="flex:1;min-width:120px;padding:8px 12px;font-size:12px">✓ Marquer lu</button>` : ""}${m.phone ? `<a href="https://wa.me/${encodeURIComponent(m.phone.replace(/[^0-9]/g,''))}" target="_blank" rel="noopener" class="btn btn-ghost" style="flex:1;min-width:120px;padding:8px 12px;font-size:12px;background:#25D366;color:#fff;border:0">💬 WhatsApp</a>` : ""}<a href="mailto:${escapeHtml(m.email)}?subject=${encodeURIComponent('Re: ' + (m.subject || ''))}" class="btn btn-ghost" style="flex:1;min-width:120px;padding:8px 12px;font-size:12px">📧 Email</a></div></div>`;
   });
   container.innerHTML = html;
 }
@@ -435,8 +351,6 @@ async function loadBrands() {
   }
 }
 
-// ═══════════════ انتهى الجزء 1 ═══════════════
-
 // ============================================================
 // VISITORS
 // ============================================================
@@ -495,11 +409,11 @@ async function loadVisitors() {
   } catch (err) { container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(err.message)}</p>`; }
 }
 
+const WILAYA_NAMES = ["01 - أدرار","02 - الشلف","03 - الأغواط","04 - أم البواقي","05 - باتنة","06 - بجاية","07 - بسكرة","08 - بشار","09 - البليدة","10 - البويرة","11 - تمنراست","12 - تبسة","13 - تلمسان","14 - تيارت","15 - تيزي وزو","16 - الجزائر","17 - الجلفة","18 - جيجل","19 - سطيف","20 - سعيدة","21 - سكيكدة","22 - سيدي بلعباس","23 - عنابة","24 - قالمة","25 - قسنطينة","26 - المدية","27 - مستغانم","28 - المسيلة","29 - معسكر","30 - ورقلة","31 - وهران","32 - البيض","33 - إليزي","34 - برج بوعريريج","35 - بومرداس","36 - الطارف","37 - تندوف","38 - تيسمسيلت","39 - الوادي","40 - خنشلة","41 - سوق أهراس","42 - تيبازة","43 - ميلة","44 - عين الدفلى","45 - النعامة","46 - عين تموشنت","47 - غرداية","48 - غليزان","49 - تيميمون","50 - برج باجي مختار","51 - أولاد جلال","52 - بني عباس","53 - عين صالح","54 - عين قزام","55 - تقرت","56 - جانت","57 - المغير","58 - المنيعة"];
+
 // ============================================================
 // FAKES
 // ============================================================
-const WILAYA_NAMES = ["01 - أدرار","02 - الشلف","03 - الأغواط","04 - أم البواقي","05 - باتنة","06 - بجاية","07 - بسكرة","08 - بشار","09 - البليدة","10 - البويرة","11 - تمنراست","12 - تبسة","13 - تلمسان","14 - تيارت","15 - تيزي وزو","16 - الجزائر","17 - الجلفة","18 - جيجل","19 - سطيف","20 - سعيدة","21 - سكيكدة","22 - سيدي بلعباس","23 - عنابة","24 - قالمة","25 - قسنطينة","26 - المدية","27 - مستغانم","28 - المسيلة","29 - معسكر","30 - ورقلة","31 - وهران","32 - البيض","33 - إليزي","34 - برج بوعريريج","35 - بومرداس","36 - الطارف","37 - تندوف","38 - تيسمسيلت","39 - الوادي","40 - خنشلة","41 - سوق أهراس","42 - تيبازة","43 - ميلة","44 - عين الدفلى","45 - النعامة","46 - عين تموشنت","47 - غرداية","48 - غليزان","49 - تيميمون","50 - برج باجي مختار","51 - أولاد جلال","52 - بني عباس","53 - عين صالح","54 - عين قزام","55 - تقرت","56 - جانت","57 - المغير","58 - المنيعة"];
-
 async function loadFakesBadge() {
   try {
     const { count } = await sb.from("fake_reports").select("*", { count: "exact", head: true }).eq("status", "NEW");
@@ -723,14 +637,10 @@ function getChartColors() {
 }
 
 async function loadCharts() {
-  // ═══════════════════════════════════════════════════════════
-  // Chart 1: Daily Verifications (14 days) — via RPC
-  // ═══════════════════════════════════════════════════════════
   try {
     const { data, error } = await sb.rpc("admin_get_daily_verifications");
     if (error) throw error;
 
-    // بناء مصفوفة 14 يوم حتى لو بعض الأيام بدون بيانات
     const days = [];
     const counts = [];
     const today = new Date();
@@ -738,7 +648,6 @@ async function loadCharts() {
 
     const dataMap = {};
     (data || []).forEach(d => {
-      // day يأتي كـ string من PostgreSQL
       const dayStr = typeof d.day === 'string' ? d.day : new Date(d.day).toISOString().split('T')[0];
       dataMap[dayStr] = parseInt(d.count, 10) || 0;
     });
@@ -788,9 +697,6 @@ async function loadCharts() {
     console.warn("chartDaily:", e);
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // Chart 2: Results Distribution — via RPC
-  // ═══════════════════════════════════════════════════════════
   try {
     const { data, error } = await sb.rpc("admin_get_results_distribution");
     if (error) throw error;
@@ -843,9 +749,6 @@ async function loadCharts() {
     console.warn("chartResults:", e);
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // Chart 3: Top 5 Lots — via RPC
-  // ═══════════════════════════════════════════════════════════
   try {
     const { data, error } = await sb.rpc("admin_get_top_lots");
     if (error) throw error;
@@ -1229,8 +1132,6 @@ async function loadInventory() {
   } catch (err) { container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(err.message)}</p>`; }
 }
 
-// ═══════════════ انتهى الجزء 2 ═══════════════
-
 // ============================================================
 // 🏪 SHOPS (المحلات)
 // ============================================================
@@ -1243,16 +1144,8 @@ async function loadShops() {
   if (statsBox) statsBox.innerHTML = "";
 
   try {
-    const { data: terms } = await sb
-      .from("shop_terms_acceptance")
-      .select("*")
-      .eq("status", "PENDING")
-      .order("accepted_at", { ascending: false });
-
-    const { data: shops } = await sb
-      .from("verified_shops")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const { data: terms } = await sb.from("shop_terms_acceptance").select("*").eq("status", "PENDING").order("accepted_at", { ascending: false });
+    const { data: shops } = await sb.from("verified_shops").select("*").order("created_at", { ascending: false });
 
     allPendingShops = terms || [];
     allActiveShops  = (shops || []).filter(s => s.status === "ACTIVE" || s.status === "WARNING");
@@ -1268,12 +1161,8 @@ async function loadShops() {
 
     const badge = $("shopsBadge");
     if (badge) {
-      if (allPendingShops.length > 0) {
-        badge.textContent = allPendingShops.length;
-        badge.style.display = "inline-block";
-      } else {
-        badge.style.display = "none";
-      }
+      if (allPendingShops.length > 0) { badge.textContent = allPendingShops.length; badge.style.display = "inline-block"; }
+      else { badge.style.display = "none"; }
     }
 
     renderShopsList();
@@ -1287,7 +1176,6 @@ function renderShopsList() {
   if (!container) return;
 
   const search = ($("shopsSearch")?.value || "").toLowerCase().trim();
-
   let list = [];
   if (currentShopsTab === "pending") list = allPendingShops;
   else if (currentShopsTab === "active") list = allActiveShops;
@@ -1309,26 +1197,15 @@ function renderShopsList() {
 
   let html = "";
   list.forEach(s => {
-    const date = (s.accepted_at || s.created_at)
-      ? new Date(s.accepted_at || s.created_at).toLocaleString("fr-FR")
-      : "—";
+    const date = (s.accepted_at || s.created_at) ? new Date(s.accepted_at || s.created_at).toLocaleString("fr-FR") : "—";
 
     if (currentShopsTab === "pending") {
       html += `
         <div class="log-row log-warning" style="padding:18px">
-          <div class="log-top">
-            <span class="log-result log-result-warning">⏳ قيد المراجعة</span>
-            <span class="log-date">${escapeHtml(date)}</span>
-          </div>
+          <div class="log-top"><span class="log-result log-result-warning">⏳ قيد المراجعة</span><span class="log-date">${escapeHtml(date)}</span></div>
           <div style="font-weight:900;font-size:16px;margin:10px 0 8px">🏪 ${escapeHtml(s.shop_name)}</div>
-          <div class="log-meta" style="margin-bottom:12px">
-            ${s.phone ? `<span>📱 ${escapeHtml(s.phone)}</span>` : ""}
-            ${s.email ? `<span>📧 ${escapeHtml(s.email)}</span>` : ""}
-          </div>
-          <div class="details" style="margin-bottom:12px">
-            ${s.terms_version ? `<div><b>نسخة الشروط</b><span>${escapeHtml(s.terms_version)}</span></div>` : ""}
-            ${s.ip ? `<div><b>IP</b><span style="font-family:monospace;font-size:11px">${escapeHtml(s.ip)}</span></div>` : ""}
-          </div>
+          <div class="log-meta" style="margin-bottom:12px">${s.phone ? `<span>📱 ${escapeHtml(s.phone)}</span>` : ""}${s.email ? `<span>📧 ${escapeHtml(s.email)}</span>` : ""}</div>
+          <div class="details" style="margin-bottom:12px">${s.terms_version ? `<div><b>نسخة الشروط</b><span>${escapeHtml(s.terms_version)}</span></div>` : ""}${s.ip ? `<div><b>IP</b><span style="font-family:monospace;font-size:11px">${escapeHtml(s.ip)}</span></div>` : ""}</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button onclick="approveShop('${s.user_id}')" class="btn btn-success" style="flex:1;min-width:100px;font-size:12px;padding:9px 12px">✅ موافقة</button>
             <button onclick="rejectShop('${s.user_id}','${escapeHtml(s.shop_name)}')" class="btn btn-danger" style="flex:1;min-width:100px;font-size:12px;padding:9px 12px">❌ رفض</button>
@@ -1338,248 +1215,70 @@ function renderShopsList() {
     } else {
       const isBanned = s.status === "BANNED" || s.status === "SUSPENDED";
       const cls = isBanned ? "danger" : (s.status === "WARNING" ? "warning" : "success");
-      const label = {
-        ACTIVE: "✅ نشط",
-        WARNING: "⚠️ تحذير",
-        BANNED: "🚫 محظور",
-        SUSPENDED: "⏸️ موقوف"
-      }[s.status] || s.status;
-
-      const depositPct = s.total_deposit > 0
-        ? Math.round(((s.total_deposit - s.deposit_remaining) / s.total_deposit) * 100)
-        : 0;
+      const label = { ACTIVE: "✅ نشط", WARNING: "⚠️ تحذير", BANNED: "🚫 محظور", SUSPENDED: "⏸️ موقوف" }[s.status] || s.status;
+      const depositPct = s.total_deposit > 0 ? Math.round(((s.total_deposit - s.deposit_remaining) / s.total_deposit) * 100) : 0;
 
       html += `
         <div class="log-row log-${cls}" style="padding:18px">
-          <div class="log-top">
-            <span class="log-result log-result-${cls}">${label}</span>
-            <span class="log-date">${escapeHtml(date)}</span>
-          </div>
+          <div class="log-top"><span class="log-result log-result-${cls}">${label}</span><span class="log-date">${escapeHtml(date)}</span></div>
           <div style="font-weight:900;font-size:16px;margin:10px 0 8px">🏪 ${escapeHtml(s.shop_name)}</div>
-          <div class="log-meta" style="margin-bottom:12px">
-            ${s.phone ? `<span>📱 ${escapeHtml(s.phone)}</span>` : ""}
-            ${s.wilaya ? `<span>📍 ${escapeHtml(s.wilaya)}</span>` : ""}
-          </div>
+          <div class="log-meta" style="margin-bottom:12px">${s.phone ? `<span>📱 ${escapeHtml(s.phone)}</span>` : ""}${s.wilaya ? `<span>📍 ${escapeHtml(s.wilaya)}</span>` : ""}</div>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px">
-            <div style="text-align:center;padding:8px;background:var(--bg-secondary);border-radius:8px">
-              <div style="font-size:16px;font-weight:900">${s.confirmed_complaints || 0}</div>
-              <div style="font-size:9px;color:var(--text-secondary);font-weight:800">بلاغات</div>
-            </div>
-            <div style="text-align:center;padding:8px;background:var(--bg-secondary);border-radius:8px">
-              <div style="font-size:13px;font-weight:900">${formatMoney(s.total_deposit || 0)}</div>
-              <div style="font-size:9px;color:var(--text-secondary);font-weight:800">العربون</div>
-            </div>
-            <div style="text-align:center;padding:8px;background:var(--bg-secondary);border-radius:8px">
-              <div style="font-size:13px;font-weight:900;color:${depositPct >= 50 ? "var(--danger)" : "var(--success)"}">${depositPct}%</div>
-              <div style="font-size:9px;color:var(--text-secondary);font-weight:800">مستهلك</div>
-            </div>
+            <div style="text-align:center;padding:8px;background:var(--bg-secondary);border-radius:8px"><div style="font-size:16px;font-weight:900">${s.confirmed_complaints || 0}</div><div style="font-size:9px;color:var(--text-secondary);font-weight:800">بلاغات</div></div>
+            <div style="text-align:center;padding:8px;background:var(--bg-secondary);border-radius:8px"><div style="font-size:13px;font-weight:900">${formatMoney(s.total_deposit || 0)}</div><div style="font-size:9px;color:var(--text-secondary);font-weight:800">العربون</div></div>
+            <div style="text-align:center;padding:8px;background:var(--bg-secondary);border-radius:8px"><div style="font-size:13px;font-weight:900;color:${depositPct >= 50 ? "var(--danger)" : "var(--success)"}">${depositPct}%</div><div style="font-size:9px;color:var(--text-secondary);font-weight:800">مستهلك</div></div>
           </div>
           ${isBanned && s.ban_reason ? `<div style="font-size:12px;color:var(--danger);margin-top:10px;padding:8px 12px;background:var(--danger-soft);border-radius:8px">🚫 ${escapeHtml(s.ban_reason)}</div>` : ""}
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
             <button onclick="editDeposit('${s.id}','${escapeHtml(s.shop_name)}',${s.total_deposit || 0})" class="btn btn-primary" style="flex:1;min-width:100px;font-size:12px;padding:9px 12px">💰 العربون</button>
-            ${isBanned
-              ? `<button onclick="unbanShop('${s.id}','${escapeHtml(s.shop_name)}')" class="btn btn-success" style="flex:1;min-width:100px;font-size:12px;padding:9px 12px">🔓 رفع الحظر</button>`
-              : `<button onclick="banShop('${s.id}','${escapeHtml(s.shop_name)}')" class="btn btn-danger" style="flex:1;min-width:100px;font-size:12px;padding:9px 12px">🚫 حظر</button>`}
+            ${isBanned ? `<button onclick="unbanShop('${s.id}','${escapeHtml(s.shop_name)}')" class="btn btn-success" style="flex:1;min-width:100px;font-size:12px;padding:9px 12px">🔓 رفع الحظر</button>` : `<button onclick="banShop('${s.id}','${escapeHtml(s.shop_name)}')" class="btn btn-danger" style="flex:1;min-width:100px;font-size:12px;padding:9px 12px">🚫 حظر</button>`}
             <button onclick="viewShopDetails('${s.user_id}')" class="btn btn-ghost" style="flex:1;min-width:100px;font-size:12px;padding:9px 12px">👁 تفاصيل</button>
           </div>
         </div>`;
     }
   });
-
   container.innerHTML = html;
 }
 
-// ─── موافقة على محل ───
 window.approveShop = async function(userId) {
   if (!confirm("الموافقة على هذا المحل؟")) return;
   const wilaya = prompt("📍 الولاية (اختياري):") || null;
   const notes = prompt("📝 ملاحظات (اختياري):") || null;
-
   try {
-    const { data, error } = await sb.rpc("admin_approve_shop", {
-      p_user_id: userId,
-      p_wilaya: wilaya,
-      p_notes: notes
-    });
-
+    const { data, error } = await sb.rpc("admin_approve_shop", { p_user_id: userId, p_wilaya: wilaya, p_notes: notes });
     if (error) throw error;
-    if (data.status !== "OK") {
-      window.toast("خطأ: " + (data.message || ""), "error");
-      return;
-    }
-
+    if (data.status !== "OK") { window.toast("خطأ: " + (data.message || ""), "error"); return; }
     window.toast("✅ تم تفعيل المحل: " + data.shop_name, "success");
-
-    // إرسال بريد عبر Brevo
     if (data.email) {
       try {
-        const res = await fetch("/api/submit?type=shop-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            to_email: data.email,
-            shop_name: data.shop_name,
-            shop_email: data.email,
-            shop_phone: data.phone || null,
-            wilaya: wilaya,
-            approved_date: new Date().toLocaleDateString("ar-DZ", {
-              year: "numeric", month: "long", day: "numeric"
-            })
-          })
-        });
-
+        const res = await fetch("/api/submit?type=shop-email", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ to_email: data.email, shop_name: data.shop_name, shop_email: data.email, shop_phone: data.phone || null, wilaya: wilaya, approved_date: new Date().toLocaleDateString("ar-DZ", { year: "numeric", month: "long", day: "numeric" }) }) });
         const result = await res.json();
-
-        if (result.status === "OK") {
-          window.toast("📧 تم إرسال البريد إلى " + data.email, "success");
-        } else {
-          console.warn("Email send failed:", result);
-          window.toast("⚠️ لم يُرسل البريد — لكن المحل مُفعّل", "warning");
-        }
-      } catch (emailErr) {
-        console.warn("Email error:", emailErr);
-        window.toast("⚠️ خطأ في إرسال البريد", "warning");
-      }
+        if (result.status === "OK") window.toast("📧 تم إرسال البريد إلى " + data.email, "success");
+        else { console.warn("Email send failed:", result); window.toast("⚠️ لم يُرسل البريد — لكن المحل مُفعّل", "warning"); }
+      } catch (emailErr) { console.warn("Email error:", emailErr); window.toast("⚠️ خطأ في إرسال البريد", "warning"); }
     }
-
     loadShops();
-  } catch (e) {
-    window.toast("خطأ: " + e.message, "error");
-  }
+  } catch (e) { window.toast("خطأ: " + e.message, "error"); }
 };
 
 window.rejectShop = async function(userId, shopName) {
   const reason = prompt(`سبب رفض "${shopName}":`, "وثائق غير مكتملة");
   if (!reason) return;
-
   try {
-    const { data, error } = await sb.rpc("admin_reject_shop", {
-      p_user_id: userId,
-      p_reason: reason
-    });
-
+    const { data, error } = await sb.rpc("admin_reject_shop", { p_user_id: userId, p_reason: reason });
     if (error) throw error;
-    if (data.status !== "OK") {
-      window.toast("خطأ: " + (data.message || ""), "error");
-      return;
-    }
-
+    if (data.status !== "OK") { window.toast("خطأ: " + (data.message || ""), "error"); return; }
     window.toast("تم رفض: " + data.shop_name, "info");
     loadShops();
-  } catch (e) {
-    window.toast("خطأ: " + e.message, "error");
-  }
+  } catch (e) { window.toast("خطأ: " + e.message, "error"); }
 };
 
 window.printShopTerms = async function(userId) {
-  const { data: terms } = await sb
-    .from("shop_terms_acceptance")
-    .select("*")
-    .eq("user_id", userId)
-    .single();
-
-  if (!terms) {
-    window.toast("لم يتم العثور على الموافقة", "error");
-    return;
-  }
-
-  const date = terms.accepted_at
-    ? new Date(terms.accepted_at).toLocaleString("fr-FR")
-    : "—";
-
+  const { data: terms } = await sb.from("shop_terms_acceptance").select("*").eq("user_id", userId).single();
+  if (!terms) { window.toast("لم يتم العثور على الموافقة", "error"); return; }
+  const date = terms.accepted_at ? new Date(terms.accepted_at).toLocaleString("fr-FR") : "—";
   const w = window.open("", "_blank");
-  w.document.write(`<!doctype html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="utf-8">
-<title>موافقة شروط — ${escapeHtml(terms.shop_name)}</title>
-<style>
-  @page { margin: 20mm; }
-  * { box-sizing: border-box; }
-  body { font-family: -apple-system, Arial, sans-serif; padding: 20px; color: #0f172a; max-width: 800px; margin: 0 auto; }
-  .toolbar { background: #0f172a; color: #fff; padding: 12px; text-align: center; border-radius: 8px; margin-bottom: 24px; }
-  .toolbar button { background: #16a34a; color: #fff; border: 0; padding: 10px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
-  .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 3px solid #0f172a; margin-bottom: 24px; }
-  .header img { width: 60px; height: 60px; border-radius: 14px; }
-  .header-info { text-align: left; font-size: 12px; color: #64748b; line-height: 1.7; }
-  h1 { font-size: 22px; margin: 0; }
-  h2 { font-size: 16px; margin: 24px 0 12px; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0; }
-  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-  .info-grid div { padding: 10px 14px; background: #f8fafc; border-radius: 8px; font-size: 13px; }
-  .info-grid b { color: #64748b; display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-  .info-grid span { font-weight: 800; color: #0f172a; font-size: 14px; }
-  .text-box { padding: 16px; background: #fef2f2; border: 1.5px solid #dc2626; border-radius: 10px; color: #991b1b; font-size: 13px; line-height: 1.8; margin: 20px 0; }
-  .text-box b { color: #dc2626; }
-  .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 11px; color: #94a3b8; }
-  .signature { display: flex; justify-content: space-between; margin-top: 40px; }
-  .signature div { width: 45%; }
-  .signature b { display: block; font-size: 12px; margin-bottom: 40px; color: #64748b; }
-  .signature hr { border: 0; border-top: 1px dashed #94a3b8; }
-  @media print { .toolbar { display: none; } }
-</style>
-</head>
-<body>
-  <div class="toolbar">
-    <button onclick="window.print()">🖨 طباعة / حفظ PDF</button>
-  </div>
-
-  <div class="header">
-    <img src="/icon.png" alt="Original">
-    <div class="header-info">
-      <div style="font-size:18px;font-weight:900;color:#0f172a;">OriginalDz</div>
-      <div>📞 +213 556 339 415</div>
-      <div>📧 mepirf@gmail.com</div>
-      <div>🌐 originaldz.online</div>
-    </div>
-  </div>
-
-  <h1>📜 وثيقة الموافقة على شروط الاستخدام — للمحلات</h1>
-
-  <h2>معلومات المحل</h2>
-  <div class="info-grid">
-    <div><b>اسم المحل</b><span>${escapeHtml(terms.shop_name)}</span></div>
-    <div><b>رقم الهاتف</b><span>${escapeHtml(terms.phone || "—")}</span></div>
-    <div><b>البريد الإلكتروني</b><span style="font-size:12px">${escapeHtml(terms.email)}</span></div>
-    <div><b>نسخة الشروط</b><span>${escapeHtml(terms.terms_version)}</span></div>
-    <div><b>تاريخ الموافقة</b><span style="font-size:12px">${escapeHtml(date)}</span></div>
-    <div><b>عنوان IP</b><span style="font-size:11px;font-family:monospace">${escapeHtml(terms.ip || "—")}</span></div>
-  </div>
-
-  <h2>نص التعهد</h2>
-  <p style="font-size:13.5px;line-height:1.9;color:#334155;">
-    أُقرّ أنا الموقّع أدناه، صاحب المحل المذكور أعلاه، بأنني قد قرأت وفهمت كامل شروط الاستخدام الخاصة بمنصة <b>OriginalDz</b>،
-    وأتعهّد بالالتزام بها دون استثناء، بما في ذلك:
-  </p>
-  <ul style="font-size:13.5px;line-height:1.9;color:#334155;padding-right:20px;">
-    <li>عدم بيع أي منتج مقلد يحمل ملصق OriginalDz.</li>
-    <li>دفع العربون المتفق عليه قبل استلام أي دفعة من الأكواد.</li>
-    <li>التعاون الكامل مع فرق التحقق عند أي شكوى.</li>
-    <li>تحمّل المسؤولية الكاملة لوحدي في حال الخروج عن أي بند.</li>
-  </ul>
-
-  <div class="text-box">
-    ⚠️ <b>تنبيه قانوني:</b> هذه الوثيقة عقد قانوني ملزم بين المحل و OriginalDz.
-    في حال الخروج عن الشروط، يتحمّل صاحب المحل المسؤولية الكاملة لوحده،
-    ويُعفى OriginalDz من أي مسؤولية قانونية أو تجارية أو جزائية.
-  </div>
-
-  <div class="signature">
-    <div>
-      <b>توقيع صاحب المحل:</b>
-      <hr>
-    </div>
-    <div>
-      <b>ختم / توقيع الإدارة:</b>
-      <hr>
-    </div>
-  </div>
-
-  <div class="footer">
-    © OriginalDz — وثيقة قانونية صادرة بتاريخ ${escapeHtml(date)}
-  </div>
-
-</body>
-</html>`);
+  w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>موافقة شروط — ${escapeHtml(terms.shop_name)}</title><style>@page { margin: 20mm; } * { box-sizing: border-box; } body { font-family: -apple-system, Arial, sans-serif; padding: 20px; color: #0f172a; max-width: 800px; margin: 0 auto; } .toolbar { background: #0f172a; color: #fff; padding: 12px; text-align: center; border-radius: 8px; margin-bottom: 24px; } .toolbar button { background: #16a34a; color: #fff; border: 0; padding: 10px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; } .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 3px solid #0f172a; margin-bottom: 24px; } .header img { width: 60px; height: 60px; border-radius: 14px; } .header-info { text-align: left; font-size: 12px; color: #64748b; line-height: 1.7; } h1 { font-size: 22px; margin: 0; } h2 { font-size: 16px; margin: 24px 0 12px; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0; } .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; } .info-grid div { padding: 10px 14px; background: #f8fafc; border-radius: 8px; font-size: 13px; } .info-grid b { color: #64748b; display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; } .info-grid span { font-weight: 800; color: #0f172a; font-size: 14px; } .text-box { padding: 16px; background: #fef2f2; border: 1.5px solid #dc2626; border-radius: 10px; color: #991b1b; font-size: 13px; line-height: 1.8; margin: 20px 0; } .text-box b { color: #dc2626; } .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 11px; color: #94a3b8; } .signature { display: flex; justify-content: space-between; margin-top: 40px; } .signature div { width: 45%; } .signature b { display: block; font-size: 12px; margin-bottom: 40px; color: #64748b; } .signature hr { border: 0; border-top: 1px dashed #94a3b8; } @media print { .toolbar { display: none; } }</style></head><body><div class="toolbar"><button onclick="window.print()">🖨 طباعة / حفظ PDF</button></div><div class="header"><img src="/icon.png" alt="Original"><div class="header-info"><div style="font-size:18px;font-weight:900;color:#0f172a;">OriginalDz</div><div>📞 +213 556 339 415</div><div>📧 mepirf@gmail.com</div><div>🌐 originaldz.online</div></div></div><h1>📜 وثيقة الموافقة على شروط الاستخدام — للمحلات</h1><h2>معلومات المحل</h2><div class="info-grid"><div><b>اسم المحل</b><span>${escapeHtml(terms.shop_name)}</span></div><div><b>رقم الهاتف</b><span>${escapeHtml(terms.phone || "—")}</span></div><div><b>البريد الإلكتروني</b><span style="font-size:12px">${escapeHtml(terms.email)}</span></div><div><b>نسخة الشروط</b><span>${escapeHtml(terms.terms_version)}</span></div><div><b>تاريخ الموافقة</b><span style="font-size:12px">${escapeHtml(date)}</span></div><div><b>عنوان IP</b><span style="font-size:11px;font-family:monospace">${escapeHtml(terms.ip || "—")}</span></div></div><h2>نص التعهد</h2><p style="font-size:13.5px;line-height:1.9;color:#334155;">أُقرّ أنا الموقّع أدناه، صاحب المحل المذكور أعلاه، بأنني قد قرأت وفهمت كامل شروط الاستخدام الخاصة بمنصة <b>OriginalDz</b>، وأتعهّد بالالتزام بها دون استثناء، بما في ذلك:</p><ul style="font-size:13.5px;line-height:1.9;color:#334155;padding-right:20px;"><li>عدم بيع أي منتج مقلد يحمل ملصق OriginalDz.</li><li>دفع العربون المتفق عليه قبل استلام أي دفعة من الأكواد.</li><li>التعاون الكامل مع فرق التحقق عند أي شكوى.</li><li>تحمّل المسؤولية الكاملة لوحدي في حال الخروج عن أي بند.</li></ul><div class="text-box">⚠️ <b>تنبيه قانوني:</b> هذه الوثيقة عقد قانوني ملزم بين المحل و OriginalDz. في حال الخروج عن الشروط، يتحمّل صاحب المحل المسؤولية الكاملة لوحده، ويُعفى OriginalDz من أي مسؤولية قانونية أو تجارية أو جزائية.</div><div class="signature"><div><b>توقيع صاحب المحل:</b><hr></div><div><b>ختم / توقيع الإدارة:</b><hr></div></div><div class="footer">© OriginalDz — وثيقة قانونية صادرة بتاريخ ${escapeHtml(date)}</div></body></html>`);
   w.document.close();
 };
 
@@ -1587,80 +1286,39 @@ window.editDeposit = async function(shopId, shopName, currentDeposit) {
   const newAmount = prompt(`💰 العربون الحالي: ${currentDeposit} دج\n\nأدخل المبلغ الجديد:`, currentDeposit);
   if (newAmount === null) return;
   const amount = parseFloat(newAmount);
-  if (isNaN(amount) || amount < 0) {
-    window.toast("قيمة غير صحيحة", "error");
-    return;
-  }
-
+  if (isNaN(amount) || amount < 0) { window.toast("قيمة غير صحيحة", "error"); return; }
   const reason = prompt("📝 السبب:", "تحديث العربون من الأدمن") || null;
-
   try {
-    const { data, error } = await sb.rpc("admin_update_shop_deposit", {
-      p_shop_id: shopId,
-      p_new_deposit: amount,
-      p_reason: reason
-    });
-
+    const { data, error } = await sb.rpc("admin_update_shop_deposit", { p_shop_id: shopId, p_new_deposit: amount, p_reason: reason });
     if (error) throw error;
-    if (data.status !== "OK") {
-      window.toast("خطأ: " + (data.message || ""), "error");
-      return;
-    }
-
+    if (data.status !== "OK") { window.toast("خطأ: " + (data.message || ""), "error"); return; }
     window.toast(`✅ العربون: ${data.new_total} دج`, "success");
     loadShops();
-  } catch (e) {
-    window.toast("خطأ: " + e.message, "error");
-  }
+  } catch (e) { window.toast("خطأ: " + e.message, "error"); }
 };
 
 window.banShop = async function(shopId, shopName) {
   const reason = prompt(`سبب حظر "${shopName}":`, "5 بلاغات مؤكدة أو استهلاك 50% من العربون");
   if (!reason) return;
-
   if (!confirm(`⚠️ تأكيد حظر "${shopName}"؟\n\nسيتم تعطيل كل الأكواد نهائيًا.`)) return;
-
   try {
-    const { data, error } = await sb.rpc("admin_set_shop_status", {
-      p_shop_id: shopId,
-      p_new_status: "BANNED",
-      p_reason: reason
-    });
-
+    const { data, error } = await sb.rpc("admin_set_shop_status", { p_shop_id: shopId, p_new_status: "BANNED", p_reason: reason });
     if (error) throw error;
-    if (data.status !== "OK") {
-      window.toast("خطأ: " + (data.message || ""), "error");
-      return;
-    }
-
+    if (data.status !== "OK") { window.toast("خطأ: " + (data.message || ""), "error"); return; }
     window.toast("🚫 تم حظر: " + data.shop_name, "warning");
     loadShops();
-  } catch (e) {
-    window.toast("خطأ: " + e.message, "error");
-  }
+  } catch (e) { window.toast("خطأ: " + e.message, "error"); }
 };
 
 window.unbanShop = async function(shopId, shopName) {
   if (!confirm(`رفع الحظر عن "${shopName}"؟`)) return;
-
   try {
-    const { data, error } = await sb.rpc("admin_set_shop_status", {
-      p_shop_id: shopId,
-      p_new_status: "ACTIVE",
-      p_reason: null
-    });
-
+    const { data, error } = await sb.rpc("admin_set_shop_status", { p_shop_id: shopId, p_new_status: "ACTIVE", p_reason: null });
     if (error) throw error;
-    if (data.status !== "OK") {
-      window.toast("خطأ: " + (data.message || ""), "error");
-      return;
-    }
-
+    if (data.status !== "OK") { window.toast("خطأ: " + (data.message || ""), "error"); return; }
     window.toast("🔓 تم رفع الحظر: " + data.shop_name, "success");
     loadShops();
-  } catch (e) {
-    window.toast("خطأ: " + e.message, "error");
-  }
+  } catch (e) { window.toast("خطأ: " + e.message, "error"); }
 };
 
 window.viewShopDetails = async function(userId) {
@@ -1679,16 +1337,10 @@ async function loadShopComplaints() {
   if (statsBox) statsBox.innerHTML = "";
 
   try {
-    const { data, error } = await sb
-      .from("shop_complaints")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(500);
-
+    const { data, error } = await sb.from("shop_complaints").select("*").order("created_at", { ascending: false }).limit(500);
     if (error) throw error;
 
     allComplaints = data || [];
-
     const stats = {
       total: allComplaints.length,
       pending: allComplaints.filter(c => c.status === "PENDING").length,
@@ -1707,14 +1359,7 @@ async function loadShopComplaints() {
     }
 
     const badge = $("complaintsBadge");
-    if (badge) {
-      if (stats.pending > 0) {
-        badge.textContent = stats.pending;
-        badge.style.display = "inline-block";
-      } else {
-        badge.style.display = "none";
-      }
-    }
+    if (badge) { if (stats.pending > 0) { badge.textContent = stats.pending; badge.style.display = "inline-block"; } else { badge.style.display = "none"; } }
 
     fillComplaintsWilayaFilter();
     renderShopComplaints();
@@ -1727,15 +1372,10 @@ async function loadShopComplaints() {
 function fillComplaintsWilayaFilter() {
   const sel = $("complaintsWilaya");
   if (!sel) return;
-
   const current = sel.value;
   let html = `<option value="">📍 كل الولايات</option>`;
-
   const wilayas = [...new Set(allComplaints.map(c => c.customer_wilaya).filter(Boolean))].sort();
-  wilayas.forEach(w => {
-    html += `<option value="${escapeHtml(w)}">${escapeHtml(w)}</option>`;
-  });
-
+  wilayas.forEach(w => { html += `<option value="${escapeHtml(w)}">${escapeHtml(w)}</option>`; });
   sel.innerHTML = html;
   sel.value = current;
 }
@@ -1745,7 +1385,6 @@ function renderShopComplaints() {
   if (!container) return;
 
   const search = ($("complaintsSearch")?.value || "").toLowerCase().trim();
-
   let list = [];
   if (currentComplaintsFilter === "pending") list = allComplaints.filter(c => c.status === "PENDING");
   else if (currentComplaintsFilter === "reviewing") list = allComplaints.filter(c => c.status === "REVIEWING");
@@ -1753,53 +1392,23 @@ function renderShopComplaints() {
   else if (currentComplaintsFilter === "rejected") list = allComplaints.filter(c => c.status === "REJECTED");
   else list = allComplaints;
 
-  if (search) {
-    list = list.filter(c => {
-      const code = (c.product_code || "").toLowerCase();
-      const name = (c.customer_name || "").toLowerCase();
-      const shop = (c.shop_name || "").toLowerCase();
-      const phone = (c.customer_phone || "").toLowerCase();
-      return code.includes(search) || name.includes(search) || shop.includes(search) || phone.includes(search);
-    });
-  }
+  if (search) { list = list.filter(c => { const code = (c.product_code || "").toLowerCase(); const name = (c.customer_name || "").toLowerCase(); const shop = (c.shop_name || "").toLowerCase(); const phone = (c.customer_phone || "").toLowerCase(); return code.includes(search) || name.includes(search) || shop.includes(search) || phone.includes(search); }); }
+  if (currentComplaintsWilaya) { list = list.filter(c => c.customer_wilaya === currentComplaintsWilaya); }
+  if (currentComplaintsDateRange !== "all") { const days = parseInt(currentComplaintsDateRange, 10); const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000); list = list.filter(c => c.created_at && new Date(c.created_at) >= since); }
 
-  if (currentComplaintsWilaya) {
-    list = list.filter(c => c.customer_wilaya === currentComplaintsWilaya);
-  }
-
-  if (currentComplaintsDateRange !== "all") {
-    const days = parseInt(currentComplaintsDateRange, 10);
-    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-    list = list.filter(c => c.created_at && new Date(c.created_at) >= since);
-  }
-
-  if (list.length === 0) {
-    container.innerHTML = `<p class="muted" style="text-align:center;padding:40px 0">لا توجد شكاوى في هذه الفئة</p>`;
-    return;
-  }
+  if (list.length === 0) { container.innerHTML = `<p class="muted" style="text-align:center;padding:40px 0">لا توجد شكاوى في هذه الفئة</p>`; return; }
 
   let html = "";
   list.forEach(c => {
     const date = c.created_at ? new Date(c.created_at).toLocaleString("fr-FR") : "—";
-    const statusMap = {
-      PENDING: { cls: "warning", label: "⏳ معلّقة" },
-      REVIEWING: { cls: "success", label: "🔍 قيد المراجعة" },
-      VERIFIED: { cls: "success", label: "✅ مؤكدة" },
-      RESOLVED: { cls: "success", label: "✓ تم الحل" },
-      REJECTED: { cls: "danger", label: "❌ مرفوضة" }
-    };
+    const statusMap = { PENDING: { cls: "warning", label: "⏳ معلّقة" }, REVIEWING: { cls: "success", label: "🔍 قيد المراجعة" }, VERIFIED: { cls: "success", label: "✅ مؤكدة" }, RESOLVED: { cls: "success", label: "✓ تم الحل" }, REJECTED: { cls: "danger", label: "❌ مرفوضة" } };
     const st = statusMap[c.status] || { cls: "warning", label: c.status };
-
     const images = c.images || [];
     const firstImg = images[0] ? `<img src="${escapeHtml(images[0])}" alt="" style="width:100%;height:120px;object-fit:cover;border-radius:10px;">` : "";
 
     html += `
       <div class="log-row log-${st.cls}" style="padding:18px">
-        <div class="log-top">
-          <span class="log-result log-result-${st.cls}">${st.label}</span>
-          <span class="log-date">${escapeHtml(date)}</span>
-        </div>
-
+        <div class="log-top"><span class="log-result log-result-${st.cls}">${st.label}</span><span class="log-date">${escapeHtml(date)}</span></div>
         <div style="display:flex;gap:14px;margin-top:12px;flex-wrap:wrap;">
           ${firstImg ? `<div style="flex:0 0 140px;max-width:140px;">${firstImg}</div>` : ""}
           <div style="flex:1;min-width:200px;">
@@ -1811,231 +1420,73 @@ function renderShopComplaints() {
             <div style="font-size:12.5px"><b>💰 السعر:</b> ${formatMoney(c.product_price || 0)}</div>
           </div>
         </div>
-
         ${c.purchase_location ? `<div style="font-size:12px;color:var(--text-secondary);margin-top:10px;padding:8px 12px;background:var(--bg-secondary);border-radius:8px">📍 مكان الشراء: ${escapeHtml(c.purchase_location)}</div>` : ""}
-
         ${c.notes ? `<div style="font-size:12px;color:var(--text-secondary);margin-top:8px;padding:8px 12px;background:var(--bg-secondary);border-radius:8px">💬 ${escapeHtml(c.notes)}</div>` : ""}
-
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
           <button onclick="viewComplaint('${c.id}')" class="btn btn-primary" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">👁 عرض</button>
-          ${c.status === "PENDING" ? `
-            <button onclick="updateComplaintStatus('${c.id}','REVIEWING')" class="btn btn-ghost" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">🔍 مراجعة</button>
-          ` : ""}
-          ${c.status !== "VERIFIED" && c.status !== "REJECTED" ? `
-            <button onclick="updateComplaintStatus('${c.id}','VERIFIED')" class="btn btn-success" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">✅ تأكيد</button>
-            <button onclick="updateComplaintStatus('${c.id}','REJECTED')" class="btn btn-danger" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">❌ رفض</button>
-          ` : ""}
+          ${c.status === "PENDING" ? `<button onclick="updateComplaintStatus('${c.id}','REVIEWING')" class="btn btn-ghost" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">🔍 مراجعة</button>` : ""}
+          ${c.status !== "VERIFIED" && c.status !== "REJECTED" ? `<button onclick="updateComplaintStatus('${c.id}','VERIFIED')" class="btn btn-success" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">✅ تأكيد</button><button onclick="updateComplaintStatus('${c.id}','REJECTED')" class="btn btn-danger" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">❌ رفض</button>` : ""}
           <button onclick="deleteComplaint('${c.id}')" class="btn btn-ghost" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px;background:var(--danger-soft);color:var(--danger)">🗑️ حذف</button>
         </div>
       </div>`;
   });
-
   container.innerHTML = html;
 }
 
-// ─── تصدير Excel ───
 function exportComplaintsToExcel() {
-  if (!allComplaints || allComplaints.length === 0) {
-    window.toast("لا توجد بيانات", "error");
-    return;
-  }
-
-  const statusLabels = {
-    PENDING: "معلقة",
-    REVIEWING: "قيد المراجعة",
-    VERIFIED: "مؤكدة",
-    RESOLVED: "تم الحل",
-    REJECTED: "مرفوضة"
-  };
-
+  if (!allComplaints || allComplaints.length === 0) { window.toast("لا توجد بيانات", "error"); return; }
+  const statusLabels = { PENDING: "معلقة", REVIEWING: "قيد المراجعة", VERIFIED: "مؤكدة", RESOLVED: "تم الحل", REJECTED: "مرفوضة" };
   const search = ($("complaintsSearch")?.value || "").toLowerCase().trim();
   let list = [...allComplaints];
-
   if (currentComplaintsFilter === "pending") list = list.filter(c => c.status === "PENDING");
   else if (currentComplaintsFilter === "reviewing") list = list.filter(c => c.status === "REVIEWING");
   else if (currentComplaintsFilter === "verified") list = list.filter(c => c.status === "VERIFIED" || c.status === "RESOLVED");
   else if (currentComplaintsFilter === "rejected") list = list.filter(c => c.status === "REJECTED");
-
-  if (search) {
-    list = list.filter(c =>
-      (c.product_code || "").toLowerCase().includes(search) ||
-      (c.customer_name || "").toLowerCase().includes(search) ||
-      (c.shop_name || "").toLowerCase().includes(search) ||
-      (c.customer_phone || "").toLowerCase().includes(search)
-    );
-  }
-
-  if (currentComplaintsWilaya) {
-    list = list.filter(c => c.customer_wilaya === currentComplaintsWilaya);
-  }
-
-  if (currentComplaintsDateRange !== "all") {
-    const days = parseInt(currentComplaintsDateRange, 10);
-    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-    list = list.filter(c => c.created_at && new Date(c.created_at) >= since);
-  }
-
-  const rows = list.map(c => ({
-    "التاريخ": c.created_at ? new Date(c.created_at).toLocaleString("fr-FR") : "",
-    "الحالة": statusLabels[c.status] || c.status,
-    "المحل": c.shop_name || "",
-    "الكود": c.product_code || "",
-    "اسم الزبون": c.customer_name || "",
-    "الهاتف": c.customer_phone || "",
-    "الولاية": c.customer_wilaya || "",
-    "السعر (دج)": c.product_price || 0,
-    "مكان الشراء": c.purchase_location || "",
-    "ملاحظات": c.notes || "",
-    "عدد الصور": c.image_count || 0,
-    "ملاحظات الأدمن": c.admin_notes || ""
-  }));
-
+  if (search) { list = list.filter(c => (c.product_code || "").toLowerCase().includes(search) || (c.customer_name || "").toLowerCase().includes(search) || (c.shop_name || "").toLowerCase().includes(search) || (c.customer_phone || "").toLowerCase().includes(search)); }
+  if (currentComplaintsWilaya) { list = list.filter(c => c.customer_wilaya === currentComplaintsWilaya); }
+  if (currentComplaintsDateRange !== "all") { const days = parseInt(currentComplaintsDateRange, 10); const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000); list = list.filter(c => c.created_at && new Date(c.created_at) >= since); }
+  const rows = list.map(c => ({ "التاريخ": c.created_at ? new Date(c.created_at).toLocaleString("fr-FR") : "", "الحالة": statusLabels[c.status] || c.status, "المحل": c.shop_name || "", "الكود": c.product_code || "", "اسم الزبون": c.customer_name || "", "الهاتف": c.customer_phone || "", "الولاية": c.customer_wilaya || "", "السعر (دج)": c.product_price || 0, "مكان الشراء": c.purchase_location || "", "ملاحظات": c.notes || "", "عدد الصور": c.image_count || 0, "ملاحظات الأدمن": c.admin_notes || "" }));
   downloadExcel(rows, "شكاوى_المحلات", "الشكاوى");
   window.toast(`✅ تم تصدير ${rows.length} شكوى`, "success");
 }
 
-// ─── حذف شكوى ───
 window.deleteComplaint = async function(id) {
   if (!confirm("⚠️ حذف هذه الشكوى نهائيًا؟")) return;
-
-  try {
-    const { error } = await sb
-      .from("shop_complaints")
-      .delete()
-      .eq("id", id);
-
-    if (error) throw error;
-
-    window.toast("✅ تم الحذف", "success");
-    loadShopComplaints();
-  } catch (e) {
-    console.error("deleteComplaint error:", e);
-    window.toast("خطأ: " + e.message, "error");
-  }
+  try { const { error } = await sb.from("shop_complaints").delete().eq("id", id); if (error) throw error; window.toast("✅ تم الحذف", "success"); loadShopComplaints(); }
+  catch (e) { console.error("deleteComplaint error:", e); window.toast("خطأ: " + e.message, "error"); }
 };
 
-// ─── عرض تفاصيل شكوى ───
 window.viewComplaint = async function(id) {
   const complaint = allComplaints.find(c => c.id === id);
-  if (!complaint) {
-    window.toast("الشكوى غير موجودة", "error");
-    return;
-  }
-
+  if (!complaint) { window.toast("الشكوى غير موجودة", "error"); return; }
   const w = window.open("", "_blank");
   const images = complaint.images || [];
   const date = complaint.created_at ? new Date(complaint.created_at).toLocaleString("fr-FR") : "—";
-
-  const imagesHtml = images.map((img, i) => `
-    <div style="margin-bottom:16px;">
-      <div style="font-size:11px;font-weight:800;color:#64748b;margin-bottom:6px;">صورة ${i + 1}</div>
-      <img src="${escapeHtml(img)}" style="max-width:100%;border-radius:12px;border:1px solid #e2e8f0;cursor:pointer;" onclick="window.open(this.src,'_blank')">
-    </div>
-  `).join("");
-
-  w.document.write(`<!doctype html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="utf-8">
-<title>شكوى — ${escapeHtml(complaint.product_code || id.slice(0,8))}</title>
-<style>
-  @page { margin: 15mm; }
-  * { box-sizing: border-box; }
-  body { font-family: -apple-system, Arial, sans-serif; padding: 20px; color: #0f172a; max-width: 900px; margin: 0 auto; background: #f8fafc; }
-  .toolbar { background: #0f172a; color: #fff; padding: 12px; text-align: center; border-radius: 8px; margin-bottom: 24px; position: sticky; top: 0; z-index: 10; }
-  .toolbar button { background: #16a34a; color: #fff; border: 0; padding: 10px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
-  .card { background: #fff; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
-  h1 { font-size: 22px; margin: 0 0 8px; }
-  h2 { font-size: 15px; margin: 0 0 14px; color: #64748b; letter-spacing: 1px; text-transform: uppercase; }
-  .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
-  .info-row:last-child { border-bottom: 0; }
-  .info-row b { color: #64748b; font-weight: 700; }
-  .info-row span { font-weight: 800; }
-  @media print { .toolbar { display: none; } body { background: #fff; padding: 0; } .card { box-shadow: none; } }
-</style>
-</head>
-<body>
-  <div class="toolbar">
-    <button onclick="window.print()">🖨 طباعة</button>
-  </div>
-
-  <div class="card">
-    <h1>🚨 شكوى على محل</h1>
-    <div style="color:#64748b;font-size:13px;margin-bottom:20px;">${escapeHtml(date)}</div>
-
-    <h2>معلومات المحل</h2>
-    <div class="info-row"><b>🏪 المحل:</b><span>${escapeHtml(complaint.shop_name || "—")}</span></div>
-    <div class="info-row"><b>📦 الكود:</b><span style="font-family:monospace">${escapeHtml(complaint.product_code || "—")}</span></div>
-    <div class="info-row"><b>💰 السعر:</b><span>${complaint.product_price || 0} دج</span></div>
-    ${complaint.purchase_location ? `<div class="info-row"><b>📍 مكان الشراء:</b><span>${escapeHtml(complaint.purchase_location)}</span></div>` : ""}
-  </div>
-
-  <div class="card">
-    <h2>معلومات الزبون</h2>
-    <div class="info-row"><b>👤 الاسم:</b><span>${escapeHtml(complaint.customer_name || "—")}</span></div>
-    <div class="info-row"><b>📱 الهاتف:</b><span>${escapeHtml(complaint.customer_phone || "—")}</span></div>
-    <div class="info-row"><b>📍 الولاية:</b><span>${escapeHtml(complaint.customer_wilaya || "—")}</span></div>
-    ${complaint.notes ? `<div class="info-row"><b>💬 ملاحظات:</b><span>${escapeHtml(complaint.notes)}</span></div>` : ""}
-  </div>
-
-  <div class="card">
-    <h2>📸 صور المنتج (${images.length})</h2>
-    ${imagesHtml || '<p style="color:#94a3b8;text-align:center;">لا توجد صور</p>'}
-  </div>
-</body>
-</html>`);
+  const imagesHtml = images.map((img, i) => `<div style="margin-bottom:16px;"><div style="font-size:11px;font-weight:800;color:#64748b;margin-bottom:6px;">صورة ${i + 1}</div><img src="${escapeHtml(img)}" style="max-width:100%;border-radius:12px;border:1px solid #e2e8f0;cursor:pointer;" onclick="window.open(this.src,'_blank')"></div>`).join("");
+  w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>شكوى — ${escapeHtml(complaint.product_code || id.slice(0,8))}</title><style>@page { margin: 15mm; } * { box-sizing: border-box; } body { font-family: -apple-system, Arial, sans-serif; padding: 20px; color: #0f172a; max-width: 900px; margin: 0 auto; background: #f8fafc; } .toolbar { background: #0f172a; color: #fff; padding: 12px; text-align: center; border-radius: 8px; margin-bottom: 24px; position: sticky; top: 0; z-index: 10; } .toolbar button { background: #16a34a; color: #fff; border: 0; padding: 10px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; } .card { background: #fff; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); } h1 { font-size: 22px; margin: 0 0 8px; } h2 { font-size: 15px; margin: 0 0 14px; color: #64748b; letter-spacing: 1px; text-transform: uppercase; } .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px; } .info-row:last-child { border-bottom: 0; } .info-row b { color: #64748b; font-weight: 700; } .info-row span { font-weight: 800; } @media print { .toolbar { display: none; } body { background: #fff; padding: 0; } .card { box-shadow: none; } }</style></head><body><div class="toolbar"><button onclick="window.print()">🖨 طباعة</button></div><div class="card"><h1>🚨 شكوى على محل</h1><div style="color:#64748b;font-size:13px;margin-bottom:20px;">${escapeHtml(date)}</div><h2>معلومات المحل</h2><div class="info-row"><b>🏪 المحل:</b><span>${escapeHtml(complaint.shop_name || "—")}</span></div><div class="info-row"><b>📦 الكود:</b><span style="font-family:monospace">${escapeHtml(complaint.product_code || "—")}</span></div><div class="info-row"><b>💰 السعر:</b><span>${complaint.product_price || 0} دج</span></div>${complaint.purchase_location ? `<div class="info-row"><b>📍 مكان الشراء:</b><span>${escapeHtml(complaint.purchase_location)}</span></div>` : ""}</div><div class="card"><h2>معلومات الزبون</h2><div class="info-row"><b>👤 الاسم:</b><span>${escapeHtml(complaint.customer_name || "—")}</span></div><div class="info-row"><b>📱 الهاتف:</b><span>${escapeHtml(complaint.customer_phone || "—")}</span></div><div class="info-row"><b>📍 الولاية:</b><span>${escapeHtml(complaint.customer_wilaya || "—")}</span></div>${complaint.notes ? `<div class="info-row"><b>💬 ملاحظات:</b><span>${escapeHtml(complaint.notes)}</span></div>` : ""}</div><div class="card"><h2>📸 صور المنتج (${images.length})</h2>${imagesHtml || '<p style="color:#94a3b8;text-align:center;">لا توجد صور</p>'}</div></body></html>`);
   w.document.close();
 };
 
-// ─── تحديث حالة الشكوى ───
 window.updateComplaintStatus = async function(id, newStatus) {
-  const statusLabels = {
-    REVIEWING: "قيد المراجعة",
-    VERIFIED: "مؤكدة",
-    REJECTED: "مرفوضة",
-    RESOLVED: "تم الحل"
-  };
-
+  const statusLabels = { REVIEWING: "قيد المراجعة", VERIFIED: "مؤكدة", REJECTED: "مرفوضة", RESOLVED: "تم الحل" };
   if (!confirm(`تغيير الحالة إلى "${statusLabels[newStatus] || newStatus}"؟`)) return;
-
   let adminNotes = null;
   let deductAmount = 0;
-
   if (newStatus === "VERIFIED") {
     const complaint = allComplaints.find(c => c.id === id);
     adminNotes = prompt("ملاحظات (اختياري):") || null;
-
     if (complaint && complaint.shop_id) {
-      const deductStr = prompt(
-        `💰 خصم من عربون المحل (اختياري)\n\nالسعر المدفوع: ${complaint.product_price || 0} دج\nاقتراح (50%): ${Math.round((complaint.product_price || 0) * 0.5)} دج\n\nأدخل المبلغ أو 0 لعدم الخصم:`,
-        "0"
-      );
+      const deductStr = prompt(`💰 خصم من عربون المحل (اختياري)\n\nالسعر المدفوع: ${complaint.product_price || 0} دج\nاقتراح (50%): ${Math.round((complaint.product_price || 0) * 0.5)} دج\n\nأدخل المبلغ أو 0 لعدم الخصم:`, "0");
       deductAmount = parseFloat(deductStr) || 0;
     }
-  } else if (newStatus === "REJECTED") {
-    adminNotes = prompt("سبب الرفض (اختياري):") || null;
-  }
-
+  } else if (newStatus === "REJECTED") { adminNotes = prompt("سبب الرفض (اختياري):") || null; }
   try {
-    const { data, error } = await sb.rpc("admin_update_complaint", {
-      p_complaint_id: id,
-      p_new_status: newStatus,
-      p_admin_notes: adminNotes,
-      p_deduct_amount: deductAmount
-    });
-
+    const { data, error } = await sb.rpc("admin_update_complaint", { p_complaint_id: id, p_new_status: newStatus, p_admin_notes: adminNotes, p_deduct_amount: deductAmount });
     if (error) throw error;
-    if (data.status !== "OK") {
-      window.toast("خطأ: " + (data.message || ""), "error");
-      return;
-    }
-
+    if (data.status !== "OK") { window.toast("خطأ: " + (data.message || ""), "error"); return; }
     window.toast(`✅ تم تحديث الحالة${deductAmount > 0 ? ` + خصم ${deductAmount} دج` : ""}`, "success");
     loadShopComplaints();
-  } catch (e) {
-    console.error("updateComplaintStatus error:", e);
-    window.toast("خطأ: " + e.message, "error");
-  }
+  } catch (e) { console.error("updateComplaintStatus error:", e); window.toast("خطأ: " + e.message, "error"); }
 };
 
 // ============================================================
@@ -2044,61 +1495,28 @@ window.updateComplaintStatus = async function(id, newStatus) {
 async function loadShopsForSelect() {
   const sel = $("shopBatchSelect");
   if (!sel) return;
-
   try {
-    const { data, error } = await sb
-      .from("verified_shops")
-      .select("id, shop_name, status")
-      .eq("status", "ACTIVE")
-      .order("shop_name");
-
+    const { data, error } = await sb.from("verified_shops").select("id, shop_name, status").eq("status", "ACTIVE").order("shop_name");
     if (error) throw error;
-
     let html = `<option value="">-- اختر المحل --</option>`;
-    (data || []).forEach(s => {
-      html += `<option value="${s.id}">🏪 ${escapeHtml(s.shop_name)}</option>`;
-    });
+    (data || []).forEach(s => { html += `<option value="${s.id}">🏪 ${escapeHtml(s.shop_name)}</option>`; });
     sel.innerHTML = html;
-  } catch (e) {
-    console.warn("loadShopsForSelect error:", e);
-  }
+  } catch (e) { console.warn("loadShopsForSelect error:", e); }
 }
 
 async function checkBatchShopStatus(lot) {
   try {
-    const { data, error } = await sb
-      .from("qr_codes")
-      .select("is_shop_lot, shop_name, product_price")
-      .eq("lot", lot)
-      .limit(1)
-      .single();
-
+    const { data, error } = await sb.from("qr_codes").select("is_shop_lot, shop_name, product_price").eq("lot", lot).limit(1).single();
     if (error || !data) return;
-
-    const toggle = $("shopBatchToggle");
-    const fields = $("shopBatchFields");
-    const price = $("shopBatchPrice");
-    const sel = $("shopBatchSelect");
-
+    const toggle = $("shopBatchToggle"); const fields = $("shopBatchFields"); const price = $("shopBatchPrice"); const sel = $("shopBatchSelect");
     if (!toggle || !fields) return;
-
     if (data.is_shop_lot === true) {
-      toggle.checked = true;
-      fields.classList.remove("hidden");
+      toggle.checked = true; fields.classList.remove("hidden");
       if (price) price.value = data.product_price || "";
       await loadShopsForSelect();
-      if (sel && data.shop_name) {
-        const option = Array.from(sel.options).find(o => o.text.includes(data.shop_name));
-        if (option) sel.value = option.value;
-      }
-    } else {
-      toggle.checked = false;
-      fields.classList.add("hidden");
-      if (price) price.value = "";
-    }
-  } catch (e) {
-    console.warn("checkBatchShopStatus:", e);
-  }
+      if (sel && data.shop_name) { const option = Array.from(sel.options).find(o => o.text.includes(data.shop_name)); if (option) sel.value = option.value; }
+    } else { toggle.checked = false; fields.classList.add("hidden"); if (price) price.value = ""; }
+  } catch (e) { console.warn("checkBatchShopStatus:", e); }
 }
 
 // ============================================================
@@ -2112,10 +1530,7 @@ function printLabels(codes, brand, lot, logoUrl) {
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
 
   if (mode === "list") {
-    let html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Liste</title><style>@page{margin:12mm}body{font-family:Arial;padding:15px;margin:0}.toolbar{background:#111;color:#fff;padding:12px;text-align:center;margin-bottom:20px;border-radius:8px}.toolbar button{background:#fff;color:#111;border:0;padding:10px 24px;border-radius:6px;font-weight:bold;cursor:pointer}.header{text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:3px solid #111}table{width:100%;border-collapse:collapse;font-size:13px}th{background:#111;color:#fff;padding:10px 8px;text-align:left}td{padding:9px 8px;border-bottom:1px solid #e5e7eb}.code-cell{font-family:'Courier New';font-weight:bold;font-size:15px;letter-spacing:3px}@media print{.toolbar{display:none!important}}</style></head><body>
-      <div class="toolbar"><button onclick="window.print()">🖨 IMPRIMER</button></div>
-      <div class="header">${logoUrl ? `<img src="${escapeHtml(logoUrl)}" style="max-height:50px;margin-bottom:10px">` : ""}<h1>${escapeHtml(brand)}</h1><p>Lot: ${escapeHtml(lot)} — Total: ${codes.length}</p></div>
-      <table><thead><tr><th>#</th><th>Code</th></tr></thead><tbody>`;
+    let html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Liste</title><style>@page{margin:12mm}body{font-family:Arial;padding:15px;margin:0}.toolbar{background:#111;color:#fff;padding:12px;text-align:center;margin-bottom:20px;border-radius:8px}.toolbar button{background:#fff;color:#111;border:0;padding:10px 24px;border-radius:6px;font-weight:bold;cursor:pointer}.header{text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:3px solid #111}table{width:100%;border-collapse:collapse;font-size:13px}th{background:#111;color:#fff;padding:10px 8px;text-align:left}td{padding:9px 8px;border-bottom:1px solid #e5e7eb}.code-cell{font-family:'Courier New';font-weight:bold;font-size:15px;letter-spacing:3px}@media print{.toolbar{display:none!important}}</style></head><body><div class="toolbar"><button onclick="window.print()">🖨 IMPRIMER</button></div><div class="header">${logoUrl ? `<img src="${escapeHtml(logoUrl)}" style="max-height:50px;margin-bottom:10px">` : ""}<h1>${escapeHtml(brand)}</h1><p>Lot: ${escapeHtml(lot)} — Total: ${codes.length}</p></div><table><thead><tr><th>#</th><th>Code</th></tr></thead><tbody>`;
     codes.forEach((code, i) => { html += `<tr><td>${i + 1}</td><td class="code-cell">${escapeHtml(code)}</td></tr>`; });
     html += `</tbody></table></body></html>`;
     w.document.write(html); w.document.close(); return;
@@ -2126,14 +1541,9 @@ function printLabels(codes, brand, lot, logoUrl) {
   if (size === "50x50") { labelWidth = "50mm"; labelHeight = "50mm"; qrSize = "22mm"; codeFontSize = "9px"; brandFontSize = "8px"; }
   else if (size === "70x50") { labelWidth = "70mm"; labelHeight = "50mm"; qrSize = "28mm"; codeFontSize = "11px"; brandFontSize = "10px"; }
 
-  let html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Impression</title><style>@page{margin:8mm}body{font-family:Arial;padding:10px;margin:0;background:#f5f5f5}.toolbar{background:#111;color:#fff;padding:12px;text-align:center;margin-bottom:15px;border-radius:8px}.toolbar button{background:#fff;color:#111;border:0;padding:10px 24px;border-radius:6px;font-weight:bold;cursor:pointer}.info{font-size:12px;color:#333;margin:15px 0;padding:14px;background:#fff8e1;border:1px solid #ffe082;border-radius:8px}.sheet{display:flex;flex-wrap:wrap;gap:4mm;background:#fff;padding:10px;border-radius:8px}.label{width:${labelWidth};height:${labelHeight};border:1px dashed #bbb;display:flex;flex-direction:column;page-break-inside:avoid;background:#fff;position:relative;border-radius:3mm;overflow:hidden}.label-top{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3mm;text-align:center}.label-logo{max-height:8mm;max-width:40mm;margin-bottom:1.5mm}.label-brand{font-size:${brandFontSize};font-weight:bold;letter-spacing:2px;margin-bottom:2mm}.label-qr{width:${qrSize};height:${qrSize}}.label-inst{font-size:7px;color:#666;margin-top:2mm}.label-fold{height:6mm;display:flex;align-items:center;justify-content:center;font-size:6px;color:#888;border-top:1px dashed #666;border-bottom:1px dashed #666;background:repeating-linear-gradient(45deg,#f0f0f0,#f0f0f0 3px,#e8e8e8 3px,#e8e8e8 6px)}.label-bottom{height:28mm;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2mm;text-align:center}.label-code{font-family:'Courier New';font-size:${codeFontSize};font-weight:bold;letter-spacing:3px;padding:1.5mm 3mm;border:1px solid #ddd;border-radius:2mm;background:#fafafa}.label-hint{font-size:5.5px;color:#999;margin-top:1.5mm;font-style:italic}@media print{.toolbar,.info{display:none!important}.sheet{padding:0;gap:2mm}}</style></head><body>
-  <div class="toolbar"><button onclick="window.print()">🖨 IMPRIMER</button></div>
-  <div class="info"><b>📋 MODE D'EMPLOI :</b> Pliez le long de la ligne pointillée.</div>
-  <div class="sheet">`;
+  let html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Impression</title><style>@page{margin:8mm}body{font-family:Arial;padding:10px;margin:0;background:#f5f5f5}.toolbar{background:#111;color:#fff;padding:12px;text-align:center;margin-bottom:15px;border-radius:8px}.toolbar button{background:#fff;color:#111;border:0;padding:10px 24px;border-radius:6px;font-weight:bold;cursor:pointer}.info{font-size:12px;color:#333;margin:15px 0;padding:14px;background:#fff8e1;border:1px solid #ffe082;border-radius:8px}.sheet{display:flex;flex-wrap:wrap;gap:4mm;background:#fff;padding:10px;border-radius:8px}.label{width:${labelWidth};height:${labelHeight};border:1px dashed #bbb;display:flex;flex-direction:column;page-break-inside:avoid;background:#fff;position:relative;border-radius:3mm;overflow:hidden}.label-top{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3mm;text-align:center}.label-logo{max-height:8mm;max-width:40mm;margin-bottom:1.5mm}.label-brand{font-size:${brandFontSize};font-weight:bold;letter-spacing:2px;margin-bottom:2mm}.label-qr{width:${qrSize};height:${qrSize}}.label-inst{font-size:7px;color:#666;margin-top:2mm}.label-fold{height:6mm;display:flex;align-items:center;justify-content:center;font-size:6px;color:#888;border-top:1px dashed #666;border-bottom:1px dashed #666;background:repeating-linear-gradient(45deg,#f0f0f0,#f0f0f0 3px,#e8e8e8 3px,#e8e8e8 6px)}.label-bottom{height:28mm;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2mm;text-align:center}.label-code{font-family:'Courier New';font-size:${codeFontSize};font-weight:bold;letter-spacing:3px;padding:1.5mm 3mm;border:1px solid #ddd;border-radius:2mm;background:#fafafa}.label-hint{font-size:5.5px;color:#999;margin-top:1.5mm;font-style:italic}@media print{.toolbar,.info{display:none!important}.sheet{padding:0;gap:2mm}}</style></head><body><div class="toolbar"><button onclick="window.print()">🖨 IMPRIMER</button></div><div class="info"><b>📋 MODE D'EMPLOI :</b> Pliez le long de la ligne pointillée.</div><div class="sheet">`;
 
-  codes.forEach(code => {
-    html += `<div class="label"><div class="label-top">${logoUrl ? `<img class="label-logo" src="${escapeHtml(logoUrl)}">` : ""}<div class="label-brand">${escapeHtml(brand)}</div><img class="label-qr" src="${qrUrl}"><div class="label-inst">Scannez puis entrez le code</div></div><div class="label-fold">✂ - - - PLIEZ ICI - - - ✂</div><div class="label-bottom"><div class="label-code">${escapeHtml(code)}</div><div class="label-hint">Ne pas révéler avant l'achat</div></div></div>`;
-  });
+  codes.forEach(code => { html += `<div class="label"><div class="label-top">${logoUrl ? `<img class="label-logo" src="${escapeHtml(logoUrl)}">` : ""}<div class="label-brand">${escapeHtml(brand)}</div><img class="label-qr" src="${qrUrl}"><div class="label-inst">Scannez puis entrez le code</div></div><div class="label-fold">✂ - - - PLIEZ ICI - - - ✂</div><div class="label-bottom"><div class="label-code">${escapeHtml(code)}</div><div class="label-hint">Ne pas révéler avant l'achat</div></div></div>`; });
   html += `</div></body></html>`;
   w.document.write(html); w.document.close();
 }
@@ -2142,33 +1552,14 @@ window.printOrderInvoice = async function(orderId) {
   const token = await getAdminToken();
   if (!token) return;
   try {
-    const res = await fetch("/api/orders?action=get", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ access_token: token, order_id: orderId })
-    });
+    const res = await fetch("/api/orders?action=get", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ access_token: token, order_id: orderId }) });
     const data = await res.json();
     if (data.status !== "OK") { window.toast("Erreur : " + (data.message || ""), "error"); return; }
-
     const o = data.order;
     const w = window.open("", "_blank");
     const itemsRows = (o.items || []).map(it => `<tr><td>Lot ${escapeHtml(it.lot_number)}</td><td style="text-align:right">${it.quantity}</td></tr>`).join("");
     const date = o.created_at ? new Date(o.created_at).toLocaleDateString("fr-FR") : "—";
-    let html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Facture ${escapeHtml(o.order_number)}</title>
-    <style>@page{margin:15mm}*{box-sizing:border-box}body{font-family:-apple-system,Arial;padding:20px;margin:0;color:#0f172a;background:#f8fafc}.toolbar{background:#0f172a;color:#fff;padding:12px;text-align:center;margin-bottom:20px;border-radius:8px}.toolbar button{background:#16a34a;color:#fff;border:0;padding:10px 24px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:14px}.invoice{background:#fff;border-radius:12px;padding:30px;max-width:800px;margin:0 auto;box-shadow:0 4px 20px rgba(0,0,0,0.08)}.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;padding-bottom:20px;border-bottom:3px solid #0f172a;flex-wrap:wrap;gap:20px}.brand-info h1{margin:0 0 8px;font-size:24px}.brand-info p{margin:4px 0;font-size:13px;color:#64748b}.invoice-meta{text-align:right}.invoice-meta h2{margin:0 0 8px;font-size:20px;color:#16a34a;font-family:'Courier New'}.invoice-meta p{margin:4px 0;font-size:13px}.client-info{margin-bottom:24px;padding:16px;background:#f8fafc;border-radius:10px}.client-info h3{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#64748b}.client-info p{margin:4px 0;font-size:14px}.items-table{width:100%;border-collapse:collapse;margin:20px 0;font-size:14px}.items-table th{background:#0f172a;color:#fff;padding:12px 10px;text-align:left;font-size:11px}.items-table td{padding:12px 10px;border-bottom:1px solid #e2e8f0}.totals{margin-top:24px;margin-left:auto;max-width:320px}.totals-row{display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px dashed #e2e8f0}.totals-row.grand-total{padding:16px 0;font-size:20px;font-weight:900;border-top:3px solid #0f172a;border-bottom:3px solid #0f172a;color:#16a34a}.footer-info{margin-top:40px;padding-top:20px;border-top:1px solid #e2e8f0;font-size:12px;color:#64748b;text-align:center}@media print{.toolbar{display:none!important}body{background:#fff;padding:0}.invoice{box-shadow:none;padding:0}}</style></head><body>
-    <div class="toolbar"><button onclick="window.print()">🖨 IMPRIMER LA FACTURE</button></div>
-    <div class="invoice">
-      <div class="header"><div class="brand-info"><h1>👑 Original</h1><p>+213 556 339 415</p><p>mepirf@gmail.com</p></div><div class="invoice-meta"><h2>${escapeHtml(o.order_number)}</h2><p><b>Date:</b> ${escapeHtml(date)}</p></div></div>
-      <div class="client-info"><h3>👤 Client</h3><p><b>${escapeHtml(o.brand_name)}</b></p>${o.brand_phone ? `<p>📱 ${escapeHtml(o.brand_phone)}</p>` : ""}${o.brand_email ? `<p>📧 ${escapeHtml(o.brand_email)}</p>` : ""}</div>
-      <table class="items-table"><thead><tr><th>Description</th><th style="text-align:right">Quantité</th></tr></thead><tbody>${itemsRows}</tbody></table>
-      <div class="totals">
-        <div class="totals-row"><span>Sous-total</span><b>${formatMoney(o.subtotal)}</b></div>
-        ${parseFloat(o.discount_amount || 0) > 0 ? `<div class="totals-row"><span>Remise (${o.discount_percent}%)</span><b>-${formatMoney(o.discount_amount)}</b></div>` : ""}
-        ${parseFloat(o.delivery_cost || 0) > 0 ? `<div class="totals-row"><span>Livraison</span><b>${formatMoney(o.delivery_cost)}</b></div>` : ""}
-        <div class="totals-row grand-total"><span>TOTAL</span><b>${formatMoney(o.total_price)}</b></div>
-      </div>
-      <div class="footer-info"><p>Merci pour votre confiance 🙏</p><p>Original — Protection contre la contrefaçon</p></div>
-    </div></body></html>`;
+    let html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Facture ${escapeHtml(o.order_number)}</title><style>@page{margin:15mm}*{box-sizing:border-box}body{font-family:-apple-system,Arial;padding:20px;margin:0;color:#0f172a;background:#f8fafc}.toolbar{background:#0f172a;color:#fff;padding:12px;text-align:center;margin-bottom:20px;border-radius:8px}.toolbar button{background:#16a34a;color:#fff;border:0;padding:10px 24px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:14px}.invoice{background:#fff;border-radius:12px;padding:30px;max-width:800px;margin:0 auto;box-shadow:0 4px 20px rgba(0,0,0,0.08)}.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;padding-bottom:20px;border-bottom:3px solid #0f172a;flex-wrap:wrap;gap:20px}.brand-info h1{margin:0 0 8px;font-size:24px}.brand-info p{margin:4px 0;font-size:13px;color:#64748b}.invoice-meta{text-align:right}.invoice-meta h2{margin:0 0 8px;font-size:20px;color:#16a34a;font-family:'Courier New'}.invoice-meta p{margin:4px 0;font-size:13px}.client-info{margin-bottom:24px;padding:16px;background:#f8fafc;border-radius:10px}.client-info h3{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#64748b}.client-info p{margin:4px 0;font-size:14px}.items-table{width:100%;border-collapse:collapse;margin:20px 0;font-size:14px}.items-table th{background:#0f172a;color:#fff;padding:12px 10px;text-align:left;font-size:11px}.items-table td{padding:12px 10px;border-bottom:1px solid #e2e8f0}.totals{margin-top:24px;margin-left:auto;max-width:320px}.totals-row{display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px dashed #e2e8f0}.totals-row.grand-total{padding:16px 0;font-size:20px;font-weight:900;border-top:3px solid #0f172a;border-bottom:3px solid #0f172a;color:#16a34a}.footer-info{margin-top:40px;padding-top:20px;border-top:1px solid #e2e8f0;font-size:12px;color:#64748b;text-align:center}@media print{.toolbar{display:none!important}body{background:#fff;padding:0}.invoice{box-shadow:none;padding:0}}</style></head><body><div class="toolbar"><button onclick="window.print()">🖨 IMPRIMER LA FACTURE</button></div><div class="invoice"><div class="header"><div class="brand-info"><h1>👑 Original</h1><p>+213 556 339 415</p><p>mepirf@gmail.com</p></div><div class="invoice-meta"><h2>${escapeHtml(o.order_number)}</h2><p><b>Date:</b> ${escapeHtml(date)}</p></div></div><div class="client-info"><h3>👤 Client</h3><p><b>${escapeHtml(o.brand_name)}</b></p>${o.brand_phone ? `<p>📱 ${escapeHtml(o.brand_phone)}</p>` : ""}${o.brand_email ? `<p>📧 ${escapeHtml(o.brand_email)}</p>` : ""}</div><table class="items-table"><thead><tr><th>Description</th><th style="text-align:right">Quantité</th></tr></thead><tbody>${itemsRows}</tbody></table><div class="totals"><div class="totals-row"><span>Sous-total</span><b>${formatMoney(o.subtotal)}</b></div>${parseFloat(o.discount_amount || 0) > 0 ? `<div class="totals-row"><span>Remise (${o.discount_percent}%)</span><b>-${formatMoney(o.discount_amount)}</b></div>` : ""}${parseFloat(o.delivery_cost || 0) > 0 ? `<div class="totals-row"><span>Livraison</span><b>${formatMoney(o.delivery_cost)}</b></div>` : ""}<div class="totals-row grand-total"><span>TOTAL</span><b>${formatMoney(o.total_price)}</b></div></div><div class="footer-info"><p>Merci pour votre confiance 🙏</p><p>Original — Protection contre la contrefaçon</p></div></div></body></html>`;
     w.document.write(html); w.document.close();
   } catch (e) { window.toast("Erreur : " + e.message, "error"); }
 };
@@ -2183,11 +1574,7 @@ function downloadExcel(data, filename, sheetName) {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, sheetName || "Sheet1");
   const keys = Object.keys(data[0]);
-  ws["!cols"] = keys.map(k => {
-    let maxLen = k.length;
-    data.forEach(row => { const v = String(row[k] || ""); if (v.length > maxLen) maxLen = v.length; });
-    return { wch: Math.min(maxLen + 2, 50) };
-  });
+  ws["!cols"] = keys.map(k => { let maxLen = k.length; data.forEach(row => { const v = String(row[k] || ""); if (v.length > maxLen) maxLen = v.length; }); return { wch: Math.min(maxLen + 2, 50) }; });
   XLSX.writeFile(wb, filename + "_" + new Date().toISOString().slice(0, 10) + ".xlsx");
 }
 
@@ -2198,42 +1585,17 @@ const _lfb = $("loginForm");
 
 async function refresh() {
   const { data: { session } } = await sb.auth.getSession();
-
-  if (!session) {
-    const lp = $("loginPage"); if (lp) lp.classList.remove("hidden");
-    const aa = $("adminApp"); if (aa) aa.classList.add("hidden");
-    return;
-  }
-
+  if (!session) { const lp = $("loginPage"); if (lp) lp.classList.remove("hidden"); const aa = $("adminApp"); if (aa) aa.classList.add("hidden"); return; }
   const isAdmin = await checkAdminServer(session.access_token);
-
   if (!isAdmin) {
-    await sb.auth.signOut();
-    const lp = $("loginPage"); if (lp) lp.classList.remove("hidden");
-    const aa = $("adminApp"); if (aa) aa.classList.add("hidden");
-    const el = $("loginError");
-    if (el) {
-      el.className = "result danger";
-      el.innerHTML = `<p style="margin:0">⛔ Ce compte n'est pas autorisé.</p>`;
-      el.classList.remove("hidden");
-    }
+    await sb.auth.signOut(); const lp = $("loginPage"); if (lp) lp.classList.remove("hidden"); const aa = $("adminApp"); if (aa) aa.classList.add("hidden");
+    const el = $("loginError"); if (el) { el.className = "result danger"; el.innerHTML = `<p style="margin:0">⛔ Ce compte n'est pas autorisé.</p>`; el.classList.remove("hidden"); }
     return;
   }
-
-  const lp = $("loginPage"); if (lp) lp.classList.add("hidden");
-  const aa = $("adminApp"); if (aa) aa.classList.remove("hidden");
-
-  const url = location.origin + "/verify";
-  const pu = $("publicUrl"); if (pu) pu.textContent = url;
-  const qr = $("qr");
-  if (qr && qr.innerHTML.trim() === "") new QRCode(qr, { text: url, width: 180, height: 180 });
-
-  loadStats();
-  loadLog();
-  loadFeedback();
-  loadCharts();
-  loadMessagesBadge();
-  loadFakesBadge();
+  const lp = $("loginPage"); if (lp) lp.classList.add("hidden"); const aa = $("adminApp"); if (aa) aa.classList.remove("hidden");
+  const url = location.origin + "/verify"; const pu = $("publicUrl"); if (pu) pu.textContent = url;
+  const qr = $("qr"); if (qr && qr.innerHTML.trim() === "") new QRCode(qr, { text: url, width: 180, height: 180 });
+  loadStats(); loadLog(); loadFeedback(); loadCharts(); loadMessagesBadge(); loadFakesBadge();
 }
 
 refresh();
@@ -2244,114 +1606,42 @@ if (_lfb) _lfb.addEventListener("submit", async (e) => {
   const emailInput = $("email").value.trim();
   const passwordInput = $("password").value;
   const el = $("loginError");
-
   const lb = $("loginBtn");
   if (lb) { lb.disabled = true; lb.textContent = "CONNEXION..."; }
-
   const { data, error } = await sb.auth.signInWithPassword({ email: emailInput, password: passwordInput });
-
-  if (error) {
-    if (lb) { lb.disabled = false; lb.textContent = "SE CONNECTER"; }
-    if (el) { el.className = "result danger"; el.innerHTML = `<p style="margin:0">${escapeHtml(error.message)}</p>`; el.classList.remove("hidden"); }
-    return;
-  }
-
+  if (error) { if (lb) { lb.disabled = false; lb.textContent = "SE CONNECTER"; } if (el) { el.className = "result danger"; el.innerHTML = `<p style="margin:0">${escapeHtml(error.message)}</p>`; el.classList.remove("hidden"); } return; }
   const isAdmin = await checkAdminServer(data.session.access_token);
-
-  if (!isAdmin) {
-    await sb.auth.signOut();
-    if (lb) { lb.disabled = false; lb.textContent = "SE CONNECTER"; }
-    if (el) { el.className = "result danger"; el.innerHTML = `<p style="margin:0">⛔ Ce compte n'est pas autorisé.</p>`; el.classList.remove("hidden"); }
-    return;
-  }
-
-  if (el) el.classList.add("hidden");
-  if (lb) { lb.disabled = false; lb.textContent = "SE CONNECTER"; }
+  if (!isAdmin) { await sb.auth.signOut(); if (lb) { lb.disabled = false; lb.textContent = "SE CONNECTER"; } if (el) { el.className = "result danger"; el.innerHTML = `<p style="margin:0">⛔ Ce compte n'est pas autorisé.</p>`; el.classList.remove("hidden"); } return; }
+  if (el) el.classList.add("hidden"); if (lb) { lb.disabled = false; lb.textContent = "SE CONNECTER"; }
   refresh();
 });
 
 const _lb = $("logoutBtn");
-if (_lb) _lb.onclick = async () => {
-  await sb.auth.signOut();
-  location.reload();
-};
+if (_lb) _lb.onclick = async () => { await sb.auth.signOut(); location.reload(); };
 
-const _rlb = $("refreshLogBtn");
-if (_rlb) _rlb.onclick = () => loadLog();
+const _rlb = $("refreshLogBtn"); if (_rlb) _rlb.onclick = () => loadLog();
+const _rfb = $("refreshFeedbackBtn"); if (_rfb) _rfb.onclick = () => loadFeedback();
+const _rbb = $("refreshBrandsBtn"); if (_rbb) _rbb.onclick = () => loadBrands();
+const _rsb = $("refreshShopsBtn"); if (_rsb) _rsb.onclick = () => loadShops();
+const _ecb = $("exportComplaintsBtn"); if (_ecb) _ecb.onclick = () => exportComplaintsToExcel();
+const _rcb = $("refreshComplaintsBtn"); if (_rcb) _rcb.onclick = () => loadShopComplaints();
+const _csi = $("complaintsSearch"); if (_csi) { let _cTimer; _csi.addEventListener("input", () => { clearTimeout(_cTimer); _cTimer = setTimeout(renderShopComplaints, 300); }); }
+const _cwb = $("complaintsWilaya"); if (_cwb) _cwb.addEventListener("change", () => { currentComplaintsWilaya = _cwb.value; renderShopComplaints(); });
+const _cdt = $("complaintsDate"); if (_cdt) _cdt.addEventListener("change", () => { currentComplaintsDateRange = _cdt.value; renderShopComplaints(); });
+const _ssi = $("shopsSearch"); if (_ssi) { let _shopTimer; _ssi.addEventListener("input", () => { clearTimeout(_shopTimer); _shopTimer = setTimeout(renderShopsList, 300); }); }
+const _rvb = $("refreshVisitorsBtn"); if (_rvb) _rvb.onclick = () => loadVisitors();
+const _rfb2 = $("refreshFakesBtn"); if (_rfb2) _rfb2.onclick = () => { loadFakes(); loadFakesBadge(); };
+const _rfaq = $("refreshFaqBtn"); if (_rfaq) _rfaq.onclick = () => loadFAQ();
+const _rob = $("refreshOrdersBtn"); if (_rob) _rob.onclick = () => loadOrders();
+const _rdebts = $("refreshDebtsBtn"); if (_rdebts) _rdebts.onclick = () => loadDebts();
+const _rinv = $("refreshInventoryBtn"); if (_rinv) _rinv.onclick = () => loadInventory();
+const _rmb = $("refreshMessagesBtn"); if (_rmb) _rmb.onclick = () => { loadMessages(); loadMessagesBadge(); };
 
-const _rfb = $("refreshFeedbackBtn");
-if (_rfb) _rfb.onclick = () => loadFeedback();
-
-const _rbb = $("refreshBrandsBtn");
-if (_rbb) _rbb.onclick = () => loadBrands();
-
-const _rsb = $("refreshShopsBtn");
-if (_rsb) _rsb.onclick = () => loadShops();
-
-const _ecb = $("exportComplaintsBtn");
-if (_ecb) _ecb.onclick = () => exportComplaintsToExcel();
-
-const _rcb = $("refreshComplaintsBtn");
-if (_rcb) _rcb.onclick = () => loadShopComplaints();
-
-const _csi = $("complaintsSearch");
-if (_csi) {
-  let _cTimer;
-  _csi.addEventListener("input", () => {
-    clearTimeout(_cTimer);
-    _cTimer = setTimeout(renderShopComplaints, 300);
-  });
-}
-
-const _cwb = $("complaintsWilaya");
-if (_cwb) _cwb.addEventListener("change", () => {
-  currentComplaintsWilaya = _cwb.value;
-  renderShopComplaints();
-});
-
-const _cdt = $("complaintsDate");
-if (_cdt) _cdt.addEventListener("change", () => {
-  currentComplaintsDateRange = _cdt.value;
-  renderShopComplaints();
-});
-
-const _ssi = $("shopsSearch");
-if (_ssi) {
-  let _shopTimer;
-  _ssi.addEventListener("input", () => {
-    clearTimeout(_shopTimer);
-    _shopTimer = setTimeout(renderShopsList, 300);
-  });
-}
-
-const _rvb = $("refreshVisitorsBtn");
-if (_rvb) _rvb.onclick = () => loadVisitors();
-
-const _rfb2 = $("refreshFakesBtn");
-if (_rfb2) _rfb2.onclick = () => { loadFakes(); loadFakesBadge(); };
-
-const _rfaq = $("refreshFaqBtn");
-if (_rfaq) _rfaq.onclick = () => loadFAQ();
-
-const _rob = $("refreshOrdersBtn");
-if (_rob) _rob.onclick = () => loadOrders();
-
-const _rdebts = $("refreshDebtsBtn");
-if (_rdebts) _rdebts.onclick = () => loadDebts();
-
-const _rinv = $("refreshInventoryBtn");
-if (_rinv) _rinv.onclick = () => loadInventory();
-
-const _rmb = $("refreshMessagesBtn");
-if (_rmb) _rmb.onclick = () => { loadMessages(); loadMessagesBadge(); };
-
-// Tabs
 document.querySelectorAll(".tabs .tab").forEach(t => {
   t.addEventListener("click", () => {
     const parent = t.parentElement;
     parent.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
     t.classList.add("active");
-
     if (parent.id === "feedbackTabs") { currentFeedbackFilter = t.dataset.tab; loadFeedback(); }
     else if (parent.id === "messagesTabs") { currentMessagesFilter = t.dataset.tab; loadMessages(); }
     else if (parent.id === "visitorTabs") { currentVisitorFilter = t.dataset.tab; loadVisitors(); }
