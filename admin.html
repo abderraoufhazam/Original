@@ -766,7 +766,17 @@
     <div id="loginError" class="result danger hidden" style="margin-top:16px"></div>
   </section>
 </main>
-
+  
+<!-- LOADING SCREEN -->
+<div id="adminLoadingScreen" style="position: fixed; inset: 0; z-index: 9999; background: var(--bg); display: none; flex-direction: column; align-items: center; justify-content: center;">
+  <div style="font-size: 64px; margin-bottom: 24px; animation: pulse 2s infinite;">👑</div>
+  <div class="original-loader" style="font-size: 28px;">
+    <span>O</span><span>r</span><span>i</span><span>g</span><span>i</span><span>n</span><span>a</span><span>l</span><span>D</span><span>z</span>
+  </div>
+  <div style="margin-top: 16px; font-size: 12px; color: var(--text-tertiary); font-weight: 700; letter-spacing: 2px; text-transform: uppercase;">
+    Chargement...
+  </div>
+</div>
 <!-- APP -->
 <div class="app hidden" id="adminApp">
 
