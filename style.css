@@ -2072,7 +2072,7 @@ html[dir="rtl"] .scan-label-btn {
   font-size: 24px;
   font-weight: 900;
   letter-spacing: 1px;
-  color: var(--primary, #3b82f6); /* أو استخدم اللون الذهبي var(--gold) */
+  color: var(--gold); /* أو استخدم اللون الذهبي var(--gold) */
 }
 
 .original-loader span {
