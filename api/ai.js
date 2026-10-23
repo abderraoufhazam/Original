@@ -122,12 +122,11 @@ Réponds UNIQUEMENT avec un objet JSON valide :
 }
 Ne mets AUCUN texte avant ou après le JSON.`;
 
-    // ✅ استخدام أحدث النماذج فقط (وتجنب النماذج القديمة)
+       // ✅ النماذج الحديثة والمتاحة في 2026 (Gemini 2.5/3.x)
     const modelsToTry = [
-      'gemini-2.0-flash', 
-      'gemini-2.0-flash-lite', 
-      'gemini-1.5-flash-latest', 
-      'gemini-1.5-flash'
+      'gemini-2.5-flash',        // النموذج الأساسي والمستقر
+      'gemini-2.5-flash-lite',   // نموذج أسرع وأرخص
+      'gemini-3.8-flash'         // أحدث نموذج (إذا كان متاحاً لحسابك)
     ];
 
     let geminiData = null;
