@@ -167,64 +167,134 @@ if (wilayaImage) {
 }
 
 async function analyzeImageWithAI(dataUrl) {
-  if (wilayaAiLoading) wilayaAiLoading.classList.remove("hidden");
-  if (wilayaAiResult) wilayaAiResult.classList.add("hidden");
-  if (wilayaMsg) wilayaMsg.classList.add("hidden");
+  // السماح بطلبات POST فقط
+  if (req.method !== 'POST') {
+    return res.status(405).json({ status: 'ERROR', message: 'Method not allowed' });
+  }
 
   try {
-    const res = await fetch("/api/ai?mode=analyze", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image: dataUrl })
+    const { image } = req.body || {};
+    if (!image || !image.startsWith('data:image/')) {
+      return res.status(400).json({ status: 'ERROR', message: 'Image manquante' });
+    }
+
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+    if (!GEMINI_API_KEY) {
+      return res.status(500).json({ status: 'ERROR', message: 'GEMINI_API_KEY manquant dans Vercel' });
+    }
+
+    const match = image.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+    if (!match) {
+      return res.status(400).json({ status: 'ERROR', message: 'Format invalide' });
+    }
+
+    const prompt = `Tu es un expert en contrefaçon. Analyse cette image avec précision. Réponds UNIQUEMENT avec un objet JSON valide respectant ce format exact:
+{
+  "brand": "nom de la marque",
+  "product_name": "nom complet du produit",
+  "description": "Décris le produit en détail",
+  "confidence": "high"
+}
+Ne mets AUCUN texte avant ou après le JSON.`;
+
+    // قائمة النماذج المتاحة للتبديل التلقائي
+    const modelsToTry = [
+      'gemini-2.5-flash',
+      'gemini-2.5-flash-lite',
+      'gemini-3.8-flash'
+    ];
+
+    let geminiData = null;
+    let lastError = null;
+
+    for (const model of modelsToTry) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 25000);
+
+        const geminiRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [
+                  { text: prompt },
+                  { inline_data: { mime_type: match[1], data: match[2] } }
+                ]
+              }],
+              generationConfig: { responseMimeType: "application/json" }
+            }),
+            signal: controller.signal
+          }
+        );
+
+        clearTimeout(timeoutId);
+
+        if (geminiRes.ok) {
+          geminiData = await geminiRes.json();
+          break;
+        } else {
+          const errorText = await geminiRes.text();
+          lastError = `Model ${model} failed: ${errorText}`;
+        }
+      } catch (err) {
+        lastError = `Model ${model} error: ${String(err)}`;
+      }
+    }
+
+    if (!geminiData) {
+      return res.status(500).json({ 
+        status: 'ERROR', 
+        message: 'Tous les modèles Gemini ont échoué.', 
+        detail: lastError 
+      });
+    }
+
+    // استخراج النص بطريقة آمنة تماماً لتجنب خطأ undefined is not iterable
+    let text = '';
+    try {
+      const candidate = geminiData.candidates?.[0];
+      const parts = candidate?.content?.parts;
+      if (Array.isArray(parts)) {
+        text = parts.map(p => p.text || '').join('');
+      } else if (typeof candidate?.output === 'string') {
+        text = candidate.output;
+      }
+    } catch (parseErr) {
+      console.error('Error extracting parts:', parseErr);
+    }
+
+    if (!text) {
+      return res.status(500).json({ status: 'ERROR', message: 'Réponse vide de l\'IA' });
+    }
+
+    // تنظيف واستخراج الـ JSON
+    let result = {};
+    try {
+      let cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      const start = cleaned.indexOf('{');
+      const end = cleaned.lastIndexOf('}');
+      if (start !== -1 && end !== -1 && end > start) {
+        cleaned = cleaned.substring(start, end + 1);
+      }
+      result = JSON.parse(cleaned);
+    } catch (e) {
+      return res.status(500).json({ status: 'ERROR', message: 'Format JSON invalide', detail: text });
+    }
+
+    return res.status(200).json({
+      status: 'OK',
+      brand: (result.brand || '').trim().slice(0, 100),
+      product_name: (result.product_name || '').trim().slice(0, 200),
+      description: (result.description || '').trim().slice(0, 500),
+      confidence: result.confidence || 'medium'
     });
 
-    if (!res.ok) {
-      throw new Error("HTTP error " + res.status);
-    }
-
-    const data = await res.json();
-
-    if (data && data.status === "OK" && data.brand !== undefined) {
-      const brandSelect = document.getElementById("wilayaBrand");
-      const detectedBrand = (data.brand || "").trim();
-      
-      if (detectedBrand && brandSelect) {
-        const options = brandSelect.options ? Array.from(brandSelect.options) : [];
-        const match = options.find(o => o.value.toLowerCase() === detectedBrand.toLowerCase());
-        
-        if (match) {
-          brandSelect.value = match.value;
-        } else {
-          const newOpt = document.createElement("option");
-          newOpt.value = detectedBrand;
-          newOpt.textContent = detectedBrand;
-          brandSelect.appendChild(newOpt);
-          brandSelect.value = detectedBrand;
-        }
-      }
-      
-      if (wilayaProductName) wilayaProductName.value = data.product_name || "";
-      if (wilayaDescription) wilayaDescription.value = data.description || "";
-      if (wilayaAiResult) wilayaAiResult.classList.remove("hidden");
-      
-    } else {
-      // ⚠️ فشل التحليل (لكن الـ API رد)
-      console.warn("AI Analysis Failed:", data);
-      if (wilayaMsg) {
-        wilayaMsg.textContent = "⚠️ لم نتمكن من تحليل الصورة تلقائياً. يرجى كتابة البيانات يدوياً.";
-        wilayaMsg.className = "wilaya-msg error";
-        wilayaMsg.classList.remove("hidden");
-      }
-    }
-  } catch (err) {
-    console.error("AI Analysis Network Error:", err);
-    if (wilayaMsg) {
-      wilayaMsg.textContent = "⚠️ خدمة التحليل غير متوفرة حالياً. يرجى كتابة البيانات يدوياً.";
-      wilayaMsg.className = "wilaya-msg error";
-      wilayaMsg.classList.remove("hidden");
-    }
-  } finally {
-    if (wilayaAiLoading) wilayaAiLoading.classList.add("hidden");
+  } catch (error) {
+    console.error('handleAnalyze error:', error);
+    return res.status(500).json({ status: 'ERROR', message: String(error).slice(0, 200) });
   }
 }
 
