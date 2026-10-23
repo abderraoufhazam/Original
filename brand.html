@@ -970,10 +970,16 @@
 </head>
 <body>
 
-<div id="brandLoading" class="empty-state" style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-  <div class="empty-state-icon">👑</div>
-  <div class="empty-state-title">Original</div>
-  <div class="empty-state-text">Chargement du tableau de bord...</div>
+<div id="brandLoading" style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg);">
+  <div style="font-size: 64px; margin-bottom: 24px; animation: pulse 2s infinite;">👑</div>
+  
+  <div class="original-loader" style="font-size: 28px;">
+    <span>O</span><span>r</span><span>i</span><span>g</span><span>i</span><span>n</span><span>a</span><span>l</span><span>D</span><span>z</span>
+  </div>
+  
+  <div style="margin-top: 16px; font-size: 12px; color: var(--text-tertiary); font-weight: 700; letter-spacing: 2px; text-transform: uppercase;">
+    Chargement...
+  </div>
 </div>
 
 <div class="app hidden" id="brandApp">
