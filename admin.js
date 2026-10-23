@@ -1592,7 +1592,18 @@ async function refresh() {
     const el = $("loginError"); if (el) { el.className = "result danger"; el.innerHTML = `<p style="margin:0">⛔ Ce compte n'est pas autorisé.</p>`; el.classList.remove("hidden"); }
     return;
   }
-  const lp = $("loginPage"); if (lp) lp.classList.add("hidden"); const aa = $("adminApp"); if (aa) aa.classList.remove("hidden");
+    const lp = $("loginPage"); if (lp) lp.classList.add("hidden");
+  
+  // إظهار شاشة التحميل
+  const loader = $("adminLoadingScreen");
+  if (loader) loader.style.display = "flex";
+  
+  const aa = $("adminApp"); if (aa) aa.classList.remove("hidden");
+
+  // إخفاء شاشة التحميل بعد تحميل البيانات (بعد 1.5 ثانية تقريباً)
+  setTimeout(() => {
+    if (loader) loader.style.display = "none";
+  }, 1500);
   const url = location.origin + "/verify"; const pu = $("publicUrl"); if (pu) pu.textContent = url;
   const qr = $("qr"); if (qr && qr.innerHTML.trim() === "") new QRCode(qr, { text: url, width: 180, height: 180 });
   loadStats(); loadLog(); loadFeedback(); loadCharts(); loadMessagesBadge(); loadFakesBadge();
