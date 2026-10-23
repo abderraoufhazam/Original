@@ -117,16 +117,16 @@ Réponds UNIQUEMENT avec un objet JSON valide :
 {
   "brand": "nom de la marque", 
   "product_name": "nom complet du produit", 
-  "description": "Décris le produit en détail (couleur, forme, taille, type de packaging, tout texte visible, particularités)", 
+  "description": "Décris le produit en détail", 
   "confidence": "high|medium|low"
 }
 Ne mets AUCUN texte avant ou après le JSON.`;
 
-       // ✅ النماذج الحديثة والمتاحة في 2026 (Gemini 2.5/3.x)
+    // ✅ النماذج الحديثة والمتاحة حالياً
     const modelsToTry = [
-      'gemini-2.5-flash',        // النموذج الأساسي والمستقر
-      'gemini-2.5-flash-lite',   // نموذج أسرع وأرخص
-      'gemini-3.8-flash'         // أحدث نموذج (إذا كان متاحاً لحسابك)
+      'gemini-2.5-flash',
+      'gemini-2.5-flash-lite',
+      'gemini-3.8-flash'
     ];
 
     let geminiData = null;
@@ -136,7 +136,7 @@ Ne mets AUCUN texte avant ou après le JSON.`;
       try {
         console.log(`Tentative avec le modèle: ${model}`);
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 secondes max
+        const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 ثانية
 
         const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
           method: 'POST',
@@ -177,7 +177,7 @@ Ne mets AUCUN texte avant ou après le JSON.`;
         }
       } catch (err) {
         if (err.name === 'AbortError') {
-          lastError = `Model ${model} timeout (15s)`;
+          lastError = `Model ${model} timeout (20s)`;
         } else {
           lastError = `Model ${model} error: ${String(err)}`;
         }
