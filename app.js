@@ -169,6 +169,7 @@ if (wilayaImage) {
 async function analyzeImageWithAI(dataUrl) {
   if (wilayaAiLoading) wilayaAiLoading.classList.remove("hidden");
   if (wilayaAiResult) wilayaAiResult.classList.add("hidden");
+  if (wilayaMsg) wilayaMsg.classList.add("hidden");
 
   try {
     const res = await fetch("/api/ai?mode=analyze", {
@@ -177,7 +178,6 @@ async function analyzeImageWithAI(dataUrl) {
       body: JSON.stringify({ image: dataUrl })
     });
 
-    // التحقق من حالة الاستجابة
     if (!res.ok) {
       throw new Error("HTTP error " + res.status);
     }
@@ -185,13 +185,14 @@ async function analyzeImageWithAI(dataUrl) {
     const data = await res.json();
 
     if (data && data.status === "OK") {
-      // ✅ نجح التحليل
       const brandSelect = document.getElementById("wilayaBrand");
       const detectedBrand = (data.brand || "").trim();
       
       if (detectedBrand && brandSelect) {
-        const options = Array.from(brandSelect.options);
+        // حماية إضافية للتأكد من وجود الخيارات
+        const options = brandSelect.options ? Array.from(brandSelect.options) : [];
         const match = options.find(o => o.value.toLowerCase() === detectedBrand.toLowerCase());
+        
         if (match) {
           brandSelect.value = match.value;
         } else {
@@ -208,7 +209,6 @@ async function analyzeImageWithAI(dataUrl) {
       if (wilayaAiResult) wilayaAiResult.classList.remove("hidden");
       
     } else {
-      // ⚠️ فشل التحليل (لكن الـ API رد)
       console.warn("AI Analysis Failed:", data);
       if (wilayaMsg) {
         wilayaMsg.textContent = "⚠️ لم نتمكن من تحليل الصورة تلقائياً. يرجى كتابة البيانات يدوياً.";
@@ -217,7 +217,6 @@ async function analyzeImageWithAI(dataUrl) {
       }
     }
   } catch (err) {
-    // ❌ خطأ في الشبكة أو السيرفر
     console.error("AI Analysis Network Error:", err);
     if (wilayaMsg) {
       wilayaMsg.textContent = "⚠️ خدمة التحليل غير متوفرة حالياً. يرجى كتابة البيانات يدوياً.";
