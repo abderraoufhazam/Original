@@ -167,7 +167,6 @@ if (wilayaImage) {
 }
 
 async function analyzeImageWithAI(dataUrl) {
-  // السماح بطلبات POST فقط
   if (req.method !== 'POST') {
     return res.status(405).json({ status: 'ERROR', message: 'Method not allowed' });
   }
@@ -180,7 +179,7 @@ async function analyzeImageWithAI(dataUrl) {
 
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
     if (!GEMINI_API_KEY) {
-      return res.status(500).json({ status: 'ERROR', message: 'GEMINI_API_KEY manquant dans Vercel' });
+      return res.status(500).json({ status: 'ERROR', message: 'GEMINI_API_KEY manquant' });
     }
 
     const match = image.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
@@ -197,62 +196,79 @@ async function analyzeImageWithAI(dataUrl) {
 }
 Ne mets AUCUN texte avant ou après le JSON.`;
 
-// قائمة النماذج مع وضع النماذج الأكثر استقراراً في المقدمة لتجنب خطأ 503
+    // التركيز على نموذج 2.5-flash لكونه الأقل عرضة لضغط السيرفرات حالياً
     const modelsToTry = [
       'gemini-2.5-flash',
-      'gemini-2.5-flash-lite',
-      'gemini-3.8-flash'
+      'gemini-2.5-flash-lite'
     ];
-    
+
     let geminiData = null;
     let lastError = null;
 
+    // محاولة الاتصال مع ميزة إعادة المحاولة في حال حدوث ضغط مؤقت (503)
     for (const model of modelsToTry) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 25000);
+      let attempts = 0;
+      const maxAttempts = 3;
 
-        const geminiRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                parts: [
-                  { text: prompt },
-                  { inline_data: { mime_type: match[1], data: match[2] } }
-                ]
-              }],
-              generationConfig: { responseMimeType: "application/json" }
-            }),
-            signal: controller.signal
+      while (attempts < maxAttempts) {
+        try {
+          attempts++;
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 25000);
+
+          const geminiRes = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{
+                  parts: [
+                    { text: prompt },
+                    { inline_data: { mime_type: match[1], data: match[2] } }
+                  ]
+                }],
+                generationConfig: { responseMimeType: "application/json" }
+              }),
+              signal: controller.signal
+            }
+          );
+
+          clearTimeout(timeoutId);
+
+          if (geminiRes.ok) {
+            geminiData = await geminiRes.json();
+            break;
+          } else {
+            const errorText = await geminiRes.text();
+            lastError = `Model ${model} failed: ${errorText}`;
+            // إذا كان الخطأ 503 ننتظر قليلاً ونعيد المحاولة
+            if (geminiRes.status === 503 && attempts < maxAttempts) {
+              await new Promise(resolve => setTimeout(resolve, 1500 * attempts));
+              continue;
+            }
+            break; // الخروج من حلقة المحاولات لهذا النموذج والانتقال لغيره
           }
-        );
-
-        clearTimeout(timeoutId);
-
-        if (geminiRes.ok) {
-          geminiData = await geminiRes.json();
-          break;
-        } else {
-          const errorText = await geminiRes.text();
-          lastError = `Model ${model} failed: ${errorText}`;
+        } catch (err) {
+          lastError = `Model ${model} error: ${String(err)}`;
+          if (attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            continue;
+          }
         }
-      } catch (err) {
-        lastError = `Model ${model} error: ${String(err)}`;
       }
+
+      if (geminiData) break;
     }
 
     if (!geminiData) {
       return res.status(500).json({ 
         status: 'ERROR', 
-        message: 'Tous les modèles Gemini ont échoué.', 
+        message: 'Le service rencontre une forte affluence. Veuillez réessayer dans quelques secondes.', 
         detail: lastError 
       });
     }
 
-    // استخراج النص بطريقة آمنة تماماً لتجنب خطأ undefined is not iterable
     let text = '';
     try {
       const candidate = geminiData.candidates?.[0];
@@ -270,7 +286,6 @@ Ne mets AUCUN texte avant ou après le JSON.`;
       return res.status(500).json({ status: 'ERROR', message: 'Réponse vide de l\'IA' });
     }
 
-    // تنظيف واستخراج الـ JSON
     let result = {};
     try {
       let cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
@@ -297,7 +312,7 @@ Ne mets AUCUN texte avant ou après le JSON.`;
     return res.status(500).json({ status: 'ERROR', message: String(error).slice(0, 200) });
   }
 }
-
+  
 function compressImage(file, maxWidth, quality) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
