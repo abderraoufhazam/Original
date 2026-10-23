@@ -184,12 +184,11 @@ async function analyzeImageWithAI(dataUrl) {
 
     const data = await res.json();
 
-    if (data && data.status === "OK") {
+    if (data && data.status === "OK" && data.brand !== undefined) {
       const brandSelect = document.getElementById("wilayaBrand");
       const detectedBrand = (data.brand || "").trim();
       
       if (detectedBrand && brandSelect) {
-        // حماية إضافية للتأكد من وجود الخيارات
         const options = brandSelect.options ? Array.from(brandSelect.options) : [];
         const match = options.find(o => o.value.toLowerCase() === detectedBrand.toLowerCase());
         
@@ -209,6 +208,7 @@ async function analyzeImageWithAI(dataUrl) {
       if (wilayaAiResult) wilayaAiResult.classList.remove("hidden");
       
     } else {
+      // ⚠️ فشل التحليل (لكن الـ API رد)
       console.warn("AI Analysis Failed:", data);
       if (wilayaMsg) {
         wilayaMsg.textContent = "⚠️ لم نتمكن من تحليل الصورة تلقائياً. يرجى كتابة البيانات يدوياً.";
