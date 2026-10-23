@@ -83,7 +83,6 @@ async function verifyAdmin(supabaseUrl, serviceKey, accessToken) {
 // ============================================================
 // 📥 جلب كل المستخدمين مع Pagination
 // ============================================================
-async function fetchAllUsers(supabaseUrl, serviceKey) {
 // ✅ Cache في الذاكرة (5 دقائق)
 let _usersCache = null;
 let _usersCacheTime = 0;
