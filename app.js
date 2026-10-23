@@ -176,9 +176,16 @@ async function analyzeImageWithAI(dataUrl) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ image: dataUrl })
     });
+
+    // التحقق من حالة الاستجابة
+    if (!res.ok) {
+      throw new Error("HTTP error " + res.status);
+    }
+
     const data = await res.json();
 
-    if (data.status === "OK") {
+    if (data && data.status === "OK") {
+      // ✅ نجح التحليل
       const brandSelect = document.getElementById("wilayaBrand");
       const detectedBrand = (data.brand || "").trim();
       
@@ -199,23 +206,27 @@ async function analyzeImageWithAI(dataUrl) {
       if (wilayaProductName) wilayaProductName.value = data.product_name || "";
       if (wilayaDescription) wilayaDescription.value = data.description || "";
       if (wilayaAiResult) wilayaAiResult.classList.remove("hidden");
+      
     } else {
-      wilayaMsg.textContent = "⚠️ " + (data.message || "Erreur inconnue");
-      if (data.detail) wilayaMsg.textContent += " — " + String(data.detail).slice(0, 150);
-      wilayaMsg.className = "wilaya-msg error";
-      if (wilayaAiResult) wilayaAiResult.classList.remove("hidden");
+      // ⚠️ فشل التحليل (لكن الـ API رد)
+      console.warn("AI Analysis Failed:", data);
+      if (wilayaMsg) {
+        wilayaMsg.textContent = "⚠️ لم نتمكن من تحليل الصورة تلقائياً. يرجى كتابة البيانات يدوياً.";
+        wilayaMsg.className = "wilaya-msg error";
+        wilayaMsg.classList.remove("hidden");
+      }
     }
   } catch (err) {
-    wilayaMsg.textContent = "❌ Erreur réseau : " + err.message;
-    wilayaMsg.className = "wilaya-msg error";
-    if (wilayaAiResult) wilayaAiResult.classList.remove("hidden");
+    // ❌ خطأ في الشبكة أو السيرفر
+    console.error("AI Analysis Network Error:", err);
+    if (wilayaMsg) {
+      wilayaMsg.textContent = "⚠️ خدمة التحليل غير متوفرة حالياً. يرجى كتابة البيانات يدوياً.";
+      wilayaMsg.className = "wilaya-msg error";
+      wilayaMsg.classList.remove("hidden");
+    }
   } finally {
     if (wilayaAiLoading) wilayaAiLoading.classList.add("hidden");
   }
-}
-
-if (wilayaImageRemove) {
-  wilayaImageRemove.addEventListener("click", (e) => { e.preventDefault(); removeImage(); });
 }
 
 function compressImage(file, maxWidth, quality) {
