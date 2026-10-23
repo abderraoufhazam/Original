@@ -229,24 +229,68 @@ async function analyzeImageWithAI(dataUrl) {
   }
 }
 
-function compressImage(file, maxWidth, quality) {
+function compressImage(file, maxWidth = 800, quality = 0.7) {
   return new Promise((resolve, reject) => {
+    if (!file) {
+      reject(new Error("No file provided"));
+      return;
+    }
+    
     const reader = new FileReader();
+    
     reader.onload = (ev) => {
       const img = new Image();
+      
       img.onload = () => {
-        let { width, height } = img;
-        if (width > maxWidth) { height = Math.round(height * (maxWidth / width)); width = maxWidth; }
-        const canvas = document.createElement("canvas");
-        canvas.width = width; canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, width, height);
-        try { resolve(canvas.toDataURL("image/jpeg", quality)); } catch (e) { reject(e); }
+        try {
+          let { width, height } = img;
+          
+          // تصغير الأبعاد إذا كانت أكبر من maxWidth
+          if (width > maxWidth) {
+            height = Math.round(height * (maxWidth / width));
+            width = maxWidth;
+          }
+          
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            reject(new Error("Canvas context not available"));
+            return;
+          }
+          
+          // خلفية بيضاء (لتجنب الشفافية السوداء في JPEG)
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillRect(0, 0, width, height);
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // تحويل إلى JPEG مع ضغط
+          const dataUrl = canvas.toDataURL("image/jpeg", quality);
+          
+          if (!dataUrl || dataUrl === "data:,") {
+            reject(new Error("Canvas toDataURL failed"));
+            return;
+          }
+          
+          resolve(dataUrl);
+        } catch (e) {
+          reject(e);
+        }
       };
-      img.onerror = reject;
+      
+      img.onerror = () => {
+        reject(new Error("Image load failed"));
+      };
+      
       img.src = ev.target.result;
     };
-    reader.onerror = reject;
+    
+    reader.onerror = () => {
+      reject(new Error("FileReader failed"));
+    };
+    
     reader.readAsDataURL(file);
   });
 }
