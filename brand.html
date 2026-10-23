@@ -2022,6 +2022,21 @@ $("logoutBtn").onclick = async () => {
 
 init();
 
+// ============================================================
+// إغلاق نافذة تقارير الولايات
+// ============================================================
+window.closeWilayaModal = function() {
+  const modal = document.getElementById('wilayaReportsModal');
+  if (modal) modal.classList.add('hidden');
+};
+// إغلاق النافذة عند النقر على الخلفية
+document.addEventListener('click', (e) => {
+  const modal = document.getElementById('wilayaReportsModal');
+  if (modal && e.target === modal) {
+    modal.classList.add('hidden');
+  }
+});
+
 </script>
 
 <script src="/bot-guard.js"></script>
