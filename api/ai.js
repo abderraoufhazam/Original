@@ -98,13 +98,19 @@ async function handleChat(req, res) {
 async function handleAnalyze(req, res) {
   try {
     const { image } = req.body || {};
-    if (!image || !image.startsWith('data:image/')) return res.status(400).json({ status: 'ERROR', message: 'Image manquante' });
+    if (!image || !image.startsWith('data:image/')) {
+      return res.status(400).json({ status: 'ERROR', message: 'Image manquante' });
+    }
 
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-    if (!GEMINI_API_KEY) return res.status(500).json({ status: 'ERROR', message: 'Config manquante' });
+    if (!GEMINI_API_KEY) {
+      return res.status(500).json({ status: 'ERROR', message: 'GEMINI_API_KEY manquant dans Vercel' });
+    }
 
     const match = image.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
-    if (!match) return res.status(400).json({ status: 'ERROR', message: 'Format invalide' });
+    if (!match) {
+      return res.status(400).json({ status: 'ERROR', message: 'Format invalide' });
+    }
 
     const prompt = `Tu es un expert en contrefaçon. Analyse cette image avec précision.
 Réponds UNIQUEMENT avec un objet JSON valide :
@@ -116,32 +122,79 @@ Réponds UNIQUEMENT avec un objet JSON valide :
 }
 Ne mets AUCUN texte avant ou après le JSON.`;
 
-    const models = await getAvailableModels(GEMINI_API_KEY);
+    // ✅ استخدام أحدث النماذج فقط (وتجنب النماذج القديمة)
+    const modelsToTry = [
+      'gemini-2.0-flash', 
+      'gemini-2.0-flash-lite', 
+      'gemini-1.5-flash-latest', 
+      'gemini-1.5-flash'
+    ];
+
     let geminiData = null;
     let lastError = null;
 
-    for (const model of models) {
+    for (const model of modelsToTry) {
       try {
+        console.log(`Tentative avec le modèle: ${model}`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 secondes max
+
         const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: match[1], data: match[2] } }] }],
             generationConfig: { responseMimeType: "application/json" }
-          })
+          }),
+          signal: controller.signal
         });
+
+        clearTimeout(timeoutId);
+
         if (geminiRes.ok) {
           geminiData = await geminiRes.json();
-          console.log(`✅ Analyze success with model: ${model}`);
+          console.log(`✅ Succès avec le modèle: ${model}`);
           break;
         } else {
-          lastError = await geminiRes.text();
+          const errorText = await geminiRes.text();
+          lastError = `Model ${model} failed: ${errorText}`;
+          console.warn(lastError);
+          
+          // إذا كان الخطأ بسبب المفتاح (401, 403) أو الحصة (429)، لا داعي لتجربة نماذج أخرى
+          if (geminiRes.status === 401 || geminiRes.status === 403) {
+            return res.status(401).json({ 
+              status: 'ERROR', 
+              message: 'Clé API Gemini invalide ou expirée. Vérifiez GEMINI_API_KEY dans Vercel.',
+              detail: lastError
+            });
+          }
+          if (geminiRes.status === 429) {
+            return res.status(429).json({ 
+              status: 'ERROR', 
+              message: 'Quota Gemini épuisé. Réessayez demain ou changez de clé API.',
+              detail: lastError
+            });
+          }
         }
-      } catch (err) { lastError = String(err); }
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          lastError = `Model ${model} timeout (15s)`;
+        } else {
+          lastError = `Model ${model} error: ${String(err)}`;
+        }
+        console.warn(lastError);
+      }
     }
 
-    if (!geminiData) return res.status(500).json({ status: 'ERROR', message: 'Erreur analyse IA', detail: lastError });
+    if (!geminiData) {
+      return res.status(500).json({ 
+        status: 'ERROR', 
+        message: 'Tous les modèles Gemini ont échoué. Vérifiez votre clé API et votre quota.',
+        detail: lastError
+      });
+    }
 
+    // استخراج JSON من الاستجابة
     let result = null;
     try {
       const text = geminiData.candidates[0].content.parts.map(p => p.text || '').join('');
@@ -160,9 +213,8 @@ Ne mets AUCUN texte avant ou après le JSON.`;
       return res.status(500).json({ status: 'ERROR', message: 'Réponse IA invalide', detail: String(e) });
     }
 
+    // تصحيح الماركة (Fuzzy Matching)
     let correctedBrand = (result.brand || '').trim();
-    
-    // التصحيح التلقائي (Fuzzy Matching)
     if (correctedBrand) {
       const SUPABASE_URL = process.env.SUPABASE_URL;
       const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -211,6 +263,7 @@ Ne mets AUCUN texte avant ou après le JSON.`;
     });
 
   } catch (error) {
+    console.error('handleAnalyze error:', error);
     return res.status(500).json({ status: 'ERROR', message: String(error).slice(0, 200) });
   }
 }
