@@ -197,13 +197,13 @@ async function analyzeImageWithAI(dataUrl) {
 }
 Ne mets AUCUN texte avant ou après le JSON.`;
 
-    // قائمة النماذج المتاحة للتبديل التلقائي
+// قائمة النماذج مع وضع النماذج الأكثر استقراراً في المقدمة لتجنب خطأ 503
     const modelsToTry = [
       'gemini-2.5-flash',
       'gemini-2.5-flash-lite',
       'gemini-3.8-flash'
     ];
-
+    
     let geminiData = null;
     let lastError = null;
 
