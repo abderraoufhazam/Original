@@ -161,7 +161,9 @@ if (wilayaImage) {
       await analyzeImageWithAI(dataUrl);
     } catch (err) {
       console.error("Image error:", err);
-      wilayaMsg.textContent = "خطأ في معالجة الصورة."; wilayaMsg.className = "wilaya-msg error"; removeImage();
+      wilayaMsg.textContent = "❌ " + (err.message || "خطأ في معالجة الصورة."); 
+wilayaMsg.className = "wilaya-msg error"; 
+removeImage();
     }
   });
 }
@@ -232,7 +234,7 @@ async function analyzeImageWithAI(dataUrl) {
 function compressImage(file, maxWidth = 800, quality = 0.7) {
   return new Promise((resolve, reject) => {
     if (!file) {
-      reject(new Error("No file provided"));
+      reject(new Error("لم يتم اختيار أي صورة."));
       return;
     }
     
@@ -245,7 +247,6 @@ function compressImage(file, maxWidth = 800, quality = 0.7) {
         try {
           let { width, height } = img;
           
-          // تصغير الأبعاد إذا كانت أكبر من maxWidth
           if (width > maxWidth) {
             height = Math.round(height * (maxWidth / width));
             width = maxWidth;
@@ -257,38 +258,36 @@ function compressImage(file, maxWidth = 800, quality = 0.7) {
           
           const ctx = canvas.getContext("2d");
           if (!ctx) {
-            reject(new Error("Canvas context not available"));
+            reject(new Error("المتصفح لا يدعم معالجة الصور."));
             return;
           }
           
-          // خلفية بيضاء (لتجنب الشفافية السوداء في JPEG)
           ctx.fillStyle = "#FFFFFF";
           ctx.fillRect(0, 0, width, height);
           ctx.drawImage(img, 0, 0, width, height);
           
-          // تحويل إلى JPEG مع ضغط
           const dataUrl = canvas.toDataURL("image/jpeg", quality);
           
           if (!dataUrl || dataUrl === "data:,") {
-            reject(new Error("Canvas toDataURL failed"));
+            reject(new Error("فشل تحويل الصورة."));
             return;
           }
           
           resolve(dataUrl);
         } catch (e) {
-          reject(e);
+          reject(new Error("خطأ أثناء معالجة الصورة: " + e.message));
         }
       };
       
       img.onerror = () => {
-        reject(new Error("Image load failed"));
+        reject(new Error("الصورة غير صالحة أو تالفة."));
       };
       
       img.src = ev.target.result;
     };
     
     reader.onerror = () => {
-      reject(new Error("FileReader failed"));
+      reject(new Error("فشل قراءة الملف من الجهاز."));
     };
     
     reader.readAsDataURL(file);
