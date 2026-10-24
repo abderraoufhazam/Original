@@ -102,9 +102,9 @@ async function handleAnalyze(req, res) {
       return res.status(400).json({ status: 'ERROR', message: 'Image manquante' });
     }
 
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-    if (!GEMINI_API_KEY) {
-      return res.status(500).json({ status: 'ERROR', message: 'GEMINI_API_KEY manquant dans Vercel' });
+    const ZAI_API_KEY = process.env.ZAI_API_KEY;
+    if (!ZAI_API_KEY) {
+      return res.status(500).json({ status: 'ERROR', message: 'ZAI_API_KEY manquant dans Vercel' });
     }
 
     const match = image.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
@@ -122,101 +122,54 @@ Réponds UNIQUEMENT avec un objet JSON valide :
 }
 Ne mets AUCUN texte avant ou après le JSON.`;
 
-    const modelsToTry = [
-  'gemini-3.1-flash-lite',    // أسرع نموذج متاح للمجانيين
-  'gemini-3.5-flash-lite'     // احتياطي (أحدث إصدار Lite)
-];
+    // ✅ استدعاء z.ai (GLM-4.6V-Flash) - متوافق مع OpenAI
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000); // 25 ثانية
 
-
-
-    let geminiData = null;
-    let lastError = null;
-
-    for (const model of modelsToTry) {
-      for (let attempt = 1; attempt <= 2; attempt++) {
-        try {
-          console.log(`Tentative ${attempt}/3 avec le modèle: ${model}`);
-          
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-          const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: match[1], data: match[2] } }] }],
-              generationConfig: { responseMimeType: "application/json" }
-            }),
-            signal: controller.signal
-          });
-
-          clearTimeout(timeoutId);
-
-          if (geminiRes.ok) {
-            geminiData = await geminiRes.json();
-            console.log(`✅ Succès avec le modèle: ${model} (tentative ${attempt})`);
-            break;
-          } else {
-            const errorText = await geminiRes.text();
-            const status = geminiRes.status;
-            
-            if (status === 503 || status === 429) {
-              console.warn(`⚠️ Modèle ${model} surchargé (${status}). Tentative ${attempt}/3 échouée.`);
-              
-              if (attempt < 3) {
-                const delay = Math.pow(2, attempt) * 1000;
-                console.log(`Attente de ${delay}ms avant la prochaine tentative...`);
-                await new Promise(resolve => setTimeout(resolve, delay));
-                continue;
-              } else {
-                lastError = `Model ${model} failed after 3 attempts: ${errorText}`;
-                break;
-              }
-            } 
-            else if (status === 401 || status === 403) {
-              return res.status(401).json({ 
-                status: 'ERROR', 
-                message: 'Clé API Gemini invalide ou expirée. Vérifiez GEMINI_API_KEY.',
-                detail: errorText
-              });
-            }
-            else {
-              lastError = `Model ${model} failed: ${errorText}`;
-              break;
-            }
+    const response = await fetch('https://api.z.ai/api/paas/v4/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${ZAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'glm-4.6v-flash', // النموذج المجاني للرؤية
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: prompt },
+              { type: 'image_url', image_url: { url: image } } // إرسال الصورة كـ base64
+            ]
           }
-        } catch (err) {
-          if (err.name === 'AbortError') {
-            lastError = `Model ${model} timeout (30s) - tentative ${attempt}`;
-          } else {
-            lastError = `Model ${model} error: ${String(err)}`;
-          }
-          console.warn(lastError);
-          
-          if (attempt < 3) {
-            const delay = Math.pow(2, attempt) * 1000;
-            await new Promise(resolve => setTimeout(resolve, delay));
-            continue;
-          } else {
-            break;
-          }
-        }
-      }
-      
-      if (geminiData) break;
-    }
+        ],
+        temperature: 0.1
+      }),
+      signal: controller.signal
+    });
 
-    if (!geminiData) {
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Z.ai error:', errorText);
       return res.status(500).json({ 
         status: 'ERROR', 
-        message: 'Tous les modèles Gemini ont échoué. Vérifiez votre clé API et votre quota.',
-        detail: lastError
+        message: 'Erreur du service d\'analyse z.ai. Réessayez plus tard.',
+        detail: errorText.slice(0, 200)
       });
     }
 
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content;
+
+    if (!text) {
+      return res.status(500).json({ status: 'ERROR', message: 'Réponse vide du service' });
+    }
+
+    // استخراج JSON
     let result = null;
     try {
-      const text = geminiData.candidates[0].content.parts.map(p => p.text || '').join('');
       let cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
       const start = cleaned.indexOf('{');
       if (start !== -1) {
@@ -229,9 +182,10 @@ Ne mets AUCUN texte avant ou après le JSON.`;
       }
       result = JSON.parse(cleaned);
     } catch (e) {
-      return res.status(500).json({ status: 'ERROR', message: 'Réponse IA invalide', detail: String(e) });
+      return res.status(500).json({ status: 'ERROR', message: 'Réponse invalide', detail: String(e) });
     }
 
+    // تصحيح الماركة (Fuzzy Matching) - كما هو
     let correctedBrand = (result.brand || '').trim();
     if (correctedBrand) {
       const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -285,6 +239,7 @@ Ne mets AUCUN texte avant ou après le JSON.`;
     return res.status(500).json({ status: 'ERROR', message: String(error).slice(0, 200) });
   }
 }
+
 // ============================================================
 // MODE 3: ANALYTICS
 // ============================================================
