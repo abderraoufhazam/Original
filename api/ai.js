@@ -126,27 +126,78 @@ Ne mets AUCUN texte avant ou après le JSON.`;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 25000); // 25 ثانية
 
-    const response = await fetch('https://api.z.ai/api/paas/v4/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${ZAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: 'glm-4.6v-flash', // النموذج المجاني للرؤية
-        messages: [
-          {
-            role: 'user',
-            content: [
-              { type: 'text', text: prompt },
-              { type: 'image_url', image_url: { url: image } } // إرسال الصورة كـ base64
-            ]
+        // ✅ إعادة المحاولة التلقائية لخدمة z.ai (لمعالجة الازدحام المؤقت)
+    let response = null;
+    let lastErrorText = null;
+    const maxRetries = 3;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`Tentative ${attempt}/${maxRetries} avec z.ai...`);
+        
+        response = await fetch('https://api.z.ai/api/paas/v4/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${ZAI_API_KEY}`
+          },
+          body: JSON.stringify({
+            model: 'glm-4.6v-flash',
+            messages: [
+              {
+                role: 'user',
+                content: [
+                  { type: 'text', text: prompt },
+                  { type: 'image_url', image_url: { url: image } }
+                ]
+              }
+            ],
+            temperature: 0.1
+          }),
+          signal: controller.signal
+        });
+
+        if (response.ok) {
+          console.log(`✅ Succès avec z.ai (tentative ${attempt})`);
+          break; // نجح، اخرج من الحلقة
+        } else {
+          lastErrorText = await response.text();
+          const status = response.status;
+          
+          // إذا كان الخطأ 429 (ازدحام) أو 400 (مؤقت)، أعد المحاولة
+          if ((status === 429 || status === 400) && attempt < maxRetries) {
+            const delay = attempt * 2000; // 2s, 4s
+            console.warn(`⚠️ z.ai surchargé (${status}). Attente de ${delay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
           }
-        ],
-        temperature: 0.1
-      }),
-      signal: controller.signal
-    });
+        }
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          lastErrorText = 'Timeout (25s)';
+        } else {
+          lastErrorText = String(err);
+        }
+        console.warn(`Tentative ${attempt} échouée: ${lastErrorText}`);
+        
+        if (attempt < maxRetries) {
+          const delay = attempt * 2000;
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+      }
+    }
+
+    if (!response || !response.ok) {
+      console.error('Z.ai error final:', lastErrorText);
+      return res.status(500).json({ 
+        status: 'ERROR', 
+        message: 'خدمة التحليل مزدحمة حالياً. يرجى المحاولة بعد قليل أو كتابة البيانات يدوياً.',
+        detail: lastErrorText ? lastErrorText.slice(0, 200) : 'Unknown error'
+      });
+    }
+
+    const data = await response.json();
 
     clearTimeout(timeoutId);
 
