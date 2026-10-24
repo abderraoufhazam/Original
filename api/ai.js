@@ -132,12 +132,12 @@ Ne mets AUCUN texte avant ou après le JSON.`;
     let lastError = null;
 
     for (const model of modelsToTry) {
-      for (let attempt = 1; attempt <= 3; attempt++) {
+      for (let attempt = 1; attempt <= 2; attempt++) {
         try {
           console.log(`Tentative ${attempt}/3 avec le modèle: ${model}`);
           
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 30000);
+          const timeoutId = setTimeout(() => controller.abort(), 15000);
 
           const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
             method: 'POST',
