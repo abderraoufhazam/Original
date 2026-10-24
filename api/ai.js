@@ -122,19 +122,21 @@ Réponds UNIQUEMENT avec un objet JSON valide :
 }
 Ne mets AUCUN texte avant ou après le JSON.`;
 
-    // ✅ استدعاء z.ai (GLM-4.6V-Flash) - متوافق مع OpenAI
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 25000); // 25 ثانية
-
-        // ✅ إعادة المحاولة التلقائية لخدمة z.ai (لمعالجة الازدحام المؤقت)
+    // ✅ إعادة المحاولة التلقائية لخدمة z.ai (لمعالجة الازدحام المؤقت)
     let response = null;
     let lastErrorText = null;
     const maxRetries = 3;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      let controller = null;
+      let timeoutId = null;
+      
       try {
         console.log(`Tentative ${attempt}/${maxRetries} avec z.ai...`);
         
+        controller = new AbortController();
+        timeoutId = setTimeout(() => controller.abort(), 25000);
+
         response = await fetch('https://api.z.ai/api/paas/v4/chat/completions', {
           method: 'POST',
           headers: {
@@ -157,6 +159,8 @@ Ne mets AUCUN texte avant ou après le JSON.`;
           signal: controller.signal
         });
 
+        clearTimeout(timeoutId);
+
         if (response.ok) {
           console.log(`✅ Succès avec z.ai (tentative ${attempt})`);
           break; // نجح، اخرج من الحلقة
@@ -173,6 +177,8 @@ Ne mets AUCUN texte avant ou après le JSON.`;
           }
         }
       } catch (err) {
+        if (timeoutId) clearTimeout(timeoutId);
+        
         if (err.name === 'AbortError') {
           lastErrorText = 'Timeout (25s)';
         } else {
@@ -188,6 +194,7 @@ Ne mets AUCUN texte avant ou après le JSON.`;
       }
     }
 
+    // ✅ التحقق من النتيجة النهائية
     if (!response || !response.ok) {
       console.error('Z.ai error final:', lastErrorText);
       return res.status(500).json({ 
@@ -197,20 +204,7 @@ Ne mets AUCUN texte avant ou après le JSON.`;
       });
     }
 
-    const data = await response.json();
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Z.ai error:', errorText);
-      return res.status(500).json({ 
-        status: 'ERROR', 
-        message: 'Erreur du service d\'analyse z.ai. Réessayez plus tard.',
-        detail: errorText.slice(0, 200)
-      });
-    }
-
+    // ✅ استخراج البيانات من الاستجابة (مرة واحدة فقط)
     const data = await response.json();
     const text = data.choices?.[0]?.message?.content;
 
@@ -236,7 +230,7 @@ Ne mets AUCUN texte avant ou après le JSON.`;
       return res.status(500).json({ status: 'ERROR', message: 'Réponse invalide', detail: String(e) });
     }
 
-    // تصحيح الماركة (Fuzzy Matching) - كما هو
+    // تصحيح الماركة (Fuzzy Matching)
     let correctedBrand = (result.brand || '').trim();
     if (correctedBrand) {
       const SUPABASE_URL = process.env.SUPABASE_URL;
