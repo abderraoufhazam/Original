@@ -122,7 +122,6 @@ Réponds UNIQUEMENT avec un objet JSON valide :
 }
 Ne mets AUCUN texte avant ou après le JSON.`;
 
-    // ✅ النماذج الحديثة والمتاحة حالياً
     const modelsToTry = [
       'gemini-2.5-flash',
       'gemini-2.5-flash-lite',
@@ -133,56 +132,77 @@ Ne mets AUCUN texte avant ou après le JSON.`;
     let lastError = null;
 
     for (const model of modelsToTry) {
-      try {
-        console.log(`Tentative avec le modèle: ${model}`);
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 ثانية
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          console.log(`Tentative ${attempt}/3 avec le modèle: ${model}`);
+          
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-        const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: match[1], data: match[2] } }] }],
-            generationConfig: { responseMimeType: "application/json" }
-          }),
-          signal: controller.signal
-        });
+          const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: match[1], data: match[2] } }] }],
+              generationConfig: { responseMimeType: "application/json" }
+            }),
+            signal: controller.signal
+          });
 
-        clearTimeout(timeoutId);
+          clearTimeout(timeoutId);
 
-        if (geminiRes.ok) {
-          geminiData = await geminiRes.json();
-          console.log(`✅ Succès avec le modèle: ${model}`);
-          break;
-        } else {
-          const errorText = await geminiRes.text();
-          lastError = `Model ${model} failed: ${errorText}`;
+          if (geminiRes.ok) {
+            geminiData = await geminiRes.json();
+            console.log(`✅ Succès avec le modèle: ${model} (tentative ${attempt})`);
+            break;
+          } else {
+            const errorText = await geminiRes.text();
+            const status = geminiRes.status;
+            
+            if (status === 503 || status === 429) {
+              console.warn(`⚠️ Modèle ${model} surchargé (${status}). Tentative ${attempt}/3 échouée.`);
+              
+              if (attempt < 3) {
+                const delay = Math.pow(2, attempt) * 1000;
+                console.log(`Attente de ${delay}ms avant la prochaine tentative...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                continue;
+              } else {
+                lastError = `Model ${model} failed after 3 attempts: ${errorText}`;
+                break;
+              }
+            } 
+            else if (status === 401 || status === 403) {
+              return res.status(401).json({ 
+                status: 'ERROR', 
+                message: 'Clé API Gemini invalide ou expirée. Vérifiez GEMINI_API_KEY.',
+                detail: errorText
+              });
+            }
+            else {
+              lastError = `Model ${model} failed: ${errorText}`;
+              break;
+            }
+          }
+        } catch (err) {
+          if (err.name === 'AbortError') {
+            lastError = `Model ${model} timeout (30s) - tentative ${attempt}`;
+          } else {
+            lastError = `Model ${model} error: ${String(err)}`;
+          }
           console.warn(lastError);
           
-          // إذا كان الخطأ بسبب المفتاح (401, 403) أو الحصة (429)، لا داعي لتجربة نماذج أخرى
-          if (geminiRes.status === 401 || geminiRes.status === 403) {
-            return res.status(401).json({ 
-              status: 'ERROR', 
-              message: 'Clé API Gemini invalide ou expirée. Vérifiez GEMINI_API_KEY dans Vercel.',
-              detail: lastError
-            });
-          }
-          if (geminiRes.status === 429) {
-            return res.status(429).json({ 
-              status: 'ERROR', 
-              message: 'Quota Gemini épuisé. Réessayez demain ou changez de clé API.',
-              detail: lastError
-            });
+          if (attempt < 3) {
+            const delay = Math.pow(2, attempt) * 1000;
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
+          } else {
+            break;
           }
         }
-      } catch (err) {
-        if (err.name === 'AbortError') {
-          lastError = `Model ${model} timeout (20s)`;
-        } else {
-          lastError = `Model ${model} error: ${String(err)}`;
-        }
-        console.warn(lastError);
       }
+      
+      if (geminiData) break;
     }
 
     if (!geminiData) {
@@ -193,7 +213,6 @@ Ne mets AUCUN texte avant ou après le JSON.`;
       });
     }
 
-    // استخراج JSON من الاستجابة
     let result = null;
     try {
       const text = geminiData.candidates[0].content.parts.map(p => p.text || '').join('');
@@ -212,7 +231,6 @@ Ne mets AUCUN texte avant ou après le JSON.`;
       return res.status(500).json({ status: 'ERROR', message: 'Réponse IA invalide', detail: String(e) });
     }
 
-    // تصحيح الماركة (Fuzzy Matching)
     let correctedBrand = (result.brand || '').trim();
     if (correctedBrand) {
       const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -266,7 +284,6 @@ Ne mets AUCUN texte avant ou après le JSON.`;
     return res.status(500).json({ status: 'ERROR', message: String(error).slice(0, 200) });
   }
 }
-
 // ============================================================
 // MODE 3: ANALYTICS
 // ============================================================
