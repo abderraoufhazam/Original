@@ -123,8 +123,10 @@ Réponds UNIQUEMENT avec un objet JSON valide :
 Ne mets AUCUN texte avant ou après le JSON.`;
 
     const modelsToTry = [
-  'gemini-2.5-flash-lite'     // النموذج الوحيد المتاح للمستخدمين المجانيين حالياً
+  'gemini-3.1-flash-lite',    // أسرع نموذج متاح للمجانيين
+  'gemini-3.5-flash-lite'     // احتياطي (أحدث إصدار Lite)
 ];
+
 
 
     let geminiData = null;
