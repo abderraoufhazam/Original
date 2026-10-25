@@ -153,7 +153,7 @@ if (wilayaImage) {
       wilayaMsg.className = "wilaya-msg error"; removeImage(); return;
     }
     try {
-      const dataUrl = await compressImage(file, 450, 0.55);
+      const dataUrl = await compressImage(file, 512, 0.7);
       currentImageDataUrl = dataUrl;
       if (wilayaImagePreviewImg) wilayaImagePreviewImg.src = dataUrl;
       if (wilayaImagePreview) wilayaImagePreview.classList.remove("hidden");
