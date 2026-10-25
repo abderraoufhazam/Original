@@ -125,7 +125,7 @@ Ne mets AUCUN texte avant ou après le JSON.`;
     // ✅ إعادة المحاولة التلقائية لخدمة z.ai (لمعالجة الازدحام المؤقت)
     let response = null;
     let lastErrorText = null;
-    const maxRetries = 3;
+    const maxRetries = 1;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       let controller = null;
