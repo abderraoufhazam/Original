@@ -113,11 +113,13 @@ async function handleAnalyze(req, res) {
     }
 
     const prompt = `Tu es un expert en contrefaçon. Analyse cette image avec précision.
+ATTENTION: L'image peut contenir plusieurs produits. Concentre-toi UNIQUEMENT sur le produit le plus visible, celui qui est au centre ou tenu par une main. Ignore les autres produits en arrière-plan.
+
 Réponds UNIQUEMENT avec un objet JSON valide :
 {
-  "brand": "lis le texte écrit sur le logo et écris-le exactement", 
-  "product_name": "nom complet du produit", 
-  "description": "Décris le produit en détail", 
+  "brand": "nom de la marque du produit principal (écris le nom COMPLET visible sur l'emballage)", 
+  "product_name": "nom complet du produit principal", 
+  "description": "Décris UNIQUEMENT le produit principal en détail (couleur, forme, taille, packaging)", 
   "confidence": "high|medium|low"
 }
 Ne mets AUCUN texte avant ou après le JSON.`;
