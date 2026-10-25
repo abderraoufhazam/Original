@@ -135,7 +135,7 @@ Ne mets AUCUN texte avant ou après le JSON.`;
         console.log(`Tentative ${attempt}/${maxRetries} avec z.ai...`);
         
         controller = new AbortController();
-        timeoutId = setTimeout(() => controller.abort(), 25000);
+        timeoutId = setTimeout(() => controller.abort(), 15000);
 
         response = await fetch('https://api.z.ai/api/paas/v4/chat/completions', {
           method: 'POST',
@@ -144,7 +144,7 @@ Ne mets AUCUN texte avant ou après le JSON.`;
             'Authorization': `Bearer ${ZAI_API_KEY}`
           },
           body: JSON.stringify({
-            model: 'glm-4.6v-flash',
+            model: 'glm-4v-flash',
             messages: [
               {
                 role: 'user',
