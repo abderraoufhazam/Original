@@ -144,7 +144,7 @@ Ne mets AUCUN texte avant ou après le JSON.`;
             'Authorization': `Bearer ${ZAI_API_KEY}`
           },
           body: JSON.stringify({
-            model: 'glm-4.6v-flash',
+            model: 'glm-4v-plus',
             messages: [
               {
                 role: 'user',
