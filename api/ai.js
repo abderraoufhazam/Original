@@ -115,7 +115,7 @@ async function handleAnalyze(req, res) {
     const prompt = `Tu es un expert en contrefaçon. Analyse cette image avec précision.
 Réponds UNIQUEMENT avec un objet JSON valide :
 {
-  "brand": "nom de la marque (écris le nom COMPLET visible sur l'emballage, pas juste une lettre)", 
+  "brand": "lis le texte écrit sur le logo et écris-le exactement", 
   "product_name": "nom complet du produit", 
   "description": "Décris le produit en détail", 
   "confidence": "high|medium|low"
