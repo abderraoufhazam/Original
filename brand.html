@@ -966,7 +966,58 @@
     ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
 
     .hidden { display: none !important; }
+/* ============================================================
+   LUXURY EDITION — Brand Dashboard
+   ============================================================ */
+
+/* 1. الترويسة (Hero) */
+.hero {
+  background: linear-gradient(135deg, #050505 0%, #0a0e1a 100%) !important;
+  border: 1px solid rgba(212, 175, 55, 0.2) !important;
+}
+
+.hero-text h1 {
+  font-family: 'Playfair Display', serif !important;
+}
+
+.hero::before {
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, transparent 70%) !important;
+}
+
+/* 2. بطاقات الإحصائيات */
+.stat-card {
+  border: 1px solid rgba(212, 175, 55, 0.1) !important;
+}
+
+.stat-value {
+  font-family: 'Playfair Display', serif !important;
+}
+
+.stat-icon {
+  background: rgba(212, 175, 55, 0.1) !important;
+}
+
+/* 3. الأزرار */
+.btn-primary,
+.btn-gold {
+  background: linear-gradient(135deg, #d4af37 0%, #fbbf24 100%) !important;
+  color: #050505 !important;
+}
+
+/* 4. الرسوم البيانية */
+.chart-card {
+  border: 1px solid rgba(212, 175, 55, 0.1) !important;
+}
+
+html.dark .chart-card,
+html.dark .stat-card,
+html.dark .ai-analytics-section {
+  background: rgba(20, 20, 20, 0.6) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
   </style>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
