@@ -1,7 +1,7 @@
 /* ============================================================
    OriginalDz — Site Layout System v1.3
    ============================================================ */
-
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;600&display=swap');
 *, *::before, *::after { box-sizing: border-box; }
 
 :root {
@@ -590,4 +590,119 @@ html[dir="ltr"] .floating-lang-menu .check { margin-right: 0; margin-left: auto;
   .lang-switch,
   .icon-btn#siteDarkToggle { display: none !important; }
   .site-logo-text small { display: none; }
+}
+/* ============================================================
+   LUXURY EDITION — Global Secondary Pages
+   ============================================================ */
+
+/* 1. الخلفية العامة */
+body {
+  background: var(--bg) !important;
+  background-image: radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.08) 0%, transparent 40%) !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+/* 2. قسم Hero (الترويسة العلوية) */
+.page-hero {
+  background: linear-gradient(135deg, #050505 0%, #0a0e1a 100%) !important;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.page-hero::before {
+  content: '';
+  position: absolute;
+  top: -100px; right: -100px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.2) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.page-hero-inner {
+  position: relative;
+  z-index: 1;
+}
+
+.page-hero h1 {
+  font-family: 'Playfair Display', serif !important;
+  background: linear-gradient(135deg, #ffffff 30%, #d4af37 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  font-weight: 900 !important;
+}
+
+.page-hero p {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.page-hero-badge {
+  background: rgba(212, 175, 55, 0.1) !important;
+  border: 1px solid rgba(212, 175, 55, 0.3) !important;
+  color: #d4af37 !important;
+}
+
+/* 3. عناوين الأقسام */
+.section-title {
+  font-family: 'Playfair Display', serif !important;
+  color: var(--text) !important;
+}
+
+/* 4. البطاقات (Cards) */
+.card {
+  background: var(--card) !important;
+  border: 1px solid rgba(212, 175, 55, 0.15) !important;
+  border-radius: 20px !important;
+  transition: all 0.3s ease !important;
+}
+
+.card:hover {
+  border-color: rgba(212, 175, 55, 0.5) !important;
+  box-shadow: 0 10px 30px -10px rgba(212, 175, 55, 0.15) !important;
+  transform: translateY(-3px) !important;
+}
+
+.card-icon {
+  background: rgba(212, 175, 55, 0.1) !important;
+  border: 1px solid rgba(212, 175, 55, 0.3) !important;
+  color: #d4af37 !important;
+}
+
+/* 5. الأزرار الذهبية */
+.site-btn-green {
+  background: linear-gradient(135deg, #d4af37 0%, #fbbf24 100%) !important;
+  color: #050505 !important;
+  font-weight: 800 !important;
+  border: none !important;
+  box-shadow: 0 6px 20px -6px rgba(212, 175, 55, 0.5) !important;
+}
+
+.site-btn-green:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 30px -6px rgba(212, 175, 55, 0.7) !important;
+}
+
+.site-btn-ghost {
+  background: transparent !important;
+  border: 1px solid rgba(212, 175, 55, 0.4) !important;
+  color: var(--text) !important;
+}
+
+.site-btn-ghost:hover {
+  background: rgba(212, 175, 55, 0.1) !important;
+  border-color: #d4af37 !important;
+}
+
+/* 6. الوضع المظلم (Dark Mode) */
+html.dark .page-hero h1 {
+  background: linear-gradient(135deg, #ffffff 30%, #d4af37 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+html.dark .card {
+  background: rgba(20, 20, 20, 0.6) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
 }
