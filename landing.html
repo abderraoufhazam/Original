@@ -317,6 +317,121 @@
 
     .reveal { opacity: 0; transform: translateY(24px); transition: opacity 600ms ease, transform 600ms ease; }
     .reveal.visible { opacity: 1; transform: translateY(0); }
+/* ============================================================
+   LUXURY EDITION — Landing Page
+   ============================================================ */
+
+/* 1. قسم Hero */
+.landing-hero {
+  background: linear-gradient(135deg, #050505 0%, #0a0e1a 100%) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-hero::before {
+  content: '';
+  position: absolute;
+  top: -100px; right: -100px;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.landing-hero-inner {
+  position: relative;
+  z-index: 1;
+}
+
+/* 2. عنوان Hero بخط فاخر وتدرج ذهبي */
+.landing-hero h1 {
+  font-family: 'Playfair Display', serif !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.5px !important;
+}
+
+.landing-hero h1 .highlight {
+  background: linear-gradient(135deg, #d4af37 0%, #fbbf24 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* 3. نص Lead */
+.landing-hero p.lead {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* 4. زر "تحقق من منتج" (الذهبي) */
+.landing-hero-cta .site-btn-green {
+  background: linear-gradient(135deg, #d4af37 0%, #fbbf24 100%) !important;
+  color: #050505 !important;
+  font-weight: 800 !important;
+  box-shadow: 0 8px 30px -6px rgba(212, 175, 55, 0.5) !important;
+  border: none !important;
+}
+
+.landing-hero-cta .site-btn-green:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 12px 40px -6px rgba(212, 175, 55, 0.7) !important;
+}
+
+/* 5. البطاقات (Features & Steps) */
+.feature-landing, .step-landing, .report-card-landing {
+  background: var(--card-bg) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(212, 175, 55, 0.2) !important;
+  border-radius: 20px !important;
+  transition: all 0.3s ease !important;
+}
+
+.feature-landing:hover, .step-landing:hover, .report-card-landing:hover {
+  border-color: rgba(212, 175, 55, 0.6) !important;
+  box-shadow: 0 10px 30px -10px rgba(212, 175, 55, 0.2) !important;
+  transform: translateY(-5px) !important;
+}
+
+/* 6. عناوين الأقسام */
+.section-title {
+  font-family: 'Playfair Display', serif !important;
+  color: var(--text) !important;
+}
+
+/* 7. أيقونات الميزات */
+.feature-icon-landing {
+  background: rgba(212, 175, 55, 0.1) !important;
+  border: 1px solid rgba(212, 175, 55, 0.3) !important;
+  color: #d4af37 !important;
+}
+
+/* 8. زر "ابدأ الآن" في نهاية الصفحة */
+.page-content .site-btn-green {
+  background: linear-gradient(135deg, #d4af37 0%, #fbbf24 100%) !important;
+  color: #050505 !important;
+  font-weight: 800 !important;
+}
+
+/* 9. الزر الشفاف (Ghost) */
+.site-btn-ghost {
+  background: transparent !important;
+  border: 1px solid rgba(212, 175, 55, 0.4) !important;
+  color: var(--text) !important;
+}
+
+.site-btn-ghost:hover {
+  background: rgba(212, 175, 55, 0.1) !important;
+  border-color: #d4af37 !important;
+}
+
+/* 10. الوضع المظلم */
+html.dark .landing-hero {
+  background: linear-gradient(135deg, #050505 0%, #0a0e1a 100%) !important;
+}
+
+html.dark .feature-landing, 
+html.dark .step-landing, 
+html.dark .report-card-landing {
+  background: rgba(20, 20, 20, 0.6) !important;
   </style>
 </head>
 <body>
