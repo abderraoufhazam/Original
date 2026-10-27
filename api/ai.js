@@ -295,10 +295,13 @@ async function handleAnalytics(req, res) {
     const { brand_name, days = 30 } = req.body || {};
     if (!brand_name) return res.status(400).json({ status: 'ERROR', message: 'brand_name obligatoire' });
 
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+    const ZAI_API_KEY = process.env.ZAI_API_KEY;
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!GEMINI_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return res.status(500).json({ status: 'ERROR', message: 'Config manquante' });
+    
+    if (!ZAI_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      return res.status(500).json({ status: 'ERROR', message: 'Config manquante' });
+    }
 
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
     const reportsRes = await fetch(`${SUPABASE_URL}/rest/v1/fake_reports?select=wilaya,comment,product_name,product_brand,status,created_at&order=created_at.desc&limit=500&created_at=gte.${since}`, {
@@ -312,39 +315,85 @@ async function handleAnalytics(req, res) {
       return brand.includes(target) || target.includes(brand);
     });
 
-    if (reports.length === 0) return res.status(200).json({ status: 'OK', report_count: 0, analysis: { summary: "لا توجد بلاغات", patterns: [], recommendations: [], risk_level: 'LOW' } });
+    if (reports.length === 0) {
+      return res.status(200).json({ 
+        status: 'OK', 
+        report_count: 0, 
+        analysis: { summary: "لا توجد بلاغات", patterns: [], recommendations: [], risk_level: 'LOW' } 
+      });
+    }
 
     const prompt = `Tu es un analyste expert pour la marque "${brand_name}". Voici ${reports.length} signalements. Analyse-les et réponds en JSON: {"summary": "en arabe", "patterns": ["en arabe"], "recommendations": ["en arabe"], "risk_level": "LOW|MEDIUM|HIGH|CRITICAL"}`;
     
-    const models = await getAvailableModels(GEMINI_API_KEY);
-    let geminiData = null;
-    let lastError = null;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-    for (const model of models) {
-      try {
-        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt + "\n\nData: " + JSON.stringify(reports.slice(0, 30)) }] }], generationConfig: { responseMimeType: "application/json" } })
-        });
-        if (r.ok) { geminiData = await r.json(); break; }
-        else { lastError = await r.text(); }
-      } catch (err) { lastError = String(err); }
+    const response = await fetch('https://api.z.ai/api/paas/v4/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${ZAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'glm-4.6v-flash',
+        messages: [
+          { role: 'user', content: prompt + "\n\nData: " + JSON.stringify(reports.slice(0, 30)) }
+        ],
+        temperature: 0.2
+      }),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Z.ai analytics error:', errorText);
+      return res.status(500).json({ 
+        status: 'ERROR', 
+        message: 'Erreur du service d\'analyse z.ai.', 
+        detail: errorText.slice(0, 200) 
+      });
     }
 
-    if (!geminiData) return res.status(500).json({ status: 'ERROR', message: 'Erreur analyse IA', detail: lastError });
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content;
+
+    if (!text) {
+      return res.status(500).json({ status: 'ERROR', message: 'Réponse vide du service' });
+    }
 
     let analysis = null;
     try {
-      const text = geminiData.candidates[0].content.parts.map(p => p.text || '').join('');
-      analysis = JSON.parse(text.replace(/```json/g, '').replace(/```/g, '').trim());
+      let cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      const start = cleaned.indexOf('{');
+      if (start !== -1) {
+        let depth = 0, end = -1;
+        for (let i = start; i < cleaned.length; i++) {
+          if (cleaned[i] === '{') depth++;
+          else if (cleaned[i] === '}') { depth--; if (depth === 0) { end = i + 1; break; } }
+        }
+        if (end !== -1) cleaned = cleaned.substring(start, end);
+      }
+      analysis = JSON.parse(cleaned);
     } catch (e) {
-      analysis = { summary: "تم استلام البلاغات.", patterns: [], recommendations: [], risk_level: 'MEDIUM' };
+      console.warn('Failed to parse AI response:', text);
+      analysis = { 
+        summary: "تم استلام البلاغات لكن تعذّر تحليلها.", 
+        patterns: [], 
+        recommendations: [], 
+        risk_level: 'MEDIUM' 
+      };
     }
 
-    return res.status(200).json({ status: 'OK', report_count: reports.length, analysis: analysis });
+    return res.status(200).json({ 
+      status: 'OK', 
+      report_count: reports.length, 
+      analysis: analysis 
+    });
 
   } catch (error) {
+    console.error('handleAnalytics error:', error);
     return res.status(500).json({ status: 'ERROR', message: String(error).slice(0, 200) });
   }
 }
