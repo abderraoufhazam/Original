@@ -2126,13 +2126,21 @@ h1, .brand, h2 {
   font-weight: 700 !important;
 }
 
+/* الوضع الفاتح: نص داكن مع لمسة ذهبية */
 h1 {
-  color: var(--text) !important;
+  font-family: 'Playfair Display', serif !important;
   font-size: 32px !important;
-  background: linear-gradient(135deg, #fff 30%, #d4af37 100%);
+  margin-bottom: 12px !important;
+  background: linear-gradient(135deg, #0f172a 30%, #d4af37 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin-bottom: 12px !important;
+}
+
+/* الوضع المظلم: نص أبيض مع لمسة ذهبية */
+html.dark h1 {
+  background: linear-gradient(135deg, #ffffff 30%, #d4af37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* النصوص الثانوية */
