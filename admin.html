@@ -745,7 +745,94 @@
     ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
     .hidden { display: none !important; }
     .muted { color: var(--text-secondary); font-size: 13.5px; line-height: 1.6; }
-  </style>
+/* ============================================================
+   LUXURY EDITION — Admin Dashboard
+   ============================================================ */
+
+/* 1. العناوين بخط فاخر */
+.panel-title {
+  font-family: 'Playfair Display', serif !important;
+  letter-spacing: 0 !important;
+}
+
+.panel-title-icon {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(212, 175, 55, 0.05) 100%) !important;
+  border: 1px solid rgba(212, 175, 55, 0.3) !important;
+  color: #d4af37 !important;
+}
+
+/* 2. بطاقات الإحصائيات */
+.stat-card {
+  background: var(--card) !important;
+  border: 1px solid rgba(212, 175, 55, 0.15) !important;
+  transition: all 0.3s ease !important;
+}
+
+.stat-card:hover {
+  border-color: rgba(212, 175, 55, 0.5) !important;
+  box-shadow: 0 10px 30px -10px rgba(212, 175, 55, 0.15) !important;
+  transform: translateY(-3px) !important;
+}
+
+.stat-value {
+  font-family: 'Playfair Display', serif !important;
+  color: var(--text) !important;
+}
+
+.stat-icon.primary,
+.stat-icon.gold,
+.stat-icon.success,
+.stat-icon.warning,
+.stat-icon.danger {
+  background: rgba(212, 175, 55, 0.1) !important;
+  border: 1px solid rgba(212, 175, 55, 0.2) !important;
+}
+
+/* 3. الأزرار الذهبية */
+.btn-primary {
+  background: linear-gradient(135deg, #d4af37 0%, #fbbf24 100%) !important;
+  color: #050505 !important;
+  font-weight: 800 !important;
+  box-shadow: 0 6px 20px -6px rgba(212, 175, 55, 0.5) !important;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 30px -6px rgba(212, 175, 55, 0.7) !important;
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, #d4af37 0%, #fbbf24 100%) !important;
+  color: #050505 !important;
+}
+
+/* 4. البطاقات العامة */
+.card {
+  border: 1px solid rgba(212, 175, 55, 0.1) !important;
+}
+
+/* 5. حقول الإدخال */
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #d4af37 !important;
+  box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.15) !important;
+}
+
+/* 6. الوضع المظلم */
+html.dark .stat-card {
+  background: rgba(20, 20, 20, 0.6) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+html.dark .card {
+  background: rgba(20, 20, 20, 0.6) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}  
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
