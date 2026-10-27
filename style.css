@@ -2102,23 +2102,23 @@ html[dir="rtl"] .scan-label-btn {
 
 /* الخلفية السوداء الفاخرة */
 body {
-  background: #050505 !important;
-  background-image: radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.15) 0%, transparent 50%) !important;
-  color: #ffffff !important;
+  background: var(--bg) !important;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.15) 0%, transparent 50%) !important;
+  color: var(--text) !important;
   font-family: 'Inter', sans-serif !important;
 }
 
 /* البطاقة الزجاجية (The Card) */
 .card {
-  background: rgba(20, 20, 20, 0.6) !important;
+  background: var(--card-bg) !important;
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
   border: 1px solid rgba(212, 175, 55, 0.3) !important;
   border-radius: 24px !important;
-  box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.8), 0 0 40px -10px rgba(212, 175, 55, 0.1) !important;
+  box-shadow: var(--shadow-lg) !important;
   padding: 48px 36px !important;
 }
-
 /* العناوين بخط Serif فاخر */
 h1, .brand, h2 {
   font-family: 'Playfair Display', serif !important;
@@ -2127,7 +2127,7 @@ h1, .brand, h2 {
 }
 
 h1 {
-  color: #ffffff !important;
+  color: var(--text) !important;
   font-size: 32px !important;
   background: linear-gradient(135deg, #fff 30%, #d4af37 100%);
   -webkit-background-clip: text;
