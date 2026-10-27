@@ -124,10 +124,10 @@ Réponds UNIQUEMENT avec un objet JSON valide :
 }
 Ne mets AUCUN texte avant ou après le JSON.`;
 
-    // ✅ إعادة المحاولة التلقائية لخدمة z.ai (لمعالجة الازدحام المؤقت)
+        // ✅ إعادة المحاولة القوية (5 محاولات) لمعالجة فشل z.ai المتكرر
     let response = null;
     let lastErrorText = null;
-    const maxRetries = 1;
+    const maxRetries = 5;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       let controller = null;
@@ -137,7 +137,7 @@ Ne mets AUCUN texte avant ou après le JSON.`;
         console.log(`Tentative ${attempt}/${maxRetries} avec z.ai...`);
         
         controller = new AbortController();
-        timeoutId = setTimeout(() => controller.abort(), 15000);
+        timeoutId = setTimeout(() => controller.abort(), 30000); // 30 ثانية لكل محاولة
 
         response = await fetch('https://api.z.ai/api/paas/v4/chat/completions', {
           method: 'POST',
@@ -165,37 +165,48 @@ Ne mets AUCUN texte avant ou après le JSON.`;
 
         if (response.ok) {
           console.log(`✅ Succès avec z.ai (tentative ${attempt})`);
-          break; // نجح، اخرج من الحلقة
+          break; // نجح، اخرج
         } else {
           lastErrorText = await response.text();
           const status = response.status;
           
-          // إذا كان الخطأ 429 (ازدحام) أو 400 (مؤقت)، أعد المحاولة
-          if ((status === 429 || status === 400) && attempt < maxRetries) {
-            const delay = attempt * 2000; // 2s, 4s
-            console.warn(`⚠️ z.ai surchargé (${status}). Attente de ${delay}ms...`);
-            await new Promise(resolve => setTimeout(resolve, delay));
-            continue;
+          // ✅ معالجة جميع الأخطاء المؤقتة (400 و 429)
+          // 400: قد يكون توجيه خاطئ (1214) أو نصي فقط
+          // 429: ازدحام (1305) أو حد المعدل
+          if (status === 400 || status === 429) {
+            console.warn(`⚠️ z.ai erreur temporaire (${status}). Tentative ${attempt}/${maxRetries}.`);
+            
+            if (attempt < maxRetries) {
+              // انتظار متزايد: 2s, 3s, 4s, 5s
+              const delay = (attempt + 1) * 1000;
+              console.log(`Attente de ${delay}ms avant la prochaine tentative...`);
+              await new Promise(resolve => setTimeout(resolve, delay));
+              continue; // جرب مرة أخرى
+            }
+          } else {
+            // أخطاء أخرى (401, 403) لا داعي لإعادة المحاولة
+            break;
           }
         }
       } catch (err) {
         if (timeoutId) clearTimeout(timeoutId);
         
         if (err.name === 'AbortError') {
-          lastErrorText = 'Timeout (25s)';
+          lastErrorText = 'Timeout (30s)';
         } else {
           lastErrorText = String(err);
         }
         console.warn(`Tentative ${attempt} échouée: ${lastErrorText}`);
         
         if (attempt < maxRetries) {
-          const delay = attempt * 2000;
+          const delay = (attempt + 1) * 1000;
           await new Promise(resolve => setTimeout(resolve, delay));
           continue;
         }
       }
     }
 
+    
     // ✅ التحقق من النتيجة النهائية
     if (!response || !response.ok) {
       console.error('Z.ai error final:', lastErrorText);
