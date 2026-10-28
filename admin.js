@@ -190,7 +190,12 @@ async function loadLog() {
   data.forEach(r => {
     const statusClass = r.result === "ORIGINAL" ? "success" : r.result === "USED" ? "warning" : "danger";
     const date = r.created_at ? new Date(r.created_at).toLocaleString() : "—";
-    html += `<div class="log-row log-${statusClass}"><div class="log-top"><span class="log-result log-result-${statusClass}">${escapeHtml(r.result || "—")}</span><span class="log-date">${escapeHtml(date)}</span></div><div class="log-code">${escapeHtml(r.secret_code || "")}</div><div class="log-meta">${r.brand ? `<span>🏷 ${escapeHtml(r.brand)}</span>` : ""}${r.lot ? `<span>📦 ${escapeHtml(r.lot)}</span>` : ""}${r.ip ? `<span>🌐 ${escapeHtml(r.ip)}</span>` : ""}</div></div>`;
+    html += `<div class="log-row log-${statusClass}"><div class="log-top"><span class="log-result log-result-${statusClass}">${escapeHtml(r.result || "—")}</span><span class="log-date">${escapeHtml(date)}</span></div><div class="log-code">${escapeHtml(r.secret_code || "")}</div><div class="log-meta">
+          ${r.brand ? `<span>🏷 ${escapeHtml(r.brand)}</span>` : ""}
+          ${r.lot ? `<span>📦 ${escapeHtml(r.lot)}</span>` : ""}
+          ${r.ip ? `<span>🌐 ${escapeHtml(r.ip)}</span>` : ""}
+          ${r.city ? `<span>📍 ${escapeHtml(r.city)}</span>` : ""} 
+        </div></div>`;
   });
   container.innerHTML = html;
 }
