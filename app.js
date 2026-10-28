@@ -362,7 +362,7 @@ if (wilayaSubmit) {
     if (!wilaya) { wilayaMsg.textContent = "الرجاء اختيار الولاية"; wilayaMsg.className = "wilaya-msg error"; return; }
     if (!currentImageDataUrl) { wilayaMsg.textContent = "الرجاء تصوير المنتج أولًا"; wilayaMsg.className = "wilaya-msg error"; return; }
     if (!comment || comment.trim().length < 5) {
-      wilayaMsg.textContent = "⚠️ يرجى كتابة تعليق توضيحي (5 أحرف على الأقل).";
+      wilayaMsg.textContent = "⚠️ يرجى كتابة تعليق توضيحي  .";
       wilayaMsg.className = "wilaya-msg error";
       wilayaMsg.classList.remove("hidden");
       wilayaSubmit.disabled = false;
