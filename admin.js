@@ -1689,7 +1689,7 @@ if (lotInput) {
         const { data: existing } = await sb
           .from("qr_codes")
           .select("id")
-          .eq("lot", lotValue)
+          .ilike("lot", lotValue)
           .limit(1);
 
         if (existing && existing.length > 0) {
@@ -1735,7 +1735,7 @@ const lotValue = $("lot").value.trim();
     const { data: existing } = await sb
       .from("qr_codes")
       .select("id")
-      .eq("lot", lotValue)
+      .ilike("lot", lotValue)
       .limit(1);
 
     if (existing && existing.length > 0) {
