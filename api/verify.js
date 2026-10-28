@@ -109,17 +109,28 @@ const rpcResponse = await fetch(
       user_agent: userAgent
     };
 
-    fetch(`${SUPABASE_URL}/rest/v1/qr_verifications`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_SERVICE_ROLE_KEY,
-        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify(logRow)
-    }).catch(err => console.error('Log error:', err));
-
+    // ✅ تسجيل التحقق مع انتظار النتيجة لضمان الحفظ
+    try {
+      const logRes = await fetch(`${SUPABASE_URL}/rest/v1/qr_verifications`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_SERVICE_ROLE_KEY,
+          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(logRow)
+      });
+      
+      if (!logRes.ok) {
+        const errText = await logRes.text();
+        console.error('Log insert error:', errText);
+      } else {
+        console.log('✅ Verification logged successfully');
+      }
+    } catch (logErr) {
+      console.error('Log fetch error:', logErr);
+    }
     return res.status(200).json(data);
 
   } catch (error) {
