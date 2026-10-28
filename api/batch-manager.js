@@ -79,6 +79,29 @@ async function handleCreate(req, res) {
       return res.status(401).json({ status: 'ERROR', message: 'Token invalide' });
     }
 
+    // ✅ التحقق من عدم وجود دفعة بنفس رقم اللوت
+    const lotToCheck = lot?.trim();
+    if (lotToCheck) {
+      const checkRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/qr_codes?lot=eq.${encodeURIComponent(lotToCheck)}&select=id&limit=1`,
+        {
+          headers: {
+            'apikey': SUPABASE_SERVICE_ROLE_KEY,
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+
+      if (checkRes.ok) {
+        const existing = await checkRes.json();
+        if (existing && existing.length > 0) {
+          return res.status(400).json({
+            status: 'ERROR',
+            message: `رقم الدفعة "${lotToCheck}" مستعمل بالفعل. الرجاء اختيار رقم آخر أو حذف الدفعة القديمة أولاً.`
+          });
+        }
+      }
+    }
     const codes = [];
     const rows = [];
 
