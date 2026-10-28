@@ -1680,7 +1680,26 @@ if (_cb) _cb.onclick = async () => {
   _cb.disabled = true;
   _cb.textContent = "CRÉATION...";
   const ar = $("adminResult"); if (ar) ar.className = "result hidden";
+const lotValue = $("lot").value.trim();
+  if (lotValue) {
+    // فحص سريع من الواجهة (اختياري)
+    const { data: existing } = await sb
+      .from("qr_codes")
+      .select("id")
+      .eq("lot", lotValue)
+      .limit(1);
 
+    if (existing && existing.length > 0) {
+      if (ar) {
+        ar.className = "result danger";
+        ar.innerHTML = `<p>⚠️ رقم الدفعة "${lotValue}" مستعمل بالفعل. الرجاء اختيار رقم آخر.</p>`;
+      }
+      window.toast("رقم الدفعة مستعمل بالفعل", "error");
+      _cb.disabled = false;
+      _cb.textContent = "CRÉER LE LOT";
+      return; // أوقف العملية
+    }
+  }
   try {
     const res = await fetch("/api/batch-manager?action=create", {
       method: "POST",
