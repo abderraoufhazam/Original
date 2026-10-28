@@ -368,6 +368,7 @@ if (wilayaSubmit) {
       wilayaSubmit.disabled = false;
       wilayaSubmit.textContent = "📩 إرسال البلاغ";
       return;
+    }
 
     wilayaSubmit.disabled = true;
     wilayaSubmit.textContent = "جاري الإرسال...";
