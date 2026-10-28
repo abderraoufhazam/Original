@@ -706,3 +706,38 @@ html.dark .card {
   backdrop-filter: blur(10px) !important;
   -webkit-backdrop-filter: blur(10px) !important;
 }
+/* ============================================================
+   FIX HORIZONTAL OVERFLOW
+   ============================================================ */
+
+/* 1. منع التمرير الأفقي في كل الصفحة */
+html, body {
+  overflow-x: hidden !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* 2. التأكد من أن جميع العناصر لا تتجاوز العرض */
+* {
+  box-sizing: border-box;
+}
+
+/* 3. منع الصور والفيديوهات من التمدد */
+img, video, iframe, canvas {
+  max-width: 100% !important;
+  height: auto;
+}
+
+/* 4. ضبط الحاويات (Containers) */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 20px;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: 0 32px;
+  }
+}
