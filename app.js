@@ -213,34 +213,54 @@ async function analyzeImageWithAI(dataUrl) {
       if (wilayaProductName) wilayaProductName.value = data.product_name || "";
       if (wilayaDescription) wilayaDescription.value = data.description || "";
       if (wilayaAiResult) wilayaAiResult.classList.remove("hidden");
-      // ✅ عرض ملاحظة للمستخدم بعد التحليل (لتصحيح الأخطاء)
+      // ✅ عرض ملاحظة حمراء متحركة تحت حقل العلامة التجارية
       const brandInput = document.getElementById("wilayaBrand");
-      if (brandInput && brandInput.parentElement) {
+      if (brandInput) {
         // إزالة أي ملاحظة قديمة
-        const oldNote = brandInput.parentElement.querySelector(".ai-hint-note");
+        const oldNote = document.querySelector(".ai-hint-note");
         if (oldNote) oldNote.remove();
 
-        // إضافة الملاحظة الجديدة
+        // إنشاء الملاحظة الجديدة
         const note = document.createElement("div");
         note.className = "ai-hint-note";
         note.style.cssText = `
-          margin-top: 6px;
-          padding: 8px 12px;
-          background: rgba(212, 175, 55, 0.1);
-          border: 1px solid rgba(212, 175, 55, 0.3);
-          border-radius: 8px;
-          font-size: 11.5px;
-          color: #d4af37;
+          margin-top: 8px;
+          padding: 10px 14px;
+          background: rgba(220, 38, 38, 0.15);
+          border: 1.5px solid rgba(220, 38, 38, 0.5);
+          border-radius: 10px;
+          font-size: 12.5px;
+          color: #fca5a5;
+          font-weight: 700;
           line-height: 1.5;
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 10px;
+          animation: noteShake 0.6s ease-in-out;
         `;
         note.innerHTML = `
-          <span style="font-size: 14px;">✏️</span>
+          <span style="font-size: 18px;">⚠️</span>
           <span>يرجى مراجعة اسم العلامة التجارية وتصحيحه إذا كان مخطئاً.</span>
         `;
-        brandInput.parentElement.appendChild(note);
+
+        // إضافة حركة النبض/الاهتزاز
+        const style = document.createElement('style');
+        style.textContent = `
+          @keyframes noteShake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-5px); }
+            40% { transform: translateX(5px); }
+            60% { transform: translateX(-3px); }
+            80% { transform: translateX(3px); }
+          }
+        `;
+        if (!document.querySelector('#noteShakeStyle')) {
+          style.id = 'noteShakeStyle';
+          document.head.appendChild(style);
+        }
+
+        // ✅ إضافة الملاحظة تحت حقل الإدخال مباشرة
+        brandInput.insertAdjacentElement('afterend', note);
       }
       
     } else {
