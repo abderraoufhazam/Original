@@ -83,7 +83,7 @@ async function handleCreate(req, res) {
     const lotToCheck = lot?.trim();
     if (lotToCheck) {
       const checkRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/qr_codes?lot=eq.${encodeURIComponent(lotToCheck)}&select=id&limit=1`,
+        `${SUPABASE_URL}/rest/v1/qr_codes?lot=ilike.${encodeURIComponent(lotToCheck)}&select=id&limit=1`,
         {
           headers: {
             'apikey': SUPABASE_SERVICE_ROLE_KEY,
