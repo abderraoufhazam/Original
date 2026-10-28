@@ -213,6 +213,35 @@ async function analyzeImageWithAI(dataUrl) {
       if (wilayaProductName) wilayaProductName.value = data.product_name || "";
       if (wilayaDescription) wilayaDescription.value = data.description || "";
       if (wilayaAiResult) wilayaAiResult.classList.remove("hidden");
+      // ✅ عرض ملاحظة للمستخدم بعد التحليل (لتصحيح الأخطاء)
+      const brandInput = document.getElementById("wilayaBrand");
+      if (brandInput && brandInput.parentElement) {
+        // إزالة أي ملاحظة قديمة
+        const oldNote = brandInput.parentElement.querySelector(".ai-hint-note");
+        if (oldNote) oldNote.remove();
+
+        // إضافة الملاحظة الجديدة
+        const note = document.createElement("div");
+        note.className = "ai-hint-note";
+        note.style.cssText = `
+          margin-top: 6px;
+          padding: 8px 12px;
+          background: rgba(212, 175, 55, 0.1);
+          border: 1px solid rgba(212, 175, 55, 0.3);
+          border-radius: 8px;
+          font-size: 11.5px;
+          color: #d4af37;
+          line-height: 1.5;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        `;
+        note.innerHTML = `
+          <span style="font-size: 14px;">✏️</span>
+          <span>يرجى مراجعة اسم العلامة التجارية وتصحيحه إذا كان مخطئاً.</span>
+        `;
+        brandInput.parentElement.appendChild(note);
+      }
       
     } else {
       // ⚠️ فشل التحليل (لكن الـ API رد)
