@@ -1665,6 +1665,55 @@ document.querySelectorAll(".tabs .tab").forEach(t => {
 // ============================================================
 // CREATE BATCH
 // ============================================================
+// ============================================================
+// ✅ فحص فوري لحقل "Lot" وتلوينه إذا كان مستعملاً
+// ============================================================
+const lotInput = $("lot");
+if (lotInput) {
+  let lotCheckTimeout = null;
+  
+  lotInput.addEventListener("input", () => {
+    // إزالة اللون الأحمر والرسالة القديمة
+    lotInput.style.borderColor = "";
+    lotInput.style.boxShadow = "";
+    const oldMsg = document.getElementById("lot-error-msg");
+    if (oldMsg) oldMsg.remove();
+
+    const lotValue = lotInput.value.trim();
+    if (!lotValue) return;
+
+    // انتظار 500ms بعد توقف الكتابة (Debounce) لتجنب الضغط على قاعدة البيانات
+    clearTimeout(lotCheckTimeout);
+    lotCheckTimeout = setTimeout(async () => {
+      try {
+        const { data: existing } = await sb
+          .from("qr_codes")
+          .select("id")
+          .eq("lot", lotValue)
+          .limit(1);
+
+        if (existing && existing.length > 0) {
+          // ❌ الاسم مستعمل: اجعل الحقل أحمر
+          lotInput.style.borderColor = "#dc2626";
+          lotInput.style.boxShadow = "0 0 0 4px rgba(220, 38, 38, 0.15)";
+          
+          // إضافة رسالة صغيرة تحت الحقل
+          const msg = document.createElement("div");
+          msg.id = "lot-error-msg";
+          msg.style.cssText = "color: #dc2626; font-size: 11px; font-weight: 700; margin-top: 4px;";
+          msg.textContent = "⚠️ رقم اللوت مستعمل بالفعل";
+          lotInput.parentElement.appendChild(msg);
+        } else {
+          // ✅ الاسم متاح: اجعله أخضر
+          lotInput.style.borderColor = "#16a34a";
+          lotInput.style.boxShadow = "0 0 0 4px rgba(22, 163, 74, 0.15)";
+        }
+      } catch (e) {
+        console.warn("Lot check error:", e);
+      }
+    }, 500);
+  });
+}
 const _cb = $("createBtn");
 if (_cb) _cb.onclick = async () => {
   const { data: { session } } = await sb.auth.getSession();
