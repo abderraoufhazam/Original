@@ -92,6 +92,10 @@ const rpcResponse = await fetch(
 
     const data = await rpcResponse.json();
 
+    // ✅ استخراج المدينة من IP (تلقائياً عبر Vercel)
+    const city = req.headers['x-vercel-ip-city'] || null;
+    const country = req.headers['x-vercel-ip-country'] || null;
+
     // Journaliser la tentative (fire-and-forget)
     const logRow = {
       secret_code: cleanCode,
@@ -100,6 +104,8 @@ const rpcResponse = await fetch(
       product_name: data.product?.product_name || null,
       lot: data.product?.lot || null,
       ip: ip,
+      city: city ? decodeURIComponent(city) : null, // ✅ إضافة المدينة
+      country: country,
       user_agent: userAgent
     };
 
