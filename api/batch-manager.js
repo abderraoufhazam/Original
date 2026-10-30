@@ -103,6 +103,35 @@ async function handleCreate(req, res) {
       }
     }
     const codes = [];
+    // ✅ البحث عن user_id الخاص بالماركة
+    let brandUserId = null;
+    try {
+      const usersRes = await fetch(
+        `${SUPABASE_URL}/auth/v1/admin/users?per_page=1000`,
+        {
+          headers: {
+            'apikey': SUPABASE_SERVICE_ROLE_KEY,
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      if (usersRes.ok) {
+        const usersData = await usersRes.json();
+        const users = usersData.users || [];
+        const matchedUser = users.find(u => 
+          (u.user_metadata?.brand_name || '').toLowerCase() === brand.trim().toLowerCase()
+        );
+        if (matchedUser) {
+          brandUserId = matchedUser.id;
+          console.log('✅ Found brand user_id:', brandUserId, 'for brand:', brand.trim());
+        } else {
+          console.warn('⚠️ No user found for brand:', brand.trim());
+        }
+      }
+    } catch (e) {
+      console.warn('User lookup error:', e);
+    }
+
     const rows = [];
 
     const status = (initial_status === 'PENDING') ? 'PENDING' : 'UNUSED';
@@ -116,6 +145,7 @@ async function handleCreate(req, res) {
         secret_code_encrypted: encryptCode(code),
         secret_status: status,
         brand: brand.trim(),
+        user_id: brandUserId, // ✅ ربط الكود بحساب الماركة
         product_name: product_name?.trim() || null,
         reference: reference?.trim() || null,
         lot: lot?.trim() || null,
@@ -128,7 +158,6 @@ async function handleCreate(req, res) {
         tiktok_url: tiktok_url?.trim() || null,
         description: description?.trim() || null
       });
-    }
 
     const chunkSize = 500;
     let inserted = 0;
