@@ -2157,16 +2157,60 @@ async function loadWilayaChart() {
     const labels = sortedCities.map(c => c[0]);
     const values = sortedCities.map(c => c[1]);
 
-    // إنشاء الرسم البياني
-    const parent = ctx.parentElement;
-    if (parent) {
-      parent.innerHTML = `
-        <div style="padding: 20px;">
-          <h3 style="color: #d4af37; margin-bottom: 16px;">🔍 بيانات الرسم البياني:</h3>
-          <pre style="background: #1a1a1a; padding: 16px; border-radius: 10px; color: #fff; font-size: 12px;">${JSON.stringify({ labels, values }, null, 2)}</pre>
-        </div>
-      `;
-    }
+        // ✅ إنشاء الرسم البياني
+    if (window.chartWilayaBrand) window.chartWilayaBrand.destroy();
+
+    window.chartWilayaBrand = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "عدد التحققات",
+          data: values,
+          backgroundColor: [
+            "rgba(212, 175, 55, 0.85)",
+            "rgba(59, 130, 246, 0.85)",
+            "rgba(16, 185, 129, 0.85)",
+            "rgba(245, 158, 11, 0.85)",
+            "rgba(168, 85, 247, 0.85)",
+            "rgba(236, 72, 153, 0.85)",
+            "rgba(14, 165, 233, 0.85)",
+            "rgba(34, 197, 94, 0.85)",
+            "rgba(249, 115, 22, 0.85)",
+            "rgba(139, 92, 246, 0.85)"
+          ],
+          borderRadius: 8,
+          borderSkipped: false,
+          barThickness: 40
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: "y",
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "#0f172a",
+            titleColor: "#fff",
+            bodyColor: "#e2e8f0",
+            padding: 12,
+            cornerRadius: 10
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: { color: getThemeColors().text, precision: 0 },
+            grid: { color: getThemeColors().grid }
+          },
+          y: {
+            ticks: { color: getThemeColors().text, font: { size: 12, weight: "600" } },
+            grid: { display: false }
+          }
+        }
+      }
+    });
 
   } catch (e) {
     console.warn("loadWilayaChart error:", e);
