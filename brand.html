@@ -1911,7 +1911,7 @@ async function loadReports() {
   if (!container) return;
 
   try {
-    // ✅ جلب البلاغات مباشرة من جدول fake_reports (بدون RPC)
+    // ✅ جلب كل البلاغات من جدول fake_reports (بدون فلترة)
     const { data, error } = await sb
       .from("fake_reports")
       .select("*")
@@ -1920,15 +1920,10 @@ async function loadReports() {
 
     if (error) throw error;
 
-    // ✅ فلترة حسب اسم الماركة (بشكل غير حساس لحالة الأحرف)
-    const { data: { session } } = await sb.auth.getSession();
-    const brandName = session?.user?.user_metadata?.brand_name || "";
-    
-    const filtered = (data || []).filter(r => 
-      (r.product_brand || "").toLowerCase().includes(brandName.toLowerCase())
-    );
+    console.log("🔍 Reports loaded:", data);
+    console.log("🔍 Reports count:", data?.length);
 
-    allReports = filtered;
+    allReports = data || [];
     renderReports();
     renderWilayaChart();
 
