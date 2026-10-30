@@ -1922,7 +1922,71 @@ async function loadReports() {
     container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-title">Erreur</div><div class="empty-state-text">${escapeHtml(err.message)}</div></div>`;
   }
 }
+// ============================================================
+// 👁 عرض تفاصيل البلاغ (صورة + وصف + تعليق)
+// ============================================================
+window.showReportDetails = function(reportId) {
+  // البحث عن البلاغ في allReports
+  const report = allReports.find(r => r.id == reportId);
+  if (!report) {
+    toast("البلاغ غير موجود", "error");
+    return;
+  }
 
+  // إنشاء نافذة منبثقة (Modal)
+  const modalId = "reportDetailsModal";
+  let modal = document.getElementById(modalId);
+  if (modal) modal.remove(); // إزالة أي نافذة قديمة
+
+  modal = document.createElement("div");
+  modal.id = modalId;
+  modal.className = "modal-overlay";
+  modal.style.position = "fixed";
+  modal.style.inset = "0";
+  modal.style.background = "rgba(10, 14, 26, 0.75)";
+  modal.style.backdropFilter = "blur(6px)";
+  modal.style.zIndex = "10000";
+  modal.style.display = "flex";
+  modal.style.alignItems = "center";
+  modal.style.justifyContent = "center";
+  modal.style.padding = "20px";
+
+  modal.innerHTML = `
+    <div style="background: var(--card); width: 100%; max-width: 500px; max-height: 80vh; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--border);">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border);">
+        <h3 style="margin: 0; font-size: 16px; font-weight: 900;">📋 تفاصيل البلاغ</h3>
+        <button onclick="document.getElementById('${modalId}').remove()" style="background: var(--bg-secondary); border: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: var(--text);">✕</button>
+      </div>
+      <div style="padding: 16px 20px; overflow-y: auto; flex: 1;">
+        ${report.product_image ? `<img src="${escapeHtml(report.product_image)}" style="max-width: 100%; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--border);">` : `<p class="muted" style="text-align:center;padding:20px;">لا توجد صورة</p>`}
+        
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--bg-secondary); border-radius: 10px; font-size: 13px; gap: 12px;">
+            <b style="color: var(--text-secondary); font-size: 11px; text-transform: uppercase;">🏢 الماركة</b>
+            <span style="color: var(--text); font-weight: 700;">${escapeHtml(report.product_brand || "غير محدد")}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--bg-secondary); border-radius: 10px; font-size: 13px; gap: 12px;">
+            <b style="color: var(--text-secondary); font-size: 11px; text-transform: uppercase;">📦 المنتج</b>
+            <span style="color: var(--text); font-weight: 700;">${escapeHtml(report.product_name || "غير محدد")}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--bg-secondary); border-radius: 10px; font-size: 13px; gap: 12px;">
+            <b style="color: var(--text-secondary); font-size: 11px; text-transform: uppercase;">📍 الولاية</b>
+            <span style="color: var(--text); font-weight: 700;">${escapeHtml(report.wilaya || "غير محدد")}</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 14px; background: var(--bg-secondary); border-radius: 10px; font-size: 13px;">
+            <b style="color: var(--text-secondary); font-size: 11px; text-transform: uppercase;">📝 الوصف</b>
+            <span style="color: var(--text); font-weight: 600; line-height: 1.6;">${escapeHtml(report.product_description || "لا يوجد وصف")}</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 14px; background: var(--bg-secondary); border-radius: 10px; font-size: 13px;">
+            <b style="color: var(--text-secondary); font-size: 11px; text-transform: uppercase;">💬 التعليق</b>
+            <span style="color: var(--text); font-weight: 600; line-height: 1.6;">${escapeHtml(report.comment || "لا يوجد تعليق")}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+};
 // ============================================================
 // AI ANALYTICS — التحليل الذكي للتقليد
 // ============================================================
