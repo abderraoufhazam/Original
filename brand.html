@@ -2262,7 +2262,7 @@ async function loadBrandCodes() {
     const { data, error } = await sb
       .from("qr_codes")
       .select("id, secret_code, secret_status, lot, product_name, created_at")
-      .eq("brand", brandName)
+      .ilike("brand", brandName)
       .order("created_at", { ascending: false })
       .limit(500);
 
