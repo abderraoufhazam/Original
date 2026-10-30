@@ -1246,6 +1246,34 @@ html.dark .ai-analytics-section {
         </div>
       </section>
 
+      <!-- MES CODES -->
+      <section class="section" id="section-codes">
+        <div class="section-head">
+          <div class="section-title">
+            <span class="section-title-icon">📦</span>
+            <span>Mes codes</span>
+          </div>
+        </div>
+        <div class="card" style="padding: 20px;">
+          <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
+            <input id="codeSearchInput" placeholder="🔍 Rechercher un code..." style="flex: 2; min-width: 200px;">
+            <select id="codeStatusFilter" style="flex: 1; min-width: 150px;">
+              <option value="">Tous les statuts</option>
+              <option value="UNUSED">🟢 Actifs</option>
+              <option value="USED">🔵 Utilisés</option>
+              <option value="PENDING">🟡 En attente</option>
+              <option value="DISABLED">🔴 Désactivés</option>
+            </select>
+          </div>
+          <div id="codesList" style="display: flex; flex-direction: column; gap: 8px; max-height: 500px; overflow-y: auto;">
+            <div class="empty-state">
+              <div class="empty-state-icon">📦</div>
+              <div class="empty-state-title">Chargement...</div>
+              <div class="empty-state-text">Récupération de vos codes</div>
+            </div>
+          </div>
+        </div>
+      </section>
       <!-- ORDERS -->
       <section class="section" id="section-orders">
         <div class="section-head">
@@ -2212,6 +2240,118 @@ async function loadWilayaChart() {
     }
   }
 }
+  // ============================================================
+// 📦 جلب وعرض أكواد الماركة
+// ============================================================
+let allBrandCodes = [];
+
+async function loadBrandCodes() {
+  const container = $("codesList");
+  if (!container) return;
+
+  container.innerHTML = `<p class="muted" style="text-align:center;padding:20px">Chargement...</p>`;
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+
+    const brandName = session.user.user_metadata?.brand_name;
+    if (!brandName) return;
+
+    // جلب الأكواد من جدول qr_codes (مع الفلترة حسب brand)
+    const { data, error } = await sb
+      .from("qr_codes")
+      .select("id, secret_code, secret_status, lot, product_name, created_at")
+      .eq("brand", brandName)
+      .order("created_at", { ascending: false })
+      .limit(500);
+
+    if (error) throw error;
+
+    allBrandCodes = data || [];
+    renderBrandCodes();
+
+  } catch (e) {
+    console.error("loadBrandCodes error:", e);
+    container.innerHTML = `<p class="muted" style="text-align:center;padding:20px">Erreur : ${escapeHtml(e.message)}</p>`;
+  }
+}
+
+function renderBrandCodes() {
+  const container = $("codesList");
+  if (!container) return;
+
+  const search = ($("codeSearchInput")?.value || "").toLowerCase().trim();
+  const statusFilter = $("codeStatusFilter")?.value || "";
+
+  let filtered = allBrandCodes;
+
+  if (search) {
+    filtered = filtered.filter(c => 
+      (c.secret_code || "").toLowerCase().includes(search) ||
+      (c.lot || "").toLowerCase().includes(search) ||
+      (c.product_name || "").toLowerCase().includes(search)
+    );
+  }
+
+  if (statusFilter) {
+    filtered = filtered.filter(c => c.secret_status === statusFilter);
+  }
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="padding: 40px 20px"><div class="empty-state-icon">📦</div><div class="empty-state-title">Aucun code trouvé</div><div class="empty-state-text">Essayez de modifier vos filtres.</div></div>`;
+    return;
+  }
+
+  const statusColors = {
+    UNUSED: { bg: "rgba(16, 185, 129, 0.1)", color: "#10b981", label: "🟢 Actif" },
+    USED: { bg: "rgba(59, 130, 246, 0.1)", color: "#3b82f6", label: "🔵 Utilisé" },
+    PENDING: { bg: "rgba(245, 158, 11, 0.1)", color: "#f59e0b", label: "🟡 En attente" },
+    DISABLED: { bg: "rgba(239, 68, 68, 0.1)", color: "#ef4444", label: "🔴 Désactivé" }
+  };
+
+  let html = "";
+  filtered.forEach(c => {
+    const st = statusColors[c.secret_status] || { bg: "var(--bg-secondary)", color: "var(--text-secondary)", label: c.secret_status };
+    const date = c.created_at ? new Date(c.created_at).toLocaleDateString("fr-FR") : "—";
+
+    html += `
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-secondary); border-radius: 10px; border: 1px solid var(--border);">
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-family: monospace; font-weight: 800; font-size: 14px; letter-spacing: 1px; color: var(--text);">${escapeHtml(c.secret_code)}</div>
+          <div style="font-size: 11px; color: var(--text-tertiary); margin-top: 4px;">
+            ${c.lot ? `📦 Lot ${escapeHtml(c.lot)}` : ""}
+            ${c.product_name ? ` • 📝 ${escapeHtml(c.product_name)}` : ""}
+            • 📅 ${escapeHtml(date)}
+          </div>
+        </div>
+        <div style="padding: 4px 10px; border-radius: 8px; background: ${st.bg}; color: ${st.color}; font-size: 10.5px; font-weight: 800; white-space: nowrap;">
+          ${st.label}
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+// ربط أحداث البحث والتصفية
+document.addEventListener("DOMContentLoaded", () => {
+  const searchInput = $("codeSearchInput");
+  const statusFilter = $("codeStatusFilter");
+  
+  if (searchInput) {
+    let timer;
+    searchInput.addEventListener("input", () => {
+      clearTimeout(timer);
+      timer = setTimeout(renderBrandCodes, 300);
+    });
+  }
+  
+  if (statusFilter) {
+    statusFilter.addEventListener("change", renderBrandCodes);
+  }
+});
 </script>
 
 <script src="/bot-guard.js"></script>
