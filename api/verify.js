@@ -237,7 +237,7 @@ const rpcResponse = await fetch(
       product_name: data.product?.product_name || null,
       lot: data.product?.lot || null,
       ip: ip,
-      city: finalCity ? decodeURIComponent(city) : null, // ✅ إضافة المدينة
+      city: finalCity, // ✅ إضافة المدينة
       country: country,
       user_agent: userAgent
     };
