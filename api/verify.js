@@ -225,11 +225,19 @@ const rpcResponse = await fetch(
     console.log('rawCity:', rawCity);
     
     if (rawCity) {
-      rawCity = decodeURIComponent(rawCity).trim().toLowerCase();
+      // فك تشفير المدينة (S%C3%A9tif -> Sétif)
+      let decodedCity = decodeURIComponent(rawCity).trim().toLowerCase();
+      
+      // إزالة التشكيل (Sétif -> Setif)
+      const normalizedCity = decodedCity
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
       
       // البحث في الخريطة
-      if (CITY_TO_WILAYA[rawCity]) {
-        finalCity = CITY_TO_WILAYA[rawCity];
+      if (CITY_TO_WILAYA[normalizedCity]) {
+        finalCity = CITY_TO_WILAYA[normalizedCity];
+      } else {
+        finalCity = decodedCity; // إذا لم نجدها، نترك الاسم المشفر
       }
     }
     
