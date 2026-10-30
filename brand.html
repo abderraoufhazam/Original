@@ -2125,25 +2125,37 @@ async function loadWilayaChart() {
     const brandName = session.user.user_metadata?.brand_name;
     if (!brandName) return;
 
-    // جلب البيانات من RPC
-    const { data, error } = await sb.rpc("brand_get_verifications_by_wilaya", {
-      p_brand_name: brandName
-    });
+    // ✅ جلب البيانات مباشرة من جدول qr_verifications (بدون RPC)
+    const { data, error } = await sb
+      .from("qr_verifications")
+      .select("city")
+      .ilike("brand", `%${brandName}%`)
+      .limit(5000);
 
     if (error) throw error;
 
     if (!data || data.length === 0) {
       const parent = ctx.parentElement;
       if (parent) {
-        parent.innerHTML = `<div class="empty-state" style="padding: 40px 20px"><div class="empty-state-icon">📍</div><div class="empty-state-title">لا توجد تحققات بعد</div><div class="empty-state-text">عندما يقوم الزبائن بالتحقق من منتجاتك، ستظهر هنا الولايات التي يتم فيها التحقق.</div></div>`;
+        parent.innerHTML = `<div class="empty-state" ...>...</div>`;
       }
       return;
     }
 
-    // تجهيز البيانات للرسم البياني (أخذ أعلى 10 ولايات)
-    const topWilayas = data.slice(0, 10);
-    const labels = topWilayas.map(w => w.wilaya || "غير معروف");
-    const values = topWilayas.map(w => parseInt(w.count, 10));
+    // ✅ تجميع البيانات حسب المدينة
+    const cityCounts = {};
+    data.forEach(row => {
+      const city = row.city || "غير معروف";
+      cityCounts[city] = (cityCounts[city] || 0) + 1;
+    });
+
+    // ترتيب المدن حسب العدد (تنازلياً) وأخذ أعلى 10
+    const sortedCities = Object.entries(cityCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
+
+    const labels = sortedCities.map(c => c[0]);
+    const values = sortedCities.map(c => c[1]);
 
     // إنشاء الرسم البياني
     if (window.chartWilayaBrand) window.chartWilayaBrand.destroy();
