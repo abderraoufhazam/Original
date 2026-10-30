@@ -1911,17 +1911,19 @@ async function loadReports() {
   if (!container) return;
 
   try {
-            // ✅ جلب الجلسة الحالية
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) {
-      console.warn("No session found");
-      return;
-    }
+    // ✅ جلب البلاغات مباشرة من جدول fake_reports (بدون RPC)
+    const { data, error } = await sb
+      .from("fake_reports")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(500);
 
-    const { data, error } = await sb.rpc("brand_get_reports");
     if (error) throw error;
 
-    const brandName = session.user.user_metadata?.brand_name || "";
+    // ✅ فلترة حسب اسم الماركة (بشكل غير حساس لحالة الأحرف)
+    const { data: { session } } = await sb.auth.getSession();
+    const brandName = session?.user?.user_metadata?.brand_name || "";
+    
     const filtered = (data || []).filter(r => 
       (r.product_brand || "").toLowerCase().includes(brandName.toLowerCase())
     );
@@ -1929,8 +1931,9 @@ async function loadReports() {
     allReports = filtered;
     renderReports();
     renderWilayaChart();
+
   } catch (err) {
-    console.error(err);
+    console.error("loadReports error:", err);
     container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-title">Erreur</div><div class="empty-state-text">${escapeHtml(err.message)}</div></div>`;
   }
 }
