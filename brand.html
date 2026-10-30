@@ -1895,6 +1895,9 @@ window.openWilayaReports = function(wilayaName) {
         <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.6; padding: 8px; background: var(--card); border-radius: 8px; margin-top: 8px;">
           💬 ${comment}
         </div>
+        <!-- ✅ زر عرض التفاصيل -->
+        <button onclick="showReportDetails('${r.id}')" class="btn btn-primary btn-block" style="margin-top: 10px; font-size: 11px; padding: 8px;">👁 عرض التفاصيل (الصورة والوصف)</button>
+      </div>
       </div>
     `;
   });
@@ -2318,6 +2321,46 @@ function renderBrandLots() {
 
   container.innerHTML = html;
 }
+// ============================================================
+// 👁 عرض تفاصيل البلاغ (صورة + وصف + تعليق)
+// ============================================================
+window.showReportDetails = function(reportId) {
+  // البحث عن البلاغ في allReports
+  const report = allReports.find(r => r.id == reportId);
+  if (!report) {
+    toast("البلاغ غير موجود", "error");
+    return;
+  }
+
+  // إنشاء نافذة منبثقة (Modal)
+  const modalId = "reportDetailsModal";
+  let modal = document.getElementById(modalId);
+  if (modal) modal.remove(); // إزالة أي نافذة قديمة
+
+  modal = document.createElement("div");
+  modal.id = modalId;
+  modal.className = "modal-overlay";
+  modal.innerHTML = `
+    <div class="modal-box" style="max-width: 500px;">
+      <div class="modal-header">
+        <h2>📋 تفاصيل البلاغ</h2>
+        <button class="modal-close" onclick="document.getElementById('${modalId}').remove()">✕</button>
+      </div>
+      <div class="modal-body">
+        ${report.product_image ? `<img src="${escapeHtml(report.product_image)}" style="max-width: 100%; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--border);">` : `<p class="muted">لا توجد صورة</p>`}
+        
+        <div class="details">
+          <div><b>🏢 الماركة</b><span>${escapeHtml(report.product_brand || "غير محدد")}</span></div>
+          <div><b>📦 المنتج</b><span>${escapeHtml(report.product_name || "غير محدد")}</span></div>
+          <div><b>📍 الولاية</b><span>${escapeHtml(report.wilaya || "غير محدد")}</span></div>
+          <div><b>📝 الوصف</b><span>${escapeHtml(report.product_description || "لا يوجد وصف")}</span></div>
+          <div><b>💬 التعليق</b><span>${escapeHtml(report.comment || "لا يوجد تعليق")}</span></div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+};
 </script>
 
 <script src="/bot-guard.js"></script>
