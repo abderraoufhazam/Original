@@ -158,6 +158,7 @@ async function handleCreate(req, res) {
         tiktok_url: tiktok_url?.trim() || null,
         description: description?.trim() || null
       });
+    }
 
     const chunkSize = 500;
     let inserted = 0;
