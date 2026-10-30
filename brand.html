@@ -2259,10 +2259,11 @@ async function loadBrandCodes() {
     const brandName = session.user.user_metadata?.brand_name;
     if (!brandName) return;
 
-       // ⚠️ كود مؤقت للتشخيص (عرض البيانات على الشاشة)
+       // ✅ جلب الأكواد المفلترة حسب اسم الماركة
     const { data, error } = await sb
       .from("qr_codes")
       .select("id, secret_code, secret_status, lot, product_name, created_at")
+      .ilike("brand", `%${brandName}%`)
       .order("created_at", { ascending: false })
       .limit(500);
 
@@ -2272,17 +2273,12 @@ async function loadBrandCodes() {
     }
 
     if (!data || data.length === 0) {
-      container.innerHTML = `<div style="color:orange;padding:20px;">لا توجد بيانات في جدول qr_codes (أو أنك لا تملك صلاحية قراءتها).</div>`;
+      container.innerHTML = `<div style="color:orange;padding:20px;">لا توجد أكواد لهذه الماركة (${brandName}).</div>`;
       return;
     }
 
-    // عرض البيانات مباشرة (بدون تنسيق)
-    let debugHtml = `<div style="padding:20px; background:#fef2f2; border:1px solid #fecaca; border-radius:10px; margin-bottom:16px;">
-      <h3 style="color:#dc2626;margin:0 0 10px;">🔍 تشخيص: أول 5 أكواد في الجدول</h3>
-      <pre style="white-space:pre-wrap;font-size:12px;margin:0;">${JSON.stringify(data, null, 2)}</pre>
-    </div>`;
-
-    container.innerHTML = debugHtml;
+    allBrandCodes = data;
+    renderBrandCodes();
 
   } catch (e) {
     console.error("loadBrandCodes error:", e);
