@@ -215,7 +215,7 @@ const rpcResponse = await fetch(
     const data = await rpcResponse.json();
 
     // ✅ استخراج المدينة وتحويلها إلى ولاية
-    let rawCity = req.headers['x-vercel-ip-city'] || null;
+    let rawCity = 'Oran'; // ⚠️ للتجربة فقط، ارجعه لاحقاً
     let finalCity = rawCity;
     
     // 🔍 سجل للتحقق (يظهر في Vercel Logs)
