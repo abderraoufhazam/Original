@@ -1911,7 +1911,14 @@ async function loadReports() {
   if (!container) return;
 
   try {
-        const { data, error } = await sb.rpc("brand_get_reports");
+            // ✅ جلب الجلسة الحالية
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      console.warn("No session found");
+      return;
+    }
+
+    const { data, error } = await sb.rpc("brand_get_reports");
     if (error) throw error;
 
     const brandName = session.user.user_metadata?.brand_name || "";
