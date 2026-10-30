@@ -218,6 +218,25 @@ const rpcResponse = await fetch(
     let rawCity = req.headers['x-vercel-ip-city'] || null;
     let finalCity = rawCity;
     
+    // 🔍 سجل للتحقق (يظهر في Vercel Logs)
+    console.log('=== HEADERS CHECK ===');
+    console.log('x-vercel-ip-city:', req.headers['x-vercel-ip-city']);
+    console.log('x-vercel-ip-country:', req.headers['x-vercel-ip-country']);
+    console.log('rawCity:', rawCity);
+    
+    if (rawCity) {
+      rawCity = decodeURIComponent(rawCity).trim().toLowerCase();
+      
+      if (CITY_TO_WILAYA[rawCity]) {
+        finalCity = CITY_TO_WILAYA[rawCity];
+      }
+    }
+    
+    console.log('finalCity:', finalCity);
+    console.log('===================');
+    
+    const country = req.headers['x-vercel-ip-country'] || null;
+    
     if (rawCity) {
       rawCity = decodeURIComponent(rawCity).trim().toLowerCase();
       
