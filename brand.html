@@ -2371,6 +2371,11 @@ window.showReportDetails = function(reportId) {
   `;
   document.body.appendChild(modal);
 };
+// ✅ استدعاء loadReports مباشرة عند تحميل الصفحة
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("🔍 DOM loaded, calling loadReports...");
+  loadReports();
+});
 </script>
 
 <script src="/bot-guard.js"></script>
