@@ -1433,6 +1433,7 @@ function formatMoney(amount) {
 function toast(message, type = "info") {
   const container = $("toastContainer");
   if (!container) return;
+  console.log("🔍 loadBrandCodes started, brandName:", session?.user?.user_metadata?.brand_name);
   const icons = { success: "✅", error: "❌", info: "ℹ️", warning: "⚠️" };
   const t = document.createElement("div");
   t.className = `toast ${type}`;
