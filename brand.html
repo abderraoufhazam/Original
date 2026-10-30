@@ -1911,10 +1911,15 @@ async function loadReports() {
   if (!container) return;
 
   try {
-    const { data, error } = await sb.rpc("brand_get_reports");
+        const { data, error } = await sb.rpc("brand_get_reports");
     if (error) throw error;
 
-    allReports = data || [];
+    const brandName = session.user.user_metadata?.brand_name || "";
+    const filtered = (data || []).filter(r => 
+      (r.product_brand || "").toLowerCase().includes(brandName.toLowerCase())
+    );
+
+    allReports = filtered;
     renderReports();
     renderWilayaChart();
   } catch (err) {
