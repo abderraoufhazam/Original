@@ -227,19 +227,6 @@ const rpcResponse = await fetch(
     if (rawCity) {
       rawCity = decodeURIComponent(rawCity).trim().toLowerCase();
       
-      if (CITY_TO_WILAYA[rawCity]) {
-        finalCity = CITY_TO_WILAYA[rawCity];
-      }
-    }
-    
-    console.log('finalCity:', finalCity);
-    console.log('===================');
-    
-    const country = req.headers['x-vercel-ip-country'] || null;
-    
-    if (rawCity) {
-      rawCity = decodeURIComponent(rawCity).trim().toLowerCase();
-      
       // البحث في الخريطة
       if (CITY_TO_WILAYA[rawCity]) {
         finalCity = CITY_TO_WILAYA[rawCity];
