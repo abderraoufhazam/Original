@@ -2259,11 +2259,12 @@ async function loadBrandCodes() {
     const brandName = session.user.user_metadata?.brand_name;
     if (!brandName) return;
 
-    // ⚠️ كود مؤقت للتشخيص (عرض البيانات على الشاشة)
+       // ⚠️ كود مؤقت للتشخيص (عرض البيانات على الشاشة)
     const { data, error } = await sb
       .from("qr_codes")
       .select("id, secret_code, secret_status, lot, product_name, created_at")
-      .limit(5);
+      .order("created_at", { ascending: false })
+      .limit(500);
 
     if (error) {
       container.innerHTML = `<div style="color:red;padding:20px;">خطأ: ${error.message}</div>`;
