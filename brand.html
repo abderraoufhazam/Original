@@ -2158,7 +2158,9 @@ async function loadWilayaChart() {
     const values = sortedCities.map(c => c[1]);
 
         // ✅ إنشاء الرسم البياني
-    if (window.chartWilayaBrand) window.chartWilayaBrand.destroy();
+    if (window.chartWilayaBrand && typeof window.chartWilayaBrand.destroy === 'function') {
+      window.chartWilayaBrand.destroy();
+    }
 
     window.chartWilayaBrand = new Chart(ctx, {
       type: "bar",
