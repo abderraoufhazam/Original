@@ -10,7 +10,6 @@
   <link rel="apple-touch-icon" href="/icon.png">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
   <script>
@@ -647,21 +646,41 @@
         console.warn("Notify setup error:", e);
       }
 
-      // 3. إشعار EmailJS للأدمن (دائمًا)
-      try {
-        const emailParams = {
-          brand_name: senderName,
-          email: currentUser ? currentUser.email : "guest@originaldz.online",
-          phone: currentUser ? (userMeta.phone || "—") : "—",
-          subject: subject,
-          message: message,
-          to_email: "mepirf@gmail.com"
-        };
-        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, emailParams);
-        console.log("✅ Email notification sent");
-      } catch (emailErr) {
-        console.warn("⚠️ Email notification failed:", emailErr);
-      }
+      // 3. إشعار بريد إلكتروني للأدمن (عبر API الآمن)
+try {
+  const emailRes = await fetch("/api/submit?type=email", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      template: "contact",
+      to_email: "mepirf@gmail.com",
+      brand_name: senderName,
+      email: currentUser ? currentUser.email : "guest@originaldz.online",
+      phone: currentUser ? (userMeta.phone || "—") : "—",
+      subject: subject,
+      message: message,
+      turnstile_token: turnstileToken
+    })
+  });
+    const emailData = await emailRes.json();
+  if (emailData.status === "OK") {
+    console.log("✅ Email notification sent");
+  } else {
+    console.warn("⚠️ Email notification failed:", emailData.message);
+  }
+} catch (emailErr) {
+  console.warn("⚠️ Email notification failed:", emailErr);
+}
+
+  const emailData = await emailRes.json();
+  if (emailData.status === "OK") {
+    console.log("✅ Email notification sent");
+  } else {
+    console.warn("⚠️ Email notification failed:", emailData.message);
+  }
+} catch (emailErr) {
+  console.warn("⚠️ Email notification failed:", emailErr);
+}
 
       // ─── نجاح ───
       showMsg(t("successMsg"), "success");
