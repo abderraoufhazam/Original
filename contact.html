@@ -417,13 +417,8 @@
 
 <script src="/supabase-client.js"></script>
 <script>
-  const EMAILJS_PUBLIC_KEY = "juoh_rOKaec16kxrH";
-  const EMAILJS_SERVICE_ID = "service_42s5mbn";
-  const EMAILJS_TEMPLATE_ID = "template_4kdo3so";
-
-  if (typeof emailjs !== "undefined") {
-    emailjs.init(EMAILJS_PUBLIC_KEY);
-  }
+  // ✅ EmailJS est maintenant géré côté serveur (sécurisé)
+// Aucun key ici - tout passe par /api/submit?type=email
 
   const $ = id => document.getElementById(id);
 
