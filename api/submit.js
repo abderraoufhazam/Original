@@ -24,6 +24,7 @@ res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   const type = (req.query && req.query.type) || (req.body && req.body.type);
 
+  if (type === 'email')       return handleEmail(req, res);
   if (type === 'feedback')    return handleFeedback(req, res);
   if (type === 'report')      return handleReport(req, res);
   if (type === 'message')     return handleMessage(req, res);
@@ -928,6 +929,126 @@ async function sendWhatsApp(message) {
       error: String(e),
       stack: e.stack ? e.stack.slice(0, 200) : null
     };
+  }
+}
+
+// ============================================================
+// TYPE 9: EMAIL — إرسال بريد إلكتروني عبر EmailJS
+// ============================================================
+async function handleEmail(req, res) {
+  try {
+    const {
+      template,        // 'contact' أو 'verify' أو 'admin'
+      to_email,
+      brand_name,
+      email,
+      phone,
+      subject,
+      message,
+      code,            // للتحقق
+      turnstile_token
+    } = req.body || {};
+
+    // ─── التحقق الأساسي ───
+    if (!template || !['contact', 'verify', 'admin'].includes(template)) {
+      return res.status(400).json({ status: 'ERROR', message: 'template invalide' });
+    }
+
+    // 🔒 التحقق من Turnstile (للبريد العام فقط)
+    if (template === 'contact') {
+      const ip = getClientIp(req);
+      const turnstileResult = await verifyTurnstile(turnstile_token, ip);
+      if (!turnstileResult.success) {
+        return res.status(403).json({
+          status: 'ERROR',
+          message: 'Vérification anti-bot échouée.'
+        });
+      }
+    }
+
+    // ─── جلب مفاتيح EmailJS من البيئة ───
+    const EMAILJS_PUBLIC_KEY = process.env.EMAILJS_PUBLIC_KEY;
+    const EMAILJS_SERVICE_ID = process.env.EMAILJS_SERVICE_ID;
+
+    let templateId;
+    let templateParams;
+
+    if (template === 'contact') {
+      templateId = process.env.EMAILJS_TEMPLATE_ID;
+      if (!to_email || !brand_name) {
+        return res.status(400).json({ status: 'ERROR', message: 'to_email + brand_name obligatoires' });
+      }
+      templateParams = {
+        to_email: to_email,
+        brand_name: brand_name,
+        email: email || 'guest@originaldz.online',
+        phone: phone || '—',
+        subject: subject || '(sans sujet)',
+        message: message || ''
+      };
+    } else if (template === 'verify') {
+      templateId = process.env.EMAILJS_TEMPLATE_VERIFY;
+      if (!to_email || !brand_name || !code) {
+        return res.status(400).json({ status: 'ERROR', message: 'to_email + brand_name + code obligatoires' });
+      }
+      templateParams = {
+        to_email: to_email,
+        brand_name: brand_name,
+        code: code
+      };
+    } else if (template === 'admin') {
+      templateId = process.env.EMAILJS_TEMPLATE_ADMIN;
+      if (!to_email || !subject) {
+        return res.status(400).json({ status: 'ERROR', message: 'to_email + subject obligatoires' });
+      }
+      templateParams = {
+        to_email: to_email,
+        subject: subject,
+        message: message || ''
+      };
+    }
+
+    if (!EMAILJS_PUBLIC_KEY || !EMAILJS_SERVICE_ID || !templateId) {
+      console.error('❌ EmailJS env vars manquantes pour template:', template);
+      return res.status(500).json({
+        status: 'ERROR',
+        message: 'Configuration email manquante'
+      });
+    }
+
+    // ─── إرسال البريد ───
+    const emailRes = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        service_id: EMAILJS_SERVICE_ID,
+        template_id: templateId,
+        user_id: EMAILJS_PUBLIC_KEY,
+        template_params: templateParams
+      })
+    });
+
+    if (!emailRes.ok) {
+      const errText = await emailRes.text();
+      console.error('EmailJS error:', emailRes.status, errText);
+      return res.status(500).json({
+        status: 'ERROR',
+        message: 'Erreur envoi email',
+        detail: errText.slice(0, 200)
+      });
+    }
+
+    return res.status(200).json({
+      status: 'OK',
+      message: 'Email envoyé'
+    });
+
+  } catch (error) {
+    console.error('handleEmail error:', error);
+    return res.status(500).json({
+      status: 'ERROR',
+      message: String(error).slice(0, 200)
+    });
   }
 }
 
