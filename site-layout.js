@@ -182,12 +182,8 @@
 
     return `
       <div class="site-header-inner">
-        <a href="/" class="site-logo">
-          <img src="/icon.png" alt="ORDIZ">
-          <div class="site-logo-text">
-            <b>ORDIZ</b>
-            <small>${t("tagline")}</small>
-          </div>
+        <a href="/" class="site-logo" aria-label="ORDIZ">
+          <img src="/ordiz-logo.png" alt="ORDIZ" style="height:38px;width:auto;max-width:180px;object-fit:contain;">
         </a>
 
         <nav class="site-nav">
@@ -257,8 +253,7 @@
       <div class="container">
         <div class="site-footer-grid">
           <div class="site-footer-brand">
-            <img src="/icon.png" alt="ORDIZ">
-            <h4>ORDIZ</h4>
+            <img src="/ordiz-logo.png" alt="ORDIZ" style="height:44px;width:auto;max-width:200px;object-fit:contain;background:#fff;padding:6px 10px;border-radius:8px;">
             <p>${t("footerDesc")}</p>
             <div class="site-footer-social">
               <a href="https://wa.me/213556339415" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>
