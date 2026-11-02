@@ -51,7 +51,7 @@ async function handleChat(req, res) {
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
     if (!GEMINI_API_KEY) return res.status(500).json({ status: 'ERROR', message: 'Config manquante' });
 
-    let systemPrompt = `Tu es l'assistant virtuel officiel de "OriginalDz". Réponds en 2-3 phrases maximum, dans la langue du client.`;
+    let systemPrompt = `Tu es l'assistant virtuel officiel de "ORDIZ". Réponds en 2-3 phrases maximum, dans la langue du client.`;
     if (context && context.brand) {
       systemPrompt += `\nProduit actuel: ${context.brand} - ${context.product_name || ''}`;
     }
