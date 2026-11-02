@@ -364,18 +364,18 @@ async function handleShopEmail(req, res) {
 <html dir="rtl" lang="ar">
 <head><meta charset="utf-8"></head>
 <body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,Tahoma,Arial,sans-serif;">
-  <div style="max-width:600px;margin:20px auto;background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 10px 30px -10px rgba(15,23,42,0.15);">
+  <div style="max-width:600px;margin:20px auto;background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 10px 30px -10px rgba(0, 31, 82,0.15);">
 
-    <div style="background:linear-gradient(135deg,#16a34a,#22c55e);padding:36px 28px;text-align:center;color:#ffffff;">
+    <div style="background:linear-gradient(135deg,#16A96B,#45C98A);padding:36px 28px;text-align:center;color:#ffffff;">
       <div style="font-size:52px;line-height:1;margin-bottom:8px;">✅</div>
       <h1 style="margin:0;font-size:22px;font-weight:900;letter-spacing:-0.5px;">
         تم تفعيل حسابك!
       </h1>
     </div>
 
-    <div style="padding:32px 28px;color:#0f172a;line-height:1.8;">
+    <div style="padding:32px 28px;color:#001F52;line-height:1.8;">
       <p style="font-size:15px;margin:0 0 16px;">
-        مرحبًا <b style="color:#16a34a;font-size:16px;">${escapeHtmlLocal(shop_name)}</b> 👋
+        مرحبًا <b style="color:#16A96B;font-size:16px;">${escapeHtmlLocal(shop_name)}</b> 👋
       </p>
 
       <p style="font-size:14px;margin:0 0 20px;color:#334155;">
@@ -383,31 +383,31 @@ async function handleShopEmail(req, res) {
         في منصة <b>ORDIZ</b>. أصبح حسابك الآن نشطًا.
       </p>
 
-      <div style="background:#f0fdf4;border:1.5px solid #22c55e;border-radius:14px;padding:18px 20px;margin:22px 0;">
+      <div style="background:#f0fdf4;border:1.5px solid #45C98A;border-radius:14px;padding:18px 20px;margin:22px 0;">
         <div style="font-size:11px;color:#166534;font-weight:800;letter-spacing:1.5px;margin-bottom:10px;">
           📋 تفاصيل الحساب
         </div>
         <div style="font-size:13.5px;margin-bottom:8px;">
           <b style="color:#166534;">🏪 المحل:</b>
-          <span style="color:#0f172a;font-weight:700;">${escapeHtmlLocal(shop_name)}</span>
+          <span style="color:#001F52;font-weight:700;">${escapeHtmlLocal(shop_name)}</span>
         </div>
         ${shop_email ? `<div style="font-size:13.5px;margin-bottom:8px;">
           <b style="color:#166534;">📧 البريد:</b>
-          <span style="color:#0f172a;font-weight:700;">${escapeHtmlLocal(shop_email)}</span>
+          <span style="color:#001F52;font-weight:700;">${escapeHtmlLocal(shop_email)}</span>
         </div>` : ''}
         ${wilaya ? `<div style="font-size:13.5px;margin-bottom:8px;">
           <b style="color:#166534;">📍 الولاية:</b>
-          <span style="color:#0f172a;font-weight:700;">${escapeHtmlLocal(wilaya)}</span>
+          <span style="color:#001F52;font-weight:700;">${escapeHtmlLocal(wilaya)}</span>
         </div>` : ''}
         <div style="font-size:13.5px;">
           <b style="color:#166534;">📅 تاريخ الموافقة:</b>
-          <span style="color:#0f172a;font-weight:700;">${escapeHtmlLocal(date)}</span>
+          <span style="color:#001F52;font-weight:700;">${escapeHtmlLocal(date)}</span>
         </div>
       </div>
 
       <div style="text-align:center;margin:30px 0 22px;">
         <a href="https://ordiz.online/login?role=shop"
-           style="display:inline-block;background:linear-gradient(135deg,#16a34a,#22c55e);color:#ffffff;padding:15px 34px;border-radius:12px;text-decoration:none;font-weight:800;font-size:14px;">
+           style="display:inline-block;background:linear-gradient(135deg,#16A96B,#45C98A);color:#ffffff;padding:15px 34px;border-radius:12px;text-decoration:none;font-weight:800;font-size:14px;">
           🔐 الدخول إلى حسابك
         </a>
       </div>
@@ -415,15 +415,15 @@ async function handleShopEmail(req, res) {
       <p style="font-size:12.5px;color:#64748b;margin:24px 0 0;text-align:center;line-height:1.7;">
         لأي استفسار، تواصل معنا على واتساب:
         <br>
-        <b style="color:#16a34a;">+213 556 339 415</b>
+        <b style="color:#16A96B;">+213 556 339 415</b>
       </p>
     </div>
 
-    <div style="background:#0f172a;padding:22px 28px;text-align:center;color:#94a3b8;">
+    <div style="background:#001F52;padding:22px 28px;text-align:center;color:#94a3b8;">
       <div style="font-size:14px;font-weight:800;color:#ffffff;margin-bottom:4px;">ORDIZ</div>
       <div style="font-size:11px;letter-spacing:1px;">حماية المنتجات من التقليد</div>
       <div style="font-size:11px;margin-top:10px;">
-        <a href="https://ordiz.online" style="color:#16a34a;text-decoration:none;">ordiz.online</a>
+        <a href="https://ordiz.online" style="color:#16A96B;text-decoration:none;">ordiz.online</a>
       </div>
     </div>
 
@@ -742,18 +742,18 @@ async function handleNotifyShop(req, res) {
 <html dir="rtl" lang="ar">
 <head><meta charset="utf-8"></head>
 <body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,Tahoma,Arial,sans-serif;">
-  <div style="max-width:600px;margin:20px auto;background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 10px 30px -10px rgba(15,23,42,0.15);">
+  <div style="max-width:600px;margin:20px auto;background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 10px 30px -10px rgba(0, 31, 82,0.15);">
 
-    <div style="background:linear-gradient(135deg,#16a34a,#22c55e);padding:36px 28px;text-align:center;color:#ffffff;">
+    <div style="background:linear-gradient(135deg,#16A96B,#45C98A);padding:36px 28px;text-align:center;color:#ffffff;">
       <div style="font-size:52px;line-height:1;margin-bottom:8px;">✅</div>
       <h1 style="margin:0;font-size:22px;font-weight:900;letter-spacing:-0.5px;">
         تم تفعيل حسابك!
       </h1>
     </div>
 
-    <div style="padding:32px 28px;color:#0f172a;line-height:1.8;">
+    <div style="padding:32px 28px;color:#001F52;line-height:1.8;">
       <p style="font-size:15px;margin:0 0 16px;">
-        مرحبًا <b style="color:#16a34a;font-size:16px;">${escapeHtmlLocal(shop_name)}</b> 👋
+        مرحبًا <b style="color:#16A96B;font-size:16px;">${escapeHtmlLocal(shop_name)}</b> 👋
       </p>
 
       <p style="font-size:14px;margin:0 0 20px;color:#334155;">
@@ -761,31 +761,31 @@ async function handleNotifyShop(req, res) {
         في منصة <b>ORDIZ</b>. أصبح حسابك الآن نشطًا.
       </p>
 
-      <div style="background:#f0fdf4;border:1.5px solid #22c55e;border-radius:14px;padding:18px 20px;margin:22px 0;">
+      <div style="background:#f0fdf4;border:1.5px solid #45C98A;border-radius:14px;padding:18px 20px;margin:22px 0;">
         <div style="font-size:11px;color:#166534;font-weight:800;letter-spacing:1.5px;margin-bottom:10px;">
           📋 تفاصيل الحساب
         </div>
         <div style="font-size:13.5px;margin-bottom:8px;">
           <b style="color:#166534;">🏪 المحل:</b>
-          <span style="color:#0f172a;font-weight:700;">${escapeHtmlLocal(shop_name)}</span>
+          <span style="color:#001F52;font-weight:700;">${escapeHtmlLocal(shop_name)}</span>
         </div>
         ${shop_email ? `<div style="font-size:13.5px;margin-bottom:8px;">
           <b style="color:#166534;">📧 البريد:</b>
-          <span style="color:#0f172a;font-weight:700;">${escapeHtmlLocal(shop_email)}</span>
+          <span style="color:#001F52;font-weight:700;">${escapeHtmlLocal(shop_email)}</span>
         </div>` : ''}
         ${wilaya ? `<div style="font-size:13.5px;margin-bottom:8px;">
           <b style="color:#166534;">📍 الولاية:</b>
-          <span style="color:#0f172a;font-weight:700;">${escapeHtmlLocal(wilaya)}</span>
+          <span style="color:#001F52;font-weight:700;">${escapeHtmlLocal(wilaya)}</span>
         </div>` : ''}
         <div style="font-size:13.5px;">
           <b style="color:#166534;">📅 تاريخ الموافقة:</b>
-          <span style="color:#0f172a;font-weight:700;">${escapeHtmlLocal(date)}</span>
+          <span style="color:#001F52;font-weight:700;">${escapeHtmlLocal(date)}</span>
         </div>
       </div>
 
       <div style="text-align:center;margin:30px 0 22px;">
         <a href="https://ordiz.online/login?role=shop"
-           style="display:inline-block;background:linear-gradient(135deg,#16a34a,#22c55e);color:#ffffff;padding:15px 34px;border-radius:12px;text-decoration:none;font-weight:800;font-size:14px;">
+           style="display:inline-block;background:linear-gradient(135deg,#16A96B,#45C98A);color:#ffffff;padding:15px 34px;border-radius:12px;text-decoration:none;font-weight:800;font-size:14px;">
           🔐 الدخول إلى حسابك
         </a>
       </div>
@@ -793,15 +793,15 @@ async function handleNotifyShop(req, res) {
       <p style="font-size:12.5px;color:#64748b;margin:24px 0 0;text-align:center;line-height:1.7;">
         لأي استفسار، تواصل معنا على واتساب:
         <br>
-        <b style="color:#16a34a;">+213 556 339 415</b>
+        <b style="color:#16A96B;">+213 556 339 415</b>
       </p>
     </div>
 
-    <div style="background:#0f172a;padding:22px 28px;text-align:center;color:#94a3b8;">
+    <div style="background:#001F52;padding:22px 28px;text-align:center;color:#94a3b8;">
       <div style="font-size:14px;font-weight:800;color:#ffffff;margin-bottom:4px;">ORDIZ</div>
       <div style="font-size:11px;letter-spacing:1px;">حماية المنتجات من التقليد</div>
       <div style="font-size:11px;margin-top:10px;">
-        <a href="https://ordiz.online" style="color:#16a34a;text-decoration:none;">ordiz.online</a>
+        <a href="https://ordiz.online" style="color:#16A96B;text-decoration:none;">ordiz.online</a>
       </div>
     </div>
 
