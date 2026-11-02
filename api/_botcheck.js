@@ -1,6 +1,8 @@
 // api/_botcheck.js
 // Détection intelligente de bots
 
+import { getClientIp } from './_turnstile.js';
+
 const GOOD_BOTS = [
   'googlebot', 'bingbot', 'duckduckbot', 'yandexbot',
   'baiduspider', 'facebookexternalhit', 'twitterbot',
@@ -38,10 +40,8 @@ const DATACENTER_PREFIXES = [
 
 export function analyzeRequest(req) {
   const userAgent = (req.headers['user-agent'] || '').toLowerCase();
-  const forwarded = req.headers['x-forwarded-for'];
-  const ip = (Array.isArray(forwarded) ? forwarded[0] : (forwarded || '').split(',')[0]).trim()
-          || req.headers['x-real-ip']
-          || 'unknown';
+  // IP موثوقة فقط (x-real-ip أولاً، ثم آخر عنصر في x-forwarded-for)
+  const ip = getClientIp(req) || 'unknown';
   const country = req.headers['x-vercel-ip-country'] || '';
   const city = req.headers['x-vercel-ip-city'] || '';
 
