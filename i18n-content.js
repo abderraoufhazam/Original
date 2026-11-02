@@ -325,3 +325,50 @@ window.CONTENT_TRANSLATIONS = {
 if (window.CONTENT_TRANSLATIONS && window.CONTENT_TRANSLATIONS["how-it-works"]) {
   window.CONTENT_TRANSLATIONS.how = window.CONTENT_TRANSLATIONS["how-it-works"];
 }
+
+/* ============================================================
+   ⚙️ مُطبِّق الترجمة — مستقل بذاته
+   ============================================================
+   يعمل دون الاعتماد على site-layout.js.
+   يقرأ اللغة من localStorage ويطبّق القاموس على كل عنصر
+   يحمل data-i18n في الصفحة الحالية.
+   ============================================================ */
+(function () {
+  function applyContentI18n() {
+    try {
+      var lang = "ar";
+      try { lang = localStorage.getItem("lang") || "ar"; } catch (e) {}
+      var pageId = window.SITE_PAGE || "home";
+      var all = window.CONTENT_TRANSLATIONS || {};
+      var dict = all[pageId] || all[String(pageId).replace(/-/g, "")] || null;
+      if (!dict) return;
+
+      document.querySelectorAll("[data-i18n]").forEach(function (el) {
+        var key = el.getAttribute("data-i18n");
+        if (!key) return;
+        var entry = dict[key];
+        if (!entry) return;
+        var val = entry[lang] || entry.ar;
+        if (!val) return;
+        if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
+          el.placeholder = val;
+        } else {
+          el.textContent = val;
+        }
+      });
+
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+    } catch (err) {
+      console.warn("i18n apply error:", err);
+    }
+  }
+
+  window.applyContentI18n = applyContentI18n;
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", applyContentI18n);
+  } else {
+    applyContentI18n();
+  }
+})();
