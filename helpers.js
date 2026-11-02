@@ -1,5 +1,5 @@
 // ============================================================
-// helpers.js — Shared utility functions for OriginalDz
+// helpers.js — Shared utility functions for ORDIZ
 // ============================================================
 
 /**

@@ -418,7 +418,7 @@ function renderResult(data) {
       show("success", `
         <div class="product-card" style="border-color:#22c55e;">
           <div class="card-badge" style="background:linear-gradient(135deg,#0f172a,#1e293b);"><span class="card-badge-icon">🛡️</span><span>منتج من محل موثوق</span></div>
-          <div class="card-header" style="margin-top:14px;"><h2 class="card-brand" style="color:#16a34a;font-size:22px;">✅ منتج أصلي</h2><p class="card-product" style="font-size:14px;line-height:1.7;margin-top:10px;">هذا المنتج يباع في <b style="color:#16a34a;">محل موثوق من OriginalDz</b></p></div>
+          <div class="card-header" style="margin-top:14px;"><h2 class="card-brand" style="color:#16a34a;font-size:22px;">✅ منتج أصلي</h2><p class="card-product" style="font-size:14px;line-height:1.7;margin-top:10px;">هذا المنتج يباع في <b style="color:#16a34a;">محل موثوق من ORDIZ</b></p></div>
           <div style="background:linear-gradient(160deg,#fef3c7,#fde68a);border:2px solid #f59e0b;border-radius:16px;padding:18px 16px;margin:18px 0;text-align:right;">
             <div style="font-size:14px;font-weight:900;color:#92400e;margin-bottom:12px;display:flex;align-items:center;gap:8px;"><span>⚠️</span><span>في حالة كان المنتج مقلدًا:</span></div>
             <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;">
@@ -662,7 +662,7 @@ async function saveProductCard(p) {
     const canvas = await html2canvas(cardEl, { backgroundColor: "#ffffff", scale: 2, useCORS: true, logging: false });
     const link = document.createElement("a");
     const brandSlug = (p.brand || "product").replace(/[^a-zA-Z0-9\u0600-\u06FF]/g, "-");
-    link.download = `OriginalDz-${brandSlug}-${Date.now()}.png`; link.href = canvas.toDataURL("image/png"); link.click();
+    link.download = `ORDIZ-${brandSlug}-${Date.now()}.png`; link.href = canvas.toDataURL("image/png"); link.click();
     toast("تم حفظ البطاقة في التنزيلات", "success", "✓ تم");
     if (typeof vibrate === "function") vibrate([80, 50, 80]);
   } catch (e) { console.error("Save card error:", e); toast("فشل حفظ البطاقة", "error"); }
@@ -670,10 +670,10 @@ async function saveProductCard(p) {
 
 async function shareProductCard(p) {
   const brand = p.brand || "", productName = p.product_name || "";
-  const text = ["✅ منتج أصلي", "", brand ? `🏢 ${brand}` : "", productName ? `📦 ${productName}` : "", "", "تحققت من أصالته على OriginalDz 🇩🇿"].filter(Boolean).join("\n");
+  const text = ["✅ منتج أصلي", "", brand ? `🏢 ${brand}` : "", productName ? `📦 ${productName}` : "", "", "تحققت من أصالته على ORDIZ 🇩🇿"].filter(Boolean).join("\n");
   const url = location.origin;
   if (navigator.share) {
-    try { await navigator.share({ title: "منتج أصلي — OriginalDz", text: text, url: url }); if (typeof vibrate === "function") vibrate(30); return; }
+    try { await navigator.share({ title: "منتج أصلي — ORDIZ", text: text, url: url }); if (typeof vibrate === "function") vibrate(30); return; }
     catch (e) { if (e.name === "AbortError") return; }
   }
   try { await navigator.clipboard.writeText(text + "\n" + url); toast("تم نسخ النص — الصقه في أي مكان", "success", "✓ تم"); if (typeof vibrate === "function") vibrate(30); }

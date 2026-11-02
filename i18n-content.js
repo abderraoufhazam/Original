@@ -1,5 +1,5 @@
 // ============================================================
-// OriginalDz — Content Translations (i18n) — Part 1
+// ORDIZ — Content Translations (i18n) — Part 1
 // about + how-it-works + pricing
 // ============================================================
 
@@ -10,7 +10,7 @@ window.CONTENT_TRANSLATIONS = {
     "hero.badge": { ar: "🏢 من نحن", fr: "🏢 À propos", en: "🏢 About us" },
     "hero.title": { ar: "نظام جزائري لحماية المنتجات", fr: "Système algérien de protection des produits", en: "Algerian system for product protection" },
     "hero.sub": { ar: "نظام احترافي مصمّم في الجزائر، لخدمة العلامات التجارية والمحلات والمستهلكين.", fr: "Système professionnel conçu en Algérie, au service des marques, boutiques et consommateurs.", en: "Professional system designed in Algeria, serving brands, shops and consumers." },
-    "story.title": { ar: "📖 قصة OriginalDz", fr: "📖 L'histoire d'OriginalDz", en: "📖 The OriginalDz story" },
+    "story.title": { ar: "📖 قصة ORDIZ", fr: "📖 L'histoire d'ORDIZ", en: "📖 The ORDIZ story" },
     "story.text": { ar: "بدأت الفكرة من مشكلة حقيقية: آلاف المنتجات المقلدة تغرق السوق الجزائرية سنويًا، بينما يقف المستهلك عاجزًا عن التمييز بين الأصلي والمقلد.", fr: "L'idée est née d'un problème réel : des milliers de produits contrefaits inondent le marché algérien chaque année, alors que le consommateur ne peut distinguer l'authentique du faux.", en: "The idea was born from a real problem: thousands of counterfeit products flood the Algerian market every year, while consumers cannot tell the difference." },
     "mission.title": { ar: "مهمتنا", fr: "Notre mission", en: "Our mission" },
     "mission.text": { ar: "حماية المستهلك الجزائري من التقليد، وتمكين العلامات التجارية من حماية منتجاتها بأدوات تقنية حديثة.", fr: "Protéger le consommateur algérien contre la contrefaçon, et permettre aux marques de protéger leurs produits avec des outils technologiques modernes.", en: "Protecting Algerian consumers from counterfeiting, and enabling brands to protect their products with modern tech tools." },
@@ -80,7 +80,7 @@ window.CONTENT_TRANSLATIONS = {
     "brands.s5.title": { ar: "متابعة في الوقت الحقيقي", fr: "Suivi en temps réel", en: "Real-time tracking" },
     "brands.s5.text": { ar: "لوحة تحكم كاملة: عدد التحققات، المواقع الجغرافية (58 ولاية)، بلاغات التقليد، وإحصائيات فورية.", fr: "Tableau de bord complet : vérifications, géolocalisation (58 wilayas), signalements, stats instantanées.", en: "Complete dashboard: verifications, geolocation (58 wilayas), reports, instant stats." },
 
-    "security.title": { ar: "🔐 لماذا OriginalDz آمن؟", fr: "🔐 Pourquoi OriginalDz est sûr ?", en: "🔐 Why is OriginalDz secure?" },
+    "security.title": { ar: "🔐 لماذا ORDIZ آمن؟", fr: "🔐 Pourquoi ORDIZ est sûr ?", en: "🔐 Why is ORDIZ secure?" },
     "security.encryption.title": { ar: "تشفير AES-256", fr: "Chiffrement AES-256", en: "AES-256 encryption" },
     "security.encryption.text": { ar: "كل الأكواد السريّة مشفّرة في قاعدة البيانات. حتى نحن لا نستطيع قراءتها بدون المفتاح.", fr: "Tous les codes secrets sont chiffrés dans la base. Même nous ne pouvons les lire sans la clé.", en: "All secret codes are encrypted in the database. Even we cannot read them without the key." },
     "security.once.title": { ar: "كود يُستعمل مرة واحدة", fr: "Code à usage unique", en: "One-time use code" },
@@ -204,13 +204,13 @@ window.CONTENT_TRANSLATIONS = {
   // ═══════════ TEAM PAGE ═══════════
   team: {
     "hero.badge": { ar: "👥 الفريق", fr: "👥 Équipe", en: "👥 Team" },
-    "hero.title": { ar: "الفريق خلف OriginalDz", fr: "L'équipe derrière OriginalDz", en: "The team behind OriginalDz" },
+    "hero.title": { ar: "الفريق خلف ORDIZ", fr: "L'équipe derrière ORDIZ", en: "The team behind ORDIZ" },
     "hero.sub": { ar: "مجموعة من المطورين والمتخصصين الجزائريين، يعملون لخدمة السوق المحلية.", fr: "Un groupe de développeurs et spécialistes algériens, au service du marché local.", en: "A group of Algerian developers and specialists serving the local market." },
 
     "founder.title": { ar: "👑 المؤسس", fr: "👑 Le fondateur", en: "👑 The founder" },
-    "founder.name": { ar: "مؤسس OriginalDz", fr: "Fondateur d'OriginalDz", en: "Founder of OriginalDz" },
+    "founder.name": { ar: "مؤسس ORDIZ", fr: "Fondateur d'ORDIZ", en: "Founder of ORDIZ" },
     "founder.role": { ar: "المؤسس والمدير التقني", fr: "Fondateur et directeur technique", en: "Founder & CTO" },
-    "founder.bio": { ar: "مطوّر جزائري شغوف بحل المشاكل التقنية. بدأ مشروع OriginalDz بعد ملاحظة انتشار المنتجات المقلدة في السوق الجزائرية، وقرّر بناء حل تقني متكامل لحماية المستهلك ودعم العلامات التجارية.", fr: "Développeur algérien passionné par la résolution de problèmes techniques. Il a lancé OriginalDz après avoir constaté la prolifération des contrefaçons sur le marché algérien, décidant de bâtir une solution technique complète.", en: "Algerian developer passionate about solving technical problems. He started OriginalDz after noticing the spread of counterfeits in the Algerian market, deciding to build a complete technical solution." },
+    "founder.bio": { ar: "مطوّر جزائري شغوف بحل المشاكل التقنية. بدأ مشروع ORDIZ بعد ملاحظة انتشار المنتجات المقلدة في السوق الجزائرية، وقرّر بناء حل تقني متكامل لحماية المستهلك ودعم العلامات التجارية.", fr: "Développeur algérien passionné par la résolution de problèmes techniques. Il a lancé ORDIZ après avoir constaté la prolifération des contrefaçons sur le marché algérien, décidant de bâtir une solution technique complète.", en: "Algerian developer passionate about solving technical problems. He started ORDIZ after noticing the spread of counterfeits in the Algerian market, deciding to build a complete technical solution." },
 
     "teams.title": { ar: "🤝 فرق العمل", fr: "🤝 Équipes", en: "🤝 Teams" },
     "teams.sub": { ar: "كل قسم يعمل بشكل متكامل لخدمتك.", fr: "Chaque département travaille de manière intégrée pour vous servir.", en: "Each department works integrated to serve you." },
@@ -237,7 +237,7 @@ window.CONTENT_TRANSLATIONS = {
   "case-studies": {
     "hero.badge": { ar: "📊 دراسات الحالة", fr: "📊 Études de cas", en: "📊 Case studies" },
     "hero.title": { ar: "كيف يعمل النظام في الواقع", fr: "Comment le système fonctionne en pratique", en: "How the system works in reality" },
-    "hero.sub": { ar: "أمثلة توضيحية لأنواع مختلفة من العملاء الذين يستفيدون من OriginalDz.", fr: "Exemples illustratifs de différents types de clients bénéficiant d'OriginalDz.", en: "Illustrative examples of different clients benefiting from OriginalDz." },
+    "hero.sub": { ar: "أمثلة توضيحية لأنواع مختلفة من العملاء الذين يستفيدون من ORDIZ.", fr: "Exemples illustratifs de différents types de clients bénéficiant d'ORDIZ.", en: "Illustrative examples of different clients benefiting from ORDIZ." },
 
     "note.title": { ar: "ملاحظة", fr: "Note", en: "Note" },
     "note.text": { ar: "الدراسات التالية توضيحية — تمثل سيناريوهات واقعية لكن بأسماء وبيانات رمزية.", fr: "Les études suivantes sont illustratives — scénarios réalistes avec noms et données symboliques.", en: "The following studies are illustrative — realistic scenarios with symbolic data." },
@@ -250,7 +250,7 @@ window.CONTENT_TRANSLATIONS = {
     "case1.challenge": { ar: "التحدي:", fr: "Défi :", en: "Challenge:" },
     "case1.solution": { ar: "الحل:", fr: "Solution :", en: "Solution:" },
     "case1.result": { ar: "النتيجة:", fr: "Résultat :", en: "Result:" },
-    "case1.text": { ar: "واجهت الماركة موجة تقليد واسعة في ولايات الشرق، أدت لخسائر تقدر بـ30% من المبيعات. تطبيق OriginalDz على كل المنتجات، مع دفعات شهرية من الأكواد. النتيجة: اكتشاف 12 نقطة بيع للمقلد في الشهر الأول، وارتفاع ثقة المستهلك.", fr: "La marque a fait face à une vague de contrefaçon dans l'Est, causant 30% de pertes. Application d'OriginalDz sur tous les produits avec lots mensuels. Résultat : 12 points de vente détectés le 1er mois, confiance client en hausse.", en: "The brand faced a counterfeiting wave in the East, causing 30% losses. Applied OriginalDz on all products with monthly batches. Result: 12 sales points detected in month 1, higher customer trust." },
+    "case1.text": { ar: "واجهت الماركة موجة تقليد واسعة في ولايات الشرق، أدت لخسائر تقدر بـ30% من المبيعات. تطبيق ORDIZ على كل المنتجات، مع دفعات شهرية من الأكواد. النتيجة: اكتشاف 12 نقطة بيع للمقلد في الشهر الأول، وارتفاع ثقة المستهلك.", fr: "La marque a fait face à une vague de contrefaçon dans l'Est, causant 30% de pertes. Application d'ORDIZ sur tous les produits avec lots mensuels. Résultat : 12 points de vente détectés le 1er mois, confiance client en hausse.", en: "The brand faced a counterfeiting wave in the East, causing 30% losses. Applied ORDIZ on all products with monthly batches. Result: 12 sales points detected in month 1, higher customer trust." },
 
     "case2.title": { ar: "ماركة أغذية طبيعية", fr: "Marque alimentaire bio", en: "Natural food brand" },
     "case2.meta": { ar: "📍 سطيف • 🥫 8 منتجات • 📦 50,000 وحدة/شهر", fr: "📍 Sétif • 🥫 8 produits • 📦 50 000 unités/mois", en: "📍 Sétif • 🥫 8 products • 📦 50,000 units/month" },
@@ -298,7 +298,7 @@ window.CONTENT_TRANSLATIONS = {
   terms: {
     "hero.badge": { ar: "📜 شروط الاستخدام", fr: "📜 Conditions d'utilisation", en: "📜 Terms of use" },
     "hero.title": { ar: "قواعد واضحة للجميع", fr: "Des règles claires pour tous", en: "Clear rules for everyone" },
-    "hero.sub": { ar: "باستخدامك لـOriginalDz، أنت توافق على الشروط التالية.", fr: "En utilisant OriginalDz, vous acceptez les conditions suivantes.", en: "By using OriginalDz, you agree to the following terms." },
+    "hero.sub": { ar: "باستخدامك لـORDIZ، أنت توافق على الشروط التالية.", fr: "En utilisant ORDIZ, vous acceptez les conditions suivantes.", en: "By using ORDIZ, you agree to the following terms." },
 
     "update.label": { ar: "آخر تحديث:", fr: "Dernière mise à jour :", en: "Last updated:" },
 
@@ -315,7 +315,7 @@ window.CONTENT_TRANSLATIONS = {
     "s11.title": { ar: "1️⃣1️⃣ التواصل", fr: "1️⃣1️⃣ Contact", en: "1️⃣1️⃣ Contact" },
 
     "alert.title": { ar: "تنبيه قانوني:", fr: "Avertissement légal :", en: "Legal warning:" },
-    "alert.text": { ar: "في حال الخروج عن هذه الشروط، يتحمّل المستخدم المسؤولية الكاملة لوحده، ويُعفي OriginalDz من أي مسؤولية قانونية أو تجارية أو جزائية.", fr: "En cas de violation, l'utilisateur assume l'entière responsabilité seul, OriginalDz étant dégagé de toute responsabilité.", en: "In case of violation, the user bears full responsibility alone, OriginalDz being released from any liability." }
+    "alert.text": { ar: "في حال الخروج عن هذه الشروط، يتحمّل المستخدم المسؤولية الكاملة لوحده، ويُعفي ORDIZ من أي مسؤولية قانونية أو تجارية أو جزائية.", fr: "En cas de violation, l'utilisateur assume l'entière responsabilité seul, ORDIZ étant dégagé de toute responsabilité.", en: "In case of violation, the user bears full responsibility alone, ORDIZ being released from any liability." }
   }
 
 };

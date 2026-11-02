@@ -1,5 +1,5 @@
 // ============================================================
-// supabase-client.js — Shared Supabase client for OriginalDz
+// supabase-client.js — Shared Supabase client for ORDIZ
 // ============================================================
 // يتطلب: تحميل مكتبة supabase-js قبل هذا الملف
 // الاستخدام: <script src="/supabase-client.js"></script>

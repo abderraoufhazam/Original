@@ -1,5 +1,5 @@
 // ============================================================
-// OriginalDz — Site Layout System v1.3
+// ORDIZ — Site Layout System v1.3
 // Header + Footer + Dropdown (قانوني) + زر اللغة العائم
 // ============================================================
 
@@ -183,9 +183,9 @@
     return `
       <div class="site-header-inner">
         <a href="/" class="site-logo">
-          <img src="/icon.png" alt="OriginalDz">
+          <img src="/icon.png" alt="ORDIZ">
           <div class="site-logo-text">
-            <b>OriginalDz</b>
+            <b>ORDIZ</b>
             <small>${t("tagline")}</small>
           </div>
         </a>
@@ -257,8 +257,8 @@
       <div class="container">
         <div class="site-footer-grid">
           <div class="site-footer-brand">
-            <img src="/icon.png" alt="OriginalDz">
-            <h4>OriginalDz</h4>
+            <img src="/icon.png" alt="ORDIZ">
+            <h4>ORDIZ</h4>
             <p>${t("footerDesc")}</p>
             <div class="site-footer-social">
               <a href="https://wa.me/213556339415" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>
@@ -309,7 +309,7 @@
         </div>
 
         <div class="site-footer-bottom">
-          © ${year} <strong>OriginalDz</strong> — ${t("rights")}
+          © ${year} <strong>ORDIZ</strong> — ${t("rights")}
         </div>
       </div>
     `;
