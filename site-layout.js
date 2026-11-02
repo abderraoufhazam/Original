@@ -182,12 +182,8 @@
 
     return `
       <div class="site-header-inner">
-        <a href="/" class="site-logo">
-          <img src="/icon.png" alt="OriginalDz">
-          <div class="site-logo-text">
-            <b>OriginalDz</b>
-            <small>${t("tagline")}</small>
-          </div>
+        <a href="/" class="site-logo" aria-label="ORDIZ">
+          <img src="/ordiz-logo.png" alt="ORDIZ — حماية المنتجات من التقليد">
         </a>
 
         <nav class="site-nav">
@@ -257,8 +253,8 @@
       <div class="container">
         <div class="site-footer-grid">
           <div class="site-footer-brand">
-            <img src="/icon.png" alt="OriginalDz">
-            <h4>OriginalDz</h4>
+            <img src="/ordiz-logo.png" alt="ORDIZ">
+            <h4>ORDIZ</h4>
             <p>${t("footerDesc")}</p>
             <div class="site-footer-social">
               <a href="https://wa.me/213556339415" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>
