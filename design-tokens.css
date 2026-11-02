@@ -5,20 +5,20 @@
 
 :root {
   /* ─── الألوان الأساسية ─── */
-  --color-brand-green: #d4b895;
-  --color-brand-green-light: #e8d8b3;
-  --color-brand-green-soft: rgba(212, 184, 149, 0.1);
+  --color-brand-green: #1D7BD0;
+  --color-brand-green-light: #45C98A;
+  --color-brand-green-soft: rgba(29, 123, 208, 0.1);
   
-  --color-brand-navy: #0f172a;
-  --color-brand-navy-light: #1e293b;
+  --color-brand-navy: #001F52;
+  --color-brand-navy-light: #003080;
   
-  --color-brand-gold: #d4af37;
-  --color-brand-gold-light: #fbbf24;
+  --color-brand-gold: #0060C0;
+  --color-brand-gold-light: #1D7BD0;
   
   --color-brand-red: #dc2626;
 
   /* ─── ألوان النصوص والخلفيات ─── */
-  --color-text-main: #0f172a;
+  --color-text-main: #001F52;
   --color-text-muted: #64748b;
   --color-text-light: #94a3b8;
   
@@ -33,9 +33,9 @@
   --radius-full: 100px;
 
   /* ─── الظلال (Shadows) ─── */
-  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
-  --shadow-md: 0 4px 20px -8px rgba(15, 23, 42, 0.1);
-  --shadow-lg: 0 25px 50px -12px rgba(15, 23, 42, 0.22);
+  --shadow-sm: 0 1px 3px rgba(0, 31, 82, 0.06);
+  --shadow-md: 0 4px 20px -8px rgba(0, 31, 82, 0.1);
+  --shadow-lg: 0 25px 50px -12px rgba(0, 31, 82, 0.22);
 
   /* ─── الخطوط ─── */
   --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, Arial, sans-serif;
