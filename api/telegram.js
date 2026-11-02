@@ -30,7 +30,7 @@ export default async function handler(req, res) {
     // ✅ الأوامر الخاصة
     if (rawText === "/start") {
       await sendMessage(chatId, `مرحبًا ${firstName} 👋\n\n` +
-        `🤖 *OriginalDz Bot*\n\n` +
+        `🤖 *ORDIZ Bot*\n\n` +
         `أنا هنا للتحقق من أصالة المنتجات 🇩🇿\n\n` +
         `*كيف أستخدم؟*\n` +
         `1️⃣ امسح QR على المنتج\n` +
@@ -49,7 +49,7 @@ export default async function handler(req, res) {
         `📱 أرسل الكود المكون من 7 أحرف\n` +
         `مثال: \`DHY583T\`\n\n` +
         `🌐 أو استخدم الموقع:\n` +
-        `originaldz.online\n\n` +
+        `ordiz.online\n\n` +
         `📞 للدعم:\n` +
         `+213 556 339 415`
       );
@@ -189,8 +189,8 @@ async function sendVerificationResult(chatId, data) {
     if (p.expiry_date) lines.push(`⏰ *الانتهاء:* ${p.expiry_date}`);
 
     lines.push("");
-    lines.push("🌐 originaldz.online");
-    lines.push("🇩🇿 OriginalDz");
+    lines.push("🌐 ordiz.online");
+    lines.push("🇩🇿 ORDIZ");
 
     await sendMessage(chatId, lines.join("\n"), "Markdown");
     return;
