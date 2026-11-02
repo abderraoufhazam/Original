@@ -7,7 +7,7 @@ import { verifyTurnstile, getClientIp } from './_turnstile.js';
 
 export default async function handler(req, res) {
   // ✅ CORS محمي — قائمة أصول مسموحة
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://originaldz.online,https://www.originaldz.online,https://original-indol.vercel.app')
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://ordiz.online,https://www.ordiz.online,https://ordiz.online,https://www.ordiz.online,https://original-indol.vercel.app')
   .split(',').map(o => o.trim()).filter(Boolean);
 const _origin = req.headers.origin;
 if (_origin && ALLOWED_ORIGINS.includes(_origin)) {
@@ -380,7 +380,7 @@ async function handleShopEmail(req, res) {
 
       <p style="font-size:14px;margin:0 0 20px;color:#334155;">
         يسعدنا إبلاغك بأنه تمت <b>الموافقة على تسجيل محلّك</b>
-        في منصة <b>OriginalDz</b>. أصبح حسابك الآن نشطًا.
+        في منصة <b>ORDIZ</b>. أصبح حسابك الآن نشطًا.
       </p>
 
       <div style="background:#f0fdf4;border:1.5px solid #22c55e;border-radius:14px;padding:18px 20px;margin:22px 0;">
@@ -406,7 +406,7 @@ async function handleShopEmail(req, res) {
       </div>
 
       <div style="text-align:center;margin:30px 0 22px;">
-        <a href="https://originaldz.online/login?role=shop"
+        <a href="https://ordiz.online/login?role=shop"
            style="display:inline-block;background:linear-gradient(135deg,#16a34a,#22c55e);color:#ffffff;padding:15px 34px;border-radius:12px;text-decoration:none;font-weight:800;font-size:14px;">
           🔐 الدخول إلى حسابك
         </a>
@@ -420,10 +420,10 @@ async function handleShopEmail(req, res) {
     </div>
 
     <div style="background:#0f172a;padding:22px 28px;text-align:center;color:#94a3b8;">
-      <div style="font-size:14px;font-weight:800;color:#ffffff;margin-bottom:4px;">OriginalDz</div>
+      <div style="font-size:14px;font-weight:800;color:#ffffff;margin-bottom:4px;">ORDIZ</div>
       <div style="font-size:11px;letter-spacing:1px;">حماية المنتجات من التقليد</div>
       <div style="font-size:11px;margin-top:10px;">
-        <a href="https://originaldz.online" style="color:#16a34a;text-decoration:none;">originaldz.online</a>
+        <a href="https://ordiz.online" style="color:#16a34a;text-decoration:none;">ordiz.online</a>
       </div>
     </div>
 
@@ -440,7 +440,7 @@ async function handleShopEmail(req, res) {
       },
       body: JSON.stringify({
         sender: {
-          name: 'OriginalDz',
+          name: 'ORDIZ',
           email: 'noreply@originaldz.online'
         },
         to: [{
@@ -731,7 +731,7 @@ async function handleNotifyShop(req, res) {
     // - للتجربة: onboarding@resend.dev (يعمل فقط إلى إيميلك)
     // - للإنتاج: شيء@originaldz.online (بعد توثيق الدومين)
     const FROM = process.env.RESEND_FROM || 'onboarding@resend.dev';
-    const FROM_NAME = 'OriginalDz';
+    const FROM_NAME = 'ORDIZ';
 
     const date = approved_date || new Date().toLocaleDateString('ar-DZ', {
       year: 'numeric', month: 'long', day: 'numeric'
@@ -758,7 +758,7 @@ async function handleNotifyShop(req, res) {
 
       <p style="font-size:14px;margin:0 0 20px;color:#334155;">
         يسعدنا إبلاغك بأنه تمت <b>الموافقة على تسجيل محلّك</b>
-        في منصة <b>OriginalDz</b>. أصبح حسابك الآن نشطًا.
+        في منصة <b>ORDIZ</b>. أصبح حسابك الآن نشطًا.
       </p>
 
       <div style="background:#f0fdf4;border:1.5px solid #22c55e;border-radius:14px;padding:18px 20px;margin:22px 0;">
@@ -784,7 +784,7 @@ async function handleNotifyShop(req, res) {
       </div>
 
       <div style="text-align:center;margin:30px 0 22px;">
-        <a href="https://originaldz.online/login?role=shop"
+        <a href="https://ordiz.online/login?role=shop"
            style="display:inline-block;background:linear-gradient(135deg,#16a34a,#22c55e);color:#ffffff;padding:15px 34px;border-radius:12px;text-decoration:none;font-weight:800;font-size:14px;">
           🔐 الدخول إلى حسابك
         </a>
@@ -798,10 +798,10 @@ async function handleNotifyShop(req, res) {
     </div>
 
     <div style="background:#0f172a;padding:22px 28px;text-align:center;color:#94a3b8;">
-      <div style="font-size:14px;font-weight:800;color:#ffffff;margin-bottom:4px;">OriginalDz</div>
+      <div style="font-size:14px;font-weight:800;color:#ffffff;margin-bottom:4px;">ORDIZ</div>
       <div style="font-size:11px;letter-spacing:1px;">حماية المنتجات من التقليد</div>
       <div style="font-size:11px;margin-top:10px;">
-        <a href="https://originaldz.online" style="color:#16a34a;text-decoration:none;">originaldz.online</a>
+        <a href="https://ordiz.online" style="color:#16a34a;text-decoration:none;">ordiz.online</a>
       </div>
     </div>
 
