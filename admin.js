@@ -2091,6 +2091,69 @@ if (_advExport) _advExport.onclick = () => {
   downloadExcel(rows, "Recherche_Avancee", "Résultats");
 };
 
+// ── تصدير كل الأكواد (بلا حد الـ 100) ──
+// يمر عبر /api/admin-codes الذي يتحقق من صلاحية الأدمن في السيرفر،
+// ويحترم الفلاتر الحالية (البحث، الحالة، التواريخ).
+const _exportAll = $("exportAllCodesBtn");
+if (_exportAll) _exportAll.onclick = async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.toast("Connectez-vous.", "error"); return; }
+
+  const label = _exportAll.textContent;
+  _exportAll.disabled = true;
+  _exportAll.textContent = "⏳ EXPORT...";
+
+  try {
+    const res = await fetch("/api/batch-manager?action=export", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + session.access_token
+      },
+      body: JSON.stringify({
+        q: $("advSearchText")?.value?.trim() || "",
+        status: $("advSearchStatus")?.value || "",
+        dateFrom: $("advSearchDateFrom")?.value || "",
+        dateTo: $("advSearchDateTo")?.value || "",
+        limit: 10000
+      })
+    });
+
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || json.status !== "OK") {
+      throw new Error(json.message || ("HTTP " + res.status));
+    }
+
+    if (!json.rows || json.rows.length === 0) {
+      window.toast("Aucun code à exporter.", "error");
+      return;
+    }
+
+    const rows = json.rows.map(r => ({
+      "Code": r.secret_code || "",
+      "Marque": r.brand || "",
+      "Produit": r.product_name || "",
+      "Référence": r.reference || "",
+      "Lot": r.lot || "",
+      "Statut": r.secret_status || "",
+      "Prix": r.product_price ?? "",
+      "Boutique": r.shop_name || "",
+      "Créé le": r.created_at ? new Date(r.created_at).toLocaleString("fr-DZ") : ""
+    }));
+
+    downloadExcel(rows, "Codes_QR", "Codes");
+    window.toast(
+      rows.length + " codes exportés" + (json.truncated ? " (limite atteinte)" : "") + ".",
+      "success"
+    );
+  } catch (e) {
+    window.toast("Erreur export: " + e.message, "error");
+  } finally {
+    _exportAll.disabled = false;
+    _exportAll.textContent = label;
+  }
+};
+
 // ============================================================
 // DEBTS filters
 // ============================================================
