@@ -32,6 +32,7 @@ res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (action === 'create') return handleCreate(req, res);
   if (action === 'print')  return handlePrint(req, res);
+  if (action === 'export') return handleExportCodes(req, res);
 
   return res.status(400).json({
     status: 'ERROR',
@@ -328,5 +329,168 @@ async function handlePrint(req, res) {
       message: 'Erreur inattendue',
       detail: String(error).slice(0, 300)
     });
+  }
+}
+
+// ============================================================
+// ACTION 3: EXPORT — تصدير كل الأكواد (للأدمن فقط)
+// ============================================================
+// يُرجع secret_code الصريح مع بيانات الدفعة، لتصديرها Excel من لوحة التحكم.
+// الفحص هنا في السيرفر (جدول admins ثم ADMIN_EMAILS) مع service_role،
+// فلا يعتمد أمنُ الأكواد على سياسات RLS في القاعدة.
+//
+//   POST /api/batch-manager?action=export
+//   { access_token, q?, status?, dateFrom?, dateTo?, limit? }
+
+const EXPORT_PAGE_SIZE = 1000;   // سقف Supabase لكل طلب
+const EXPORT_MAX_ROWS = 10000;   // سقف التصدير الواحد
+const EXPORT_STATUSES = ['PENDING', 'UNUSED', 'USED', 'DISABLED', 'EXPIRED'];
+const EXPORT_COLUMNS = [
+  'id', 'secret_code', 'brand', 'product_name', 'reference', 'lot',
+  'secret_status', 'created_at', 'shop_name', 'is_shop_lot', 'product_price'
+].join(',');
+
+// تنظيف نص البحث من محارف تُفسد صياغة فلتر PostgREST (or=(...) )
+function sanitizeExportTerm(value) {
+  return String(value || '')
+    .replace(/[,()*"\\]/g, ' ')
+    .replace(/%/g, '')
+    .trim()
+    .slice(0, 100);
+}
+
+// يتحقق أن صاحب التوكن أدمن فعلاً
+async function requireAdminToken(req, SUPABASE_URL, SERVICE_KEY) {
+  const raw = req.headers.authorization || (req.body && req.body.access_token) || '';
+  const token = String(raw).replace(/^Bearer\s+/i, '').trim();
+
+  if (!token) return { ok: false, code: 401, message: 'Non authentifié' };
+
+  let user;
+  try {
+    const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: { 'apikey': SERVICE_KEY, 'Authorization': `Bearer ${token}` }
+    });
+    if (!userRes.ok) return { ok: false, code: 401, message: 'Token invalide' };
+    user = await userRes.json();
+  } catch (e) {
+    console.error('export: user lookup failed', e);
+    return { ok: false, code: 401, message: 'Token invalide' };
+  }
+
+  if (!user || !user.id) return { ok: false, code: 401, message: 'Token invalide' };
+
+  const svc = { 'apikey': SERVICE_KEY, 'Authorization': `Bearer ${SERVICE_KEY}` };
+
+  // 1) جدول admins
+  try {
+    const adminRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/admins?user_id=eq.${encodeURIComponent(user.id)}&select=user_id`,
+      { headers: svc }
+    );
+    if (adminRes.ok) {
+      const rows = await adminRes.json();
+      if (Array.isArray(rows) && rows.length > 0) return { ok: true, user };
+    }
+  } catch (e) {
+    console.warn('export: admins check failed', e);
+  }
+
+  // 2) قائمة البريد الاحتياطية
+  const email = String(user.email || '').toLowerCase().trim();
+  if (email && ADMIN_EMAILS.includes(email)) return { ok: true, user };
+
+  return { ok: false, code: 403, message: 'Accès refusé' };
+}
+
+async function handleExportCodes(req, res) {
+  try {
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      return res.status(500).json({ status: 'ERROR', message: 'Configuration manquante' });
+    }
+
+    // 🔒 الأدمن فقط
+    const auth = await requireAdminToken(req, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    if (!auth.ok) {
+      return res.status(auth.code).json({ status: 'ERROR', message: auth.message });
+    }
+
+    const body = req.body || {};
+    const limitRaw = parseInt(body.limit, 10);
+    const limit = Math.min(EXPORT_MAX_ROWS, Math.max(1, Number.isFinite(limitRaw) ? limitRaw : EXPORT_MAX_ROWS));
+
+    const filters = [];
+
+    const term = sanitizeExportTerm(body.q);
+    if (term) {
+      const p = `*${term}*`;
+      filters.push('or=(' + [
+        `brand.ilike.${p}`,
+        `product_name.ilike.${p}`,
+        `lot.ilike.${p}`,
+        `reference.ilike.${p}`,
+        `secret_code.ilike.${p}`
+      ].join(',') + ')');
+    }
+
+    const status = String(body.status || '').toUpperCase().trim();
+    if (status && EXPORT_STATUSES.includes(status)) {
+      filters.push(`secret_status=eq.${status}`);
+    }
+
+    if (body.dateFrom) {
+      const d = new Date(body.dateFrom);
+      if (!isNaN(d.getTime())) filters.push(`created_at=gte.${d.toISOString()}`);
+    }
+
+    if (body.dateTo) {
+      const d = new Date(body.dateTo);
+      if (!isNaN(d.getTime())) {
+        d.setHours(23, 59, 59, 999);
+        filters.push(`created_at=lte.${d.toISOString()}`);
+      }
+    }
+
+    const filterQuery = filters.length ? '&' + filters.join('&') : '';
+    const svc = { 'apikey': SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` };
+
+    const rows = [];
+    let offset = 0;
+
+    while (rows.length < limit) {
+      const pageSize = Math.min(EXPORT_PAGE_SIZE, limit - rows.length);
+      const url = `${SUPABASE_URL}/rest/v1/qr_codes?select=${EXPORT_COLUMNS}`
+        + `${filterQuery}&order=created_at.desc&limit=${pageSize}&offset=${offset}`;
+
+      const r = await fetch(url, { headers: svc });
+
+      if (!r.ok) {
+        const errText = await r.text();
+        console.error('export: query failed', r.status, errText);
+        return res.status(500).json({ status: 'ERROR', message: 'Erreur serveur' });
+      }
+
+      const batch = await r.json();
+      if (!Array.isArray(batch) || batch.length === 0) break;
+
+      rows.push(...batch);
+      offset += batch.length;
+
+      if (batch.length < pageSize) break; // آخر صفحة
+    }
+
+    return res.status(200).json({
+      status: 'OK',
+      count: rows.length,
+      truncated: rows.length >= limit,
+      rows
+    });
+
+  } catch (error) {
+    console.error('handleExportCodes error:', error);
+    return res.status(500).json({ status: 'ERROR', message: 'Erreur inattendue' });
   }
 }
