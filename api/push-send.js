@@ -5,7 +5,7 @@ import webpush from 'web-push';
 
 export default async function handler(req, res) {
   // ✅ CORS محمي — قائمة أصول مسموحة
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://ordiz.online,https://www.ordiz.online,https://originaldz.online,https://www.originaldz.online,https://original-indol.vercel.app')
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://ordiz.online,https://www.ordiz.online,https://original-indol.vercel.app')
   .split(',').map(o => o.trim()).filter(Boolean);
 const _origin = req.headers.origin;
 if (_origin && ALLOWED_ORIGINS.includes(_origin)) {

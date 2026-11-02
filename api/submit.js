@@ -441,7 +441,7 @@ async function handleShopEmail(req, res) {
       body: JSON.stringify({
         sender: {
           name: 'ORDIZ',
-          email: 'noreply@originaldz.online'
+          email: 'noreply@ordiz.online'
         },
         to: [{
           email: to_email,
@@ -729,7 +729,7 @@ async function handleNotifyShop(req, res) {
 
     // من أين يُرسل البريد
     // - للتجربة: onboarding@resend.dev (يعمل فقط إلى إيميلك)
-    // - للإنتاج: شيء@originaldz.online (بعد توثيق الدومين)
+    // - للإنتاج: شيء@ordiz.online (بعد توثيق الدومين)
     const FROM = process.env.RESEND_FROM || 'onboarding@resend.dev';
     const FROM_NAME = 'ORDIZ';
 
@@ -981,7 +981,7 @@ async function handleEmail(req, res) {
       templateParams = {
         to_email: to_email,
         brand_name: brand_name,
-        email: email || 'guest@originaldz.online',
+        email: email || 'guest@ordiz.online',
         phone: phone || '—',
         subject: subject || '(sans sujet)',
         message: message || ''
