@@ -183,7 +183,7 @@
     return `
       <div class="site-header-inner">
         <a href="/" class="site-logo">
-          <img src="/ordiz-logo.png" alt="OriginalDz">
+          <img src="/icon.png" alt="OriginalDz">
           <div class="site-logo-text">
             <b>OriginalDz</b>
             <small>${t("tagline")}</small>
@@ -257,7 +257,7 @@
       <div class="container">
         <div class="site-footer-grid">
           <div class="site-footer-brand">
-            <img src="/ordiz-logo.png" alt="OriginalDz">
+            <img src="/icon.png" alt="OriginalDz">
             <h4>OriginalDz</h4>
             <p>${t("footerDesc")}</p>
             <div class="site-footer-social">
