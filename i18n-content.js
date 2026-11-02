@@ -147,8 +147,6 @@ window.CONTENT_TRANSLATIONS = {
     "final.sub": { ar: "تواصل معنا وسنساعدك في اختيار الأنسب.", fr: "Contactez-nous, nous vous aiderons à choisir.", en: "Contact us and we'll help you choose." },
     "final.contact": { ar: "📞 اتصل بنا", fr: "📞 Contactez-nous", en: "📞 Contact us" },
     "final.signup": { ar: "✨ سجّل كماركة", fr: "✨ S'inscrire comme marque", en: "✨ Sign up as brand" }
-  }
-
   },
 
   // ═══════════ FAQ PAGE ═══════════
@@ -321,3 +319,9 @@ window.CONTENT_TRANSLATIONS = {
   }
 
 };
+
+/* ─── توافق: صفحة how-it-works تعرّف نفسها باسم "how"
+   بينما القاموس يستخدم "how-it-works" ─── */
+if (window.CONTENT_TRANSLATIONS && window.CONTENT_TRANSLATIONS["how-it-works"]) {
+  window.CONTENT_TRANSLATIONS.how = window.CONTENT_TRANSLATIONS["how-it-works"];
+}
