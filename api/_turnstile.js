@@ -46,10 +46,27 @@ if (!secret) {
   }
 }
 
-// استخراج IP من الطلب
+// استخراج IP من الطلب — ⚠️ يُستخدم لتحديد المعدل (rate limit)
+//
+// قاعدة الأمان: لا نثق أبداً بأول قيمة في x-forwarded-for، لأن العميل
+// يستطيع إرسالها بأي قيمة (curl -H "X-Forwarded-For: 1.2.3.4").
+// على Vercel:
+//   1) x-real-ip يضبطه الـ proxy دائماً → المصدر الموثوق الأول.
+//   2) x-forwarded-for: الـ proxy يُلحق IP الحقيقي في النهاية، فيكون
+//      آخر عنصر هو القيمة الموثوقة، وما قبلها قد يكون مزوّراً.
 export function getClientIp(req) {
+  const realIp = req.headers['x-real-ip'];
+  if (typeof realIp === 'string' && realIp.trim()) {
+    return realIp.trim();
+  }
+
   const forwarded = req.headers['x-forwarded-for'];
-  return (Array.isArray(forwarded) ? forwarded[0] : (forwarded || '').split(',')[0]).trim()
-    || req.headers['x-real-ip']
-    || null;
+  if (!forwarded) return null;
+
+  const raw = Array.isArray(forwarded) ? forwarded.join(',') : String(forwarded);
+  const parts = raw.split(',').map(s => s.trim()).filter(Boolean);
+  if (parts.length === 0) return null;
+
+  // آخر عنصر = أقرب proxy (موثوق)، وليس أول عنصر (قابل للتزوير)
+  return parts[parts.length - 1];
 }
