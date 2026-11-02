@@ -5,6 +5,7 @@
 //   POST /api/batch-manager?action=print    { lot }
 
 import { hashCode, encryptCode, generateSecretCode, decryptCode } from './_crypto.js';
+import { getClientIp } from './_turnstile.js';
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '')
   .split(',')
@@ -287,10 +288,7 @@ async function handlePrint(req, res) {
       }
     }
 
-    const forwarded = req.headers['x-forwarded-for'];
-    const ip = (Array.isArray(forwarded) ? forwarded[0] : (forwarded || '').split(',')[0]).trim()
-      || req.headers['x-real-ip']
-      || 'unknown';
+    const ip = getClientIp(req) || 'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
 
     fetch(`${SUPABASE_URL}/rest/v1/qr_print_logs`, {
