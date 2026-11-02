@@ -610,3 +610,28 @@ html.dark .nav-item.active {
   .section-title { font-size: var(--fs-2xl); }
   .container { padding-inline: var(--sp-4); }
 }
+
+/* ═══════════════════ تصحيح التباين داخل الهيرو ═══════════════════ */
+/* الكلمة المميّزة كانت ذهبية على خلفية داكنة؛ الآن أخضر واضح */
+.landing-hero h1 .highlight,
+.hero h1 .highlight,
+.hero-section h1 .highlight {
+  background: linear-gradient(135deg, var(--green-300) 0%, var(--green-400) 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* أي زر كان ذهبياً صار أزرق بنص أبيض (تصحيح لصفحات لم تُحدَّث) */
+.landing-hero-cta .site-btn-green,
+.page-content .site-btn-green {
+  background: var(--grad-brand) !important;
+  color: #fff !important;
+  border: 1px solid rgba(0, 48, 128, 0.35) !important;
+  box-shadow: var(--shadow-brand), var(--shadow-inset) !important;
+}
+.landing-hero-cta .site-btn-green:hover,
+.page-content .site-btn-green:hover {
+  background: var(--grad-brand-hover) !important;
+  color: #fff !important;
+}
