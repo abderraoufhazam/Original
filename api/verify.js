@@ -147,10 +147,13 @@ export default async function handler(req, res) {
       return res.status(500).json({ status: 'ERROR', message: 'Configuration manquante' });
     }
 
-    // 🔒 Rate Limiting
+    // 🔒 Rate Limiting — fail-closed
+    // إذا تعذّر فحص الحد (انقطاع، خطأ شبكة، RPC مفقود) نرفض الطلب،
+    // لأن هذا الفحص هو الدفاع الوحيد أمام تخمين الكود السري.
     const ip = getClientIp(req) || 'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
 
+    let rateLimitAllowed = null; // null = تعذّر الفحص
     try {
       const rlRes = await fetch(
         `${SUPABASE_URL}/rest/v1/rpc/check_rate_limit`,
@@ -171,16 +174,27 @@ export default async function handler(req, res) {
 
       if (rlRes.ok) {
         const allowed = await rlRes.json();
-        if (allowed === false) {
-          return res.status(429).json({
-            status: 'ERROR',
-            message: 'Trop de tentatives. Réessayez dans une minute.'
-          });
-        }
+        rateLimitAllowed = allowed !== false;
+      } else {
+        console.error('Rate limit RPC failed:', rlRes.status);
       }
     } catch (rlErr) {
-      // لا نُفشل الطلب إذا فشل فحص rate limit — نكمل بحذر
-      console.warn('Rate limit check failed:', rlErr);
+      console.error('Rate limit check error:', rlErr);
+    }
+
+    if (rateLimitAllowed === false) {
+      return res.status(429).json({
+        status: 'ERROR',
+        message: 'Trop de tentatives. Réessayez dans une minute.'
+      });
+    }
+
+    if (rateLimitAllowed === null) {
+      // Fail-closed: لا نُكمل التحقق بدون حماية من التخمين
+      return res.status(503).json({
+        status: 'ERROR',
+        message: 'Service de vérification temporairement indisponible.'
+      });
     }
 
     // Calculer le hash SHA-256
@@ -215,15 +229,9 @@ const rpcResponse = await fetch(
     const data = await rpcResponse.json();
 
     // ✅ استخراج المدينة وتحويلها إلى ولاية
-    let rawCity = req.headers['x-vercel-ip-city'] || null;
+    const rawCity = req.headers['x-vercel-ip-city'] || null;
     let finalCity = rawCity;
-    
-    // 🔍 سجل للتحقق (يظهر في Vercel Logs)
-    console.log('=== HEADERS CHECK ===');
-    console.log('x-vercel-ip-city:', req.headers['x-vercel-ip-city']);
-    console.log('x-vercel-ip-country:', req.headers['x-vercel-ip-country']);
-    console.log('rawCity:', rawCity);
-    
+
     if (rawCity) {
       // فك تشفير المدينة (S%C3%A9tif -> Sétif)
       let decodedCity = decodeURIComponent(rawCity).trim().toLowerCase();
