@@ -242,8 +242,68 @@ async function handlePrint(req, res) {
       return res.status(401).json({ status: 'ERROR', message: 'Token invalide' });
     }
 
+    // ══════════════════════════════════════════════════════════
+    // 🔒 فحص الصلاحية: الأدمن أو صاحب الدفعة فقط
+    // قبل هذا الإصلاح كان أي مستخدم مسجّل يستطيع قراءة أكواد
+    // أي دفعة بمعرفة رقمها فقط (تجاوز صلاحيات / IDOR).
+    // ══════════════════════════════════════════════════════════
+    const user = await userRes.json();
+    const userId = user && user.id;
+
+    if (!userId) {
+      return res.status(401).json({ status: 'ERROR', message: 'Token invalide' });
+    }
+
+    const svcHeaders = {
+      'apikey': SUPABASE_SERVICE_ROLE_KEY,
+      'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+    };
+    const cleanLot = lot.trim();
+
+    // 1) هل الطالب أدمن؟
+    let isAdmin = false;
+    try {
+      const adminRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/admins?user_id=eq.${encodeURIComponent(userId)}&select=user_id`,
+        { headers: svcHeaders }
+      );
+      if (adminRes.ok) {
+        const admins = await adminRes.json();
+        if (Array.isArray(admins) && admins.length > 0) isAdmin = true;
+      }
+    } catch (e) {
+      console.warn('print: admins check failed', e);
+    }
+
+    if (!isAdmin) {
+      const email = String(user.email || '').toLowerCase().trim();
+      if (email && ADMIN_EMAILS.includes(email)) isAdmin = true;
+    }
+
+    // 2) إن لم يكن أدمن → يجب أن تكون الدفعة مملوكة له
+    if (!isAdmin) {
+      const ownRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/qr_codes?lot=eq.${encodeURIComponent(cleanLot)}&select=user_id&limit=1`,
+        { headers: svcHeaders }
+      );
+
+      if (!ownRes.ok) {
+        return res.status(500).json({ status: 'ERROR', message: 'Erreur vérification' });
+      }
+
+      const own = await ownRes.json();
+      const ownerId = Array.isArray(own) && own.length > 0 ? own[0].user_id : null;
+
+      if (!ownerId || ownerId !== userId) {
+        return res.status(403).json({
+          status: 'ERROR',
+          message: 'Accès refusé : cette lot ne vous appartient pas'
+        });
+      }
+    }
+
     const fetchRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/qr_codes?lot=eq.${encodeURIComponent(lot.trim())}&select=id,secret_code,secret_code_encrypted,secret_status,brand,product_name,reference,manufacture_date,expiry_date,logo_url,created_at&order=created_at.asc`,
+      `${SUPABASE_URL}/rest/v1/qr_codes?lot=eq.${encodeURIComponent(cleanLot)}&select=id,secret_code,secret_code_encrypted,secret_status,brand,product_name,reference,manufacture_date,expiry_date,logo_url,created_at&order=created_at.asc`,
       {
         headers: {
           'apikey': SUPABASE_SERVICE_ROLE_KEY,
