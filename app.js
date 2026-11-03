@@ -459,9 +459,9 @@ function renderResult(data) {
         <div class="social-links">
           <p class="social-title">${escapeHtml(t("followUs"))}</p>
           <div class="social-buttons">
-            ${p.instagram_url ? `<a href="${escapeHtml(p.instagram_url)}" target="_blank" rel="noopener" class="social-btn social-instagram" aria-label="Instagram"><img src="/instagram.png" alt="Instagram" class="social-icon-img"><span>Instagram</span></a>` : ""}
-            ${p.facebook_url ? `<a href="${escapeHtml(p.facebook_url)}" target="_blank" rel="noopener" class="social-btn social-facebook" aria-label="Facebook"><img src="/facebook.png" alt="Facebook" class="social-icon-img"><span>Facebook</span></a>` : ""}
-            ${p.tiktok_url ? `<a href="${escapeHtml(p.tiktok_url)}" target="_blank" rel="noopener" class="social-btn social-tiktok" aria-label="TikTok"><img src="/tiktok.png" alt="TikTok" class="social-icon-img"><span>TikTok</span></a>` : ""}
+            ${safeUrl(p.instagram_url) ? `<a href="${escapeHtml(safeUrl(p.instagram_url))}" target="_blank" rel="noopener" class="social-btn social-instagram" aria-label="Instagram"><img src="/instagram.png" alt="Instagram" class="social-icon-img"><span>Instagram</span></a>` : ""}
+            ${safeUrl(p.facebook_url) ? `<a href="${escapeHtml(safeUrl(p.facebook_url))}" target="_blank" rel="noopener" class="social-btn social-facebook" aria-label="Facebook"><img src="/facebook.png" alt="Facebook" class="social-icon-img"><span>Facebook</span></a>` : ""}
+            ${safeUrl(p.tiktok_url) ? `<a href="${escapeHtml(safeUrl(p.tiktok_url))}" target="_blank" rel="noopener" class="social-btn social-tiktok" aria-label="TikTok"><img src="/tiktok.png" alt="TikTok" class="social-icon-img"><span>TikTok</span></a>` : ""}
           </div>
         </div>` : ""}
     `);

