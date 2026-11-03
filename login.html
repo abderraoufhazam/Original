@@ -32,8 +32,15 @@
     <div id="roleBadge" class="hidden" style="text-align:center;margin-bottom:16px;padding:8px 16px;background:#f0fdf4;border:1px solid #45C98A;border-radius:100px;font-size:12px;font-weight:800;color:#166534;display:inline-block;">
     </div>
 
+    <!-- تبديل طريقة الدخول -->
+    <div style="display:flex;gap:6px;margin:0 0 16px;background:var(--bg-alt);padding:4px;border-radius:100px;">
+      <button type="button" id="modeEmail" style="flex:1;border:0;background:#fff;border-radius:100px;padding:9px 10px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;color:var(--text);">بالبريد</button>
+      <button type="button" id="modeBrand" style="flex:1;border:0;background:transparent;border-radius:100px;padding:9px 10px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;color:var(--text-muted);">باسم العلامة</button>
+    </div>
+
     <form id="loginForm">
       <input id="email" type="email" placeholder="البريد الإلكتروني" autocomplete="email" required>
+      <input id="brandName" type="text" placeholder="اسم العلامة التجارية" autocomplete="username" maxlength="80" style="margin-top:10px;display:none">
       <input id="password" type="password" placeholder="كلمة المرور" autocomplete="current-password" style="margin-top:10px" required>
       <button id="loginBtn" type="submit">دخول</button>
     </form>
@@ -116,20 +123,109 @@ async function checkExistingSession() {
 
 checkExistingSession();
 
-$("loginForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
+// ── تبديل طريقة الدخول: بالبريد / باسم العلامة ──
+let loginMode = "email";
 
-  const email = $("email").value.trim();
-  const password = $("password").value;
-  const btn = $("loginBtn");
+function setMode(mode) {
+  loginMode = mode;
+  const isBrand = mode === "brand";
 
-  if (!email || !password) {
-    showMsg("الرجاء إدخال البريد وكلمة المرور.");
+  $("email").style.display = isBrand ? "none" : "";
+  $("email").required = !isBrand;
+  $("brandName").style.display = isBrand ? "" : "none";
+  $("brandName").required = isBrand;
+
+  $("modeEmail").style.background = isBrand ? "transparent" : "#fff";
+  $("modeEmail").style.color = isBrand ? "var(--text-muted)" : "var(--text)";
+  $("modeBrand").style.background = isBrand ? "#fff" : "transparent";
+  $("modeBrand").style.color = isBrand ? "var(--text)" : "var(--text-muted)";
+
+  $("loginMsg").classList.add("hidden");
+}
+
+$("modeEmail").addEventListener("click", () => setMode("email"));
+$("modeBrand").addEventListener("click", () => setMode("brand"));
+
+// ── إكمال الدخول بعد الحصول على الجلسة ──
+async function finishLogin(accessToken, btn) {
+  const authInfo = await getAuthInfo(accessToken);
+
+  if (authInfo.status !== "OK") {
+    btn.disabled = false;
+    btn.textContent = "دخول";
+    showMsg("تعذّر التحقق من الحساب. حاول مجددًا.");
     return;
   }
 
+  window.location.href = routeByRole(authInfo);
+}
+
+$("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const password = $("password").value;
+  const btn = $("loginBtn");
+
   btn.disabled = true;
   btn.textContent = "جارٍ الدخول...";
+
+  // ═══════ الدخول باسم العلامة (عبر السيرفر) ═══════
+  if (loginMode === "brand") {
+    const brandName = $("brandName").value.trim();
+
+    if (!brandName || !password) {
+      btn.disabled = false;
+      btn.textContent = "دخول";
+      showMsg("الرجاء إدخال اسم العلامة وكلمة المرور.");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/submit?type=brand-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ brand_name: brandName, password })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || data.status !== "OK" || !data.session) {
+        btn.disabled = false;
+        btn.textContent = "دخول";
+        showMsg(data.message || "اسم العلامة أو كلمة المرور غير صحيحة.");
+        return;
+      }
+
+      const { error: sessErr } = await sb.auth.setSession({
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token
+      });
+
+      if (sessErr) {
+        btn.disabled = false;
+        btn.textContent = "دخول";
+        showMsg("تعذّر إنشاء الجلسة. حاول مجددًا.");
+        return;
+      }
+
+      await finishLogin(data.session.access_token, btn);
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = "دخول";
+      showMsg("تعذّر الاتصال بالخادم.");
+    }
+    return;
+  }
+
+  // ═══════ الدخول بالبريد (بالطريقة الأصلية) ═══════
+  const email = $("email").value.trim();
+
+  if (!email || !password) {
+    btn.disabled = false;
+    btn.textContent = "دخول";
+    showMsg("الرجاء إدخال البريد وكلمة المرور.");
+    return;
+  }
 
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
 
@@ -140,17 +236,7 @@ $("loginForm").addEventListener("submit", async (e) => {
     return;
   }
 
-  // ✅ تحديد الدور والتوجيه
-  const authInfo = await getAuthInfo(data.session.access_token);
-
-  if (authInfo.status !== "OK") {
-    btn.disabled = false;
-    btn.textContent = "دخول";
-    showMsg("تعذّر التحقق من الحساب. حاول مجددًا.");
-    return;
-  }
-
-  window.location.href = routeByRole(authInfo);
+  await finishLogin(data.session.access_token, btn);
 });
 
 // Dark mode

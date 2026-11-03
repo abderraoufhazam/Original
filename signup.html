@@ -1054,6 +1054,27 @@
       userData.email_verified = emailVerified;
     }
 
+    // ═══════ التأكد من توفر اسم العلامة قبل إنشاء الحساب ═══════
+    if (currentRole === "brand" && userData.brand_name) {
+      try {
+        const chk = await fetch("/api/submit?type=brand-check", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ brand_name: userData.brand_name })
+        });
+        const chkData = await chk.json();
+
+        if (chk.ok && chkData.status === "OK" && chkData.available === false) {
+          submitBtn.disabled = false;
+          $("submitBtnText").textContent = t("submitBtn");
+          showMsg("اسم العلامة «" + userData.brand_name + "» مستعمل بالفعل. اختر اسماً آخر.", "error");
+          return;
+        }
+      } catch (e) {
+        console.warn("brand-check skipped:", e);
+      }
+    }
+
     try {
       const { data, error } = await sb.auth.signUp({
         email: email,
@@ -1071,6 +1092,22 @@
         submitBtn.disabled = false;
         $("submitBtnText").textContent = t("submitBtn");
         return;
+      }
+
+      // ═══════ حجز اسم العلامة في السجل ═══════
+      if (currentRole === "brand" && data && data.session) {
+        try {
+          await fetch("/api/submit?type=brand-register", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer " + data.session.access_token
+            },
+            body: JSON.stringify({ brand_name: userData.brand_name })
+          });
+        } catch (e) {
+          console.warn("brand-register failed:", e);
+        }
       }
 
       // ═══════ إشعارات ═══════
