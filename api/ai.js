@@ -1,6 +1,8 @@
 // api/ai.js
 // Gemini AI موحّد: chat + analyze + analytics + read-label
 
+import { getClientIp } from './_turnstile.js';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -9,6 +11,29 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') {
     return res.status(405).json({ status: 'ERROR', message: 'Method not allowed' });
+  }
+
+
+  // 🔒 حد المحاولات — fail-open: لا نُعطّل الخدمة إن تعذّر الفحص
+  try {
+    const __ip = getClientIp(req) || 'unknown';
+    const __rl = await fetch(`${process.env.SUPABASE_URL}/rest/v1/rpc/check_rate_limit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY,
+        'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
+      },
+      body: JSON.stringify({ p_key: 'ai:' + __ip, p_limit: 15, p_window_seconds: 60 })
+    });
+    if (__rl.ok) {
+      const __allowed = await __rl.json();
+      if (__allowed === false) {
+        return res.status(429).json({ status: 'ERROR', message: 'Trop de requêtes. Réessayez dans une minute.' });
+      }
+    }
+  } catch (__e) {
+    console.warn('rate limit skipped:', __e && __e.message);
   }
 
   const mode = (req.query && req.query.mode) || (req.body && req.body.mode);

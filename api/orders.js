@@ -1,6 +1,8 @@
 // api/orders.js
 // API موحّد لإدارة الطلبات والفواتير
 
+import { getClientIp } from './_turnstile.js';
+
 export default async function handler(req, res) {
   // ✅ CORS محمي — قائمة أصول مسموحة
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://ordiz.online,https://www.ordiz.online,https://original-indol.vercel.app')
@@ -15,6 +17,29 @@ res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') {
     return res.status(405).json({ status: 'ERROR', message: 'Method not allowed' });
+  }
+
+
+  // 🔒 حد المحاولات — fail-open: لا نُعطّل الخدمة إن تعذّر الفحص
+  try {
+    const __ip = getClientIp(req) || 'unknown';
+    const __rl = await fetch(`${process.env.SUPABASE_URL}/rest/v1/rpc/check_rate_limit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY,
+        'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
+      },
+      body: JSON.stringify({ p_key: 'orders:' + __ip, p_limit: 30, p_window_seconds: 60 })
+    });
+    if (__rl.ok) {
+      const __allowed = await __rl.json();
+      if (__allowed === false) {
+        return res.status(429).json({ status: 'ERROR', message: 'Trop de requêtes. Réessayez dans une minute.' });
+      }
+    }
+  } catch (__e) {
+    console.warn('rate limit skipped:', __e && __e.message);
   }
 
   const action = (req.query && req.query.action) || (req.body && req.body.action);
