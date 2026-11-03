@@ -71,7 +71,8 @@ function formatDateFr(dateStr, options = {}) {
 }
 
 // Expose globally (for use in inline scripts and modules)
-window.escapeHtml = escapeHtml;`nwindow.safeUrl = safeUrl;
+window.escapeHtml = escapeHtml;
+window.safeUrl = safeUrl;
 window.formatMoney = formatMoney;
 window.formatMoneyDZ = formatMoneyDZ;
 window.formatDisplayCode = formatDisplayCode;
