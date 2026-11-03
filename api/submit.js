@@ -55,6 +55,11 @@ res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (type === 'notify-shop') return handleNotifyShop(req, res);
   if (type === 'shop-email') return handleShopEmail(req, res);
   if (type === 'shop-complaint') return handleShopComplaint(req, res);
+
+  // ── أسماء العلامات: فحص التوفر / الحجز / الدخول بالاسم ──
+  if (type === 'brand-check')    return handleBrandCheck(req, res);
+  if (type === 'brand-register') return handleBrandRegister(req, res);
+  if (type === 'brand-login')    return handleBrandLogin(req, res);
   
   return res.status(400).json({
     status: 'ERROR',
@@ -1137,4 +1142,213 @@ function truncate(text, max) {
   const str = String(text || '');
   if (str.length <= max) return str;
   return str.slice(0, max - 3) + '...';
+}
+
+// ============================================================
+// أسماء العلامات — فحص التوفر / الحجز / الدخول بالاسم
+// ============================================================
+
+/** تطبيع اسم العلامة: تشذيب + توحيد المسافات + حروف صغيرة */
+function normBrandName(v) {
+  return String(v || "").trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function brandSvc(key) {
+  return { "apikey": key, "Authorization": `Bearer ${key}` };
+}
+
+// ── 1) فحص توفر الاسم (قبل التسجيل) ──
+async function handleBrandCheck(req, res) {
+  try {
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!SUPABASE_URL || !KEY) {
+      return res.status(500).json({ status: "ERROR", message: "Configuration manquante" });
+    }
+
+    const raw = String((req.body && req.body.brand_name) || "").trim();
+    if (raw.length < 2) return res.status(400).json({ status: "ERROR", message: "Nom trop court (2 caractères min)" });
+    if (raw.length > 80) return res.status(400).json({ status: "ERROR", message: "Nom trop long (80 caractères max)" });
+
+    const norm = normBrandName(raw);
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/brand_names?brand_name_norm=eq.${encodeURIComponent(norm)}&select=user_id&limit=1`,
+      { headers: brandSvc(KEY) }
+    );
+    if (!r.ok) return res.status(500).json({ status: "ERROR", message: "Erreur serveur" });
+
+    const rows = await r.json();
+    return res.status(200).json({ status: "OK", available: !(Array.isArray(rows) && rows.length > 0) });
+  } catch (e) {
+    console.error("brand-check:", e);
+    return res.status(500).json({ status: "ERROR", message: "Erreur inattendue" });
+  }
+}
+
+// ── 2) حجز الاسم بعد نجاح التسجيل ──
+async function handleBrandRegister(req, res) {
+  try {
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!SUPABASE_URL || !KEY) {
+      return res.status(500).json({ status: "ERROR", message: "Configuration manquante" });
+    }
+
+    const body = req.body || {};
+    const token = String(req.headers.authorization || body.access_token || "").replace(/^Bearer\s+/i, "").trim();
+    if (!token) return res.status(401).json({ status: "ERROR", message: "Non authentifié" });
+
+    const uRes2 = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: { "apikey": KEY, "Authorization": `Bearer ${token}` }
+    });
+    if (!uRes2.ok) return res.status(401).json({ status: "ERROR", message: "Token invalide" });
+
+    const user = await uRes2.json();
+    const raw = String(body.brand_name || (user.user_metadata && user.user_metadata.brand_name) || "").trim();
+    if (raw.length < 2) return res.status(400).json({ status: "ERROR", message: "Nom invalide" });
+
+    const norm = normBrandName(raw);
+    const ins = await fetch(`${SUPABASE_URL}/rest/v1/brand_names`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": KEY,
+        "Authorization": `Bearer ${KEY}`,
+        "Prefer": "return=minimal"
+      },
+      body: JSON.stringify([{ brand_name_norm: norm, brand_name: raw, user_id: user.id }])
+    });
+
+    if (ins.status === 409) {
+      return res.status(409).json({ status: "CONFLICT", message: "Ce nom de marque est déjà utilisé" });
+    }
+    if (!ins.ok) {
+      const t = await ins.text();
+      console.error("brand-register:", ins.status, t.slice(0, 200));
+      return res.status(500).json({ status: "ERROR", message: "Erreur enregistrement" });
+    }
+
+    return res.status(200).json({ status: "OK", brand_name: raw });
+  } catch (e) {
+    console.error("brand-register:", e);
+    return res.status(500).json({ status: "ERROR", message: "Erreur inattendue" });
+  }
+}
+
+// ── 3) الدخول باسم العلامة ──
+async function handleBrandLogin(req, res) {
+  try {
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const ANON = process.env.SUPABASE_ANON_KEY || "sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m";
+    if (!SUPABASE_URL || !KEY) {
+      return res.status(500).json({ status: "ERROR", message: "Configuration manquante" });
+    }
+
+    const body = req.body || {};
+    const raw = String(body.brand_name || "").trim();
+    const password = String(body.password || "");
+    const fail = () => res.status(401).json({ status: "ERROR", message: "Nom de marque ou mot de passe incorrect" });
+
+    if (raw.length < 2 || password.length < 1) return fail();
+
+    const norm = normBrandName(raw);
+
+    // حد إضافي موجّه للاسم نفسه (يحمي من هجوم موزّع على ماركة واحدة)
+    try {
+      const rl = await fetch(`${SUPABASE_URL}/rest/v1/rpc/check_rate_limit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...brandSvc(KEY) },
+        body: JSON.stringify({ p_key: "brandlogin:" + norm, p_limit: 8, p_window_seconds: 60 })
+      });
+      if (rl.ok) {
+        const allowed = await rl.json();
+        if (allowed === false) {
+          return res.status(429).json({ status: "ERROR", message: "Trop de tentatives. Réessayez dans une minute." });
+        }
+      }
+    } catch (e) { /* fail-open */ }
+
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/brand_names?brand_name_norm=eq.${encodeURIComponent(norm)}&select=user_id&limit=1`,
+      { headers: brandSvc(KEY) }
+    );
+    if (!r.ok) return res.status(500).json({ status: "ERROR", message: "Erreur serveur" });
+
+    const rows = await r.json();
+    let userId = Array.isArray(rows) && rows.length > 0 ? rows[0].user_id : null;
+
+    // ── احتياط: اسم موجود في الحسابات لكن لم يُسجَّل بعد في السجل
+    //    (حساب قديم أو لم يؤكّد بريده وقت التسجيل)
+    if (!userId) {
+      for (let page = 1; page <= 5 && !userId; page++) {
+        const listRes = await fetch(
+          `${SUPABASE_URL}/auth/v1/admin/users?per_page=200&page=${page}`,
+          { headers: brandSvc(KEY) }
+        );
+        if (!listRes.ok) break;
+
+        const list = await listRes.json();
+        const users = (list && list.users) || [];
+        if (users.length === 0) break;
+
+        const found = users.find(u => {
+          const meta = u.user_metadata || {};
+          const role = String(meta.role || "brand").toLowerCase();
+          if (role !== "brand") return false;
+          return normBrandName(meta.brand_name) === norm;
+        });
+
+        if (found) userId = found.id;
+      }
+    }
+
+    if (!userId) return fail();
+
+    const uRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${encodeURIComponent(userId)}`, {
+      headers: brandSvc(KEY)
+    });
+    if (!uRes.ok) return fail();
+
+    const u = await uRes.json();
+    if (!u || !u.email) return fail();
+
+    const tok = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "apikey": ANON },
+      body: JSON.stringify({ email: u.email, password })
+    });
+    if (!tok.ok) return fail();
+
+    const session = await tok.json();
+    if (!session || !session.access_token) return fail();
+
+    // تسجيل الاسم في السجل تلقائياً (إن لم يكن مسجّلاً) — لضمان التفرد مستقبلاً
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/brand_names`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": KEY,
+          "Authorization": `Bearer ${KEY}`,
+          "Prefer": "return=minimal,resolution=ignore-duplicates"
+        },
+        body: JSON.stringify([{ brand_name_norm: norm, brand_name: raw, user_id: userId }])
+      });
+    } catch (e) { /* لا نُفشل الدخول بسبب ذلك */ }
+
+    return res.status(200).json({
+      status: "OK",
+      session: {
+        access_token: session.access_token,
+        refresh_token: session.refresh_token,
+        expires_in: session.expires_in,
+        token_type: session.token_type,
+        user: session.user
+      }
+    });
+  } catch (e) {
+    console.error("brand-login:", e);
+    return res.status(500).json({ status: "ERROR", message: "Erreur inattendue" });
+  }
 }
