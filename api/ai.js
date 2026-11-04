@@ -118,6 +118,63 @@ async function handleChat(req, res) {
 }
 
 // ============================================================
+// ============================================================
+// تحليل احتياطي عبر Google Gemini (عند فشل المزوّد الأساسي)
+// ============================================================
+async function analyzeWithGemini(mimeType, base64Data, prompt) {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) return null;
+
+  const models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'];
+
+  const body = {
+    contents: [{
+      parts: [
+        { text: prompt },
+        { inline_data: { mime_type: mimeType, data: base64Data } }
+      ]
+    }],
+    generationConfig: { temperature: 0.1, maxOutputTokens: 800 }
+  };
+
+  for (const model of models) {
+    let controller = null, timeoutId = null;
+    try {
+      controller = new AbortController();
+      timeoutId = setTimeout(() => controller.abort(), 25000);
+
+      const r = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+          signal: controller.signal
+        }
+      );
+      clearTimeout(timeoutId);
+
+      if (!r.ok) {
+        const t = await r.text();
+        console.warn(`Gemini ${model} → ${r.status}: ${t.slice(0, 120)}`);
+        continue;
+      }
+
+      const j = await r.json();
+      const parts = j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts;
+      const text = Array.isArray(parts) ? parts.map(p => p.text || '').join('') : '';
+      if (text && text.trim()) {
+        console.log(`✅ Analyse réussie avec Gemini (${model})`);
+        return text;
+      }
+    } catch (e) {
+      if (timeoutId) clearTimeout(timeoutId);
+      console.warn(`Gemini ${model} échec:`, String(e).slice(0, 120));
+    }
+  }
+  return null;
+}
+
 // MODE 2: ANALYZE (سريع + تصحيح تلقائي)
 // ============================================================
 async function handleAnalyze(req, res) {
@@ -128,8 +185,14 @@ async function handleAnalyze(req, res) {
     }
 
     const ZAI_API_KEY = process.env.ZAI_API_KEY;
-    if (!ZAI_API_KEY) {
-      return res.status(500).json({ status: 'ERROR', message: 'ZAI_API_KEY manquant dans Vercel' });
+    const GEMINI_API_KEY_LOCAL = process.env.GEMINI_API_KEY;
+
+    // يكفي مزوّد واحد: Gemini أساسي أو z.ai احتياطي
+    if (!ZAI_API_KEY && !GEMINI_API_KEY_LOCAL) {
+      return res.status(500).json({
+        status: 'ERROR',
+        message: 'Aucun service IA configuré (GEMINI_API_KEY / ZAI_API_KEY)'
+      });
     }
 
     const match = image.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
@@ -148,106 +211,83 @@ Réponds UNIQUEMENT avec un objet JSON valide :
 }
 Ne mets AUCUN texte avant ou après le JSON.`;
 
-        // ✅ إعادة المحاولة القوية (5 محاولات) لمعالجة فشل z.ai المتكرر
-    let response = null;
+    // ── 1) Gemini (المزوّد الأساسي — الأفضل في قراءة النصوص) ──
+    let text = await analyzeWithGemini(match[1], match[2], prompt);
+    let source = 'gemini';
     let lastErrorText = null;
-    const maxRetries = 5;
 
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      let controller = null;
-      let timeoutId = null;
-      
-      try {
-        console.log(`Tentative ${attempt}/${maxRetries} avec z.ai...`);
-        
-        controller = new AbortController();
-        timeoutId = setTimeout(() => controller.abort(), 30000); // 30 ثانية لكل محاولة
+    // ── 2) z.ai (احتياطي) ──
+    if (!text && ZAI_API_KEY) {
+      console.warn('Gemini indisponible → bascule vers z.ai');
+      let response = null;
+      const maxRetries = 3;
 
-        response = await fetch('https://api.z.ai/api/paas/v4/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${ZAI_API_KEY}`
-          },
-          body: JSON.stringify({
-            model: 'glm-4.6v-flash',
-            region: "top",
-            messages: [
-              {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        let controller = null, timeoutId = null;
+        try {
+          controller = new AbortController();
+          timeoutId = setTimeout(() => controller.abort(), 25000);
+
+          response = await fetch('https://api.z.ai/api/paas/v4/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${ZAI_API_KEY}`
+            },
+            body: JSON.stringify({
+              model: 'glm-4.6v-flash',
+              region: 'top',
+              messages: [{
                 role: 'user',
                 content: [
                   { type: 'text', text: prompt },
                   { type: 'image_url', image_url: { url: image } }
                 ]
-              }
-            ],
-            temperature: 0.1
-          }),
-          signal: controller.signal
-        });
+              }],
+              temperature: 0.1
+            }),
+            signal: controller.signal
+          });
 
-        clearTimeout(timeoutId);
+          clearTimeout(timeoutId);
 
-        if (response.ok) {
-          console.log(`✅ Succès avec z.ai (tentative ${attempt})`);
-          break; // نجح، اخرج
-        } else {
+          if (response.ok) break;
+
           lastErrorText = await response.text();
-          const status = response.status;
-          
-          // ✅ معالجة جميع الأخطاء المؤقتة (400 و 429)
-          // 400: قد يكون توجيه خاطئ (1214) أو نصي فقط
-          // 429: ازدحام (1305) أو حد المعدل
-          if (status === 400 || status === 429) {
-            console.warn(`⚠️ z.ai erreur temporaire (${status}). Tentative ${attempt}/${maxRetries}.`);
-            
-            if (attempt < maxRetries) {
-              // انتظار متزايد: 2s, 3s, 4s, 5s
-              const delay = (attempt + 1) * 1000;
-              console.log(`Attente de ${delay}ms avant la prochaine tentative...`);
-              await new Promise(resolve => setTimeout(resolve, delay));
-              continue; // جرب مرة أخرى
-            }
-          } else {
-            // أخطاء أخرى (401, 403) لا داعي لإعادة المحاولة
-            break;
+          if ((response.status === 400 || response.status === 429) && attempt < maxRetries) {
+            await new Promise(r => setTimeout(r, attempt * 1200));
+            continue;
+          }
+          break;
+        } catch (err) {
+          if (timeoutId) clearTimeout(timeoutId);
+          lastErrorText = err.name === 'AbortError' ? 'Timeout (25s)' : String(err);
+          if (attempt < maxRetries) {
+            await new Promise(r => setTimeout(r, attempt * 1200));
+            continue;
           }
         }
-      } catch (err) {
-        if (timeoutId) clearTimeout(timeoutId);
-        
-        if (err.name === 'AbortError') {
-          lastErrorText = 'Timeout (30s)';
-        } else {
-          lastErrorText = String(err);
-        }
-        console.warn(`Tentative ${attempt} échouée: ${lastErrorText}`);
-        
-        if (attempt < maxRetries) {
-          const delay = (attempt + 1) * 1000;
-          await new Promise(resolve => setTimeout(resolve, delay));
-          continue;
+      }
+
+      if (response && response.ok) {
+        try {
+          const data = await response.json();
+          text = data.choices?.[0]?.message?.content || null;
+          if (text) source = 'zai';
+        } catch (e) {
+          console.warn('z.ai réponse illisible:', String(e).slice(0, 120));
         }
       }
     }
 
-    
-    // ✅ التحقق من النتيجة النهائية
-    if (!response || !response.ok) {
-      console.error('Z.ai error final:', lastErrorText);
-      return res.status(500).json({ 
-        status: 'ERROR', 
-        message: 'خدمة التحليل مزدحمة حالياً. يرجى المحاولة بعد قليل أو كتابة البيانات يدوياً.',
-        detail: lastErrorText ? lastErrorText.slice(0, 200) : 'Unknown error'
-      });
-    }
-
-    // ✅ استخراج البيانات من الاستجابة (مرة واحدة فقط)
-    const data = await response.json();
-    const text = data.choices?.[0]?.message?.content;
-
+    // ── 3) فشل كامل ──
     if (!text) {
-      return res.status(500).json({ status: 'ERROR', message: 'Réponse vide du service' });
+      console.error('Aucun service vision disponible:', String(lastErrorText).slice(0, 120));
+      return res.status(503).json({
+        status: 'ERROR',
+        message: 'تعذّر تحليل الصورة حالياً. جرّب صورة أوضح، أو أدخل البيانات يدوياً.',
+        detail: lastErrorText ? String(lastErrorText).slice(0, 160) : 'no-vision-service'
+      });
     }
 
     // استخراج JSON
@@ -311,6 +351,7 @@ Ne mets AUCUN texte avant ou après le JSON.`;
 
     return res.status(200).json({
       status: 'OK',
+      source: source,
       brand: correctedBrand.slice(0, 100),
       product_name: (result.product_name || '').trim().slice(0, 200),
       description: (result.description || '').trim().slice(0, 500),
