@@ -9,6 +9,12 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  const mode = (req.query && req.query.mode) || (req.body && req.body.mode);
+
+  // الفحص التشخيصي يعمل بـGET مباشرة من شريط المتصفح
+  if (mode === 'diag') return handleDiag(req, res);
+
   if (req.method !== 'POST') {
     return res.status(405).json({ status: 'ERROR', message: 'Method not allowed' });
   }
@@ -36,11 +42,8 @@ export default async function handler(req, res) {
     console.warn('rate limit skipped:', __e && __e.message);
   }
 
-  const mode = (req.query && req.query.mode) || (req.body && req.body.mode);
-
   if (mode === 'chat')         return handleChat(req, res);
   if (mode === 'analyze')      return handleAnalyze(req, res);
-  if (mode === 'diag')         return handleDiag(req, res);
   if (mode === 'analytics')  return handleAnalytics(req, res);
   if (mode === 'read-label') return handleReadLabel(req, res);
 
