@@ -34,6 +34,7 @@ res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (action === 'print')  return handlePrint(req, res);
   if (action === 'export') return handleExportCodes(req, res);
   if (action === 'stats')  return handleWilayaStats(req, res);
+  if (action === 'reports') return handleWilayaReports(req, res);
 
   return res.status(400).json({
     status: 'ERROR',
@@ -608,6 +609,58 @@ async function handleWilayaStats(req, res) {
     return res.status(200).json({ status: 'OK', from, to, rows });
   } catch (e) {
     console.error('handleWilayaStats error:', e);
+    return res.status(500).json({ status: 'ERROR', message: 'Erreur inattendue' });
+  }
+}
+
+// ============================================================
+// ACTION: REPORTS — بلاغات ولاية محددة
+// ============================================================
+async function handleWilayaReports(req, res) {
+  try {
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const ANON = process.env.SUPABASE_ANON_KEY || 'sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m';
+
+    if (!SUPABASE_URL || !SERVICE_KEY) {
+      return res.status(500).json({ status: 'ERROR', message: 'Configuration manquante' });
+    }
+
+    const body = req.body || {};
+    const token = String(req.headers.authorization || body.access_token || '')
+      .replace(/^Bearer\s+/i, '').trim();
+
+    if (!token) return res.status(401).json({ status: 'ERROR', message: 'Non authentifié' });
+
+    const code = String(body.code || '').trim();
+    if (!/^\d{1,2}$/.test(code)) {
+      return res.status(400).json({ status: 'ERROR', message: 'Code wilaya invalide' });
+    }
+
+    const now = Date.now();
+    const from = body.from || new Date(now - 30 * 86400000).toISOString();
+    const to = body.to || new Date(now + 86400000).toISOString();
+
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/wilaya_reports`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': ANON,
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ p_code: code, p_from: from, p_to: to })
+    });
+
+    if (!r.ok) {
+      const errText = await r.text();
+      console.error('wilaya_reports failed:', r.status, errText.slice(0, 300));
+      return res.status(500).json({ status: 'ERROR', message: 'Erreur serveur', detail: errText.slice(0, 160) });
+    }
+
+    const rows = await r.json();
+    return res.status(200).json({ status: 'OK', code, from, to, count: rows.length, rows });
+  } catch (e) {
+    console.error('handleWilayaReports error:', e);
     return res.status(500).json({ status: 'ERROR', message: 'Erreur inattendue' });
   }
 }
