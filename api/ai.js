@@ -38,8 +38,9 @@ export default async function handler(req, res) {
 
   const mode = (req.query && req.query.mode) || (req.body && req.body.mode);
 
-  if (mode === 'chat')       return handleChat(req, res);
-  if (mode === 'analyze')    return handleAnalyze(req, res);
+  if (mode === 'chat')         return handleChat(req, res);
+  if (mode === 'analyze')      return handleAnalyze(req, res);
+  if (mode === 'diag')         return handleDiag(req, res);
   if (mode === 'analytics')  return handleAnalytics(req, res);
   if (mode === 'read-label') return handleReadLabel(req, res);
 
@@ -173,6 +174,55 @@ async function analyzeWithGemini(mimeType, base64Data, prompt) {
     }
   }
   return null;
+}
+
+// ============================================================
+// تشخيص: هل المفاتيح موجودة؟ وهل الخدمة تستجيب؟
+// لا يكشف أي مفتاح — أعلام فقط
+// ============================================================
+async function handleDiag(req, res) {
+  const out = {
+    gemini_key: !!process.env.GEMINI_API_KEY,
+    zai_key: !!process.env.ZAI_API_KEY,
+    gemini: null,
+    zai: null
+  };
+
+  if (out.gemini_key) {
+    try {
+      const r = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`
+      );
+      const t = await r.text();
+      out.gemini = { status: r.status, body: t.slice(0, 220) };
+    } catch (e) {
+      out.gemini = { status: 0, body: String(e).slice(0, 220) };
+    }
+  }
+
+  if (out.zai_key) {
+    try {
+      const r = await fetch('https://api.z.ai/api/paas/v4/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.ZAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'glm-4.6v-flash',
+          region: 'top',
+          messages: [{ role: 'user', content: 'ok' }],
+          max_tokens: 5
+        })
+      });
+      const t = await r.text();
+      out.zai = { status: r.status, body: t.slice(0, 220) };
+    } catch (e) {
+      out.zai = { status: 0, body: String(e).slice(0, 220) };
+    }
+  }
+
+  return res.status(200).json(out);
 }
 
 // MODE 2: ANALYZE (سريع + تصحيح تلقائي)
