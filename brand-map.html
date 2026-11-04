@@ -523,7 +523,11 @@ PATHS.forEach(function (p) {
   p.addEventListener("mouseenter", function (e) { showTip(e, p.id); });
   p.addEventListener("mousemove", function (e) { showTip(e, p.id); });
   p.addEventListener("mouseleave", function () { TIP.classList.remove("show"); });
-  p.addEventListener("click", function (e) { e.stopPropagation(); select(p.id); });
+  p.addEventListener("click", function (e) {
+    e.stopPropagation();
+    if (moved) { moved = false; return; }   // كان سحباً لا نقرة
+    select(p.id);
+  });
 });
 
 document.querySelectorAll("#tabs button").forEach(function (b) {
@@ -545,7 +549,7 @@ document.querySelectorAll("#filters button").forEach(function (b) {
   });
 });
 
-let scale = 1, tx = 0, ty = 0, drag = false, sx = 0, sy = 0;
+let scale = 1, tx = 0, ty = 0, drag = false, sx = 0, sy = 0, moved = false, downX = 0, downY = 0;
 function apply() { LAYER.setAttribute("transform", "translate(" + tx + " " + ty + ") scale(" + scale + ")"); }
 function zoomAt(f, cx, cy) {
   const ns = Math.min(14, Math.max(1, scale * f));
@@ -557,18 +561,28 @@ MAP.addEventListener("wheel", function (e) {
   const r = MAP.getBoundingClientRect();
   zoomAt(e.deltaY < 0 ? 1.2 : 1 / 1.2, (e.clientX - r.left) / r.width * 10000, (e.clientY - r.top) / r.height * 9999);
 }, { passive: false });
+
 MAP.addEventListener("pointerdown", function (e) {
-  drag = true; sx = e.clientX; sy = e.clientY; MAP.classList.add("dragging");
-  try { MAP.setPointerCapture(e.pointerId); } catch (err) {}
+  drag = true; moved = false;
+  sx = e.clientX; sy = e.clientY;
+  downX = e.clientX; downY = e.clientY;
+  MAP.classList.add("dragging");
 });
+
 MAP.addEventListener("pointermove", function (e) {
   if (!drag) return;
+  if (Math.abs(e.clientX - downX) > 4 || Math.abs(e.clientY - downY) > 4) moved = true;
+  if (!moved) return;
   const r = MAP.getBoundingClientRect();
   tx += (e.clientX - sx) / r.width * 10000;
   ty += (e.clientY - sy) / r.height * 9999;
   sx = e.clientX; sy = e.clientY; apply();
 });
-MAP.addEventListener("pointerup", function () { drag = false; MAP.classList.remove("dragging"); });
+
+MAP.addEventListener("pointerup", function () {
+  drag = false;
+  MAP.classList.remove("dragging");
+});
 document.getElementById("zin").onclick = function () { zoomAt(1.35, 5000, 5000); };
 document.getElementById("zout").onclick = function () { zoomAt(1 / 1.35, 5000, 5000); };
 document.getElementById("zreset").onclick = function () { scale = 1; tx = 0; ty = 0; apply(); };
