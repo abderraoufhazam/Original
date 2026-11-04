@@ -550,26 +550,79 @@ document.querySelectorAll("#filters button").forEach(function (b) {
 });
 
 let scale = 1, tx = 0, ty = 0, drag = false, sx = 0, sy = 0, moved = false, downX = 0, downY = 0;
+const pointers = new Map();
+let pinch = null;
+
 function apply() { LAYER.setAttribute("transform", "translate(" + tx + " " + ty + ") scale(" + scale + ")"); }
+
+function vbPoint(clientX, clientY) {
+  const r = MAP.getBoundingClientRect();
+  return {
+    x: (clientX - r.left) / r.width * 10000,
+    y: (clientY - r.top) / r.height * 9999
+  };
+}
 function zoomAt(f, cx, cy) {
   const ns = Math.min(14, Math.max(1, scale * f));
   const k = ns / scale;
   tx = cx - k * (cx - tx); ty = cy - k * (cy - ty); scale = ns; apply();
 }
+function dist(a, b) {
+  const dx = a.x - b.x, dy = a.y - b.y;
+  return Math.sqrt(dx * dx + dy * dy) || 1;
+}
+function mid(a, b) { return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
+
 MAP.addEventListener("wheel", function (e) {
   e.preventDefault();
-  const r = MAP.getBoundingClientRect();
-  zoomAt(e.deltaY < 0 ? 1.2 : 1 / 1.2, (e.clientX - r.left) / r.width * 10000, (e.clientY - r.top) / r.height * 9999);
+  const p = vbPoint(e.clientX, e.clientY);
+  zoomAt(e.deltaY < 0 ? 1.2 : 1 / 1.2, p.x, p.y);
 }, { passive: false });
 
 MAP.addEventListener("pointerdown", function (e) {
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  MAP.classList.add("dragging");
+
+  if (pointers.size === 2) {
+    // ── بدء التكبير بإصبعين ──
+    const pts = Array.from(pointers.values());
+    const m = mid(pts[0], pts[1]);
+    const v = vbPoint(m.x, m.y);
+    pinch = {
+      d0: dist(pts[0], pts[1]),
+      s0: scale,
+      /** النقطة داخل المحتوى التي نُثبّتها تحت الإصبعين */
+      cx: (v.x - tx) / scale,
+      cy: (v.y - ty) / scale
+    };
+    drag = false;
+    moved = true;            // لا نعتبرها نقرة
+    return;
+  }
+
   drag = true; moved = false;
   sx = e.clientX; sy = e.clientY;
   downX = e.clientX; downY = e.clientY;
-  MAP.classList.add("dragging");
 });
 
 MAP.addEventListener("pointermove", function (e) {
+  if (!pointers.has(e.pointerId)) return;
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+  // ── تكبير/تصغير بإصبعين ──
+  if (pinch && pointers.size >= 2) {
+    const pts = Array.from(pointers.values());
+    const d = dist(pts[0], pts[1]);
+    const m = mid(pts[0], pts[1]);
+    const v = vbPoint(m.x, m.y);
+    const ns = Math.min(14, Math.max(1, pinch.s0 * (d / pinch.d0)));
+    tx = v.x - pinch.cx * ns;
+    ty = v.y - pinch.cy * ns;
+    scale = ns;
+    apply();
+    return;
+  }
+
   if (!drag) return;
   if (Math.abs(e.clientX - downX) > 4 || Math.abs(e.clientY - downY) > 4) moved = true;
   if (!moved) return;
@@ -579,9 +632,30 @@ MAP.addEventListener("pointermove", function (e) {
   sx = e.clientX; sy = e.clientY; apply();
 });
 
-MAP.addEventListener("pointerup", function () {
-  drag = false;
-  MAP.classList.remove("dragging");
+function endPointer(e) {
+  pointers.delete(e.pointerId);
+
+  if (pointers.size < 2) pinch = null;
+
+  if (pointers.size === 1) {
+    // التحوّل من إصبعين إلى إصبع: نبدأ السحب من جديد بلا نقرة
+    const p = Array.from(pointers.values())[0];
+    drag = true; moved = true;
+    sx = p.x; sy = p.y;
+    downX = p.x; downY = p.y;
+    return;
+  }
+
+  if (pointers.size === 0) {
+    drag = false;
+    MAP.classList.remove("dragging");
+  }
+}
+
+MAP.addEventListener("pointerup", endPointer);
+MAP.addEventListener("pointercancel", endPointer);
+MAP.addEventListener("pointerleave", function (e) {
+  if (pointers.has(e.pointerId)) endPointer(e);
 });
 document.getElementById("zin").onclick = function () { zoomAt(1.35, 5000, 5000); };
 document.getElementById("zout").onclick = function () { zoomAt(1 / 1.35, 5000, 5000); };
