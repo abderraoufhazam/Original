@@ -14,6 +14,7 @@ export default async function handler(req, res) {
 
   // الفحص التشخيصي يعمل بـGET مباشرة من شريط المتصفح
   if (mode === 'diag') return handleDiag(req, res);
+  if (mode === 'selftest') return handleSelftest(req, res);
 
   if (req.method !== 'POST') {
     return res.status(405).json({ status: 'ERROR', message: 'Method not allowed' });
@@ -129,7 +130,6 @@ async function analyzeWithGemini(mimeType, base64Data, prompt) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) return null;
 
-  // نأخذ النماذج المتاحة فعلاً لهذا المفتاح (بدل قائمة ثابتة قد تتقادم)
   let available = [];
   try {
     available = await getAvailableModels(key);
@@ -140,117 +140,69 @@ async function analyzeWithGemini(mimeType, base64Data, prompt) {
   const vision = available.filter(function (m) {
     return /gemini/i.test(m) && !/embedding|aqa|imagen|veo/i.test(m);
   });
-
-  // نُفضّل flash الحديثة، ثم الباقي
   const preferred = vision.filter(function (m) { return /2\.5-flash|2\.0-flash/i.test(m); });
   const rest = vision.filter(function (m) { return preferred.indexOf(m) === -1; });
 
   let models = preferred.concat(rest);
   models = models.filter(function (m, i) { return models.indexOf(m) === i; }).slice(0, 5);
-
-  if (!models.length) models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
-
-  const body = {
-    contents: [{
-      parts: [
-        { text: prompt },
-        { inline_data: { mime_type: mimeType, data: base64Data } }
-      ]
-    }],
-    generationConfig: { temperature: 0.1, maxOutputTokens: 800 }
-  };
+  if (!models.length) models = ['gemini-2.5-flash', 'gemini-2.0-flash'];
 
   for (const model of models) {
     let controller = null, timeoutId = null;
     try {
       controller = new AbortController();
-      timeoutId = setTimeout(() => controller.abort(), 25000);
+      timeoutId = setTimeout(function () { controller.abort(); }, 25000);
+
+      const gen = { temperature: 0.1, maxOutputTokens: 2048 };
+      // 2.5 يستهلك رصيد الإخراج في "التفكير" فيعيد نصاً فارغاً — نُوقفه
+      if (/2\.5/.test(model)) gen.thinkingConfig = { thinkingBudget: 0 };
 
       const r = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { text: prompt },
+                { inline_data: { mime_type: mimeType, data: base64Data } }
+              ]
+            }],
+            generationConfig: gen
+          }),
           signal: controller.signal
         }
       );
+
       clearTimeout(timeoutId);
+      const raw = await r.text();
 
       if (!r.ok) {
-        const t = await r.text();
-        console.warn(`Gemini ${model} → ${r.status}: ${t.slice(0, 120)}`);
+        console.warn(`Gemini ${model} → ${r.status}: ${raw.slice(0, 150)}`);
         continue;
       }
 
-      const j = await r.json();
-      const parts = j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts;
-      const text = Array.isArray(parts) ? parts.map(p => p.text || '').join('') : '';
-      if (text && text.trim()) {
-        console.log(`✅ Analyse réussie avec Gemini (${model})`);
-        return text;
+      let jr;
+      try { jr = JSON.parse(raw); } catch (e) { continue; }
+
+      const cand = jr.candidates && jr.candidates[0];
+      const parts = cand && cand.content && cand.content.parts;
+      const txt = Array.isArray(parts) ? parts.map(function (x) { return x.text || ''; }).join('') : '';
+
+      if (txt && txt.trim()) {
+        console.log(`✅ Gemini (${model})`);
+        return txt;
       }
+      console.warn(`Gemini ${model} réponse vide. finishReason=`, cand && cand.finishReason);
     } catch (e) {
       if (timeoutId) clearTimeout(timeoutId);
-      console.warn(`Gemini ${model} échec:`, String(e).slice(0, 120));
+      console.warn(`Gemini ${model} exception:`, String(e).slice(0, 100));
     }
   }
   return null;
 }
 
-// ============================================================
-// تشخيص: هل المفاتيح موجودة؟ وهل الخدمة تستجيب؟
-// لا يكشف أي مفتاح — أعلام فقط
-// ============================================================
-async function handleDiag(req, res) {
-  const out = {
-    gemini_key: !!process.env.GEMINI_API_KEY,
-    zai_key: !!process.env.ZAI_API_KEY,
-    groq_key: !!process.env.GROQ_API_KEY,
-    openrouter_key: !!process.env.OPENROUTER_API_KEY,
-    gemini: null,
-    zai: null
-  };
-
-  if (out.gemini_key) {
-    try {
-      const r = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`
-      );
-      const t = await r.text();
-      out.gemini = { status: r.status, body: t.slice(0, 220) };
-    } catch (e) {
-      out.gemini = { status: 0, body: String(e).slice(0, 220) };
-    }
-  }
-
-  if (out.zai_key) {
-    try {
-      const r = await fetch('https://api.z.ai/api/paas/v4/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.ZAI_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: 'glm-4.6v-flash',
-          region: 'top',
-          messages: [{ role: 'user', content: 'ok' }],
-          max_tokens: 5
-        })
-      });
-      const t = await r.text();
-      out.zai = { status: r.status, body: t.slice(0, 220) };
-    } catch (e) {
-      out.zai = { status: 0, body: String(e).slice(0, 220) };
-    }
-  }
-
-  return res.status(200).json(out);
-}
-
-// MODE 2: ANALYZE (سريع + تصحيح تلقائي)
-// ============================================================
 // ============================================================
 // مزوّد عام متوافق مع OpenAI (Groq · OpenRouter · z.ai · Mistral)
 // ============================================================
@@ -310,6 +262,69 @@ async function analyzeWithOpenAICompat(opts) {
     }
   }
   return { text: null, error: lastErr };
+}
+
+// ============================================================
+// فحص حقيقي: يجرّب كل مزوّد على صورة صغيرة ويعيد خطأه بالضبط
+// ============================================================
+async function handleSelftest(req, res) {
+  const PNG_1x1 =
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+
+  const prompt = 'Réponds uniquement avec ce JSON: {"brand":"test","product_name":"test","description":"test","confidence":"low"}';
+  const image = 'data:image/png;base64,' + PNG_1x1;
+  const out = {};
+
+  // Gemini
+  try {
+    const models = (await getAvailableModels(process.env.GEMINI_API_KEY || '')).slice(0, 3);
+    out.gemini = { models: models };
+    const txt = await analyzeWithGemini('image/png', PNG_1x1, prompt);
+    out.gemini.text = txt ? txt.slice(0, 120) : null;
+  } catch (e) {
+    out.gemini = { error: String(e).slice(0, 160) };
+  }
+
+  // Groq
+  if (process.env.GROQ_API_KEY) {
+    const g = await analyzeWithOpenAICompat({
+      name: 'groq',
+      url: 'https://api.groq.com/openai/v1/chat/completions',
+      key: process.env.GROQ_API_KEY,
+      models: ['meta-llama/llama-4-scout-17b-16e-instruct', 'llama-3.2-90b-vision-preview'],
+      image: image,
+      prompt: prompt
+    });
+    out.groq = { text: g.text ? g.text.slice(0, 120) : null, error: g.error || null };
+  }
+
+  // OpenRouter
+  if (process.env.OPENROUTER_API_KEY) {
+    const o = await analyzeWithOpenAICompat({
+      name: 'openrouter',
+      url: 'https://openrouter.ai/api/v1/chat/completions',
+      key: process.env.OPENROUTER_API_KEY,
+      models: ['qwen/qwen2.5-vl-72b-instruct:free', 'google/gemma-3-27b-it:free'],
+      image: image,
+      prompt: prompt
+    });
+    out.openrouter = { text: o.text ? o.text.slice(0, 120) : null, error: o.error || null };
+  }
+
+  // z.ai
+  if (process.env.ZAI_API_KEY) {
+    const z = await analyzeWithOpenAICompat({
+      name: 'zai',
+      url: 'https://api.z.ai/api/paas/v4/chat/completions',
+      key: process.env.ZAI_API_KEY,
+      models: ['glm-4.6v-flash'],
+      image: image,
+      prompt: prompt
+    });
+    out.zai = { text: z.text ? z.text.slice(0, 120) : null, error: z.error || null };
+  }
+
+  return res.status(200).json(out);
 }
 
 async function handleAnalyze(req, res) {
