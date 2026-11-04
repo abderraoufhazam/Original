@@ -80,6 +80,11 @@ h2{font-size:18px;margin:0}
 .bar-row b{font-size:12px;color:var(--txt2);min-width:44px;text-align:left}
 .note{margin-top:14px;font-size:11px;color:var(--txt3);text-align:center}
 
+/* اتجاه زمني */
+.spark{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:6px;min-height:56px}
+.spark svg{display:block;width:100%;height:auto}
+.spark .cap{display:flex;justify-content:space-between;font-size:10px;color:var(--txt3);margin-top:4px}
+
 /* بطاقات البلاغات */
 .rep{display:flex;gap:11px;padding:10px;border-radius:14px;background:var(--card2);
   border:1px solid var(--line);cursor:pointer;margin-bottom:8px;transition:.16s;
@@ -358,17 +363,85 @@ function openPanel(code) {
         '<div class="kpi"><span>غير موجود</span><b style="color:#F5A3A3">' + notf + '</b></div>' +
         '<div class="kpi"><span>نسبة النجاح</span><b>' + (total ? Math.round(orig / total * 100) : 0) + '%</b></div>' +
       '</div>' +
+      '<div class="sec-t">الاتجاه الزمني</div>' +
+      '<div class="spark" id="sparkBox"></div>' +
       '<div class="sec-t">النِسب</div>' +
       bar("أصلي", orig, total) + bar("مستعمل", used, total) + bar("غير موجود", notf, total);
+    loadTrend(code);
   } else {
     BODY.innerHTML =
       '<div class="kpis">' +
         '<div class="kpi"><span>بلاغات</span><b style="color:#F5A3A3">' + reps + '</b></div>' +
         '<div class="kpi"><span>نسبة البلاغات</span><b>' + (total ? ((reps / total) * 100).toFixed(1) : "0.0") + '%</b></div>' +
       '</div>' +
+      '<div class="sec-t">الاتجاه الزمني</div>' +
+      '<div class="spark" id="sparkBox"></div>' +
       '<div class="sec-t">البلاغات — اضغط للتفاصيل</div>' +
       '<div id="repList"><div class="empty" style="padding:24px">جارٍ التحميل…</div></div>';
+    loadTrend(code);
     loadReports(code);
+  }
+}
+
+/* ── الاتجاه الزمني ── */
+function fmtDay(s) {
+  const p = String(s).split("-");
+  return p.length === 3 ? (p[2] + "/" + p[1]) : String(s);
+}
+
+function sparkSVG(rows, key, color) {
+  const vals = rows.map(function (r) { return Number(r[key] || 0); });
+  const max = Math.max.apply(null, vals.concat([1]));
+  const W = 300, H = 64;
+  const step = vals.length > 1 ? W / (vals.length - 1) : W;
+  const pts = vals.map(function (v, i) {
+    return [i * step, H - (v / max) * (H - 10) - 5];
+  });
+  const line = pts.map(function (p, i) {
+    return (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1);
+  }).join(" ");
+  const area = line + " L" + W + " " + H + " L0 " + H + " Z";
+  const gid = "sp" + Math.random().toString(36).slice(2, 8);
+
+  return '<svg viewBox="0 0 ' + W + " " + H + '" preserveAspectRatio="none">' +
+    '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
+    '<stop offset="0" stop-color="' + color + '" stop-opacity=".42"/>' +
+    '<stop offset="1" stop-color="' + color + '" stop-opacity="0"/></linearGradient></defs>' +
+    '<path d="' + area + '" fill="url(#' + gid + ')"/>' +
+    '<path d="' + line + '" fill="none" stroke="' + color + '" stroke-width="2.2" ' +
+    'stroke-linejoin="round" stroke-linecap="round"/></svg>';
+}
+
+async function loadTrend(code) {
+  const box = document.getElementById("sparkBox");
+  if (!box) return;
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+
+    const res = await fetch("/api/batch-manager?action=trend", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.access_token },
+      body: JSON.stringify({ code: code, from: RANGE.from, to: RANGE.to })
+    });
+    const json = await res.json();
+
+    if (!res.ok || json.status !== "OK" || !json.rows || !json.rows.length) {
+      box.style.display = "none";
+      return;
+    }
+
+    const key = tab === "verif" ? "verifications" : "reports";
+    const color = tab === "verif" ? "#2E9BE0" : "#E05A5A";
+    const total = json.rows.reduce(function (s, r) { return s + Number(r[key] || 0); }, 0);
+
+    box.innerHTML = sparkSVG(json.rows, key, color) +
+      '<div class="cap"><span>' + fmtDay(json.rows[0].day) + '</span>' +
+      '<span>الإجمالي: ' + total + '</span>' +
+      '<span>' + fmtDay(json.rows[json.rows.length - 1].day) + '</span></div>';
+  } catch (e) {
+    box.style.display = "none";
   }
 }
 
