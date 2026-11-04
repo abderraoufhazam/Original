@@ -33,6 +33,7 @@ res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (action === 'create') return handleCreate(req, res);
   if (action === 'print')  return handlePrint(req, res);
   if (action === 'export') return handleExportCodes(req, res);
+  if (action === 'stats')  return handleWilayaStats(req, res);
 
   return res.status(400).json({
     status: 'ERROR',
@@ -551,6 +552,62 @@ async function handleExportCodes(req, res) {
 
   } catch (error) {
     console.error('handleExportCodes error:', error);
+    return res.status(500).json({ status: 'ERROR', message: 'Erreur inattendue' });
+  }
+}
+
+// ============================================================
+// ACTION: STATS — إحصاءات الولايات
+//   الأدمن: كل البيانات · العلامة: بياناتها فقط (تفرضها الدالة)
+// ============================================================
+async function handleWilayaStats(req, res) {
+  try {
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const ANON = process.env.SUPABASE_ANON_KEY || 'sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m';
+
+    if (!SUPABASE_URL || !SERVICE_KEY) {
+      return res.status(500).json({ status: 'ERROR', message: 'Configuration manquante' });
+    }
+
+    const body = req.body || {};
+    const token = String(req.headers.authorization || body.access_token || '')
+      .replace(/^Bearer\s+/i, '').trim();
+
+    if (!token) {
+      return res.status(401).json({ status: 'ERROR', message: 'Non authentifié' });
+    }
+
+    const now = Date.now();
+    const from = body.from || new Date(now - 30 * 86400000).toISOString();
+    const to = body.to || new Date(now + 86400000).toISOString();
+
+    // توكن المستخدم يُمرَّر كما هو حتى تعمل auth.uid() داخل الدالة
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/wilaya_stats`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': ANON,
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ p_from: from, p_to: to })
+    });
+
+    if (!r.ok) {
+      const errText = await r.text();
+      console.error('wilaya_stats failed:', r.status, errText.slice(0, 300));
+      const forbidden = r.status === 403 || /access denied/i.test(errText);
+      return res.status(forbidden ? 403 : 500).json({
+        status: 'ERROR',
+        message: forbidden ? 'Accès refusé' : 'Erreur serveur',
+        detail: forbidden ? undefined : errText.slice(0, 200)
+      });
+    }
+
+    const rows = await r.json();
+    return res.status(200).json({ status: 'OK', from, to, rows });
+  } catch (e) {
+    console.error('handleWilayaStats error:', e);
     return res.status(500).json({ status: 'ERROR', message: 'Erreur inattendue' });
   }
 }
