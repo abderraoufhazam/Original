@@ -129,7 +129,26 @@ async function analyzeWithGemini(mimeType, base64Data, prompt) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) return null;
 
-  const models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'];
+  // نأخذ النماذج المتاحة فعلاً لهذا المفتاح (بدل قائمة ثابتة قد تتقادم)
+  let available = [];
+  try {
+    available = await getAvailableModels(key);
+  } catch (e) {
+    console.warn('Liste des modèles indisponible:', String(e).slice(0, 100));
+  }
+
+  const vision = available.filter(function (m) {
+    return /gemini/i.test(m) && !/embedding|aqa|imagen|veo/i.test(m);
+  });
+
+  // نُفضّل flash الحديثة، ثم الباقي
+  const preferred = vision.filter(function (m) { return /2\.5-flash|2\.0-flash/i.test(m); });
+  const rest = vision.filter(function (m) { return preferred.indexOf(m) === -1; });
+
+  let models = preferred.concat(rest);
+  models = models.filter(function (m, i) { return models.indexOf(m) === i; }).slice(0, 5);
+
+  if (!models.length) models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
 
   const body = {
     contents: [{
