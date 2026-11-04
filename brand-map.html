@@ -232,8 +232,10 @@ function valOf(code) {
 function thresholds() {
   const vals = Object.keys(NAMES).map(valOf).filter(function (v) { return v > 0; }).sort(function (a, b) { return a - b; });
   if (!vals.length) return [1, 2, 3, 4];
-  const q = function (f) { return vals[Math.min(vals.length - 1, Math.floor(vals.length * f))] || 1; };
-  return [q(0.35), q(0.6), q(0.8), q(0.93)];
+  const max = vals[vals.length - 1];
+  const th = [0.10, 0.25, 0.5, 0.75].map(function (f) { return Math.max(1, Math.round(max * f)); });
+  for (let i = 1; i < 4; i++) th[i] = Math.max(th[i], th[i - 1] + 1);
+  return th;
 }
 
 function paint() {
