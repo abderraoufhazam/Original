@@ -874,7 +874,14 @@ $("brandImage").addEventListener("change", async (e) => {
   }
 
   try {
-    const dataUrl = await compressImage(file, 450, 0.55);
+    // دقة كافية لقراءة اسم الماركة على العلبة (كانت 450px — النص يصبح غير مقروء)
+    let dataUrl = await compressImage(file, 1100, 0.8);
+
+    // حماية من الحجم المفرط (حد Vercel 4.5MB)
+    if (dataUrl.length > 2500000) {
+      dataUrl = await compressImage(file, 800, 0.7);
+    }
+
     brandImageDataUrl = dataUrl;
     if ($("brandImagePreviewImg")) $("brandImagePreviewImg").src = dataUrl;
     if ($("brandImagePreview")) $("brandImagePreview").classList.remove("hidden");
