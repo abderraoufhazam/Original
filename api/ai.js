@@ -206,6 +206,8 @@ async function handleDiag(req, res) {
   const out = {
     gemini_key: !!process.env.GEMINI_API_KEY,
     zai_key: !!process.env.ZAI_API_KEY,
+    groq_key: !!process.env.GROQ_API_KEY,
+    openrouter_key: !!process.env.OPENROUTER_API_KEY,
     gemini: null,
     zai: null
   };
@@ -249,6 +251,67 @@ async function handleDiag(req, res) {
 
 // MODE 2: ANALYZE (سريع + تصحيح تلقائي)
 // ============================================================
+// ============================================================
+// مزوّد عام متوافق مع OpenAI (Groq · OpenRouter · z.ai · Mistral)
+// ============================================================
+async function analyzeWithOpenAICompat(opts) {
+  const name = opts.name || 'provider';
+  const models = opts.models || [];
+  let lastErr = null;
+
+  for (const model of models) {
+    let controller = null, timeoutId = null;
+    try {
+      controller = new AbortController();
+      timeoutId = setTimeout(() => controller.abort(), opts.timeoutMs || 25000);
+
+      const r = await fetch(opts.url, {
+        method: 'POST',
+        headers: Object.assign({
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + opts.key
+        }, opts.headers || {}),
+        body: JSON.stringify({
+          model: model,
+          messages: [{
+            role: 'user',
+            content: [
+              { type: 'text', text: opts.prompt },
+              { type: 'image_url', image_url: { url: opts.image } }
+            ]
+          }],
+          temperature: 0.1,
+          max_tokens: 800
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+      const raw = await r.text();
+
+      if (!r.ok) {
+        lastErr = name + ' ' + r.status;
+        console.warn(`[${name}] ${model} → ${r.status}: ${raw.slice(0, 110)}`);
+        // 429/5xx: جرّب النموذج التالي — لا فائدة من تكرار نفس الطلب
+        continue;
+      }
+
+      let j;
+      try { j = JSON.parse(raw); } catch (e) { lastErr = 'json'; continue; }
+      const txt = j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
+      if (txt && String(txt).trim()) {
+        console.log(`✅ Analyse réussie avec ${name} (${model})`);
+        return { text: String(txt) };
+      }
+    } catch (e) {
+      if (timeoutId) clearTimeout(timeoutId);
+      lastErr = name + ' exception';
+      console.warn(`[${name}] ${model} exception:`, String(e).slice(0, 100));
+    }
+  }
+  return { text: null, error: lastErr };
+}
+
 async function handleAnalyze(req, res) {
   try {
     const { image } = req.body || {};
@@ -283,82 +346,74 @@ Réponds UNIQUEMENT avec un objet JSON valide :
 }
 Ne mets AUCUN texte avant ou après le JSON.`;
 
-    // ── 1) Gemini (المزوّد الأساسي — الأفضل في قراءة النصوص) ──
-    let text = await analyzeWithGemini(match[1], match[2], prompt);
-    let source = 'gemini';
-    let lastErrorText = null;
+    // ── سلسلة المزوّدين: كل مزوّد يعمل فقط إذا وُجد مفتاحه ──
+    let text = null;
+    let source = null;
+    const tried = [];
 
-    // ── 2) z.ai (احتياطي) ──
+    // 1) Gemini
+    text = await analyzeWithGemini(match[1], match[2], prompt);
+    tried.push('gemini');
+    if (text) source = 'gemini';
+
+    // 2) Groq (سريع جداً — طبقة مجانية سخية)
+    if (!text && process.env.GROQ_API_KEY) {
+      const g = await analyzeWithOpenAICompat({
+        name: 'groq',
+        url: 'https://api.groq.com/openai/v1/chat/completions',
+        key: process.env.GROQ_API_KEY,
+        models: (process.env.GROQ_MODEL
+          ? [process.env.GROQ_MODEL]
+          : ['meta-llama/llama-4-scout-17b-16e-instruct', 'llama-3.2-90b-vision-preview']),
+        image: image,
+        prompt: prompt
+      });
+      tried.push('groq');
+      if (g.text) { text = g.text; source = 'groq'; }
+    }
+
+    // 3) OpenRouter (نماذج مجانية متعددة)
+    if (!text && process.env.OPENROUTER_API_KEY) {
+      const o = await analyzeWithOpenAICompat({
+        name: 'openrouter',
+        url: 'https://openrouter.ai/api/v1/chat/completions',
+        key: process.env.OPENROUTER_API_KEY,
+        headers: {
+          'HTTP-Referer': 'https://ordiz.online',
+          'X-Title': 'ORDIZ'
+        },
+        models: (process.env.OPENROUTER_MODEL
+          ? [process.env.OPENROUTER_MODEL]
+          : ['qwen/qwen2.5-vl-72b-instruct:free', 'google/gemma-3-27b-it:free']),
+        image: image,
+        prompt: prompt
+      });
+      tried.push('openrouter');
+      if (o.text) { text = o.text; source = 'openrouter'; }
+    }
+
+    // 4) z.ai (احتياطي أخير)
     if (!text && ZAI_API_KEY) {
-      console.warn('Gemini indisponible → bascule vers z.ai');
-      let response = null;
-      const maxRetries = 3;
-
-      for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        let controller = null, timeoutId = null;
-        try {
-          controller = new AbortController();
-          timeoutId = setTimeout(() => controller.abort(), 25000);
-
-          response = await fetch('https://api.z.ai/api/paas/v4/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${ZAI_API_KEY}`
-            },
-            body: JSON.stringify({
-              model: 'glm-4.6v-flash',
-              region: 'top',
-              messages: [{
-                role: 'user',
-                content: [
-                  { type: 'text', text: prompt },
-                  { type: 'image_url', image_url: { url: image } }
-                ]
-              }],
-              temperature: 0.1
-            }),
-            signal: controller.signal
-          });
-
-          clearTimeout(timeoutId);
-
-          if (response.ok) break;
-
-          lastErrorText = await response.text();
-          if ((response.status === 400 || response.status === 429) && attempt < maxRetries) {
-            await new Promise(r => setTimeout(r, attempt * 1200));
-            continue;
-          }
-          break;
-        } catch (err) {
-          if (timeoutId) clearTimeout(timeoutId);
-          lastErrorText = err.name === 'AbortError' ? 'Timeout (25s)' : String(err);
-          if (attempt < maxRetries) {
-            await new Promise(r => setTimeout(r, attempt * 1200));
-            continue;
-          }
-        }
-      }
-
-      if (response && response.ok) {
-        try {
-          const data = await response.json();
-          text = data.choices?.[0]?.message?.content || null;
-          if (text) source = 'zai';
-        } catch (e) {
-          console.warn('z.ai réponse illisible:', String(e).slice(0, 120));
-        }
-      }
+      const z = await analyzeWithOpenAICompat({
+        name: 'zai',
+        url: 'https://api.z.ai/api/paas/v4/chat/completions',
+        key: ZAI_API_KEY,
+        models: ['glm-4.6v-flash'],
+        image: image,
+        prompt: prompt,
+        timeoutMs: 25000
+      });
+      tried.push('zai');
+      if (z.text) { text = z.text; source = 'zai'; }
     }
 
     // ── 3) فشل كامل ──
     if (!text) {
-      console.error('Aucun service vision disponible:', String(lastErrorText).slice(0, 120));
+      console.error('Aucun service vision disponible. Essayés:', tried.join(', '));
       return res.status(503).json({
         status: 'ERROR',
         message: 'تعذّر تحليل الصورة حالياً. جرّب صورة أوضح، أو أدخل البيانات يدوياً.',
-        detail: lastErrorText ? String(lastErrorText).slice(0, 160) : 'no-vision-service'
+        detail: 'providers: ' + tried.join(', ')
       });
     }
 
