@@ -4,6 +4,7 @@
 // + إشعار بريد إلكتروني عبر Resend
 
 import { verifyTurnstile, getClientIp } from './_turnstile.js';
+import { hashCode, maskCode } from './_crypto.js';
 
 export default async function handler(req, res) {
   // ✅ CORS محمي — قائمة أصول مسموحة
@@ -101,7 +102,7 @@ async function handleFeedback(req, res) {
     const userAgent = req.headers['user-agent'] || 'unknown';
 
     const row = {
-      secret_code: cleanCode || null,
+      secret_code: maskCode(cleanCode),
       type: type,
       rating: type === 'rating' ? parseInt(rating, 10) : null,
       comment: (comment || '').trim().slice(0, 1000) || null,
@@ -554,7 +555,7 @@ async function handleShopComplaint(req, res) {
 
     // ─── 1. البحث عن الكود ───
     const codeRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/qr_codes?secret_code=eq.${encodeURIComponent(cleanCode)}&select=id,is_shop_lot,shop_name,shop_user_id,product_price&limit=1`,
+      `${SUPABASE_URL}/rest/v1/qr_codes?secret_code_hash=eq.${hashCode(cleanCode)}&select=id,is_shop_lot,shop_name,shop_user_id,product_price&limit=1`,
       {
         headers: {
           'apikey': SUPABASE_SERVICE_ROLE_KEY,

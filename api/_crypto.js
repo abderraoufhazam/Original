@@ -72,3 +72,11 @@ export function formatDisplayCode(code) {
   // autres → tel quel
   return s;
 }
+
+// قناع للعرض في السجلات: AB•••34 — لا يكشف الكود كاملاً
+export function maskCode(code) {
+  if (!code) return null;
+  const s = String(code).trim().toUpperCase();
+  if (s.length < 6) return '•••••••';
+  return s.slice(0, 2) + '•••' + s.slice(-2);
+}

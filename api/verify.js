@@ -1,7 +1,7 @@
 // api/verify.js
 // Vérification via hash (nouveau) + plaintext (fallback) + rate limiting
 
-import { hashCode } from './_crypto.js';
+import { hashCode, maskCode } from './_crypto.js';
 import { getClientIp } from './_turnstile.js';
 
 // ============================================================
@@ -253,7 +253,7 @@ const rpcResponse = await fetch(
 
     // Journaliser la tentative (fire-and-forget)
     const logRow = {
-      secret_code: cleanCode,
+      secret_code: maskCode(cleanCode),
       result: data.status || 'UNKNOWN',
       brand: data.product?.brand || null,
       product_name: data.product?.product_name || null,

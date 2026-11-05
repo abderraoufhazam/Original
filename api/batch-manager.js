@@ -409,7 +409,7 @@ const EXPORT_PAGE_SIZE = 1000;   // سقف Supabase لكل طلب
 const EXPORT_MAX_ROWS = 10000;   // سقف التصدير الواحد
 const EXPORT_STATUSES = ['PENDING', 'UNUSED', 'USED', 'DISABLED', 'EXPIRED'];
 const EXPORT_COLUMNS = [
-  'id', 'secret_code', 'brand', 'product_name', 'reference', 'lot',
+  'id', 'secret_code_encrypted', 'brand', 'product_name', 'reference', 'lot',
   'secret_status', 'created_at', 'shop_name', 'is_shop_lot', 'product_price'
 ].join(',');
 
@@ -490,13 +490,18 @@ async function handleExportCodes(req, res) {
     const term = sanitizeExportTerm(body.q);
     if (term) {
       const p = `*${term}*`;
-      filters.push('or=(' + [
+      const orParts = [
         `brand.ilike.${p}`,
         `product_name.ilike.${p}`,
         `lot.ilike.${p}`,
-        `reference.ilike.${p}`,
-        `secret_code.ilike.${p}`
-      ].join(',') + ')');
+        `reference.ilike.${p}`
+      ];
+      // بحث بكود كامل (7 محارف) → عبر البصمة، بلا الحاجة للنص الصريح
+      const codeCandidate = term.replace(/\s+/g, '').toUpperCase();
+      if (/^[A-Z0-9]{7}$/.test(codeCandidate)) {
+        orParts.push(`secret_code_hash.eq.${hashCode(codeCandidate)}`);
+      }
+      filters.push('or=(' + orParts.join(',') + ')');
     }
 
     const status = String(body.status || '').toUpperCase().trim();
@@ -545,11 +550,25 @@ async function handleExportCodes(req, res) {
       if (batch.length < pageSize) break; // آخر صفحة
     }
 
+    // فكّ التشفير على السيرفر — النص الصريح لا يعود مخزّناً في القاعدة
+    const outRows = rows.map((r) => {
+      let plain = null;
+      if (r.secret_code_encrypted) {
+        try { plain = decryptCode(r.secret_code_encrypted); } catch (e) { plain = null; }
+      } else if (r.secret_code) {
+        plain = r.secret_code;
+      }
+      const copy = Object.assign({}, r);
+      delete copy.secret_code_encrypted;
+      copy.secret_code = plain;
+      return copy;
+    });
+
     return res.status(200).json({
       status: 'OK',
-      count: rows.length,
-      truncated: rows.length >= limit,
-      rows
+      count: outRows.length,
+      truncated: outRows.length >= limit,
+      rows: outRows
     });
 
   } catch (error) {
