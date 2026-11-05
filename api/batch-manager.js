@@ -1,6 +1,6 @@
-// api/batch-manager.js
-// API موحّد: create (إنشاء دفعة) + print (فك تشفير للطباعة)
-// الاستخدام:
+﻿// api/batch-manager.js
+// API Ù…ÙˆØ­Ù‘Ø¯: create (Ø¥Ù†Ø´Ø§Ø¡ Ø¯ÙØ¹Ø©) + print (ÙÙƒ ØªØ´ÙÙŠØ± Ù„Ù„Ø·Ø¨Ø§Ø¹Ø©)
+// Ø§Ù„Ø§Ø³ØªØ®Ø¯Ø§Ù…:
 //   POST /api/batch-manager?action=create   { brand, quantity, ... }
 //   POST /api/batch-manager?action=print    { lot }
 
@@ -12,7 +12,7 @@ const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '')
   .map(e => e.trim().toLowerCase())
   .filter(Boolean);
 export default async function handler(req, res) {
-  // ✅ CORS محمي — قائمة أصول مسموحة
+  // âœ… CORS Ù…Ø­Ù…ÙŠ â€” Ù‚Ø§Ø¦Ù…Ø© Ø£ØµÙˆÙ„ Ù…Ø³Ù…ÙˆØ­Ø©
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://ordiz.online,https://www.ordiz.online,https://original-indol.vercel.app')
   .split(',').map(o => o.trim()).filter(Boolean);
 const _origin = req.headers.origin;
@@ -46,7 +46,7 @@ res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 }
 
 // ============================================================
-// ACTION 1: CREATE — إنشاء دفعة جديدة
+// ACTION 1: CREATE â€” Ø¥Ù†Ø´Ø§Ø¡ Ø¯ÙØ¹Ø© Ø¬Ø¯ÙŠØ¯Ø©
 // ============================================================
 async function handleCreate(req, res) {
   try {
@@ -62,10 +62,10 @@ async function handleCreate(req, res) {
     }
     const qty = Math.min(10000, Math.max(1, parseInt(quantity, 10) || 0));
     if (!qty) {
-      return res.status(400).json({ status: 'ERROR', message: 'Quantité invalide' });
+      return res.status(400).json({ status: 'ERROR', message: 'QuantitÃ© invalide' });
     }
     if (!access_token) {
-      return res.status(401).json({ status: 'ERROR', message: 'Non authentifié' });
+      return res.status(401).json({ status: 'ERROR', message: 'Non authentifiÃ©' });
     }
 
     const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -86,7 +86,7 @@ async function handleCreate(req, res) {
       return res.status(401).json({ status: 'ERROR', message: 'Token invalide' });
     }
 
-    // ✅ التحقق من عدم وجود دفعة بنفس رقم اللوت
+    // âœ… Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† Ø¹Ø¯Ù… ÙˆØ¬ÙˆØ¯ Ø¯ÙØ¹Ø© Ø¨Ù†ÙØ³ Ø±Ù‚Ù… Ø§Ù„Ù„ÙˆØª
     const lotToCheck = lot?.trim();
     if (lotToCheck) {
       const checkRes = await fetch(
@@ -104,13 +104,13 @@ async function handleCreate(req, res) {
         if (existing && existing.length > 0) {
           return res.status(400).json({
             status: 'ERROR',
-            message: `رقم الدفعة "${lotToCheck}" مستعمل بالفعل. الرجاء اختيار رقم آخر أو حذف الدفعة القديمة أولاً.`
+            message: `Ø±Ù‚Ù… Ø§Ù„Ø¯ÙØ¹Ø© "${lotToCheck}" Ù…Ø³ØªØ¹Ù…Ù„ Ø¨Ø§Ù„ÙØ¹Ù„. Ø§Ù„Ø±Ø¬Ø§Ø¡ Ø§Ø®ØªÙŠØ§Ø± Ø±Ù‚Ù… Ø¢Ø®Ø± Ø£Ùˆ Ø­Ø°Ù Ø§Ù„Ø¯ÙØ¹Ø© Ø§Ù„Ù‚Ø¯ÙŠÙ…Ø© Ø£ÙˆÙ„Ø§Ù‹.`
           });
         }
       }
     }
     const codes = [];
-    // ✅ البحث عن user_id الخاص بالماركة
+    // âœ… Ø§Ù„Ø¨Ø­Ø« Ø¹Ù† user_id Ø§Ù„Ø®Ø§Øµ Ø¨Ø§Ù„Ù…Ø§Ø±ÙƒØ©
     let brandUserId = null;
     try {
       const usersRes = await fetch(
@@ -130,9 +130,9 @@ async function handleCreate(req, res) {
         );
         if (matchedUser) {
           brandUserId = matchedUser.id;
-          console.log('✅ Found brand user_id:', brandUserId, 'for brand:', brand.trim());
+          console.log('âœ… Found brand user_id:', brandUserId, 'for brand:', brand.trim());
         } else {
-          console.warn('⚠️ No user found for brand:', brand.trim());
+          console.warn('âš ï¸ No user found for brand:', brand.trim());
         }
       }
     } catch (e) {
@@ -152,7 +152,7 @@ async function handleCreate(req, res) {
         secret_code_encrypted: encryptCode(code),
         secret_status: status,
         brand: brand.trim(),
-        user_id: brandUserId, // ✅ ربط الكود بحساب الماركة
+        user_id: brandUserId, // âœ… Ø±Ø¨Ø· Ø§Ù„ÙƒÙˆØ¯ Ø¨Ø­Ø³Ø§Ø¨ Ø§Ù„Ù…Ø§Ø±ÙƒØ©
         product_name: product_name?.trim() || null,
         reference: reference?.trim() || null,
         lot: lot?.trim() || null,
@@ -216,7 +216,7 @@ async function handleCreate(req, res) {
 }
 
 // ============================================================
-// ACTION 2: PRINT — فك تشفير دفعة للطباعة
+// ACTION 2: PRINT â€” ÙÙƒ ØªØ´ÙÙŠØ± Ø¯ÙØ¹Ø© Ù„Ù„Ø·Ø¨Ø§Ø¹Ø©
 // ============================================================
 async function handlePrint(req, res) {
   try {
@@ -226,7 +226,7 @@ async function handlePrint(req, res) {
       return res.status(400).json({ status: 'ERROR', message: 'Lot obligatoire' });
     }
     if (!access_token) {
-      return res.status(401).json({ status: 'ERROR', message: 'Non authentifié' });
+      return res.status(401).json({ status: 'ERROR', message: 'Non authentifiÃ©' });
     }
 
     const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -247,11 +247,11 @@ async function handlePrint(req, res) {
       return res.status(401).json({ status: 'ERROR', message: 'Token invalide' });
     }
 
-    // ══════════════════════════════════════════════════════════
-    // 🔒 فحص الصلاحية: الأدمن أو صاحب الدفعة فقط
-    // قبل هذا الإصلاح كان أي مستخدم مسجّل يستطيع قراءة أكواد
-    // أي دفعة بمعرفة رقمها فقط (تجاوز صلاحيات / IDOR).
-    // ══════════════════════════════════════════════════════════
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    // ðŸ”’ ÙØ­Øµ Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ©: Ø§Ù„Ø£Ø¯Ù…Ù† Ø£Ùˆ ØµØ§Ø­Ø¨ Ø§Ù„Ø¯ÙØ¹Ø© ÙÙ‚Ø·
+    // Ù‚Ø¨Ù„ Ù‡Ø°Ø§ Ø§Ù„Ø¥ØµÙ„Ø§Ø­ ÙƒØ§Ù† Ø£ÙŠ Ù…Ø³ØªØ®Ø¯Ù… Ù…Ø³Ø¬Ù‘Ù„ ÙŠØ³ØªØ·ÙŠØ¹ Ù‚Ø±Ø§Ø¡Ø© Ø£ÙƒÙˆØ§Ø¯
+    // Ø£ÙŠ Ø¯ÙØ¹Ø© Ø¨Ù…Ø¹Ø±ÙØ© Ø±Ù‚Ù…Ù‡Ø§ ÙÙ‚Ø· (ØªØ¬Ø§ÙˆØ² ØµÙ„Ø§Ø­ÙŠØ§Øª / IDOR).
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
     const user = await userRes.json();
     const userId = user && user.id;
 
@@ -265,7 +265,7 @@ async function handlePrint(req, res) {
     };
     const cleanLot = lot.trim();
 
-    // 1) هل الطالب أدمن؟
+    // 1) Ù‡Ù„ Ø§Ù„Ø·Ø§Ù„Ø¨ Ø£Ø¯Ù…Ù†ØŸ
     let isAdmin = false;
     try {
       const adminRes = await fetch(
@@ -285,7 +285,7 @@ async function handlePrint(req, res) {
       if (email && ADMIN_EMAILS.includes(email)) isAdmin = true;
     }
 
-    // 2) إن لم يكن أدمن → يجب أن تكون الدفعة مملوكة له
+    // 2) Ø¥Ù† Ù„Ù… ÙŠÙƒÙ† Ø£Ø¯Ù…Ù† â†’ ÙŠØ¬Ø¨ Ø£Ù† ØªÙƒÙˆÙ† Ø§Ù„Ø¯ÙØ¹Ø© Ù…Ù…Ù„ÙˆÙƒØ© Ù„Ù‡
     if (!isAdmin) {
       const ownRes = await fetch(
         `${SUPABASE_URL}/rest/v1/qr_codes?lot=eq.${encodeURIComponent(cleanLot)}&select=user_id&limit=1`,
@@ -293,7 +293,7 @@ async function handlePrint(req, res) {
       );
 
       if (!ownRes.ok) {
-        return res.status(500).json({ status: 'ERROR', message: 'Erreur vérification' });
+        return res.status(500).json({ status: 'ERROR', message: 'Erreur vÃ©rification' });
       }
 
       const own = await ownRes.json();
@@ -302,31 +302,48 @@ async function handlePrint(req, res) {
       if (!ownerId || ownerId !== userId) {
         return res.status(403).json({
           status: 'ERROR',
-          message: 'Accès refusé : cette lot ne vous appartient pas'
+          message: 'AccÃ¨s refusÃ© : cette lot ne vous appartient pas'
         });
       }
     }
 
-    const fetchRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/qr_codes?lot=eq.${encodeURIComponent(cleanLot)}&select=id,secret_code,secret_code_encrypted,secret_status,brand,product_name,reference,manufacture_date,expiry_date,logo_url,created_at&order=created_at.asc`,
-      {
-        headers: {
-          'apikey': SUPABASE_SERVICE_ROLE_KEY,
-          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-        }
-      }
-    );
+    // Supabase ÙŠØ¹ÙŠØ¯ 1000 ØµÙ ÙƒØ­Ø¯ Ø£Ù‚ØµÙ‰ â€” Ù†Ù‚Ø±Ø£ Ø§Ù„Ù„ÙˆØª Ø¹Ù„Ù‰ ØµÙØ­Ø§Øª Ø­ØªÙ‰ Ø§Ù„Ù†Ù‡Ø§ÙŠØ©
+    const PAGE_SIZE = 1000;
+    const HARD_CAP = 25000;
+    let rows = [];
+    let offset = 0;
 
-    if (!fetchRes.ok) {
-      const err = await fetchRes.text();
-      console.error('Fetch error:', err);
-      return res.status(500).json({ status: 'ERROR', message: 'Erreur récupération' });
+    while (true) {
+      const pageRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/qr_codes?lot=eq.${encodeURIComponent(cleanLot)}` +
+        `&select=id,secret_code,secret_code_encrypted,secret_status,brand,product_name,reference,manufacture_date,expiry_date,logo_url,created_at` +
+        `&order=created_at.asc,id.asc&limit=${PAGE_SIZE}&offset=${offset}`,
+        {
+          headers: {
+            'apikey': SUPABASE_SERVICE_ROLE_KEY,
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+
+      if (!pageRes.ok) {
+        const err = await pageRes.text();
+        console.error('Fetch error:', err);
+        return res.status(500).json({ status: 'ERROR', message: 'Erreur rÃ©cupÃ©ration' });
+      }
+
+      const batch = await pageRes.json();
+
+      if (!Array.isArray(batch) || batch.length === 0) break;
+      rows = rows.concat(batch);
+      offset += batch.length;
+
+      if (batch.length < PAGE_SIZE) break;
+      if (rows.length >= HARD_CAP) break;
     }
 
-    const rows = await fetchRes.json();
-
-    if (!rows || rows.length === 0) {
-      return res.status(404).json({ status: 'ERROR', message: 'Aucun code trouvé' });
+    if (!rows.length) {
+      return res.status(404).json({ status: 'ERROR', message: 'Aucun code trouvÃ©' });
     }
 
     const codes = [];
@@ -398,24 +415,24 @@ async function handlePrint(req, res) {
 }
 
 // ============================================================
-// ACTION 3: EXPORT — تصدير كل الأكواد (للأدمن فقط)
+// ACTION 3: EXPORT â€” ØªØµØ¯ÙŠØ± ÙƒÙ„ Ø§Ù„Ø£ÙƒÙˆØ§Ø¯ (Ù„Ù„Ø£Ø¯Ù…Ù† ÙÙ‚Ø·)
 // ============================================================
-// يُرجع secret_code الصريح مع بيانات الدفعة، لتصديرها Excel من لوحة التحكم.
-// الفحص هنا في السيرفر (جدول admins ثم ADMIN_EMAILS) مع service_role،
-// فلا يعتمد أمنُ الأكواد على سياسات RLS في القاعدة.
+// ÙŠÙØ±Ø¬Ø¹ secret_code Ø§Ù„ØµØ±ÙŠØ­ Ù…Ø¹ Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ø¯ÙØ¹Ø©ØŒ Ù„ØªØµØ¯ÙŠØ±Ù‡Ø§ Excel Ù…Ù† Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ….
+// Ø§Ù„ÙØ­Øµ Ù‡Ù†Ø§ ÙÙŠ Ø§Ù„Ø³ÙŠØ±ÙØ± (Ø¬Ø¯ÙˆÙ„ admins Ø«Ù… ADMIN_EMAILS) Ù…Ø¹ service_roleØŒ
+// ÙÙ„Ø§ ÙŠØ¹ØªÙ…Ø¯ Ø£Ù…Ù†Ù Ø§Ù„Ø£ÙƒÙˆØ§Ø¯ Ø¹Ù„Ù‰ Ø³ÙŠØ§Ø³Ø§Øª RLS ÙÙŠ Ø§Ù„Ù‚Ø§Ø¹Ø¯Ø©.
 //
 //   POST /api/batch-manager?action=export
 //   { access_token, q?, status?, dateFrom?, dateTo?, limit? }
 
-const EXPORT_PAGE_SIZE = 1000;   // سقف Supabase لكل طلب
-const EXPORT_MAX_ROWS = 10000;   // سقف التصدير الواحد
+const EXPORT_PAGE_SIZE = 1000;   // Ø³Ù‚Ù Supabase Ù„ÙƒÙ„ Ø·Ù„Ø¨
+const EXPORT_MAX_ROWS = 10000;   // Ø³Ù‚Ù Ø§Ù„ØªØµØ¯ÙŠØ± Ø§Ù„ÙˆØ§Ø­Ø¯
 const EXPORT_STATUSES = ['PENDING', 'UNUSED', 'USED', 'DISABLED', 'EXPIRED'];
 const EXPORT_COLUMNS = [
   'id', 'secret_code_encrypted', 'brand', 'product_name', 'reference', 'lot',
   'secret_status', 'created_at', 'shop_name', 'is_shop_lot', 'product_price'
 ].join(',');
 
-// تنظيف نص البحث من محارف تُفسد صياغة فلتر PostgREST (or=(...) )
+// ØªÙ†Ø¸ÙŠÙ Ù†Øµ Ø§Ù„Ø¨Ø­Ø« Ù…Ù† Ù…Ø­Ø§Ø±Ù ØªÙÙØ³Ø¯ ØµÙŠØ§ØºØ© ÙÙ„ØªØ± PostgREST (or=(...) )
 function sanitizeExportTerm(value) {
   return String(value || '')
     .replace(/[,()*"\\]/g, ' ')
@@ -424,12 +441,12 @@ function sanitizeExportTerm(value) {
     .slice(0, 100);
 }
 
-// يتحقق أن صاحب التوكن أدمن فعلاً
+// ÙŠØªØ­Ù‚Ù‚ Ø£Ù† ØµØ§Ø­Ø¨ Ø§Ù„ØªÙˆÙƒÙ† Ø£Ø¯Ù…Ù† ÙØ¹Ù„Ø§Ù‹
 async function requireAdminToken(req, SUPABASE_URL, SERVICE_KEY) {
   const raw = req.headers.authorization || (req.body && req.body.access_token) || '';
   const token = String(raw).replace(/^Bearer\s+/i, '').trim();
 
-  if (!token) return { ok: false, code: 401, message: 'Non authentifié' };
+  if (!token) return { ok: false, code: 401, message: 'Non authentifiÃ©' };
 
   let user;
   try {
@@ -447,7 +464,7 @@ async function requireAdminToken(req, SUPABASE_URL, SERVICE_KEY) {
 
   const svc = { 'apikey': SERVICE_KEY, 'Authorization': `Bearer ${SERVICE_KEY}` };
 
-  // 1) جدول admins
+  // 1) Ø¬Ø¯ÙˆÙ„ admins
   try {
     const adminRes = await fetch(
       `${SUPABASE_URL}/rest/v1/admins?user_id=eq.${encodeURIComponent(user.id)}&select=user_id`,
@@ -461,11 +478,11 @@ async function requireAdminToken(req, SUPABASE_URL, SERVICE_KEY) {
     console.warn('export: admins check failed', e);
   }
 
-  // 2) قائمة البريد الاحتياطية
+  // 2) Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ø¨Ø±ÙŠØ¯ Ø§Ù„Ø§Ø­ØªÙŠØ§Ø·ÙŠØ©
   const email = String(user.email || '').toLowerCase().trim();
   if (email && ADMIN_EMAILS.includes(email)) return { ok: true, user };
 
-  return { ok: false, code: 403, message: 'Accès refusé' };
+  return { ok: false, code: 403, message: 'AccÃ¨s refusÃ©' };
 }
 
 async function handleExportCodes(req, res) {
@@ -477,7 +494,7 @@ async function handleExportCodes(req, res) {
       return res.status(500).json({ status: 'ERROR', message: 'Configuration manquante' });
     }
 
-    // 🔒 الأدمن فقط
+    // ðŸ”’ Ø§Ù„Ø£Ø¯Ù…Ù† ÙÙ‚Ø·
     const auth = await requireAdminToken(req, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     if (!auth.ok) {
       return res.status(auth.code).json({ status: 'ERROR', message: auth.message });
@@ -498,7 +515,7 @@ async function handleExportCodes(req, res) {
         `lot.ilike.${p}`,
         `reference.ilike.${p}`
       ];
-      // بحث بكود كامل (7 محارف) → عبر البصمة، بلا الحاجة للنص الصريح
+      // Ø¨Ø­Ø« Ø¨ÙƒÙˆØ¯ ÙƒØ§Ù…Ù„ (7 Ù…Ø­Ø§Ø±Ù) â†’ Ø¹Ø¨Ø± Ø§Ù„Ø¨ØµÙ…Ø©ØŒ Ø¨Ù„Ø§ Ø§Ù„Ø­Ø§Ø¬Ø© Ù„Ù„Ù†Øµ Ø§Ù„ØµØ±ÙŠØ­
       const codeCandidate = term.replace(/\s+/g, '').toUpperCase();
       if (/^[A-Z0-9]{7}$/.test(codeCandidate)) {
         orParts.push(`secret_code_hash.eq.${hashCode(codeCandidate)}`);
@@ -549,10 +566,10 @@ async function handleExportCodes(req, res) {
       rows.push(...batch);
       offset += batch.length;
 
-      if (batch.length < pageSize) break; // آخر صفحة
+      if (batch.length < pageSize) break; // Ø¢Ø®Ø± ØµÙØ­Ø©
     }
 
-    // فكّ التشفير على السيرفر — النص الصريح لا يعود مخزّناً في القاعدة
+    // ÙÙƒÙ‘ Ø§Ù„ØªØ´ÙÙŠØ± Ø¹Ù„Ù‰ Ø§Ù„Ø³ÙŠØ±ÙØ± â€” Ø§Ù„Ù†Øµ Ø§Ù„ØµØ±ÙŠØ­ Ù„Ø§ ÙŠØ¹ÙˆØ¯ Ù…Ø®Ø²Ù‘Ù†Ø§Ù‹ ÙÙŠ Ø§Ù„Ù‚Ø§Ø¹Ø¯Ø©
     const outRows = rows.map((r) => {
       let plain = null;
       if (r.secret_code_encrypted) {
@@ -580,8 +597,8 @@ async function handleExportCodes(req, res) {
 }
 
 // ============================================================
-// ACTION: STATS — إحصاءات الولايات
-//   الأدمن: كل البيانات · العلامة: بياناتها فقط (تفرضها الدالة)
+// ACTION: STATS â€” Ø¥Ø­ØµØ§Ø¡Ø§Øª Ø§Ù„ÙˆÙ„Ø§ÙŠØ§Øª
+//   Ø§Ù„Ø£Ø¯Ù…Ù†: ÙƒÙ„ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Â· Ø§Ù„Ø¹Ù„Ø§Ù…Ø©: Ø¨ÙŠØ§Ù†Ø§ØªÙ‡Ø§ ÙÙ‚Ø· (ØªÙØ±Ø¶Ù‡Ø§ Ø§Ù„Ø¯Ø§Ù„Ø©)
 // ============================================================
 async function handleWilayaStats(req, res) {
   try {
@@ -598,14 +615,14 @@ async function handleWilayaStats(req, res) {
       .replace(/^Bearer\s+/i, '').trim();
 
     if (!token) {
-      return res.status(401).json({ status: 'ERROR', message: 'Non authentifié' });
+      return res.status(401).json({ status: 'ERROR', message: 'Non authentifiÃ©' });
     }
 
     const now = Date.now();
     const from = body.from || new Date(now - 30 * 86400000).toISOString();
     const to = body.to || new Date(now + 86400000).toISOString();
 
-    // توكن المستخدم يُمرَّر كما هو حتى تعمل auth.uid() داخل الدالة
+    // ØªÙˆÙƒÙ† Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… ÙŠÙÙ…Ø±ÙŽÙ‘Ø± ÙƒÙ…Ø§ Ù‡Ùˆ Ø­ØªÙ‰ ØªØ¹Ù…Ù„ auth.uid() Ø¯Ø§Ø®Ù„ Ø§Ù„Ø¯Ø§Ù„Ø©
     const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/wilaya_stats`, {
       method: 'POST',
       headers: {
@@ -622,7 +639,7 @@ async function handleWilayaStats(req, res) {
       const forbidden = r.status === 403 || /access denied/i.test(errText);
       return res.status(forbidden ? 403 : 500).json({
         status: 'ERROR',
-        message: forbidden ? 'Accès refusé' : 'Erreur serveur',
+        message: forbidden ? 'AccÃ¨s refusÃ©' : 'Erreur serveur',
         detail: forbidden ? undefined : errText.slice(0, 200)
       });
     }
@@ -636,7 +653,7 @@ async function handleWilayaStats(req, res) {
 }
 
 // ============================================================
-// ACTION: REPORTS — بلاغات ولاية محددة
+// ACTION: REPORTS â€” Ø¨Ù„Ø§ØºØ§Øª ÙˆÙ„Ø§ÙŠØ© Ù…Ø­Ø¯Ø¯Ø©
 // ============================================================
 async function handleWilayaReports(req, res) {
   try {
@@ -652,7 +669,7 @@ async function handleWilayaReports(req, res) {
     const token = String(req.headers.authorization || body.access_token || '')
       .replace(/^Bearer\s+/i, '').trim();
 
-    if (!token) return res.status(401).json({ status: 'ERROR', message: 'Non authentifié' });
+    if (!token) return res.status(401).json({ status: 'ERROR', message: 'Non authentifiÃ©' });
 
     const code = String(body.code || '').trim();
     if (!/^\d{1,2}$/.test(code)) {
@@ -688,7 +705,7 @@ async function handleWilayaReports(req, res) {
 }
 
 // ============================================================
-// ACTION: TREND — الاتجاه اليومي لولاية
+// ACTION: TREND â€” Ø§Ù„Ø§ØªØ¬Ø§Ù‡ Ø§Ù„ÙŠÙˆÙ…ÙŠ Ù„ÙˆÙ„Ø§ÙŠØ©
 // ============================================================
 async function handleWilayaTrend(req, res) {
   try {
@@ -704,7 +721,7 @@ async function handleWilayaTrend(req, res) {
     const token = String(req.headers.authorization || body.access_token || '')
       .replace(/^Bearer\s+/i, '').trim();
 
-    if (!token) return res.status(401).json({ status: 'ERROR', message: 'Non authentifié' });
+    if (!token) return res.status(401).json({ status: 'ERROR', message: 'Non authentifiÃ©' });
 
     const code = String(body.code || '').trim();
     if (!/^\d{1,2}$/.test(code)) {
@@ -740,8 +757,8 @@ async function handleWilayaTrend(req, res) {
 }
 
 // ============================================================
-// ACTION: REKEY — إعادة تشفير الأكواد بمفتاح جديد
-//   لا يقرأ المفتاح القديم: يستخدم process.env.ENCRYPTION_KEY في السيرفر
+// ACTION: REKEY â€” Ø¥Ø¹Ø§Ø¯Ø© ØªØ´ÙÙŠØ± Ø§Ù„Ø£ÙƒÙˆØ§Ø¯ Ø¨Ù…ÙØªØ§Ø­ Ø¬Ø¯ÙŠØ¯
+//   Ù„Ø§ ÙŠÙ‚Ø±Ø£ Ø§Ù„Ù…ÙØªØ§Ø­ Ø§Ù„Ù‚Ø¯ÙŠÙ…: ÙŠØ³ØªØ®Ø¯Ù… process.env.ENCRYPTION_KEY ÙÙŠ Ø§Ù„Ø³ÙŠØ±ÙØ±
 // ============================================================
 async function handleRekey(req, res) {
   try {
@@ -756,12 +773,12 @@ async function handleRekey(req, res) {
     const body = req.body || {};
     const token = String(req.headers.authorization || body.access_token || '')
       .replace(/^Bearer\s+/i, '').trim();
-    if (!token) return res.status(401).json({ status: 'ERROR', message: 'Non authentifié' });
+    if (!token) return res.status(401).json({ status: 'ERROR', message: 'Non authentifiÃ©' });
 
-    // الأدمن فقط
+    // Ø§Ù„Ø£Ø¯Ù…Ù† ÙÙ‚Ø·
     const adm = await requireAdminToken(req, SUPABASE_URL, SERVICE_KEY);
     if (!adm.ok) {
-      return res.status(adm.code || 403).json({ status: 'ERROR', message: adm.message || 'Accès refusé' });
+      return res.status(adm.code || 403).json({ status: 'ERROR', message: adm.message || 'AccÃ¨s refusÃ©' });
     }
 
     const newKey = String(body.new_key || '').trim();
@@ -771,14 +788,14 @@ async function handleRekey(req, res) {
 
     const size = Math.min(500, Math.max(1, Number(body.batch) || 300));
 
-    // 1) اقرأ دفعة لم تُعاد تشفيرها بعد
+    // 1) Ø§Ù‚Ø±Ø£ Ø¯ÙØ¹Ø© Ù„Ù… ØªÙØ¹Ø§Ø¯ ØªØ´ÙÙŠØ±Ù‡Ø§ Ø¨Ø¹Ø¯
     const listRes = await fetch(
       `${SUPABASE_URL}/rest/v1/qr_codes?select=id,secret_code_encrypted&enc_key_id=eq.1&limit=${size}`,
       { headers: { 'apikey': SERVICE_KEY, 'Authorization': `Bearer ${SERVICE_KEY}` } }
     );
     if (!listRes.ok) {
       const t2 = await listRes.text();
-      return res.status(500).json({ status: 'ERROR', message: 'Lecture échouée', detail: t2.slice(0, 150) });
+      return res.status(500).json({ status: 'ERROR', message: 'Lecture Ã©chouÃ©e', detail: t2.slice(0, 150) });
     }
     const rows = await listRes.json();
 
@@ -786,7 +803,7 @@ async function handleRekey(req, res) {
       return res.status(200).json({ status: 'OK', processed: 0, remaining: 0, done: true });
     }
 
-    // 2) فكّ بالقديم ثم أعد التشفير بالجديد (على السيرفر)
+    // 2) ÙÙƒÙ‘ Ø¨Ø§Ù„Ù‚Ø¯ÙŠÙ… Ø«Ù… Ø£Ø¹Ø¯ Ø§Ù„ØªØ´ÙÙŠØ± Ø¨Ø§Ù„Ø¬Ø¯ÙŠØ¯ (Ø¹Ù„Ù‰ Ø§Ù„Ø³ÙŠØ±ÙØ±)
     const payload = [];
     let skipped = 0;
     for (const r of rows) {
@@ -804,12 +821,12 @@ async function handleRekey(req, res) {
     if (!payload.length) {
       return res.status(500).json({
         status: 'ERROR',
-        message: 'لا يمكن فك تشفير أي صف — المفتاح الحالي لا يطابق البيانات',
+        message: 'Ù„Ø§ ÙŠÙ…ÙƒÙ† ÙÙƒ ØªØ´ÙÙŠØ± Ø£ÙŠ ØµÙ â€” Ø§Ù„Ù…ÙØªØ§Ø­ Ø§Ù„Ø­Ø§Ù„ÙŠ Ù„Ø§ ÙŠØ·Ø§Ø¨Ù‚ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª',
         skipped
       });
     }
 
-    // 3) تحديث الدفعة بطلب واحد
+    // 3) ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø¯ÙØ¹Ø© Ø¨Ø·Ù„Ø¨ ÙˆØ§Ø­Ø¯
     const upRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/rekey_batch`, {
       method: 'POST',
       headers: {
@@ -821,12 +838,12 @@ async function handleRekey(req, res) {
     });
     if (!upRes.ok) {
       const t3 = await upRes.text();
-      return res.status(500).json({ status: 'ERROR', message: 'Mise à jour échouée', detail: t3.slice(0, 150) });
+      return res.status(500).json({ status: 'ERROR', message: 'Mise Ã  jour Ã©chouÃ©e', detail: t3.slice(0, 150) });
     }
 
     const updated = await upRes.json();
 
-    // 4) كم بقي؟
+    // 4) ÙƒÙ… Ø¨Ù‚ÙŠØŸ
     const stRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/rekey_status`, {
       method: 'POST',
       headers: {
