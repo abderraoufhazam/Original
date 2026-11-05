@@ -80,6 +80,11 @@ h2{font-size:18px;margin:0}
 .bar-row b{font-size:12px;color:var(--txt2);min-width:44px;text-align:left}
 .note{margin-top:14px;font-size:11px;color:var(--txt3);text-align:center}
 
+/* داخل لوحة الماركة (iframe) */
+body.embed .head h1, body.embed .head p { display: none; }
+body.embed .wrap { padding-top: 6px; }
+body.embed .note { display: none; }
+
 /* اتجاه زمني */
 .spark{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:6px;min-height:56px}
 .spark svg{display:block;width:100%;height:auto}
@@ -737,6 +742,10 @@ document.getElementById("zreset").onclick = function () { scale = 1; tx = 0; ty 
 paint();
 apply();
 addLabels();
+
+if (location.search.indexOf("embed=1") !== -1) {
+  document.body.classList.add("embed");
+}
 
 /* عارض الصور */
 (function () {

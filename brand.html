@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="fr" dir="ltr">
 <head>
   <meta charset="utf-8">
@@ -1133,15 +1133,10 @@ html.dark .ai-analytics-section {
           <span class="nav-icon">📈</span>
           <span>Activité</span>
         </button>
-        <button class="nav-item" data-scroll="section-wilaya">
-          <span class="nav-icon">📍</span>
-          <span>أين تُباع منتجاتي</span>
-        </button>
-
-        <a href="/brand-map" class="nav-item">
+        <button class="nav-item" data-scroll="section-map">
           <span class="nav-icon">🗺️</span>
           <span>خريطة منتجاتي</span>
-        </a>
+        </button>
       </div>
 
       <div class="nav-group">
@@ -1154,10 +1149,6 @@ html.dark .ai-analytics-section {
         <button class="nav-item" data-scroll="section-lots-stats">
           <span class="nav-icon">🏷️</span>
           <span>Mes lots</span>
-        </button>
-        <button class="nav-item" data-scroll="section-reports">
-          <span class="nav-icon">🚨</span>
-          <span>Signalements</span>
         </button>
       </div>
 
@@ -1355,8 +1346,22 @@ html.dark .ai-analytics-section {
         </div>
       </section>
 
-      <!-- REPORTS -->
-      <section class="section" id="section-reports">
+      <!-- 🗺️ CARTE DES PRODUITS -->
+      <section class="section" id="section-map">
+        <div class="section-head">
+          <div class="section-title">
+            <span class="section-title-icon">🗺️</span>
+            <span>خريطة منتجاتي</span>
+          </div>
+        </div>
+        <div style="border:1px solid rgba(255,255,255,.08);border-radius:18px;overflow:hidden;background:#071422">
+          <iframe id="brandMapFrame" src="/brand-map?embed=1" title="خريطة منتجاتي" loading="lazy"
+                  style="width:100%;height:min(78vh,780px);border:0;display:block"></iframe>
+        </div>
+      </section>
+
+      <!-- REPORTS (masqué : remplacé par la carte) -->
+      <section class="section" id="section-reports" style="display:none">
         <div class="section-head">
           <div class="section-title">
             <span class="section-title-icon">🚨</span>
@@ -1372,8 +1377,8 @@ html.dark .ai-analytics-section {
         </div>
       </section>
 
-      <!-- 📍 WILAYA DISTRIBUTION -->
-      <section class="section" id="section-wilaya">
+      <!-- 📍 WILAYA DISTRIBUTION (masqué) -->
+      <section class="section" id="section-wilaya" style="display:none">
         <div class="section-head">
           <div class="section-title">
             <span class="section-title-icon">📍</span>
