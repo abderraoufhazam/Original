@@ -80,3 +80,30 @@ export function maskCode(code) {
   if (s.length < 6) return '•••••••';
   return s.slice(0, 2) + '•••' + s.slice(-2);
 }
+
+// ============================================================
+// نسخ تعمل بمفتاح صريح (لإعادة التشفير دون قراءة المفتاح الحالي)
+// ============================================================
+function deriveKey(secret) {
+  return crypto.createHash('sha256').update(String(secret)).digest();
+}
+
+export function encryptCodeWith(code, secret) {
+  const key = deriveKey(secret);
+  const iv = crypto.randomBytes(IV_LENGTH);
+  const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
+  const encrypted = Buffer.concat([cipher.update(code, 'utf8'), cipher.final()]);
+  const authTag = cipher.getAuthTag();
+  return Buffer.concat([iv, authTag, encrypted]).toString('base64');
+}
+
+export function decryptCodeWith(encryptedBase64, secret) {
+  const key = deriveKey(secret);
+  const data = Buffer.from(encryptedBase64, 'base64');
+  const iv = data.slice(0, IV_LENGTH);
+  const authTag = data.slice(IV_LENGTH, IV_LENGTH + AUTH_TAG_LENGTH);
+  const ciphertext = data.slice(IV_LENGTH + AUTH_TAG_LENGTH);
+  const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
+  decipher.setAuthTag(authTag);
+  return Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8');
+}

@@ -4,7 +4,7 @@
 //   POST /api/batch-manager?action=create   { brand, quantity, ... }
 //   POST /api/batch-manager?action=print    { lot }
 
-import { hashCode, encryptCode, generateSecretCode, decryptCode } from './_crypto.js';
+import { hashCode, encryptCode, generateSecretCode, decryptCode, encryptCodeWith, decryptCodeWith } from './_crypto.js';
 import { getClientIp } from './_turnstile.js';
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '')
@@ -34,6 +34,8 @@ res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (action === 'print')  return handlePrint(req, res);
   if (action === 'export') return handleExportCodes(req, res);
   if (action === 'stats')  return handleWilayaStats(req, res);
+  if (action === 'rekey')  return handleRekey(req, res);
+  if (action === 'rekey-status') return handleRekeyStatus(req, res);
   if (action === 'reports') return handleWilayaReports(req, res);
   if (action === 'trend')   return handleWilayaTrend(req, res);
 
@@ -734,5 +736,141 @@ async function handleWilayaTrend(req, res) {
   } catch (e) {
     console.error('handleWilayaTrend error:', e);
     return res.status(500).json({ status: 'ERROR', message: 'Erreur inattendue' });
+  }
+}
+
+// ============================================================
+// ACTION: REKEY — إعادة تشفير الأكواد بمفتاح جديد
+//   لا يقرأ المفتاح القديم: يستخدم process.env.ENCRYPTION_KEY في السيرفر
+// ============================================================
+async function handleRekey(req, res) {
+  try {
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const ANON = process.env.SUPABASE_ANON_KEY || 'sb_publishable_O3vqQ2MqwpZYhFRNfFBqFQ_IROe0g_m';
+
+    if (!SUPABASE_URL || !SERVICE_KEY) {
+      return res.status(500).json({ status: 'ERROR', message: 'Configuration manquante' });
+    }
+
+    const body = req.body || {};
+    const token = String(req.headers.authorization || body.access_token || '')
+      .replace(/^Bearer\s+/i, '').trim();
+    if (!token) return res.status(401).json({ status: 'ERROR', message: 'Non authentifié' });
+
+    // الأدمن فقط
+    const adm = await requireAdminToken(req, SUPABASE_URL, SERVICE_KEY);
+    if (!adm.ok) {
+      return res.status(adm.code || 403).json({ status: 'ERROR', message: adm.message || 'Accès refusé' });
+    }
+
+    const newKey = String(body.new_key || '').trim();
+    if (newKey.length < 16) {
+      return res.status(400).json({ status: 'ERROR', message: 'new_key trop courte (min 16)' });
+    }
+
+    const size = Math.min(500, Math.max(1, Number(body.batch) || 300));
+
+    // 1) اقرأ دفعة لم تُعاد تشفيرها بعد
+    const listRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/qr_codes?select=id,secret_code_encrypted&enc_key_id=eq.1&limit=${size}`,
+      { headers: { 'apikey': SERVICE_KEY, 'Authorization': `Bearer ${SERVICE_KEY}` } }
+    );
+    if (!listRes.ok) {
+      const t2 = await listRes.text();
+      return res.status(500).json({ status: 'ERROR', message: 'Lecture échouée', detail: t2.slice(0, 150) });
+    }
+    const rows = await listRes.json();
+
+    if (!rows.length) {
+      return res.status(200).json({ status: 'OK', processed: 0, remaining: 0, done: true });
+    }
+
+    // 2) فكّ بالقديم ثم أعد التشفير بالجديد (على السيرفر)
+    const payload = [];
+    let skipped = 0;
+    for (const r of rows) {
+      if (!r.secret_code_encrypted) { skipped++; continue; }
+      let plain;
+      try {
+        plain = decryptCode(r.secret_code_encrypted);
+      } catch (e) {
+        skipped++;
+        continue;
+      }
+      payload.push({ id: r.id, enc: encryptCodeWith(plain, newKey) });
+    }
+
+    if (!payload.length) {
+      return res.status(500).json({
+        status: 'ERROR',
+        message: 'لا يمكن فك تشفير أي صف — المفتاح الحالي لا يطابق البيانات',
+        skipped
+      });
+    }
+
+    // 3) تحديث الدفعة بطلب واحد
+    const upRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/rekey_batch`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SERVICE_KEY,
+        'Authorization': `Bearer ${SERVICE_KEY}`
+      },
+      body: JSON.stringify({ p_rows: payload })
+    });
+    if (!upRes.ok) {
+      const t3 = await upRes.text();
+      return res.status(500).json({ status: 'ERROR', message: 'Mise à jour échouée', detail: t3.slice(0, 150) });
+    }
+
+    const updated = await upRes.json();
+
+    // 4) كم بقي؟
+    const stRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/rekey_status`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SERVICE_KEY,
+        'Authorization': `Bearer ${SERVICE_KEY}`
+      },
+      body: '{}'
+    });
+    const st = stRes.ok ? (await stRes.json())[0] : null;
+
+    return res.status(200).json({
+      status: 'OK',
+      processed: Number(updated) || payload.length,
+      skipped,
+      remaining: st ? Number(st.pending) : null,
+      done: st ? Number(st.pending) === 0 : false
+    });
+  } catch (e) {
+    console.error('handleRekey error:', e);
+    return res.status(500).json({ status: 'ERROR', message: String(e).slice(0, 160) });
+  }
+}
+
+async function handleRekeyStatus(req, res) {
+  try {
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!SUPABASE_URL || !SERVICE_KEY) {
+      return res.status(500).json({ status: 'ERROR', message: 'Configuration manquante' });
+    }
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/rekey_status`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SERVICE_KEY,
+        'Authorization': `Bearer ${SERVICE_KEY}`
+      },
+      body: '{}'
+    });
+    if (!r.ok) return res.status(500).json({ status: 'ERROR', message: 'RPC manquante' });
+    const st = (await r.json())[0] || { pending: 0, done: 0 };
+    return res.status(200).json({ status: 'OK', pending: Number(st.pending), done: Number(st.done) });
+  } catch (e) {
+    return res.status(500).json({ status: 'ERROR', message: String(e).slice(0, 160) });
   }
 }
