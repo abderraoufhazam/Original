@@ -1852,23 +1852,48 @@ if (_llb) _llb.onclick = async () => {
   info.className = "result";
   info.innerHTML = `<p>Chargement...</p>`;
 
-  const { data, error } = await sb.from("qr_codes").select("*").eq("lot", lot).limit(10000);
-  if (error || !data || data.length === 0) {
+  // Supabase يقصّ كل طلب عند 1000 صف — نقرأ اللوت كاملاً على صفحات
+  const PAGE = 1000;
+  const MAX_ROWS = 30000;
+  let all = [];
+  let from = 0;
+  let firstError = null;
+
+  while (true) {
+    const { data, error } = await sb
+      .from("qr_codes")
+      .select("id,secret_status,brand,lot,logo_url")
+      .eq("lot", lot)
+      .order("id", { ascending: true })
+      .range(from, from + PAGE - 1);
+
+    if (error) { firstError = error; break; }
+    if (!data || data.length === 0) break;
+
+    all = all.concat(data);
+    if (data.length < PAGE) break;
+
+    from += data.length;
+    if (all.length >= MAX_ROWS) break;
+  }
+
+  if (firstError || all.length === 0) {
     info.className = "result danger";
     info.innerHTML = `<h2>AUCUN RÉSULTAT</h2>`;
     return;
   }
 
-  const r = data[0];
+  const r = all[0];
   loadedLot = lot;
   loadedLotBrand = r.brand || "MARQUE";
   loadedLotLot = r.lot || lot;
   loadedLotLogo = r.logo_url || "";
 
   info.className = "result success";
-  info.innerHTML = `<h2>${data.length} code(s)</h2>`;
+  info.innerHTML = `<h2>${all.length} code(s)</h2>` +
+    (all.length >= MAX_ROWS ? `<p style="font-size:12px;opacity:.75">(الحد الأقصى ${MAX_ROWS})</p>` : "");
 
-  showBatchStatus(data.map(row => row.secret_status));
+  showBatchStatus(all.map(row => row.secret_status));
   const plb = $("printLotBtn"); if (plb) plb.classList.remove("hidden");
   const eb = $("exportLotCodesBtn"); if (eb) eb.classList.remove("hidden");
 
