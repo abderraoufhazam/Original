@@ -1727,7 +1727,7 @@ if (_cb) _cb.onclick = async () => {
   const brand = $("brand").value.trim();
   if (!brand) { window.toast("Marque obligatoire.", "error"); return; }
 
-  const qty = Math.min(10000, Math.max(1, Number($("quantity").value) || 1));
+  const qty = Math.min(200000, Math.max(10000, Number($("quantity").value) || 10000));
   const statusRadio = document.querySelector('input[name="initial_status"]:checked');
   const initialStatus = statusRadio ? statusRadio.value : "PENDING";
 

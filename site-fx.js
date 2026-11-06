@@ -1,4 +1,4 @@
-/* ══════════════════════════════════════════════════════════
+﻿/* ══════════════════════════════════════════════════════════
    ORDIZ — مؤثرات الصفحات الداخلية (جزيئات · إمالة · أزرار)
    مؤثرات فقط — لا تلمس أي وظيفة
    ══════════════════════════════════════════════════════════ */
@@ -131,7 +131,33 @@
     });
   }
 
-  function boot() { initParticles(); initTilt(); initButtons(); }
+
+  /* ملصقان على جانبي عنوان الصفحة */
+  function initHeroLabels() {
+    var hero = document.querySelector(".page-hero");
+    if (!hero || hero.querySelector(".sfx-hero-label")) return;
+    if (window.innerWidth < 821) return;
+
+    var r = document.createElement("img");
+    r.className = "sfx-hero-label sfx-hero-label--r";
+    r.src = "/label-hologram-hd.webp";
+    r.alt = "";
+    r.setAttribute("aria-hidden", "true");
+    r.decoding = "async";
+    r.loading = "lazy";
+
+    var l = document.createElement("img");
+    l.className = "sfx-hero-label sfx-hero-label--l";
+    l.src = "/label-hologram-open-hd.webp";
+    l.alt = "";
+    l.setAttribute("aria-hidden", "true");
+    l.decoding = "async";
+    l.loading = "lazy";
+
+    hero.appendChild(r);
+    hero.appendChild(l);
+  }
+  function boot() { initParticles(); initTilt(); initButtons(); initHeroLabels(); }
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);

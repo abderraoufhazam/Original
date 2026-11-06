@@ -108,3 +108,35 @@ html.dark .pricing-card:hover,html.dark .content-card:hover{
   .page-hero::before,.page-hero::after,.site-logo::after{animation:none !important}
   .sfx-tilt{transform:none !important}
 }
+/* ══════ ملصقان على جانبي عنوان كل صفحة ══════ */
+.sfx-hero-label{
+  position:absolute;top:50%;width:clamp(84px,9vw,132px);height:auto;
+  z-index:1;pointer-events:none;user-select:none;border-radius:12px;
+  filter:drop-shadow(0 16px 28px rgba(0,31,82,.28));
+  opacity:.96;
+}
+.sfx-hero-label--r{
+  inset-inline-end:max(1.5%,calc((100% - 1180px) / 2 - 34px));
+  transform:translateY(-50%) rotate(7deg);
+  animation:sfxLabR 9.5s ease-in-out infinite;
+}
+.sfx-hero-label--l{
+  inset-inline-start:max(1.5%,calc((100% - 1180px) / 2 - 34px));
+  transform:translateY(-50%) rotate(-7deg);
+  animation:sfxLabL 9.5s ease-in-out infinite;
+  animation-delay:-4.7s;
+}
+@keyframes sfxLabR{
+  0%,100%{transform:translateY(-50%) rotate(7deg)}
+  50%{transform:translateY(calc(-50% - 10px)) rotate(5deg)}
+}
+@keyframes sfxLabL{
+  0%,100%{transform:translateY(-50%) rotate(-7deg)}
+  50%{transform:translateY(calc(-50% - 10px)) rotate(-5deg)}
+}
+html.dark .sfx-hero-label{filter:drop-shadow(0 16px 28px rgba(0,0,0,.6))}
+
+@media(max-width:1180px){.sfx-hero-label{width:clamp(70px,8vw,104px)}}
+@media(max-width:820px){.sfx-hero-label{display:none}}
+@media(prefers-reduced-motion:reduce){.sfx-hero-label{animation:none}}
+
