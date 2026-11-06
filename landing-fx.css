@@ -341,3 +341,61 @@ html.dark .fx-hero-label{filter:drop-shadow(0 18px 30px rgba(0,0,0,.65))}
   .fx-hero-label{animation:none}
 }
 
+/* ══════════════════════════════════════════════════════════
+   تكثيف الصفحة — تقليل الفراغات
+   ══════════════════════════════════════════════════════════ */
+
+/* المسافات العمودية للأقسام */
+.page-content{padding:34px 0 42px !important}
+.page-content-tight{padding:26px 0 34px !important}
+.landing-hero{padding:38px 0 46px !important}
+.stats-bar{padding:20px 0 !important}
+
+/* رؤوس الأقسام */
+.section-head{margin-bottom:26px !important}
+.section-title{margin-bottom:8px !important}
+.section-sub{margin-bottom:0 !important}
+
+/* الهيرو */
+.landing-hero h1{margin-bottom:12px !important}
+.landing-hero .lead{margin-bottom:18px !important}
+.landing-hero-badge{margin-bottom:16px !important}
+.landing-hero-cta{margin-top:18px !important;gap:10px !important}
+
+/* الشبكات */
+.features-grid{gap:14px !important;margin-bottom:18px !important}
+.feature-landing{padding:20px 18px !important}
+.feature-icon-landing{width:44px !important;height:44px !important;font-size:20px !important;margin-bottom:12px !important}
+.report-cards{gap:14px !important;margin-bottom:0 !important}
+.steps-grid-landing,.how-grid-landing{gap:14px !important}
+
+/* الأسئلة */
+.faq-list-landing{gap:8px !important;margin-top:14px !important}
+.faq-item-landing,.faq-q-landing{padding-top:12px !important;padding-bottom:12px !important}
+
+/* الأقسام الجديدة */
+.fx-sec{padding-block:0 !important}
+.fx-result-grid,.fx-journey,.fx-label-wrap,.fx-app,.fx-quotes{gap:12px !important}
+
+/* الخطوات في «كيف يعمل» */
+.step-landing{padding:18px 16px !important}
+
+/* بطاقة الإحصاءات */
+.stats-grid-landing{gap:14px !important}
+.stat-num{font-size:clamp(22px,3vw,30px) !important}
+
+/* تقليل فراغ الشاشات الصغيرة أيضاً */
+@media(max-width:760px){
+  .page-content{padding:26px 0 32px !important}
+  .landing-hero{padding:28px 0 34px !important}
+  .section-head{margin-bottom:20px !important}
+  .features-grid,.report-cards,.fx-journey,.fx-quotes{gap:10px !important}
+}
+
+/* الوضع الداكن: لا تغيير */
+
+
+/* شبكة المزايا: 9 بطاقات = 3×3 بلا فراغ */
+.features-grid{grid-template-columns:repeat(3,1fr) !important}
+@media(max-width:980px){.features-grid{grid-template-columns:repeat(2,1fr) !important}}
+@media(max-width:620px){.features-grid{grid-template-columns:1fr !important}}
