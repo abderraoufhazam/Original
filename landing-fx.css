@@ -243,3 +243,53 @@ html.dark .fx-store{background:rgba(255,255,255,.07);border-color:rgba(255,255,2
   .fx-journey{grid-template-columns:1fr 1fr}
   .fx-result-cells{grid-template-columns:1fr}
 }
+/* ══════ صورة الملصق + الشرح ══════ */
+.fx-label-prev{display:flex;flex-direction:column;align-items:center;gap:16px}
+
+.fx-label-figure{
+  position:relative;display:inline-block;width:min(260px,72vw);
+  border-radius:16px;transform:rotate(-1.2deg);
+  transition:transform .45s cubic-bezier(.22,1,.36,1),filter .45s;
+  filter:drop-shadow(0 22px 34px rgba(0,31,82,.28));
+}
+.fx-label-figure:hover{transform:rotate(0deg) translateY(-5px) scale(1.03);
+  filter:drop-shadow(0 28px 46px rgba(0,31,82,.36))}
+.fx-label-figure img{width:100%;height:auto;display:block;border-radius:16px}
+
+/* أرقام على الصورة */
+.pin{
+  position:absolute;width:25px;height:25px;border-radius:50%;
+  display:grid;place-items:center;font-size:11.5px;font-weight:800;color:#fff;
+  background:linear-gradient(135deg,#0060C0,#16A96B);
+  border:2px solid #fff;box-shadow:0 4px 12px rgba(0,31,82,.35);
+  animation:pinPulse 2.6s ease-in-out infinite;
+}
+.pin-1{top:24%;inset-inline-start:-10px;animation-delay:0s}
+.pin-2{top:66%;inset-inline-start:-10px;animation-delay:.5s}
+.pin-3{top:8%;inset-inline-end:-10px;animation-delay:1s}
+@keyframes pinPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+
+/* مفتاح الشرح */
+.fx-label-legend{
+  list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;
+  width:100%;max-width:340px;font-size:12.3px;
+}
+.fx-label-legend li{display:flex;align-items:center;gap:8px;opacity:.85}
+.fx-label-legend b{
+  width:20px;height:20px;border-radius:50%;flex:none;display:grid;place-items:center;
+  font-size:10.5px;font-weight:800;color:#fff;
+  background:linear-gradient(135deg,#0060C0,#16A96B);
+}
+
+html.dark .fx-label-figure{filter:drop-shadow(0 22px 34px rgba(0,0,0,.6))}
+html.dark .fx-label-legend li{opacity:.9}
+
+@media(max-width:600px){
+  .fx-label-figure{width:min(220px,70vw)}
+  .fx-label-legend{font-size:11.8px}
+}
+@media(prefers-reduced-motion:reduce){
+  .pin{animation:none}
+  .fx-label-figure,.fx-label-figure:hover{transform:none}
+}
+
