@@ -60,10 +60,20 @@ async function handleCreate(req, res) {
     if (!brand || typeof brand !== 'string' || brand.trim() === '') {
       return res.status(400).json({ status: 'ERROR', message: 'Marque obligatoire' });
     }
-    const qty = Math.min(10000, Math.max(1, parseInt(quantity, 10) || 0));
-    if (!qty) {
-      return res.status(400).json({ status: 'ERROR', message: 'QuantitÃ© invalide' });
+    // الحد الأدنى للدفعة: 5,000 كود — مفروض على السيرفر
+    const MIN_BATCH = 5000;
+    const MAX_BATCH = 200000;
+    const rawQty = parseInt(quantity, 10) || 0;
+
+    if (!rawQty || rawQty < MIN_BATCH) {
+      return res.status(400).json({
+        status: 'ERROR',
+        message: 'الحد الأدنى للدفعة هو 5,000 كود (Minimum par lot : 5 000 codes)',
+        minimum: MIN_BATCH
+      });
     }
+
+    const qty = Math.min(MAX_BATCH, rawQty);
     if (!access_token) {
       return res.status(401).json({ status: 'ERROR', message: 'Non authentifiÃ©' });
     }
