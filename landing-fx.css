@@ -1,0 +1,149 @@
+/* ══════════════════════════════════════════════════════════
+   ORDIZ — طبقة المؤثرات البصرية للصفحة الرئيسية
+   لا تغيّر أي وظيفة — مؤثرات فقط
+   ══════════════════════════════════════════════════════════ */
+
+:root{
+  --fx-ease:cubic-bezier(.22,1,.36,1);
+  --fx-fast:.18s;
+  --fx-mid:.32s;
+  --fx-slow:.6s;
+}
+
+/* ── 1 · الهيرو: شبكة + شفق ── */
+.landing-hero{position:relative;overflow:hidden}
+.landing-hero::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.55;
+  background-image:linear-gradient(rgba(0,96,192,.055) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(0,96,192,.055) 1px,transparent 1px);
+  background-size:54px 54px;
+  animation:fxGrid 38s linear infinite;
+  mask-image:radial-gradient(circle at 50% 30%,#000 12%,transparent 76%);
+  -webkit-mask-image:radial-gradient(circle at 50% 30%,#000 12%,transparent 76%);
+}
+@keyframes fxGrid{to{background-position:54px 54px}}
+
+.landing-hero::after{
+  content:"";position:absolute;inset:-40%;pointer-events:none;z-index:0;opacity:.34;
+  background:conic-gradient(from 0deg at 50% 50%,
+    rgba(0,96,192,.55),transparent 24%,
+    rgba(22,169,107,.45),transparent 48%,
+    rgba(0,150,255,.35),transparent 72%,
+    rgba(0,96,192,.55),transparent 96%);
+  filter:blur(70px);animation:fxSpin 64s linear infinite;
+}
+@keyframes fxSpin{to{transform:rotate(360deg)}}
+
+.landing-hero > .container{position:relative;z-index:2}
+
+html.dark .landing-hero::before{
+  background-image:linear-gradient(rgba(120,190,255,.07) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(120,190,255,.07) 1px,transparent 1px);
+}
+html.dark .landing-hero::after{opacity:.4}
+
+/* ── 2 · جزيئات ── */
+.fx-particles{
+  position:absolute;inset:0;width:100%;height:100%;
+  z-index:1;pointer-events:none;opacity:.7;
+}
+html.dark .fx-particles{opacity:.85}
+
+/* ── 3 · الشعار: هولوغرام ── */
+.site-logo{position:relative;display:inline-block;border-radius:8px;overflow:hidden;
+  filter:drop-shadow(0 0 10px rgba(0,96,192,.22))}
+.site-logo::after{
+  content:"";position:absolute;inset:-45% -60%;
+  background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.75) 48%,
+             rgba(150,230,255,.6) 52%,transparent 62%);
+  transform:translateX(-150%) skewX(-12deg);
+  animation:fxHolo 8s ease-in-out infinite;mix-blend-mode:screen;pointer-events:none;
+}
+@keyframes fxHolo{0%,60%{transform:translateX(-150%) skewX(-12deg)}80%,100%{transform:translateX(150%) skewX(-12deg)}}
+.site-logo img{transition:filter var(--fx-mid) var(--fx-ease)}
+.site-logo:hover img{filter:brightness(1.08) saturate(1.08)}
+
+/* ── 4 · بطاقات زجاجية ── */
+.feature-landing,
+.step-landing,
+.report-card-landing,
+.card{
+  backdrop-filter:blur(12px) saturate(130%);
+  -webkit-backdrop-filter:blur(12px) saturate(130%);
+  transition:transform var(--fx-mid) var(--fx-ease),
+             box-shadow var(--fx-mid) var(--fx-ease),
+             border-color var(--fx-fast) var(--fx-ease);
+  position:relative;
+}
+.feature-landing:hover,
+.step-landing:hover,
+.report-card-landing:hover{
+  box-shadow:0 22px 44px -26px rgba(0,31,82,.45),
+             0 0 0 1px rgba(0,96,192,.18),
+             0 0 30px -8px rgba(0,96,192,.28);
+}
+html.dark .feature-landing:hover,
+html.dark .step-landing:hover,
+html.dark .report-card-landing:hover{
+  box-shadow:0 22px 44px -26px rgba(0,0,0,.9),
+             0 0 0 1px rgba(120,190,255,.22),
+             0 0 34px -8px rgba(0,150,255,.35);
+}
+
+/* حدّ متوهّج يتبع المؤشر */
+.feature-landing::after,
+.step-landing::after,
+.report-card-landing::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
+  transition:opacity var(--fx-mid) var(--fx-ease);
+  background:radial-gradient(320px 160px at var(--fx-mx,50%) var(--fx-my,0%),
+             rgba(22,169,107,.12),transparent 70%);
+}
+.feature-landing:hover::after,
+.step-landing:hover::after,
+.report-card-landing:hover::after{opacity:1}
+
+/* ── 5 · إمالة ثلاثية الأبعاد ── */
+.fx-tilt{transform-style:preserve-3d;will-change:transform}
+.fx-tilt > *{transform:translateZ(10px)}
+
+/* ── 6 · أزرار ── */
+.site-btn{
+  transition:transform var(--fx-fast) var(--fx-ease),
+             box-shadow var(--fx-mid) var(--fx-ease),
+             background var(--fx-fast) var(--fx-ease);
+  will-change:transform;
+}
+.site-btn-green:hover{box-shadow:0 14px 28px -14px rgba(22,169,107,.85),0 0 22px -8px rgba(22,169,107,.5)}
+.site-btn-primary:hover{box-shadow:0 14px 28px -14px rgba(0,96,192,.85),0 0 22px -8px rgba(0,96,192,.5)}
+
+/* ── 7 · عدّادات الإحصاء ── */
+.stat-num{
+  background:linear-gradient(120deg,var(--brand-blue,#0060C0),var(--brand-green,#16A96B),var(--brand-blue,#0060C0));
+  background-size:220% 100%;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  animation:fxHue 9s linear infinite;
+}
+@keyframes fxHue{to{background-position:220% 0}}
+
+/* ── 8 · نبض الأيقونات ── */
+.feature-icon-landing{position:relative;transition:transform var(--fx-mid) var(--fx-ease)}
+.feature-landing:hover .feature-icon-landing{transform:scale(1.07)}
+.feature-icon-landing::after{
+  content:"";position:absolute;inset:-6px;border-radius:16px;pointer-events:none;
+  border:1px solid rgba(22,169,107,.35);opacity:0;animation:fxRing 3.8s ease-out infinite;
+}
+@keyframes fxRing{0%{transform:scale(.92);opacity:0}40%{opacity:.55}100%{transform:scale(1.35);opacity:0}}
+
+/* ── 9 · استجابة ── */
+@media(max-width:700px){
+  .fx-particles{opacity:.5}
+  .fx-tilt{transform:none !important}
+  .landing-hero::after{opacity:.22}
+}
+@media(prefers-reduced-motion:reduce){
+  .fx-particles{display:none}
+  .landing-hero::before,.landing-hero::after,
+  .site-logo::after,.feature-icon-landing::after,.stat-num{animation:none !important}
+  .fx-tilt{transform:none !important}
+}
