@@ -14,7 +14,6 @@ export default async function handler(req, res) {
 
   // الفحص التشخيصي يعمل بـGET مباشرة من شريط المتصفح
   if (mode === 'diag') return handleDiag(req, res);
-  if (mode === 'selftest') return handleSelftest(req, res);
 
   if (req.method !== 'POST') {
     return res.status(405).json({ status: 'ERROR', message: 'Method not allowed' });
@@ -266,66 +265,7 @@ async function analyzeWithOpenAICompat(opts) {
 
 // ============================================================
 // فحص حقيقي: يجرّب كل مزوّد على صورة صغيرة ويعيد خطأه بالضبط
-// ============================================================
-async function handleSelftest(req, res) {
-  const PNG_1x1 =
-    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
 
-  const prompt = 'Réponds uniquement avec ce JSON: {"brand":"test","product_name":"test","description":"test","confidence":"low"}';
-  const image = 'data:image/png;base64,' + PNG_1x1;
-  const out = {};
-
-  // Gemini
-  try {
-    const models = (await getAvailableModels(process.env.GEMINI_API_KEY || '')).slice(0, 3);
-    out.gemini = { models: models };
-    const txt = await analyzeWithGemini('image/png', PNG_1x1, prompt);
-    out.gemini.text = txt ? txt.slice(0, 120) : null;
-  } catch (e) {
-    out.gemini = { error: String(e).slice(0, 160) };
-  }
-
-  // Groq
-  if (process.env.GROQ_API_KEY) {
-    const g = await analyzeWithOpenAICompat({
-      name: 'groq',
-      url: 'https://api.groq.com/openai/v1/chat/completions',
-      key: process.env.GROQ_API_KEY,
-      models: ['meta-llama/llama-4-scout-17b-16e-instruct', 'llama-3.2-90b-vision-preview'],
-      image: image,
-      prompt: prompt
-    });
-    out.groq = { text: g.text ? g.text.slice(0, 120) : null, error: g.error || null };
-  }
-
-  // OpenRouter
-  if (process.env.OPENROUTER_API_KEY) {
-    const o = await analyzeWithOpenAICompat({
-      name: 'openrouter',
-      url: 'https://openrouter.ai/api/v1/chat/completions',
-      key: process.env.OPENROUTER_API_KEY,
-      models: ['qwen/qwen2.5-vl-72b-instruct:free', 'google/gemma-3-27b-it:free'],
-      image: image,
-      prompt: prompt
-    });
-    out.openrouter = { text: o.text ? o.text.slice(0, 120) : null, error: o.error || null };
-  }
-
-  // z.ai
-  if (process.env.ZAI_API_KEY) {
-    const z = await analyzeWithOpenAICompat({
-      name: 'zai',
-      url: 'https://api.z.ai/api/paas/v4/chat/completions',
-      key: process.env.ZAI_API_KEY,
-      models: ['glm-4.6v-flash'],
-      image: image,
-      prompt: prompt
-    });
-    out.zai = { text: z.text ? z.text.slice(0, 120) : null, error: z.error || null };
-  }
-
-  return res.status(200).json(out);
-}
 
 async function handleAnalyze(req, res) {
   try {
@@ -334,14 +274,13 @@ async function handleAnalyze(req, res) {
       return res.status(400).json({ status: 'ERROR', message: 'Image manquante' });
     }
 
-    const ZAI_API_KEY = process.env.ZAI_API_KEY;
     const GEMINI_API_KEY_LOCAL = process.env.GEMINI_API_KEY;
 
     // يكفي مزوّد واحد: Gemini أساسي أو z.ai احتياطي
-    if (!ZAI_API_KEY && !GEMINI_API_KEY_LOCAL) {
+    if (!GEMINI_API_KEY_LOCAL) {
       return res.status(500).json({
         status: 'ERROR',
-        message: 'Aucun service IA configuré (GEMINI_API_KEY / ZAI_API_KEY)'
+        message: 'GEMINI_API_KEY manquante'
       });
     }
 
@@ -370,57 +309,6 @@ Ne mets AUCUN texte avant ou après le JSON.`;
     text = await analyzeWithGemini(match[1], match[2], prompt);
     tried.push('gemini');
     if (text) source = 'gemini';
-
-    // 2) Groq (سريع جداً — طبقة مجانية سخية)
-    if (!text && process.env.GROQ_API_KEY) {
-      const g = await analyzeWithOpenAICompat({
-        name: 'groq',
-        url: 'https://api.groq.com/openai/v1/chat/completions',
-        key: process.env.GROQ_API_KEY,
-        models: (process.env.GROQ_MODEL
-          ? [process.env.GROQ_MODEL]
-          : ['meta-llama/llama-4-scout-17b-16e-instruct', 'llama-3.2-90b-vision-preview']),
-        image: image,
-        prompt: prompt
-      });
-      tried.push('groq');
-      if (g.text) { text = g.text; source = 'groq'; }
-    }
-
-    // 3) OpenRouter (نماذج مجانية متعددة)
-    if (!text && process.env.OPENROUTER_API_KEY) {
-      const o = await analyzeWithOpenAICompat({
-        name: 'openrouter',
-        url: 'https://openrouter.ai/api/v1/chat/completions',
-        key: process.env.OPENROUTER_API_KEY,
-        headers: {
-          'HTTP-Referer': 'https://ordiz.online',
-          'X-Title': 'ORDIZ'
-        },
-        models: (process.env.OPENROUTER_MODEL
-          ? [process.env.OPENROUTER_MODEL]
-          : ['qwen/qwen2.5-vl-72b-instruct:free', 'google/gemma-3-27b-it:free']),
-        image: image,
-        prompt: prompt
-      });
-      tried.push('openrouter');
-      if (o.text) { text = o.text; source = 'openrouter'; }
-    }
-
-    // 4) z.ai (احتياطي أخير)
-    if (!text && ZAI_API_KEY) {
-      const z = await analyzeWithOpenAICompat({
-        name: 'zai',
-        url: 'https://api.z.ai/api/paas/v4/chat/completions',
-        key: ZAI_API_KEY,
-        models: ['glm-4.6v-flash'],
-        image: image,
-        prompt: prompt,
-        timeoutMs: 25000
-      });
-      tried.push('zai');
-      if (z.text) { text = z.text; source = 'zai'; }
-    }
 
     // ── 3) فشل كامل ──
     if (!text) {
@@ -514,11 +402,11 @@ async function handleAnalytics(req, res) {
     const { brand_name, days = 30 } = req.body || {};
     if (!brand_name) return res.status(400).json({ status: 'ERROR', message: 'brand_name obligatoire' });
 
-    const ZAI_API_KEY = process.env.ZAI_API_KEY;
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
     
-    if (!ZAI_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    if (!GEMINI_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
       return res.status(500).json({ status: 'ERROR', message: 'Config manquante' });
     }
 
@@ -547,36 +435,26 @@ async function handleAnalytics(req, res) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-    const response = await fetch('https://api.z.ai/api/paas/v4/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${ZAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: 'glm-4.6v-flash',
-        messages: [
-          { role: 'user', content: prompt + "\n\nData: " + JSON.stringify(reports.slice(0, 30)) }
-        ],
-        temperature: 0.2
-      }),
-      signal: controller.signal
-    });
+    const aiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt + "\n\nData: " + JSON.stringify(reports.slice(0, 30)) }] }],
+          generationConfig: { temperature: 0.2, maxOutputTokens: 2048 }
+        })
+      }
+    );
 
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Z.ai analytics error:', errorText);
-      return res.status(500).json({ 
-        status: 'ERROR', 
-        message: 'Erreur du service d\'analyse z.ai.', 
-        detail: errorText.slice(0, 200) 
-      });
+    if (!aiRes.ok) {
+      const errorText = await aiRes.text();
+      console.error('Gemini analytics error:', errorText);
+      return res.status(500).json({ status: 'ERROR', message: "Erreur d'analyse", detail: errorText.slice(0, 200) });
     }
 
-    const data = await response.json();
-    const text = data.choices?.[0]?.message?.content;
+    const aiData = await aiRes.json();
+    const text = (aiData.candidates?.[0]?.content?.parts || []).map(function (x) { return x.text || ''; }).join('');
 
     if (!text) {
       return res.status(500).json({ status: 'ERROR', message: 'Réponse vide du service' });
