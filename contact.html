@@ -677,16 +677,6 @@ try {
       turnstile_token: turnstileToken
     })
   });
-    const emailData = await emailRes.json();
-  if (emailData.status === "OK") {
-    console.log("✅ Email notification sent");
-  } else {
-    console.warn("⚠️ Email notification failed:", emailData.message);
-  }
-} catch (emailErr) {
-  console.warn("⚠️ Email notification failed:", emailErr);
-}
-
   const emailData = await emailRes.json();
   if (emailData.status === "OK") {
     console.log("✅ Email notification sent");
