@@ -485,11 +485,8 @@
     }
   </style>
 </head>
-<script>window.SITE_PAGE = "report";</script>
 <body>
 <div id="site-header"></div>
-<nav class="bcrumbs" aria-label="مسار التنقل"><a href="/">الرئيسية</a><span class="sep">›</span><span class="cur">الإبلاغ</span></nav>
-
 
 <div class="report-page">
   <div class="report-container">
@@ -508,7 +505,7 @@
     </div>
 
     <!-- ═══════════ CHOICE STEP ═══════════ -->
-    <div id="choiceStep" style="display:none">
+    <div id="choiceStep">
       <div class="report-choice">
         <div class="choice-card brand" data-type="brand">
           <div class="choice-card-icon">🏢</div>
@@ -521,9 +518,12 @@
     </div>
 
     <!-- ═══════════ SHOP FORM ═══════════ -->
-    <div id="formStep" class="report-form active">
+    <div id="formStep" class="report-form">
 
-      
+      <button type="button" class="back-link-form" id="backToChoiceFromShop">
+        <span>←</span>
+        <span>الرجوع للاختيار</span>
+      </button>
 
       <form id="reportForm">
 
