@@ -127,6 +127,34 @@ async function handleChat(req, res) {
 // ============================================================
 // تحليل احتياطي عبر Google Gemini (عند فشل المزوّد الأساسي)
 // ============================================================
+
+// اختيار أفضل نموذج flash متاح — يتكيّف مع تحديثات Google تلقائياً
+async function pickFlashModel(key) {
+  try {
+    const url = "https://generativelanguage.googleapis.com/v1beta/models?key=" + key;
+    const r = await fetch(url);
+    if (r.ok) {
+      const j = await r.json();
+      const names = (j.models || [])
+        .filter(function (m) { return (m.supportedGenerationMethods || []).indexOf("generateContent") !== -1; })
+        .map(function (m) { return String(m.name).replace("models/", ""); })
+        .filter(function (n) {
+          return /gemini/i.test(n) && /flash/i.test(n) && !/image|tts|embedding|aqa|audio/i.test(n);
+        });
+
+      if (names.length) {
+        names.sort(function (a, b) {
+          const va = parseFloat((a.match(/(\d+\.\d+|\d+)/) || [0, 0])[1]) || 0;
+          const vb = parseFloat((b.match(/(\d+\.\d+|\d+)/) || [0, 0])[1]) || 0;
+          return vb - va;
+        });
+        return names[0];
+      }
+    }
+  } catch (e) {}
+  return "gemini-3.8-flash";
+}
+
 async function analyzeWithGemini(mimeType, base64Data, prompt) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) return null;
@@ -146,7 +174,7 @@ async function analyzeWithGemini(mimeType, base64Data, prompt) {
 
   let models = preferred.concat(rest);
   models = models.filter(function (m, i) { return models.indexOf(m) === i; }).slice(0, 5);
-  if (!models.length) models = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+  if (!models.length) models = [await pickFlashModel(key)];
 
   for (const model of models) {
     let controller = null, timeoutId = null;
@@ -288,7 +316,7 @@ async function handleVTest(req, res) {
 
   try {
     const r = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + key,
+      'https://generativelanguage.googleapis.com/v1beta/models/' + (await pickFlashModel(key)) + ':generateContent?key=' + key,
       { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
     );
     const raw = await r.text();
@@ -467,7 +495,7 @@ async function handleAnalytics(req, res) {
     const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     const aiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${await pickFlashModel(GEMINI_API_KEY)}:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
