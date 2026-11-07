@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8">
@@ -327,6 +327,9 @@
   <link rel="stylesheet" href="/site-fx.css">
 </head>
 <body>
+<div id="site-header"></div>
+<nav class="bcrumbs" aria-label="مسار التنقل"><a href="/">الرئيسية</a><span class="sep">›</span><span class="cur">تواصل معنا</span></nav>
+
 
 <main class="page">
   <section class="card">
@@ -373,6 +376,16 @@
       <div class="field hidden" id="nameField">
         <label for="senderName" data-i18n="nameLabel">👤 اسمك <span class="req">*</span></label>
         <input id="senderName" type="text" placeholder="مثال: أحمد بن علي" maxlength="100">
+      </div>
+
+      <div class="field">
+        <label for="senderPhone">📞 رقم الهاتف <span class="req">*</span></label>
+        <input id="senderPhone" type="tel" inputmode="tel" required maxlength="20"
+               placeholder="05xxxxxxxx أو 036xxxxxx"
+               pattern="(\+213|00213)[5-7][0-9]{8}|0[5-7][0-9]{8}|0[1-9][0-9]{7,8}">
+        <small style="display:block;margin-top:6px;font-size:12px;color:var(--text-muted);">
+          محمول 05 · 06 · 07 — أو هاتف ثابت مثل 036
+        </small>
       </div>
 
       <div class="field">
@@ -707,5 +720,41 @@ try {
 
 <script src="/bot-guard.js"></script>
 <script src="/site-fx.js" defer></script>
+<div id="site-footer"></div>
+<script src="/site-layout.js"></script>
+
+<script>
+/* التحقق من الرقم الجزائري */
+function normalisePhone(v) {
+  return String(v || "").replace(/[\s\-.()]/g, "");
+}
+function isValidDzPhone(v) {
+  var s = normalisePhone(v);
+  if (/^(05|06|07)[0-9]{8}$/.test(s)) return true;          // محمول
+  if (/^0[1-9][0-9]{7,8}$/.test(s)) return true;            // ثابت (036...)
+  if (/^(\+213|00213)[5-7][0-9]{8}$/.test(s)) return true; // دولي
+  return false;
+}
+document.addEventListener("DOMContentLoaded", function () {
+  var input = document.getElementById("senderPhone");
+  var form = document.getElementById("contactForm");
+  if (!input || !form) return;
+
+  input.addEventListener("blur", function () {
+    input.setCustomValidity(
+      input.value && !isValidDzPhone(input.value) ? "أدخل رقم هاتف جزائري صحيح" : ""
+    );
+  });
+  input.addEventListener("input", function () { input.setCustomValidity(""); });
+
+  form.addEventListener("submit", function (e) {
+    if (!isValidDzPhone(input.value)) {
+      e.preventDefault();
+      input.setCustomValidity("أدخل رقم هاتف جزائري صحيح");
+      input.reportValidity();
+    }
+  }, true);
+});
+</script>
 </body>
 </html>

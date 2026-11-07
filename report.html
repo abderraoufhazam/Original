@@ -485,7 +485,11 @@
     }
   </style>
 </head>
+<script>window.SITE_PAGE = "report";</script>
 <body>
+<div id="site-header"></div>
+<nav class="bcrumbs" aria-label="مسار التنقل"><a href="/">الرئيسية</a><span class="sep">›</span><span class="cur">الإبلاغ</span></nav>
+
 
 <div class="report-page">
   <div class="report-container">
@@ -504,7 +508,7 @@
     </div>
 
     <!-- ═══════════ CHOICE STEP ═══════════ -->
-    <div id="choiceStep">
+    <div id="choiceStep" style="display:none">
       <div class="report-choice">
         <div class="choice-card brand" data-type="brand">
           <div class="choice-card-icon">🏢</div>
@@ -512,21 +516,14 @@
           <p>أبلغ عن منتج يحمل QR ORDIZ لكنه ليس أصليًا</p>
         </div>
 
-        <div class="choice-card shop" data-type="shop">
-          <div class="choice-card-icon">🏪</div>
-          <h3>منتج مقلد من محل موثوق</h3>
-          <p>محل مسجل في ORDIZ باع منتجًا مقلدًا</p>
-        </div>
+        
       </div>
     </div>
 
     <!-- ═══════════ SHOP FORM ═══════════ -->
-    <div id="formStep" class="report-form">
+    <div id="formStep" class="report-form active">
 
-      <button type="button" class="back-link-form" id="backToChoiceFromShop">
-        <span>←</span>
-        <span>الرجوع للاختيار</span>
-      </button>
+      
 
       <form id="reportForm">
 
@@ -1177,5 +1174,7 @@ if (document.readyState === "loading") {
 }
 </script>
 
+<div id="site-footer"></div>
+<script src="/site-layout.js"></script>
 </body>
 </html>
