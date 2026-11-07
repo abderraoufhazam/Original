@@ -129,7 +129,8 @@ async function handleChat(req, res) {
 // ============================================================
 
 // اختيار أفضل نموذج flash متاح — يتكيّف مع تحديثات Google تلقائياً
-async function pickFlashModel(key) {
+async function pickFlashModels(key) {
+  const fallback = ["gemini-3.8-flash", "gemini-3-flash", "gemini-2.5-pro"];
   try {
     const url = "https://generativelanguage.googleapis.com/v1beta/models?key=" + key;
     const r = await fetch(url);
@@ -139,7 +140,7 @@ async function pickFlashModel(key) {
         .filter(function (m) { return (m.supportedGenerationMethods || []).indexOf("generateContent") !== -1; })
         .map(function (m) { return String(m.name).replace("models/", ""); })
         .filter(function (n) {
-          return /gemini/i.test(n) && /flash/i.test(n) && !/image|tts|embedding|aqa|audio/i.test(n);
+          return /gemini/i.test(n) && /flash|pro/i.test(n) && !/image|tts|embedding|aqa|audio|thinking/i.test(n);
         });
 
       if (names.length) {
@@ -148,12 +149,30 @@ async function pickFlashModel(key) {
           const vb = parseFloat((b.match(/(\d+\.\d+|\d+)/) || [0, 0])[1]) || 0;
           return vb - va;
         });
-        return names[0];
+        // الأحدث أولاً + بقية الخيارات
+        return names.slice(0, 4).concat(fallback);
       }
     }
   } catch (e) {}
-  return "gemini-3.8-flash";
+  return fallback;
 }
+
+// إعادة محاولة عند 503 (ازدحام مؤقت)
+async function fetchWithRetry(url, options, attempts) {
+  let last = null;
+  for (let i = 0; i < (attempts || 3); i++) {
+    try {
+      const r = await fetch(url, options);
+      if (r.status !== 503) return r;
+      last = r;
+    } catch (e) {
+      last = null;
+    }
+    await new Promise(function (res) { setTimeout(res, 700 * (i + 1)); });
+  }
+  return last;
+}
+
 
 async function analyzeWithGemini(mimeType, base64Data, prompt) {
   const key = process.env.GEMINI_API_KEY;
@@ -174,7 +193,7 @@ async function analyzeWithGemini(mimeType, base64Data, prompt) {
 
   let models = preferred.concat(rest);
   models = models.filter(function (m, i) { return models.indexOf(m) === i; }).slice(0, 5);
-  if (!models.length) models = [await pickFlashModel(key)];
+  if (!models.length) models = (await pickFlashModels(key)).slice(0, 4);
 
   for (const model of models) {
     let controller = null, timeoutId = null;
@@ -303,27 +322,35 @@ async function analyzeWithOpenAICompat(opts) {
 // ============================================================
 async function handleVTest(req, res) {
   const key = process.env.GEMINI_API_KEY;
-  if (!key) return res.status(200).json({ ok: false, step: 'key', message: 'GEMINI_API_KEY manquante' });
+  if (!key) return res.status(200).json({ ok: false, step: "key", message: "GEMINI_API_KEY manquante" });
 
-  const png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
-  const body = {
-    contents: [{ parts: [
-      { text: 'Reponds uniquement: {"brand":"test"}' },
-      { inline_data: { mime_type: 'image/png', data: png } }
-    ]}],
-    generationConfig: { temperature: 0.1, maxOutputTokens: 100, thinkingConfig: { thinkingBudget: 0 } }
-  };
+  const png = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+  const models = (await pickFlashModels(key)).slice(0, 4);
+  const out = [];
 
-  try {
-    const r = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/' + (await pickFlashModel(key)) + ':generateContent?key=' + key,
-      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
-    );
-    const raw = await r.text();
-    return res.status(200).json({ ok: r.ok, status: r.status, body: raw.slice(0, 600) });
-  } catch (e) {
-    return res.status(200).json({ ok: false, step: 'fetch', message: String(e).slice(0, 200) });
+  for (const model of models) {
+    const body = {
+      contents: [{ parts: [
+        { text: "Reponds uniquement: {\"brand\":\"test\"}" },
+        { inline_data: { mime_type: "image/png", data: png } }
+      ]}],
+      generationConfig: { temperature: 0.1, maxOutputTokens: 100 }
+    };
+    try {
+      const r = await fetchWithRetry(
+        "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + key,
+        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) },
+        2
+      );
+      const raw = r ? await r.text() : "no-response";
+      out.push({ model: model, status: r ? r.status : 0, body: raw.slice(0, 200) });
+      if (r && r.ok) return res.status(200).json({ ok: true, model: model, tried: out });
+    } catch (e) {
+      out.push({ model: model, error: String(e).slice(0, 120) });
+    }
   }
+
+  return res.status(200).json({ ok: false, tried: out });
 }
 
 async function handleAnalyze(req, res) {
@@ -495,7 +522,7 @@ async function handleAnalytics(req, res) {
     const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     const aiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${await pickFlashModel(GEMINI_API_KEY)}:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${(await pickFlashModels(GEMINI_API_KEY))[0]}:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
