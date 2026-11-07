@@ -44,6 +44,7 @@ export default async function handler(req, res) {
 
   if (mode === 'chat')         return handleChat(req, res);
   if (mode === 'analyze')      return handleAnalyze(req, res);
+  if (mode === 'vtest')        return handleVTest(req, res);
   if (mode === 'analytics')  return handleAnalytics(req, res);
   if (mode === 'read-label') return handleReadLabel(req, res);
 
@@ -266,6 +267,35 @@ async function analyzeWithOpenAICompat(opts) {
 // ============================================================
 // فحص حقيقي: يجرّب كل مزوّد على صورة صغيرة ويعيد خطأه بالضبط
 
+
+
+// ============================================================
+// فحص سريع: يستدعي Gemini بصورة صغيرة ويعيد الخطأ الخام
+// ============================================================
+async function handleVTest(req, res) {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) return res.status(200).json({ ok: false, step: 'key', message: 'GEMINI_API_KEY manquante' });
+
+  const png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+  const body = {
+    contents: [{ parts: [
+      { text: 'Reponds uniquement: {"brand":"test"}' },
+      { inline_data: { mime_type: 'image/png', data: png } }
+    ]}],
+    generationConfig: { temperature: 0.1, maxOutputTokens: 100, thinkingConfig: { thinkingBudget: 0 } }
+  };
+
+  try {
+    const r = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + key,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+    );
+    const raw = await r.text();
+    return res.status(200).json({ ok: r.ok, status: r.status, body: raw.slice(0, 600) });
+  } catch (e) {
+    return res.status(200).json({ ok: false, step: 'fetch', message: String(e).slice(0, 200) });
+  }
+}
 
 async function handleAnalyze(req, res) {
   try {
