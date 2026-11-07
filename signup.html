@@ -471,6 +471,14 @@
       .role-tab-label { font-size: 11.5px; }
     }
   </style>
+
+  <!-- إخفاء كل ما يخص المحلات -->
+  <style>
+    .role-tab[data-role="shop"],
+    .shop-only,
+    #shopNameWrap,
+    [data-shop-only] { display: none !important; }
+  </style>
 </head>
 <body>
 
@@ -579,7 +587,7 @@
           <input type="checkbox" id="termsAccepted">
           <span class="terms-checkbox-text">
             <span data-i18n="termsAgree">أوافق على شروط الاستخدام كاملة</span>
-            <a href="/shop-terms.html" target="_blank" class="terms-link" data-i18n="readTerms">📜 اقرأ الشروط كاملة</a>
+            <a href="/terms.html" target="_blank" class="terms-link" data-i18n="readTerms">📜 اقرأ الشروط كاملة</a>
           </span>
         </label>
       </div>
@@ -1153,7 +1161,7 @@
 
       // ═══════ التوجيه حسب الدور ═══════
       const redirectUrl = currentRole === "shop"
-        ? "/shop-dashboard.html"
+        ? "/brand.html"
         : "/brand";
 
       setTimeout(() => {

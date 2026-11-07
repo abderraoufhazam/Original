@@ -87,7 +87,7 @@ async function getAuthInfo(token) {
 // ✅ توجيه حسب الدور
 function routeByRole(authInfo) {
   if (authInfo.isAdmin) return "/admin.html";
-  if (authInfo.role === "shop") return "/shop-dashboard.html";
+  if (authInfo.role === "shop") return "/";
   return "/brand";
 }
 
@@ -97,7 +97,7 @@ function routeByRole(authInfo) {
   const qrole = params.get("role");
   const badge = $("roleBadge");
 
-  if (qrole === "shop") {
+  if (false) {
     $("loginTitle").textContent = "دخول صاحب محل";
     $("loginSub").textContent = "أدخل بياناتك للوصول إلى لوحة متابعة المحل.";
     badge.innerHTML = "🏪 حساب محل";
