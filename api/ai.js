@@ -1,4 +1,4 @@
-// api/ai.js
+﻿// api/ai.js
 // Gemini AI موحّد: chat + analyze + analytics + read-label
 
 import { getClientIp } from './_turnstile.js';
@@ -14,6 +14,7 @@ export default async function handler(req, res) {
 
   // الفحص التشخيصي يعمل بـGET مباشرة من شريط المتصفح
   if (mode === 'diag') return handleDiag(req, res);
+  if (mode === 'vtest') return handleVTest(req, res);
 
   if (req.method !== 'POST') {
     return res.status(405).json({ status: 'ERROR', message: 'Method not allowed' });
