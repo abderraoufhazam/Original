@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // ORDIZ — Site Layout System v1.3
 // Header + Footer + Dropdown (قانوني) + زر اللغة العائم
 // ============================================================
@@ -7,6 +7,7 @@
   // ─── الصفحات ───
   const PAGES = [
     { id: "home",     url: "/",              ar: "الرئيسية",   fr: "Accueil",           en: "Home" },
+    { id: "verify",   url: "/verify",        ar: "التحقق",     fr: "Vérifier",          en: "Verify" },
     { id: "how",      url: "/how-it-works",  ar: "كيف يعمل",   fr: "Comment ça marche", en: "How it works" },
     { id: "pricing",  url: "/pricing",       ar: "الأسعار",    fr: "Tarifs",            en: "Pricing" },
     { id: "about",    url: "/about",         ar: "من نحن",     fr: "À propos",          en: "About" },
