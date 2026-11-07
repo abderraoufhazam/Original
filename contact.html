@@ -651,7 +651,7 @@
           body: JSON.stringify({
             brand_name: senderName,
             email: currentUser ? currentUser.email : "guest@ordiz.online",
-            phone: currentUser ? (userMeta.phone || null) : null,
+            phone: ((document.getElementById("senderPhone") || {}).value || (currentUser ? (userMeta.phone || null) : null)),
             subject: subject,
             message: message,
             turnstile_token: turnstileToken
@@ -671,7 +671,7 @@ try {
       to_email: "mepirf@gmail.com",
       brand_name: senderName,
       email: currentUser ? currentUser.email : "guest@ordiz.online",
-      phone: currentUser ? (userMeta.phone || "—") : "—",
+      phone: ((document.getElementById("senderPhone") || {}).value || (currentUser ? (userMeta.phone || "—") : "—")),
       subject: subject,
       message: message,
       turnstile_token: turnstileToken
