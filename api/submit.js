@@ -1,4 +1,4 @@
-// api/submit.js
+﻿// api/submit.js
 // API موحّد: feedback + report + message + signup + notify-shop
 // + إشعارات واتساب تلقائية للأدمن عبر Green API
 // + إشعار بريد إلكتروني عبر Resend
@@ -1113,7 +1113,7 @@ function buildMessageNotification(body) {
     `📧 *Email:* ${email || '—'}`,
   ];
 
-  if (phone) lines.push(`📱 *Téléphone:* ${phone}`);
+  lines.push(`📱 *Téléphone:* ${phone || '—'}`);
   if (subject) lines.push('', `📌 *Sujet:* ${subject}`);
   if (message) lines.push('', `💬 *Message:*`, truncate(message, 300));
 
@@ -1132,7 +1132,7 @@ function buildSignupMessage(body) {
     `📧 *Email:* ${email || '—'}`,
   ];
 
-  if (phone) lines.push(`📱 *Téléphone:* ${phone}`);
+  lines.push(`📱 *Téléphone:* ${phone || '—'}`);
 
   lines.push('', '👉 Vérifiez dans votre dashboard admin.');
 
