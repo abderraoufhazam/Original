@@ -98,6 +98,11 @@ async function handleFeedback(req, res) {
       return res.status(500).json({ status: 'ERROR', message: 'Configuration serveur manquante' });
     }
 
+    // توجيه البلاغ للعلامة الصحيحة (مطابقة تقريبية)
+    if (cleanBrand) {
+      cleanBrand = await resolveBrandName(cleanBrand, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    }
+
     const ip = getClientIp(req) || 'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
 
@@ -141,6 +146,88 @@ async function handleFeedback(req, res) {
 // ============================================================
 // TYPE 2: REPORT — بلاغات التقليد + إشعار واتساب
 // ============================================================
+
+// ============================================================
+// مطابقة اسم العلامة تقريبياً (rutn / rrutn / rutin cosmetique → Rutin)
+// ============================================================
+function normalizeBrand(s) {
+  return String(s || '')
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\u0600-\u06FF ]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function levenshtein(a, b) {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= b.length; j++) {
+      cur[j] = Math.min(
+        prev[j] + 1,
+        cur[j - 1] + 1,
+        prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+      );
+    }
+    prev = cur;
+  }
+  return prev[b.length];
+}
+
+function brandScore(input, candidate) {
+  const a = normalizeBrand(input);
+  const b = normalizeBrand(candidate);
+  if (!a || !b) return 0;
+  if (a === b) return 1;
+  if (b.includes(a) || a.includes(b)) return 0.88;
+  const d = levenshtein(a, b);
+  return 1 - d / Math.max(a.length, b.length);
+}
+
+async function resolveBrandName(input, url, key) {
+  const clean = (input || '').trim();
+  if (!clean) return clean;
+
+  try {
+    const headers = { apikey: key, Authorization: `Bearer ${key}` };
+
+    const [bm, qc] = await Promise.all([
+      fetch(`${url}/rest/v1/brands_meta?select=brand_name&limit=1000`, { headers }),
+      fetch(`${url}/rest/v1/qr_codes?select=brand&limit=1000`, { headers })
+    ]);
+
+    const list = [];
+    if (bm.ok) {
+      (await bm.json()).forEach(function (r) { if (r.brand_name) list.push(r.brand_name); });
+    }
+    if (qc.ok) {
+      (await qc.json()).forEach(function (r) { if (r.brand) list.push(r.brand); });
+    }
+
+    const uniq = list.filter(function (v, i) { return v && list.indexOf(v) === i; });
+
+    let best = null, score = 0, second = 0;
+    for (const cand of uniq) {
+      const s = brandScore(clean, cand);
+      if (s > score) { second = score; score = s; best = cand; }
+      else if (s > second) { second = s; }
+    }
+
+    // عتبة 0.6 + فارق واضح عن الاسم التالي (لتجنب الالتباس)
+    if (best && score >= 0.6 && (score - second) >= 0.12) {
+      console.log('Brand matched:', clean, '→', best, score.toFixed(2));
+      return best;
+    }
+  } catch (e) {
+    console.warn('resolveBrandName error:', String(e).slice(0, 120));
+  }
+  return clean;
+}
+
 async function handleReport(req, res) {
   try {
     const {
@@ -161,7 +248,7 @@ async function handleReport(req, res) {
     const cleanCode = (attempted_code || '').trim().toUpperCase().slice(0, 20);
     const cleanComment = (comment || '').trim().slice(0, 500) || null;
     const cleanDesc = (product_description || '').trim().slice(0, 500) || null;
-    const cleanBrand = (product_brand || '').trim().slice(0, 100) || null;
+    let cleanBrand = (product_brand || '').trim().slice(0, 100) || null;
     const cleanProductName = (product_name || '').trim().slice(0, 200) || null;
 
     const SUPABASE_URL = process.env.SUPABASE_URL;
