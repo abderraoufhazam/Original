@@ -98,11 +98,6 @@ async function handleFeedback(req, res) {
       return res.status(500).json({ status: 'ERROR', message: 'Configuration serveur manquante' });
     }
 
-    // توجيه البلاغ للعلامة الصحيحة (مطابقة تقريبية)
-    if (cleanBrand) {
-      cleanBrand = await resolveBrandName(cleanBrand, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-    }
-
     const ip = getClientIp(req) || 'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
 
@@ -256,6 +251,11 @@ async function handleReport(req, res) {
 
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
       return res.status(500).json({ status: 'ERROR', message: 'Configuration manquante' });
+    }
+
+    // توجيه البلاغ للعلامة الصحيحة (مطابقة تقريبية)
+    if (cleanBrand) {
+      cleanBrand = await resolveBrandName(cleanBrand, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     }
 
     const ip = getClientIp(req) || 'unknown';
