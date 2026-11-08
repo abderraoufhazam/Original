@@ -668,8 +668,8 @@
       </div>
     </div>
 
-    <div id="brandAiResult" class="wilaya-ai-result hidden">
-      <div class="wilaya-ai-badge">✨ تم التحليل بواسطة AI — يمكنك التعديل</div>
+    <div id="brandAiResult" class="wilaya-ai-result">
+      <div class="wilaya-ai-badge" id="brandAiBadge">✍️ املأ بيانات المنتج (تلقائياً أو يدوياً)</div>
 
       <label class="wilaya-label">🏷️ العلامة التجارية</label>
       <input id="brandBrandInput" class="wilaya-textarea" type="text" placeholder="مثال: Rutin" maxlength="100" style="min-height:auto;padding:13px 15px">
@@ -906,6 +906,13 @@ $("brandSubmit").addEventListener("click", async () => {
   const description = ($("brandDescription")?.value || "").trim();
   const brand = ($("brandBrandInput")?.value || "").trim();
   const productName = ($("brandProductName")?.value || "").trim();
+
+  if (!brand || !productName) {
+    $("brandMsg").textContent = "⚠️ املأ اسم العلامة التجارية واسم المنتج قبل الإرسال.";
+    $("brandMsg").className = "wilaya-msg error";
+    $("brandMsg").classList.remove("hidden");
+    return;
+  }
 
   if (!wilaya) {
     $("brandMsg").textContent = "الرجاء اختيار الولاية";
