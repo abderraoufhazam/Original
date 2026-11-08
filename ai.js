@@ -152,7 +152,7 @@ async function pickFlashModels(key) {
           return vb - va;
         });
         // الأحدث أولاً + بقية الخيارات
-        return names.slice(0, 4).concat(fallback);
+        return names.slice(0, 2).concat(fallback);
       }
     }
   } catch (e) {}
@@ -198,7 +198,7 @@ async function analyzeWithGemini(mimeType, base64Data, prompt) {
 
   let models = preferred.concat(rest);
   models = models.filter(function (m, i) { return models.indexOf(m) === i; }).slice(0, 5);
-  if (!models.length) models = (await pickFlashModels(key)).slice(0, 4);
+  if (!models.length) models = (await pickFlashModels(key)).slice(0, 2);
 
   for (const model of models) {
     let controller = null, timeoutId = null;
@@ -207,11 +207,7 @@ async function analyzeWithGemini(mimeType, base64Data, prompt) {
       timeoutId = setTimeout(function () { controller.abort(); }, 25000);
 
       // نوقف "التفكير" دائماً: يستهلك رصيد الإخراج ويعيد نصاً فارغاً
-      const gen = {
-        temperature: 0.1,
-        maxOutputTokens: 4096,
-        thinkingConfig: { thinkingBudget: 0 }
-      };
+      const gen = { temperature: 0.1, maxOutputTokens: 2048 };
 
       const r = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
@@ -233,34 +229,6 @@ async function analyzeWithGemini(mimeType, base64Data, prompt) {
 
       clearTimeout(timeoutId);
       let raw = await r.text();
-
-      // إن رُفض thinkingConfig (400) → أعد المحاولة بدونه
-      if (!r.ok && r.status === 400 && /thinking/i.test(raw)) {
-        const gen2 = { temperature: 0.1, maxOutputTokens: 4096 };
-        const r2 = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: base64Data } }] }],
-              generationConfig: gen2
-            })
-          }
-        );
-        raw = await r2.text();
-        if (r2.ok) {
-          let jr2;
-          try { jr2 = JSON.parse(raw); } catch (e) { jr2 = null; }
-          const c2 = jr2 && jr2.candidates && jr2.candidates[0];
-          const p2 = c2 && c2.content && c2.content.parts;
-          const t2 = Array.isArray(p2) ? p2.map(function (x) { return x.text || ''; }).join('') : '';
-          if (t2 && t2.trim()) {
-            console.log(`✅ Gemini (${model}) sans thinking`);
-            return t2;
-          }
-        }
-      }
 
       if (!r.ok) {
         console.warn(`Gemini ${model} → ${r.status}: ${raw.slice(0, 150)}`);
