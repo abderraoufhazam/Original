@@ -185,13 +185,13 @@ async function analyzeWithGemini(mimeType, base64Data, prompt) {
 
   GEMINI_ERRORS = [];
   // القائمة تأتي من pickFlashModels (الأحدث والمتاح فعلاً)
-  let models = (await pickFlashModels(key)).slice(0, 2);
+  let models = (await pickFlashModels(key)).slice(0, 1);
 
   for (const model of models) {
     let controller = null, timeoutId = null;
     try {
       controller = new AbortController();
-      timeoutId = setTimeout(function () { controller.abort(); }, 25000);
+      timeoutId = setTimeout(function () { controller.abort(); }, 45000);
 
       // نوقف "التفكير" دائماً: يستهلك رصيد الإخراج ويعيد نصاً فارغاً
       const gen = { temperature: 0.1, maxOutputTokens: 2048 };
@@ -321,7 +321,7 @@ async function analyzeWithOpenAICompat(opts) {
 // ============================================================
 async function handleDiag(req, res) {
   const out = {
-    build: 'ai-gemini-4',
+    build: 'ai-multi-1',
     gemini_key: !!process.env.GEMINI_API_KEY
   };
 
@@ -342,7 +342,7 @@ async function handleVTest(req, res) {
   if (!key) return res.status(200).json({ ok: false, step: "key", message: "GEMINI_API_KEY manquante" });
 
   const png = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
-  const models = (await pickFlashModels(key)).slice(0, 2);
+  const models = (await pickFlashModels(key)).slice(0, 1);
   const out = [];
 
   for (const model of models) {
@@ -412,6 +412,41 @@ Ne mets AUCUN texte avant ou après le JSON.`;
     text = await analyzeWithGemini(match[1], match[2], prompt);
     tried.push('gemini');
     if (text) source = 'gemini';
+
+    // 2) OpenRouter (نماذج رؤية مجانية)
+    if (!text && process.env.OPENROUTER_API_KEY) {
+      const or = await analyzeWithOpenAICompat({
+        name: 'openrouter',
+        url: 'https://openrouter.ai/api/v1/chat/completions',
+        key: process.env.OPENROUTER_API_KEY,
+        headers: { 'HTTP-Referer': 'https://ordiz.online', 'X-Title': 'ORDIZ' },
+        models: (process.env.OPENROUTER_MODEL
+          ? [process.env.OPENROUTER_MODEL]
+          : ['qwen/qwen2.5-vl-72b-instruct:free', 'google/gemma-3-27b-it:free']),
+        image: image,
+        prompt: prompt
+      });
+      tried.push('openrouter');
+      if (or.text) { text = or.text; source = 'openrouter'; }
+      else if (or.error) GEMINI_ERRORS.push('openrouter:' + or.error);
+    }
+
+    // 3) Groq (Llama Vision)
+    if (!text && process.env.GROQ_API_KEY) {
+      const gq = await analyzeWithOpenAICompat({
+        name: 'groq',
+        url: 'https://api.groq.com/openai/v1/chat/completions',
+        key: process.env.GROQ_API_KEY,
+        models: (process.env.GROQ_MODEL
+          ? [process.env.GROQ_MODEL]
+          : ['meta-llama/llama-4-scout-17b-16e-instruct']),
+        image: image,
+        prompt: prompt
+      });
+      tried.push('groq');
+      if (gq.text) { text = gq.text; source = 'groq'; }
+      else if (gq.error) GEMINI_ERRORS.push('groq:' + gq.error);
+    }
 
     // ── 3) فشل كامل ──
     if (!text) {
