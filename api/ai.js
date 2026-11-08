@@ -1,7 +1,9 @@
-﻿// api/ai.js
+// api/ai.js
 // Gemini AI موحّد: chat + analyze + analytics + read-label
 
 import { getClientIp } from './_turnstile.js';
+
+export const config = { maxDuration: 60 };
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -150,7 +152,7 @@ async function pickFlashModels(key) {
           return vb - va;
         });
         // الأحدث أولاً + بقية الخيارات
-        return names.slice(0, 4).concat(fallback);
+        return names.slice(0, 2).concat(fallback);
       }
     }
   } catch (e) {}
@@ -174,10 +176,13 @@ async function fetchWithRetry(url, options, attempts) {
 }
 
 
+let GEMINI_ERRORS = [];
+
 async function analyzeWithGemini(mimeType, base64Data, prompt) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) return null;
 
+  GEMINI_ERRORS = [];
   let available = [];
   try {
     available = await getAvailableModels(key);
@@ -193,7 +198,7 @@ async function analyzeWithGemini(mimeType, base64Data, prompt) {
 
   let models = preferred.concat(rest);
   models = models.filter(function (m, i) { return models.indexOf(m) === i; }).slice(0, 5);
-  if (!models.length) models = (await pickFlashModels(key)).slice(0, 4);
+  if (!models.length) models = (await pickFlashModels(key)).slice(0, 2);
 
   for (const model of models) {
     let controller = null, timeoutId = null;
@@ -202,11 +207,7 @@ async function analyzeWithGemini(mimeType, base64Data, prompt) {
       timeoutId = setTimeout(function () { controller.abort(); }, 25000);
 
       // نوقف "التفكير" دائماً: يستهلك رصيد الإخراج ويعيد نصاً فارغاً
-      const gen = {
-        temperature: 0.1,
-        maxOutputTokens: 4096,
-        thinkingConfig: { thinkingBudget: 0 }
-      };
+      const gen = { temperature: 0.1, maxOutputTokens: 2048 };
 
       const r = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
@@ -229,36 +230,9 @@ async function analyzeWithGemini(mimeType, base64Data, prompt) {
       clearTimeout(timeoutId);
       let raw = await r.text();
 
-      // إن رُفض thinkingConfig (400) → أعد المحاولة بدونه
-      if (!r.ok && r.status === 400 && /thinking/i.test(raw)) {
-        const gen2 = { temperature: 0.1, maxOutputTokens: 4096 };
-        const r2 = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: base64Data } }] }],
-              generationConfig: gen2
-            })
-          }
-        );
-        raw = await r2.text();
-        if (r2.ok) {
-          let jr2;
-          try { jr2 = JSON.parse(raw); } catch (e) { jr2 = null; }
-          const c2 = jr2 && jr2.candidates && jr2.candidates[0];
-          const p2 = c2 && c2.content && c2.content.parts;
-          const t2 = Array.isArray(p2) ? p2.map(function (x) { return x.text || ''; }).join('') : '';
-          if (t2 && t2.trim()) {
-            console.log(`✅ Gemini (${model}) sans thinking`);
-            return t2;
-          }
-        }
-      }
-
       if (!r.ok) {
         console.warn(`Gemini ${model} → ${r.status}: ${raw.slice(0, 150)}`);
+        GEMINI_ERRORS.push(model + ':' + r.status + ':' + raw.replace(/\s+/g, ' ').slice(0, 90));
         continue;
       }
 
@@ -274,6 +248,7 @@ async function analyzeWithGemini(mimeType, base64Data, prompt) {
         return txt;
       }
       console.warn(`Gemini ${model} réponse vide. finishReason=`, cand && cand.finishReason);
+        GEMINI_ERRORS.push(model + ':empty:' + (cand && cand.finishReason));
     } catch (e) {
       if (timeoutId) clearTimeout(timeoutId);
       console.warn(`Gemini ${model} exception:`, String(e).slice(0, 100));
@@ -351,12 +326,34 @@ async function analyzeWithOpenAICompat(opts) {
 // ============================================================
 // فحص سريع: يستدعي Gemini بصورة صغيرة ويعيد الخطأ الخام
 // ============================================================
+
+// ============================================================
+// تشخيص: المفاتيح + النماذج المتاحة
+// ============================================================
+async function handleDiag(req, res) {
+  const out = {
+    build: 'ai-gemini-1',
+    gemini_key: !!process.env.GEMINI_API_KEY
+  };
+
+  if (out.gemini_key) {
+    try {
+      const models = await pickFlashModels(process.env.GEMINI_API_KEY);
+      out.models = models.slice(0, 6);
+    } catch (e) {
+      out.models = ['erreur: ' + String(e).slice(0, 120)];
+    }
+  }
+
+  return res.status(200).json(out);
+}
+
 async function handleVTest(req, res) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) return res.status(200).json({ ok: false, step: "key", message: "GEMINI_API_KEY manquante" });
 
   const png = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
-  const models = (await pickFlashModels(key)).slice(0, 4);
+  const models = (await pickFlashModels(key)).slice(0, 2);
   const out = [];
 
   for (const model of models) {
@@ -371,7 +368,7 @@ async function handleVTest(req, res) {
       const r = await fetchWithRetry(
         "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + key,
         { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) },
-        2
+        1
       );
       const raw = r ? await r.text() : "no-response";
       out.push({ model: model, status: r ? r.status : 0, body: raw.slice(0, 200) });
@@ -432,8 +429,8 @@ Ne mets AUCUN texte avant ou après le JSON.`;
       console.error('Aucun service vision disponible. Essayés:', tried.join(', '));
       return res.status(503).json({
         status: 'ERROR',
-        message: 'تعذّر تحليل الصورة حالياً. جرّب صورة أوضح، أو أدخل البيانات يدوياً.',
-        detail: 'providers: ' + tried.join(', ')
+        message: 'فشل التحليل — ' + (GEMINI_ERRORS[0] || 'سبب غير معروف'),
+        detail: GEMINI_ERRORS.join(' | ').slice(0, 400)
       });
     }
 
