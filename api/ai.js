@@ -319,7 +319,7 @@ async function analyzeWithOpenAICompat(opts) {
 // ============================================================
 async function handleDiag(req, res) {
   const out = {
-    build: 'ai-gemini-2',
+    build: 'ai-gemini-3',
     gemini_key: !!process.env.GEMINI_API_KEY
   };
 
