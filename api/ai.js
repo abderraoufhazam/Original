@@ -1,4 +1,4 @@
-// api/ai.js
+﻿// api/ai.js
 // Gemini AI موحّد: chat + analyze + analytics + read-label
 
 import { getClientIp } from './_turnstile.js';
@@ -152,7 +152,8 @@ async function pickFlashModels(key) {
           return vb - va;
         });
         // الأحدث أولاً + بقية الخيارات
-        return names.slice(0, 2).concat(fallback);
+        const uniq = names.filter(function (n, i) { return names.indexOf(n) === i; });
+        return uniq.slice(0, 2).concat(fallback);
       }
     }
   } catch (e) {}
@@ -183,22 +184,8 @@ async function analyzeWithGemini(mimeType, base64Data, prompt) {
   if (!key) return null;
 
   GEMINI_ERRORS = [];
-  let available = [];
-  try {
-    available = await getAvailableModels(key);
-  } catch (e) {
-    console.warn('Liste des modèles indisponible:', String(e).slice(0, 100));
-  }
-
-  const vision = available.filter(function (m) {
-    return /gemini/i.test(m) && !/embedding|aqa|imagen|veo/i.test(m);
-  });
-  const preferred = vision.filter(function (m) { return /2\.5-flash|2\.0-flash/i.test(m); });
-  const rest = vision.filter(function (m) { return preferred.indexOf(m) === -1; });
-
-  let models = preferred.concat(rest);
-  models = models.filter(function (m, i) { return models.indexOf(m) === i; }).slice(0, 5);
-  if (!models.length) models = (await pickFlashModels(key)).slice(0, 2);
+  // القائمة تأتي من pickFlashModels (الأحدث والمتاح فعلاً)
+  let models = (await pickFlashModels(key)).slice(0, 2);
 
   for (const model of models) {
     let controller = null, timeoutId = null;
@@ -332,7 +319,7 @@ async function analyzeWithOpenAICompat(opts) {
 // ============================================================
 async function handleDiag(req, res) {
   const out = {
-    build: 'ai-gemini-1',
+    build: 'ai-gemini-2',
     gemini_key: !!process.env.GEMINI_API_KEY
   };
 
