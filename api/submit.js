@@ -173,14 +173,48 @@ function levenshtein(a, b) {
   return prev[b.length];
 }
 
+// هيكل الاسم بلا حروف لينة (rrutne → rrtn / rutin → rtn)
+function skeletonBrand(s) {
+  return normalizeBrand(s)
+    .replace(/[aeiouy\u064B-\u0652]/g, '')
+    .replace(/\s+/g, '');
+}
+
+// Dice على ثنائيات الحروف
+function bigramScore(a, b) {
+  if (a.length < 2 || b.length < 2) return 0;
+  const grams = (s) => {
+    const out = [];
+    for (let i = 0; i < s.length - 1; i++) out.push(s.slice(i, i + 2));
+    return out;
+  };
+  const A = grams(a), B = grams(b);
+  let hits = 0;
+  const pool = B.slice();
+  for (const g of A) {
+    const idx = pool.indexOf(g);
+    if (idx !== -1) { hits++; pool.splice(idx, 1); }
+  }
+  return (2 * hits) / (A.length + B.length);
+}
+
 function brandScore(input, candidate) {
   const a = normalizeBrand(input);
   const b = normalizeBrand(candidate);
   if (!a || !b) return 0;
   if (a === b) return 1;
   if (b.includes(a) || a.includes(b)) return 0.88;
-  const d = levenshtein(a, b);
-  return 1 - d / Math.max(a.length, b.length);
+
+  const lev = 1 - levenshtein(a, b) / Math.max(a.length, b.length);
+  const dice = bigramScore(a, b);
+
+  const sa = skeletonBrand(input);
+  const sb = skeletonBrand(candidate);
+  const skel = (sa.length >= 2 && sb.length >= 2)
+    ? 1 - levenshtein(sa, sb) / Math.max(sa.length, sb.length)
+    : 0;
+
+  return Math.max(lev, dice * 0.95, skel);
 }
 
 async function resolveBrandName(input, url, key) {
