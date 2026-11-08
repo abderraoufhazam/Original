@@ -217,6 +217,32 @@ async function analyzeWithGemini(mimeType, base64Data, prompt) {
       clearTimeout(timeoutId);
       let raw = await r.text();
 
+      // ازدحام/حصة: انتظر ثم أعد المحاولة مرة واحدة
+      if (r.status === 429 || r.status === 503) {
+        await new Promise(function (res) { setTimeout(res, 2000); });
+        const r2 = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: base64Data } }] }],
+              generationConfig: gen
+            })
+          }
+        );
+        const raw2 = await r2.text();
+        if (r2.ok) {
+          let j2;
+          try { j2 = JSON.parse(raw2); } catch (e) { j2 = null; }
+          const c2 = j2 && j2.candidates && j2.candidates[0];
+          const p2 = c2 && c2.content && c2.content.parts;
+          const t2 = Array.isArray(p2) ? p2.map(function (x) { return x.text || ''; }).join('') : '';
+          if (t2 && t2.trim()) return t2;
+        }
+        raw = raw2;
+      }
+
       if (!r.ok) {
         console.warn(`Gemini ${model} → ${r.status}: ${raw.slice(0, 150)}`);
         GEMINI_ERRORS.push(model + ':' + r.status + ':' + raw.replace(/\s+/g, ' ').slice(0, 90));
@@ -321,7 +347,7 @@ async function analyzeWithOpenAICompat(opts) {
 // ============================================================
 async function handleDiag(req, res) {
   const out = {
-    build: 'ai-multi-1',
+    build: 'ai-gemini-5',
     gemini_key: !!process.env.GEMINI_API_KEY
   };
 
