@@ -17,6 +17,7 @@ export default async function handler(req, res) {
   // الفحص التشخيصي يعمل بـGET مباشرة من شريط المتصفح
   if (mode === 'diag') return handleDiag(req, res);
   if (mode === 'vtest') return handleVTest(req, res);
+  if (mode === 'providers') return handleProviders(req, res);
 
   if (req.method !== 'POST') {
     return res.status(405).json({ status: 'ERROR', message: 'Method not allowed' });
@@ -177,6 +178,44 @@ async function fetchWithRetry(url, options, attempts) {
 }
 
 
+
+// ── نماذج OpenRouter المجانية التي تدعم الصور ──
+async function pickOpenRouterModels(key) {
+  try {
+    const r = await fetch("https://openrouter.ai/api/v1/models", {
+      headers: { Authorization: "Bearer " + key }
+    });
+    if (!r.ok) return [];
+    const j = await r.json();
+    const list = (j.data || []).filter(function (m) {
+      const pr = m.pricing || {};
+      const free = String(pr.prompt) === "0" && String(pr.completion) === "0";
+      const mods = (m.architecture && m.architecture.input_modalities) || [];
+      return free && mods.indexOf("image") !== -1;
+    }).map(function (m) { return m.id; });
+    return list.slice(0, 3);
+  } catch (e) {
+    return [];
+  }
+}
+
+// ── نماذج Groq التي تدعم الصور ──
+async function pickGroqModels(key) {
+  try {
+    const r = await fetch("https://api.groq.com/openai/v1/models", {
+      headers: { Authorization: "Bearer " + key }
+    });
+    if (!r.ok) return [];
+    const j = await r.json();
+    const list = (j.data || [])
+      .map(function (m) { return m.id; })
+      .filter(function (id) { return /vision|scout|maverick|llama-4/i.test(id); });
+    return list.slice(0, 2);
+  } catch (e) {
+    return [];
+  }
+}
+
 let GEMINI_ERRORS = [];
 
 async function analyzeWithGemini(mimeType, base64Data, prompt) {
@@ -218,7 +257,7 @@ async function analyzeWithGemini(mimeType, base64Data, prompt) {
       let raw = await r.text();
 
       // ازدحام/حصة: انتظر ثم أعد المحاولة مرة واحدة
-      if (r.status === 429 || r.status === 503) {
+      if (r.status === 503) {
         await new Promise(function (res) { setTimeout(res, 2000); });
         const r2 = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
@@ -345,9 +384,37 @@ async function analyzeWithOpenAICompat(opts) {
 // ============================================================
 // تشخيص: المفاتيح + النماذج المتاحة
 // ============================================================
+
+// ============================================================
+// تشخيص: ماذا يرى كل مزوّد بمفاتيحك؟
+// ============================================================
+async function handleProviders(req, res) {
+  const out = {
+    build: 'ai-multi-3',
+    openrouter_key: !!process.env.OPENROUTER_API_KEY,
+    groq_key: !!process.env.GROQ_API_KEY,
+    gemini_key: !!process.env.GEMINI_API_KEY
+  };
+
+  if (out.openrouter_key) {
+    const m = await pickOpenRouterModels(process.env.OPENROUTER_API_KEY);
+    out.openrouter_models = m.length ? m : 'aucun modèle gratuit avec image';
+  }
+  if (out.groq_key) {
+    const m = await pickGroqModels(process.env.GROQ_API_KEY);
+    out.groq_models = m.length ? m : 'aucun modèle vision';
+  }
+  if (out.gemini_key) {
+    const m = await pickFlashModels(process.env.GEMINI_API_KEY);
+    out.gemini_models = m.slice(0, 3);
+  }
+
+  return res.status(200).json(out);
+}
+
 async function handleDiag(req, res) {
   const out = {
-    build: 'ai-gemini-5',
+    build: 'ai-multi-3',
     gemini_key: !!process.env.GEMINI_API_KEY
   };
 
@@ -448,13 +515,13 @@ Ne mets AUCUN texte avant ou après le JSON.`;
         headers: { 'HTTP-Referer': 'https://ordiz.online', 'X-Title': 'ORDIZ' },
         models: (process.env.OPENROUTER_MODEL
           ? [process.env.OPENROUTER_MODEL]
-          : ['qwen/qwen2.5-vl-72b-instruct:free', 'google/gemma-3-27b-it:free']),
+          : await pickOpenRouterModels(process.env.OPENROUTER_API_KEY)),
         image: image,
         prompt: prompt
       });
       tried.push('openrouter');
       if (or.text) { text = or.text; source = 'openrouter'; }
-      else if (or.error) GEMINI_ERRORS.push('openrouter:' + or.error);
+      else GEMINI_ERRORS.push('openrouter:' + (or.error || 'aucun modèle gratuit disponible'));
     }
 
     // 3) Groq (Llama Vision)
@@ -465,13 +532,13 @@ Ne mets AUCUN texte avant ou après le JSON.`;
         key: process.env.GROQ_API_KEY,
         models: (process.env.GROQ_MODEL
           ? [process.env.GROQ_MODEL]
-          : ['meta-llama/llama-4-scout-17b-16e-instruct']),
+          : await pickGroqModels(process.env.GROQ_API_KEY)),
         image: image,
         prompt: prompt
       });
       tried.push('groq');
       if (gq.text) { text = gq.text; source = 'groq'; }
-      else if (gq.error) GEMINI_ERRORS.push('groq:' + gq.error);
+      else GEMINI_ERRORS.push('groq:' + (gq.error || 'aucun modèle vision disponible'));
     }
 
     // ── 3) فشل كامل ──
