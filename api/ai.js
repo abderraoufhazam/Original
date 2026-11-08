@@ -390,7 +390,7 @@ async function analyzeWithOpenAICompat(opts) {
 // ============================================================
 async function handleProviders(req, res) {
   const out = {
-    build: 'ai-multi-3',
+    build: 'ai-multi-4',
     openrouter_key: !!process.env.OPENROUTER_API_KEY,
     groq_key: !!process.env.GROQ_API_KEY,
     gemini_key: !!process.env.GEMINI_API_KEY
@@ -414,7 +414,7 @@ async function handleProviders(req, res) {
 
 async function handleDiag(req, res) {
   const out = {
-    build: 'ai-multi-3',
+    build: 'ai-multi-4',
     gemini_key: !!process.env.GEMINI_API_KEY
   };
 
@@ -485,13 +485,19 @@ async function handleAnalyze(req, res) {
       return res.status(400).json({ status: 'ERROR', message: 'Format invalide' });
     }
 
-    const prompt = `Tu es un expert en contrefaçon. Analyse cette image avec précision.
-ATTENTION: Concentre-toi UNIQUEMENT sur le logo et le nom de la marque situés dans la partie SUPÉRIEURE de l'emballage. Lis le texte exactement comme il est écrit, lettre par lettre, sans l'inventer.
+    const prompt = `Tu es un expert en contrefaçon. Analyse UNIQUEMENT LE PRODUIT visible sur l'image.
+
+RÈGLES STRICTES :
+1) Ignore totalement : le décor, le fond, la table, les rayons, les mains, l'éclairage, les reflets, les autres objets.
+2) Si plusieurs produits sont visibles, choisis celui du centre ou le plus grand.
+3) Lis le nom de la marque écrit sur l'emballage, lettre par lettre, sans l'inventer.
+4) La description doit décrire LE PRODUIT uniquement (forme, couleur, contenu, taille), jamais la photo.
+
 Réponds UNIQUEMENT avec un objet JSON valide :
 {
-  "brand": "le nom COMPLET de la marque lu sur le logo (ex: 'MAKE COSMETIC', pas juste 'A')", 
-  "product_name": "nom complet du produit", 
-  "description": "Décris le produit en détail", 
+  "brand": "nom de marque lu sur l'emballage",
+  "product_name": "nom du produit",
+  "description": "description du produit uniquement",
   "confidence": "high|medium|low"
 }
 Ne mets AUCUN texte avant ou après le JSON.`;
