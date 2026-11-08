@@ -238,7 +238,9 @@ async function analyzeWithGemini(mimeType, base64Data, prompt) {
         GEMINI_ERRORS.push(model + ':empty:' + (cand && cand.finishReason));
     } catch (e) {
       if (timeoutId) clearTimeout(timeoutId);
-      console.warn(`Gemini ${model} exception:`, String(e).slice(0, 100));
+      const emsg = String(e).slice(0, 120);
+      console.warn(`Gemini ${model} exception:`, emsg);
+      GEMINI_ERRORS.push(model + ':exception:' + emsg);
     }
   }
   return null;
@@ -319,7 +321,7 @@ async function analyzeWithOpenAICompat(opts) {
 // ============================================================
 async function handleDiag(req, res) {
   const out = {
-    build: 'ai-gemini-3',
+    build: 'ai-gemini-4',
     gemini_key: !!process.env.GEMINI_API_KEY
   };
 
