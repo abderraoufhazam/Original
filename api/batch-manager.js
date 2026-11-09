@@ -96,6 +96,20 @@ async function handleCreate(req, res) {
       return res.status(401).json({ status: 'ERROR', message: 'Token invalide' });
     }
 
+    // 🔒 الأمن: أدمن أو مالك العلامة فقط يستطيع إنشاء دفعة باسمها
+    const userData = await userRes.json();
+    const userEmail = String(userData.email || '').toLowerCase();
+    const userBrand = String((userData.user_metadata && userData.user_metadata.brand_name) || '').trim().toLowerCase();
+    const isAdmin = ADMIN_EMAILS.includes(userEmail);
+    const isOwner = userBrand !== '' && userBrand === brand.trim().toLowerCase();
+
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({
+        status: 'ERROR',
+        message: 'لا تملك صلاحية إنشاء دفعة لهذه العلامة التجارية.'
+      });
+    }
+
     // âœ… Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† Ø¹Ø¯Ù… ÙˆØ¬ÙˆØ¯ Ø¯ÙØ¹Ø© Ø¨Ù†ÙØ³ Ø±Ù‚Ù… Ø§Ù„Ù„ÙˆØª
     const lotToCheck = lot?.trim();
     if (lotToCheck) {

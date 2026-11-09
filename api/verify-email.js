@@ -139,6 +139,25 @@ async function handleCheck(req, res) {
 
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return res.status(500).json({ status: 'ERROR', message: 'Config manquante' });
 
+    // 🔒 حد 5 محاولات تخمين لكل بريد في 10 دقائق
+    try {
+      const rl = await fetch(`${SUPABASE_URL}/rest/v1/rpc/check_rate_limit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_SERVICE_ROLE_KEY,
+          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        },
+        body: JSON.stringify({ p_key: 'verify-code:' + cleanEmail, p_limit: 5, p_window_seconds: 600 })
+      });
+      if (rl.ok) {
+        const allowed = await rl.json();
+        if (allowed === false) {
+          return res.status(429).json({ status: 'ERROR', message: 'محاولات كثيرة. انتظر 10 دقائق ثم أعد المحاولة.' });
+        }
+      }
+    } catch (e) {}
+
     const rpcRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/verify_email_code`, {
       method: 'POST',
       headers: { 'apikey': SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json' },

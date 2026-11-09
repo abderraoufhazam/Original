@@ -71,6 +71,32 @@ res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 // ============================================================
 // TYPE 1: FEEDBACK — التقييمات
 // ============================================================
+
+// 🔒 تحقق أدمن مشترك (يُستخدم في الدوال الحساسة)
+const ADMIN_EMAILS_LOCAL = (process.env.ADMIN_EMAILS || '')
+  .split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+
+async function requireAdminToken(req) {
+  const token = (String(req.headers.authorization || '') || '')
+    .replace('Bearer ', '').trim()
+    || (req.body && req.body.access_token)
+    || '';
+  if (!token) return false;
+  try {
+    const r = await fetch(`${process.env.SUPABASE_URL}/auth/v1/user`, {
+      headers: {
+        'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY,
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!r.ok) return false;
+    const u = await r.json();
+    return ADMIN_EMAILS_LOCAL.includes(String(u.email || '').toLowerCase());
+  } catch (e) {
+    return false;
+  }
+}
+
 async function handleFeedback(req, res) {
   try {
     const { secret_code, type, rating, comment } = req.body || {};
@@ -480,6 +506,11 @@ async function handleSignup(req, res) {
 // ============================================================
 async function handleShopEmail(req, res) {
   try {
+    // 🔒 أدمن فقط
+    if (!(await requireAdminToken(req))) {
+      return res.status(403).json({ status: 'ERROR', message: 'Accès refusé' });
+    }
+
     const {
       to_email,
       shop_name,
@@ -852,6 +883,11 @@ async function handleShopComplaint(req, res) {
 // ============================================================
 async function handleNotifyShop(req, res) {
   try {
+    // 🔒 أدمن فقط
+    if (!(await requireAdminToken(req))) {
+      return res.status(403).json({ status: 'ERROR', message: 'Accès refusé' });
+    }
+
     const {
       to_email,
       shop_name,
@@ -1104,8 +1140,8 @@ async function handleEmail(req, res) {
       return res.status(400).json({ status: 'ERROR', message: 'template invalide' });
     }
 
-    // 🔒 التحقق من Turnstile (للبريد العام فقط)
-    if (template === 'contact') {
+    // 🔒 التحقق من Turnstile (contact + verify)
+    if (template === 'contact' || template === 'verify') {
       const ip = getClientIp(req);
       const turnstileResult = await verifyTurnstile(turnstile_token, ip);
       if (!turnstileResult.success) {
@@ -1113,6 +1149,37 @@ async function handleEmail(req, res) {
           status: 'ERROR',
           message: 'Vérification anti-bot échouée.'
         });
+      }
+    }
+
+    // 🔒 verify: حد 5 محاولات/ساعة لكل بريد
+    if (template === 'verify') {
+      try {
+        const rl = await fetch(`${process.env.SUPABASE_URL}/rest/v1/rpc/check_rate_limit`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY,
+            'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
+          },
+          body: JSON.stringify({ p_key: 'email-verify:' + String(to_email || '').toLowerCase(), p_limit: 5, p_window_seconds: 3600 })
+        });
+        if (rl.ok) {
+          const allowed = await rl.json();
+          if (allowed === false) {
+            return res.status(429).json({ status: 'ERROR', message: 'طلبات كثيرة لهذا البريد. حاول لاحقاً.' });
+          }
+        }
+      } catch (e) {}
+    }
+
+    // 🔒 admin: أدمن فقط + مستلم معروف
+    if (template === 'admin') {
+      if (!(await requireAdminToken(req))) {
+        return res.status(403).json({ status: 'ERROR', message: 'Accès refusé' });
+      }
+      if (!ADMIN_EMAILS_LOCAL.includes(String(to_email || '').toLowerCase())) {
+        return res.status(403).json({ status: 'ERROR', message: 'Destinataire non autorisé' });
       }
     }
 

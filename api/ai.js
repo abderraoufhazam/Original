@@ -636,8 +636,33 @@ Ne mets AUCUN texte avant ou après le JSON.`;
 // ============================================================
 async function handleAnalytics(req, res) {
   try {
-    const { brand_name, days = 30 } = req.body || {};
+    const { brand_name, days = 30, access_token } = req.body || {};
     if (!brand_name) return res.status(400).json({ status: 'ERROR', message: 'brand_name obligatoire' });
+
+    // 🔒 أدمن أو مالك العلامة فقط
+    const ADMIN_EMAILS_AI = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+    const token = (String(req.headers.authorization || '') || '').replace('Bearer ', '').trim() || access_token || '';
+    let authorized = false;
+    if (token) {
+      try {
+        const uRes = await fetch(`${process.env.SUPABASE_URL}/auth/v1/user`, {
+          headers: {
+            'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY,
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (uRes.ok) {
+          const u = await uRes.json();
+          const email = String(u.email || '').toLowerCase();
+          const metaBrand = String((u.user_metadata && u.user_metadata.brand_name) || '').trim().toLowerCase();
+          if (ADMIN_EMAILS_AI.includes(email)) authorized = true;
+          if (metaBrand && metaBrand === brand_name.trim().toLowerCase()) authorized = true;
+        }
+      } catch (e) {}
+    }
+    if (!authorized) {
+      return res.status(403).json({ status: 'ERROR', message: 'Accès refusé' });
+    }
 
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
     const SUPABASE_URL = process.env.SUPABASE_URL;

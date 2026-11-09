@@ -15,6 +15,17 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  // 🔒 التحقق من أن الطلب قادم فعلاً من Telegram (Secret Token)
+  const WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET;
+  if (WEBHOOK_SECRET) {
+    const headerSecret = String(req.headers['x-telegram-bot-api-secret-token'] || '');
+    if (headerSecret !== WEBHOOK_SECRET) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+  } else {
+    console.warn('⚠️ TELEGRAM_WEBHOOK_SECRET غير مضبوط — يُنصح بضبطه فوراً.');
+  }
+
   try {
     const update = req.body || {};
     const message = update.message;
