@@ -53,10 +53,7 @@ res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (type === 'report')      return handleReport(req, res);
   if (type === 'message')     return handleMessage(req, res);
   if (type === 'signup')      return handleSignup(req, res);
-  if (type === 'notify-shop') return handleNotifyShop(req, res);
-  if (type === 'shop-email') return handleShopEmail(req, res);
-  if (type === 'shop-complaint') return handleShopComplaint(req, res);
-
+      
   // ── أسماء العلامات: فحص التوفر / الحجز / الدخول بالاسم ──
   if (type === 'brand-check')    return handleBrandCheck(req, res);
   if (type === 'brand-register') return handleBrandRegister(req, res);
