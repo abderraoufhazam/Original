@@ -1862,7 +1862,7 @@ if (_llb) _llb.onclick = async () => {
   while (true) {
     const { data, error } = await sb
       .from("qr_codes")
-      .select("id,secret_status,brand,lot,logo_url")
+      .select("id,secret_status,brand,lot,logo_url,product_name,reference,manufacture_date,expiry_date,description")
       .eq("lot", lot)
       .order("id", { ascending: true })
       .range(from, from + PAGE - 1);
@@ -1896,6 +1896,49 @@ if (_llb) _llb.onclick = async () => {
   showBatchStatus(all.map(row => row.secret_status));
   const plb = $("printLotBtn"); if (plb) plb.classList.remove("hidden");
   const eb = $("exportLotCodesBtn"); if (eb) eb.classList.remove("hidden");
+
+  // ✏️ نموذج تعديل معلومات اللوط
+  const meta = all[0] || {};
+  const mf = (v) => v ? String(v).slice(0, 10) : "";
+  info.innerHTML += `
+    <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border);">
+      <h3 style="font-size:14px;font-weight:800;margin:0 0 12px;">✏️ تعديل معلومات اللوط</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div><label style="font-size:11px;font-weight:700;color:var(--text-tertiary);">اسم المنتج</label><input id="editProductName" value="${(meta.product_name||"").replace(/"/g,"&quot;")}" placeholder="مثال: سيروم 30 مل"></div>
+        <div><label style="font-size:11px;font-weight:700;color:var(--text-tertiary);">المرجع</label><input id="editReference" value="${(meta.reference||"").replace(/"/g,"&quot;")}" placeholder="REF-001"></div>
+        <div><label style="font-size:11px;font-weight:700;color:var(--text-tertiary);">تاريخ التصنيع</label><input type="date" id="editManufacture" value="${mf(meta.manufacture_date)}"></div>
+        <div><label style="font-size:11px;font-weight:700;color:var(--text-tertiary);">تاريخ الانتهاء</label><input type="date" id="editExpiry" value="${mf(meta.expiry_date)}"></div>
+      </div>
+      <div style="margin-top:10px;"><label style="font-size:11px;font-weight:700;color:var(--text-tertiary);">الوصف</label><textarea id="editDescription" rows="2" placeholder="وصف المنتج...">${(meta.description||"").replace(/</g,"&lt;")}</textarea></div>
+      <button id="saveLotBtn" class="btn btn-primary btn-block" style="margin-top:12px;">💾 حفظ التعديلات</button>
+    </div>`;
+
+  const _save = $("saveLotBtn");
+  if (_save) _save.onclick = async () => {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.toast("انتهت الجلسة — سجّل الدخول مجدداً", "error"); return; }
+    _save.disabled = true; _save.textContent = "⏳ جاري الحفظ...";
+    try {
+      const res = await fetch("/api/batch-manager?action=update-lot", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lot: loadedLot,
+          brand: loadedLotBrand,
+          product_name: $("editProductName").value,
+          reference: $("editReference").value,
+          manufacture_date: $("editManufacture").value,
+          expiry_date: $("editExpiry").value,
+          description: $("editDescription").value,
+          access_token: session.access_token
+        })
+      });
+      const result = await res.json();
+      if (result.status === "OK") { window.toast("✅ " + result.message, "success"); }
+      else { window.toast("خطأ: " + (result.message || ""), "error"); }
+    } catch (e) { window.toast("خطأ: " + e.message, "error"); }
+    finally { _save.disabled = false; _save.textContent = "💾 حفظ التعديلات"; }
+  };
+
 
   const shopBox = $("shopBatchBox");
   if (shopBox) shopBox.classList.remove("hidden");
