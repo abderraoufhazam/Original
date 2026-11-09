@@ -33,14 +33,6 @@ let allBrandsCache = [];
 let debtsData = [];
 let inventoryData = null;
 let advSearchData = [];
-let currentShopsTab = "pending";
-let allPendingShops = [];
-let allActiveShops = [];
-let allBannedShops = [];
-let currentComplaintsFilter = "pending";
-let allComplaints = [];
-let currentComplaintsWilaya = "";
-let currentComplaintsDateRange = "all";
 
 async function checkAdminServer(token) {
   try {
@@ -103,8 +95,6 @@ const PANEL_TITLES = {
   feedback: "Avis clients",
   messages: "Messages",
   brands: "Marques",
-  shops: "المحلات",
-  "shop-complaints": "شكاوى المحلات",
   visitors: "Visiteurs",
   fakes: "Contrefaçons",
   faq: "FAQ",
@@ -132,8 +122,6 @@ function showPanel(name) {
   if (name === "delete") loadDeleteLog();
   if (name === "messages") loadMessages();
   if (name === "brands") loadBrands();
-  if (name === "shops") loadShops();
-  if (name === "shop-complaints") loadShopComplaints();
   if (name === "visitors") loadVisitors();
   if (name === "adv-search") loadAdvancedSearch();
   if (name === "faq") loadFAQ();
@@ -1138,393 +1126,6 @@ async function loadInventory() {
 }
 
 // ============================================================
-// 🏪 SHOPS (المحلات)
-// ============================================================
-async function loadShops() {
-  const container = $("shopsList");
-  const statsBox = $("shopsStats");
-  if (!container) return;
-
-  container.innerHTML = `<p class="muted">Chargement...</p>`;
-  if (statsBox) statsBox.innerHTML = "";
-
-  try {
-    const { data: terms } = await sb.from("shop_terms_acceptance").select("*").eq("status", "PENDING").order("accepted_at", { ascending: false });
-    const { data: shops } = await sb.from("verified_shops").select("*").order("created_at", { ascending: false });
-
-    allPendingShops = terms || [];
-    allActiveShops  = (shops || []).filter(s => s.status === "ACTIVE" || s.status === "WARNING");
-    allBannedShops  = (shops || []).filter(s => s.status === "BANNED" || s.status === "SUSPENDED");
-
-    if (statsBox) {
-      statsBox.innerHTML = `
-        <div class="stat-card"><div class="stat-value" style="color:var(--warning)">${allPendingShops.length}</div><div class="stat-label">⏳ قيد المراجعة</div></div>
-        <div class="stat-card"><div class="stat-value" style="color:var(--success)">${allActiveShops.length}</div><div class="stat-label">✅ نشطة</div></div>
-        <div class="stat-card"><div class="stat-value" style="color:var(--danger)">${allBannedShops.length}</div><div class="stat-label">🚫 محظورة</div></div>
-        <div class="stat-card"><div class="stat-value">${(shops || []).length}</div><div class="stat-label">🏪 الإجمالي</div></div>`;
-    }
-
-    const badge = $("shopsBadge");
-    if (badge) {
-      if (allPendingShops.length > 0) { badge.textContent = allPendingShops.length; badge.style.display = "inline-block"; }
-      else { badge.style.display = "none"; }
-    }
-
-    renderShopsList();
-  } catch (err) {
-    container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(err.message)}</p>`;
-  }
-}
-
-function renderShopsList() {
-  const container = $("shopsList");
-  if (!container) return;
-
-  const search = ($("shopsSearch")?.value || "").toLowerCase().trim();
-  let list = [];
-  if (currentShopsTab === "pending") list = allPendingShops;
-  else if (currentShopsTab === "active") list = allActiveShops;
-  else list = allBannedShops;
-
-  if (search) {
-    list = list.filter(s => {
-      const name = (s.shop_name || "").toLowerCase();
-      const phone = (s.phone || "").toLowerCase();
-      const email = (s.email || "").toLowerCase();
-      return name.includes(search) || phone.includes(search) || email.includes(search);
-    });
-  }
-
-  if (list.length === 0) {
-    container.innerHTML = `<p class="muted" style="text-align:center;padding:40px 0">لا يوجد نتائج</p>`;
-    return;
-  }
-
-  let html = "";
-  list.forEach(s => {
-    const date = (s.accepted_at || s.created_at) ? new Date(s.accepted_at || s.created_at).toLocaleString("fr-FR") : "—";
-
-    if (currentShopsTab === "pending") {
-      html += `
-        <div class="log-row log-warning" style="padding:18px">
-          <div class="log-top"><span class="log-result log-result-warning">⏳ قيد المراجعة</span><span class="log-date">${escapeHtml(date)}</span></div>
-          <div style="font-weight:900;font-size:16px;margin:10px 0 8px">🏪 ${escapeHtml(s.shop_name)}</div>
-          <div class="log-meta" style="margin-bottom:12px">${s.phone ? `<span>📱 ${escapeHtml(s.phone)}</span>` : ""}${s.email ? `<span>📧 ${escapeHtml(s.email)}</span>` : ""}</div>
-          <div class="details" style="margin-bottom:12px">${s.terms_version ? `<div><b>نسخة الشروط</b><span>${escapeHtml(s.terms_version)}</span></div>` : ""}${s.ip ? `<div><b>IP</b><span style="font-family:monospace;font-size:11px">${escapeHtml(s.ip)}</span></div>` : ""}</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button onclick="approveShop('${s.user_id}')" class="btn btn-success" style="flex:1;min-width:100px;font-size:12px;padding:9px 12px">✅ موافقة</button>
-            <button onclick="rejectShop('${s.user_id}','${escapeHtml(s.shop_name)}')" class="btn btn-danger" style="flex:1;min-width:100px;font-size:12px;padding:9px 12px">❌ رفض</button>
-            <button onclick="printShopTerms('${s.user_id}')" class="btn btn-ghost" style="flex:1;min-width:100px;font-size:12px;padding:9px 12px">🖨 طباعة</button>
-          </div>
-        </div>`;
-    } else {
-      const isBanned = s.status === "BANNED" || s.status === "SUSPENDED";
-      const cls = isBanned ? "danger" : (s.status === "WARNING" ? "warning" : "success");
-      const label = { ACTIVE: "✅ نشط", WARNING: "⚠️ تحذير", BANNED: "🚫 محظور", SUSPENDED: "⏸️ موقوف" }[s.status] || s.status;
-      const depositPct = s.total_deposit > 0 ? Math.round(((s.total_deposit - s.deposit_remaining) / s.total_deposit) * 100) : 0;
-
-      html += `
-        <div class="log-row log-${cls}" style="padding:18px">
-          <div class="log-top"><span class="log-result log-result-${cls}">${label}</span><span class="log-date">${escapeHtml(date)}</span></div>
-          <div style="font-weight:900;font-size:16px;margin:10px 0 8px">🏪 ${escapeHtml(s.shop_name)}</div>
-          <div class="log-meta" style="margin-bottom:12px">${s.phone ? `<span>📱 ${escapeHtml(s.phone)}</span>` : ""}${s.wilaya ? `<span>📍 ${escapeHtml(s.wilaya)}</span>` : ""}</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px">
-            <div style="text-align:center;padding:8px;background:var(--bg-secondary);border-radius:8px"><div style="font-size:16px;font-weight:900">${s.confirmed_complaints || 0}</div><div style="font-size:9px;color:var(--text-secondary);font-weight:800">بلاغات</div></div>
-            <div style="text-align:center;padding:8px;background:var(--bg-secondary);border-radius:8px"><div style="font-size:13px;font-weight:900">${formatMoney(s.total_deposit || 0)}</div><div style="font-size:9px;color:var(--text-secondary);font-weight:800">العربون</div></div>
-            <div style="text-align:center;padding:8px;background:var(--bg-secondary);border-radius:8px"><div style="font-size:13px;font-weight:900;color:${depositPct >= 50 ? "var(--danger)" : "var(--success)"}">${depositPct}%</div><div style="font-size:9px;color:var(--text-secondary);font-weight:800">مستهلك</div></div>
-          </div>
-          ${isBanned && s.ban_reason ? `<div style="font-size:12px;color:var(--danger);margin-top:10px;padding:8px 12px;background:var(--danger-soft);border-radius:8px">🚫 ${escapeHtml(s.ban_reason)}</div>` : ""}
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-            <button onclick="editDeposit('${s.id}','${escapeHtml(s.shop_name)}',${s.total_deposit || 0})" class="btn btn-primary" style="flex:1;min-width:100px;font-size:12px;padding:9px 12px">💰 العربون</button>
-            ${isBanned ? `<button onclick="unbanShop('${s.id}','${escapeHtml(s.shop_name)}')" class="btn btn-success" style="flex:1;min-width:100px;font-size:12px;padding:9px 12px">🔓 رفع الحظر</button>` : `<button onclick="banShop('${s.id}','${escapeHtml(s.shop_name)}')" class="btn btn-danger" style="flex:1;min-width:100px;font-size:12px;padding:9px 12px">🚫 حظر</button>`}
-            <button onclick="viewShopDetails('${s.user_id}')" class="btn btn-ghost" style="flex:1;min-width:100px;font-size:12px;padding:9px 12px">👁 تفاصيل</button>
-          </div>
-        </div>`;
-    }
-  });
-  container.innerHTML = html;
-}
-
-window.approveShop = async function(userId) {
-  if (!confirm("الموافقة على هذا المحل؟")) return;
-  const wilaya = prompt("📍 الولاية (اختياري):") || null;
-  const notes = prompt("📝 ملاحظات (اختياري):") || null;
-  try {
-    const { data, error } = await sb.rpc("admin_approve_shop", { p_user_id: userId, p_wilaya: wilaya, p_notes: notes });
-    if (error) throw error;
-    if (data.status !== "OK") { window.toast("خطأ: " + (data.message || ""), "error"); return; }
-    window.toast("✅ تم تفعيل المحل: " + data.shop_name, "success");
-    if (data.email) {
-      try {
-        const res = await fetch("/api/submit?type=shop-email", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ to_email: data.email, shop_name: data.shop_name, shop_email: data.email, shop_phone: data.phone || null, wilaya: wilaya, approved_date: new Date().toLocaleDateString("ar-DZ", { year: "numeric", month: "long", day: "numeric" }) }) });
-        const result = await res.json();
-        if (result.status === "OK") window.toast("📧 تم إرسال البريد إلى " + data.email, "success");
-        else { console.warn("Email send failed:", result); window.toast("⚠️ لم يُرسل البريد — لكن المحل مُفعّل", "warning"); }
-      } catch (emailErr) { console.warn("Email error:", emailErr); window.toast("⚠️ خطأ في إرسال البريد", "warning"); }
-    }
-    loadShops();
-  } catch (e) { window.toast("خطأ: " + e.message, "error"); }
-};
-
-window.rejectShop = async function(userId, shopName) {
-  const reason = prompt(`سبب رفض "${shopName}":`, "وثائق غير مكتملة");
-  if (!reason) return;
-  try {
-    const { data, error } = await sb.rpc("admin_reject_shop", { p_user_id: userId, p_reason: reason });
-    if (error) throw error;
-    if (data.status !== "OK") { window.toast("خطأ: " + (data.message || ""), "error"); return; }
-    window.toast("تم رفض: " + data.shop_name, "info");
-    loadShops();
-  } catch (e) { window.toast("خطأ: " + e.message, "error"); }
-};
-
-window.printShopTerms = async function(userId) {
-  const { data: terms } = await sb.from("shop_terms_acceptance").select("*").eq("user_id", userId).single();
-  if (!terms) { window.toast("لم يتم العثور على الموافقة", "error"); return; }
-  const date = terms.accepted_at ? new Date(terms.accepted_at).toLocaleString("fr-FR") : "—";
-  const w = window.open("", "_blank");
-  w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>موافقة شروط — ${escapeHtml(terms.shop_name)}</title><style>@page { margin: 20mm; } * { box-sizing: border-box; } body { font-family: -apple-system, Arial, sans-serif; padding: 20px; color: #0f172a; max-width: 800px; margin: 0 auto; } .toolbar { background: #0f172a; color: #fff; padding: 12px; text-align: center; border-radius: 8px; margin-bottom: 24px; } .toolbar button { background: #16a34a; color: #fff; border: 0; padding: 10px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; } .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 3px solid #0f172a; margin-bottom: 24px; } .header img { width: 60px; height: 60px; border-radius: 14px; } .header-info { text-align: left; font-size: 12px; color: #64748b; line-height: 1.7; } h1 { font-size: 22px; margin: 0; } h2 { font-size: 16px; margin: 24px 0 12px; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0; } .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; } .info-grid div { padding: 10px 14px; background: #f8fafc; border-radius: 8px; font-size: 13px; } .info-grid b { color: #64748b; display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; } .info-grid span { font-weight: 800; color: #0f172a; font-size: 14px; } .text-box { padding: 16px; background: #fef2f2; border: 1.5px solid #dc2626; border-radius: 10px; color: #991b1b; font-size: 13px; line-height: 1.8; margin: 20px 0; } .text-box b { color: #dc2626; } .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 11px; color: #94a3b8; } .signature { display: flex; justify-content: space-between; margin-top: 40px; } .signature div { width: 45%; } .signature b { display: block; font-size: 12px; margin-bottom: 40px; color: #64748b; } .signature hr { border: 0; border-top: 1px dashed #94a3b8; } @media print { .toolbar { display: none; } }</style></head><body><div class="toolbar"><button onclick="window.print()">🖨 طباعة / حفظ PDF</button></div><div class="header"><img src="/icon.png" alt="Original"><div class="header-info"><div style="font-size:18px;font-weight:900;color:#0f172a;">ORDIZ</div><div>📞 +213 556 339 415</div><div>📧 mepirf@gmail.com</div><div>🌐 ordiz.online</div></div></div><h1>📜 وثيقة الموافقة على شروط الاستخدام — للمحلات</h1><h2>معلومات المحل</h2><div class="info-grid"><div><b>اسم المحل</b><span>${escapeHtml(terms.shop_name)}</span></div><div><b>رقم الهاتف</b><span>${escapeHtml(terms.phone || "—")}</span></div><div><b>البريد الإلكتروني</b><span style="font-size:12px">${escapeHtml(terms.email)}</span></div><div><b>نسخة الشروط</b><span>${escapeHtml(terms.terms_version)}</span></div><div><b>تاريخ الموافقة</b><span style="font-size:12px">${escapeHtml(date)}</span></div><div><b>عنوان IP</b><span style="font-size:11px;font-family:monospace">${escapeHtml(terms.ip || "—")}</span></div></div><h2>نص التعهد</h2><p style="font-size:13.5px;line-height:1.9;color:#334155;">أُقرّ أنا الموقّع أدناه، صاحب المحل المذكور أعلاه، بأنني قد قرأت وفهمت كامل شروط الاستخدام الخاصة بمنصة <b>ORDIZ</b>، وأتعهّد بالالتزام بها دون استثناء، بما في ذلك:</p><ul style="font-size:13.5px;line-height:1.9;color:#334155;padding-right:20px;"><li>عدم بيع أي منتج مقلد يحمل ملصق ORDIZ.</li><li>دفع العربون المتفق عليه قبل استلام أي دفعة من الأكواد.</li><li>التعاون الكامل مع فرق التحقق عند أي شكوى.</li><li>تحمّل المسؤولية الكاملة لوحدي في حال الخروج عن أي بند.</li></ul><div class="text-box">⚠️ <b>تنبيه قانوني:</b> هذه الوثيقة عقد قانوني ملزم بين المحل و ORDIZ. في حال الخروج عن الشروط، يتحمّل صاحب المحل المسؤولية الكاملة لوحده، ويُعفى ORDIZ من أي مسؤولية قانونية أو تجارية أو جزائية.</div><div class="signature"><div><b>توقيع صاحب المحل:</b><hr></div><div><b>ختم / توقيع الإدارة:</b><hr></div></div><div class="footer">© ORDIZ — وثيقة قانونية صادرة بتاريخ ${escapeHtml(date)}</div></body></html>`);
-  w.document.close();
-};
-
-window.editDeposit = async function(shopId, shopName, currentDeposit) {
-  const newAmount = prompt(`💰 العربون الحالي: ${currentDeposit} دج\n\nأدخل المبلغ الجديد:`, currentDeposit);
-  if (newAmount === null) return;
-  const amount = parseFloat(newAmount);
-  if (isNaN(amount) || amount < 0) { window.toast("قيمة غير صحيحة", "error"); return; }
-  const reason = prompt("📝 السبب:", "تحديث العربون من الأدمن") || null;
-  try {
-    const { data, error } = await sb.rpc("admin_update_shop_deposit", { p_shop_id: shopId, p_new_deposit: amount, p_reason: reason });
-    if (error) throw error;
-    if (data.status !== "OK") { window.toast("خطأ: " + (data.message || ""), "error"); return; }
-    window.toast(`✅ العربون: ${data.new_total} دج`, "success");
-    loadShops();
-  } catch (e) { window.toast("خطأ: " + e.message, "error"); }
-};
-
-window.banShop = async function(shopId, shopName) {
-  const reason = prompt(`سبب حظر "${shopName}":`, "5 بلاغات مؤكدة أو استهلاك 50% من العربون");
-  if (!reason) return;
-  if (!confirm(`⚠️ تأكيد حظر "${shopName}"؟\n\nسيتم تعطيل كل الأكواد نهائيًا.`)) return;
-  try {
-    const { data, error } = await sb.rpc("admin_set_shop_status", { p_shop_id: shopId, p_new_status: "BANNED", p_reason: reason });
-    if (error) throw error;
-    if (data.status !== "OK") { window.toast("خطأ: " + (data.message || ""), "error"); return; }
-    window.toast("🚫 تم حظر: " + data.shop_name, "warning");
-    loadShops();
-  } catch (e) { window.toast("خطأ: " + e.message, "error"); }
-};
-
-window.unbanShop = async function(shopId, shopName) {
-  if (!confirm(`رفع الحظر عن "${shopName}"؟`)) return;
-  try {
-    const { data, error } = await sb.rpc("admin_set_shop_status", { p_shop_id: shopId, p_new_status: "ACTIVE", p_reason: null });
-    if (error) throw error;
-    if (data.status !== "OK") { window.toast("خطأ: " + (data.message || ""), "error"); return; }
-    window.toast("🔓 تم رفع الحظر: " + data.shop_name, "success");
-    loadShops();
-  } catch (e) { window.toast("خطأ: " + e.message, "error"); }
-};
-
-window.viewShopDetails = async function(userId) {
-  window.toast("🚧 قيد البناء", "info");
-};
-
-// ============================================================
-// 🚨 SHOP COMPLAINTS (شكاوى المحلات)
-// ============================================================
-async function loadShopComplaints() {
-  const container = $("complaintsList");
-  const statsBox = $("complaintsStats");
-  if (!container) return;
-
-  container.innerHTML = `<p class="muted">Chargement...</p>`;
-  if (statsBox) statsBox.innerHTML = "";
-
-  try {
-    const { data, error } = await sb.from("shop_complaints").select("*").order("created_at", { ascending: false }).limit(500);
-    if (error) throw error;
-
-    allComplaints = data || [];
-    const stats = {
-      total: allComplaints.length,
-      pending: allComplaints.filter(c => c.status === "PENDING").length,
-      reviewing: allComplaints.filter(c => c.status === "REVIEWING").length,
-      verified: allComplaints.filter(c => c.status === "VERIFIED" || c.status === "RESOLVED").length,
-      rejected: allComplaints.filter(c => c.status === "REJECTED").length
-    };
-
-    if (statsBox) {
-      statsBox.innerHTML = `
-        <div class="stat-card"><div class="stat-value">${stats.total}</div><div class="stat-label">الإجمالي</div></div>
-        <div class="stat-card"><div class="stat-value" style="color:var(--warning)">${stats.pending}</div><div class="stat-label">⏳ معلّقة</div></div>
-        <div class="stat-card"><div class="stat-value" style="color:var(--primary)">${stats.reviewing}</div><div class="stat-label">🔍 قيد المراجعة</div></div>
-        <div class="stat-card"><div class="stat-value" style="color:var(--success)">${stats.verified}</div><div class="stat-label">✅ مؤكدة</div></div>
-        <div class="stat-card"><div class="stat-value" style="color:var(--danger)">${stats.rejected}</div><div class="stat-label">❌ مرفوضة</div></div>`;
-    }
-
-    const badge = $("complaintsBadge");
-    if (badge) { if (stats.pending > 0) { badge.textContent = stats.pending; badge.style.display = "inline-block"; } else { badge.style.display = "none"; } }
-
-    fillComplaintsWilayaFilter();
-    renderShopComplaints();
-  } catch (err) {
-    console.error("loadShopComplaints error:", err);
-    container.innerHTML = `<p class="muted">Erreur : ${escapeHtml(err.message)}</p>`;
-  }
-}
-
-function fillComplaintsWilayaFilter() {
-  const sel = $("complaintsWilaya");
-  if (!sel) return;
-  const current = sel.value;
-  let html = `<option value="">📍 كل الولايات</option>`;
-  const wilayas = [...new Set(allComplaints.map(c => c.customer_wilaya).filter(Boolean))].sort();
-  wilayas.forEach(w => { html += `<option value="${escapeHtml(w)}">${escapeHtml(w)}</option>`; });
-  sel.innerHTML = html;
-  sel.value = current;
-}
-
-function renderShopComplaints() {
-  const container = $("complaintsList");
-  if (!container) return;
-
-  const search = ($("complaintsSearch")?.value || "").toLowerCase().trim();
-  let list = [];
-  if (currentComplaintsFilter === "pending") list = allComplaints.filter(c => c.status === "PENDING");
-  else if (currentComplaintsFilter === "reviewing") list = allComplaints.filter(c => c.status === "REVIEWING");
-  else if (currentComplaintsFilter === "verified") list = allComplaints.filter(c => c.status === "VERIFIED" || c.status === "RESOLVED");
-  else if (currentComplaintsFilter === "rejected") list = allComplaints.filter(c => c.status === "REJECTED");
-  else list = allComplaints;
-
-  if (search) { list = list.filter(c => { const code = (c.product_code || "").toLowerCase(); const name = (c.customer_name || "").toLowerCase(); const shop = (c.shop_name || "").toLowerCase(); const phone = (c.customer_phone || "").toLowerCase(); return code.includes(search) || name.includes(search) || shop.includes(search) || phone.includes(search); }); }
-  if (currentComplaintsWilaya) { list = list.filter(c => c.customer_wilaya === currentComplaintsWilaya); }
-  if (currentComplaintsDateRange !== "all") { const days = parseInt(currentComplaintsDateRange, 10); const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000); list = list.filter(c => c.created_at && new Date(c.created_at) >= since); }
-
-  if (list.length === 0) { container.innerHTML = `<p class="muted" style="text-align:center;padding:40px 0">لا توجد شكاوى في هذه الفئة</p>`; return; }
-
-  let html = "";
-  list.forEach(c => {
-    const date = c.created_at ? new Date(c.created_at).toLocaleString("fr-FR") : "—";
-    const statusMap = { PENDING: { cls: "warning", label: "⏳ معلّقة" }, REVIEWING: { cls: "success", label: "🔍 قيد المراجعة" }, VERIFIED: { cls: "success", label: "✅ مؤكدة" }, RESOLVED: { cls: "success", label: "✓ تم الحل" }, REJECTED: { cls: "danger", label: "❌ مرفوضة" } };
-    const st = statusMap[c.status] || { cls: "warning", label: c.status };
-    const images = c.images || [];
-    const firstImg = images[0] ? `<img src="${escapeHtml(images[0])}" alt="" style="width:100%;height:120px;object-fit:cover;border-radius:10px;">` : "";
-
-    html += `
-      <div class="log-row log-${st.cls}" style="padding:18px">
-        <div class="log-top"><span class="log-result log-result-${st.cls}">${st.label}</span><span class="log-date">${escapeHtml(date)}</span></div>
-        <div style="display:flex;gap:14px;margin-top:12px;flex-wrap:wrap;">
-          ${firstImg ? `<div style="flex:0 0 140px;max-width:140px;">${firstImg}</div>` : ""}
-          <div style="flex:1;min-width:200px;">
-            <div style="font-weight:900;font-size:15px;margin-bottom:6px">🏪 ${escapeHtml(c.shop_name || "غير مرتبط")}</div>
-            <div style="font-size:12.5px;margin-bottom:4px"><b>📦 الكود:</b> <span style="font-family:monospace">${escapeHtml(c.product_code || "—")}</span></div>
-            <div style="font-size:12.5px;margin-bottom:4px"><b>👤 الزبون:</b> ${escapeHtml(c.customer_name || "—")}</div>
-            <div style="font-size:12.5px;margin-bottom:4px"><b>📱 الهاتف:</b> ${escapeHtml(c.customer_phone || "—")}</div>
-            <div style="font-size:12.5px;margin-bottom:4px"><b>📍 الولاية:</b> ${escapeHtml(c.customer_wilaya || "—")}</div>
-            <div style="font-size:12.5px"><b>💰 السعر:</b> ${formatMoney(c.product_price || 0)}</div>
-          </div>
-        </div>
-        ${c.purchase_location ? `<div style="font-size:12px;color:var(--text-secondary);margin-top:10px;padding:8px 12px;background:var(--bg-secondary);border-radius:8px">📍 مكان الشراء: ${escapeHtml(c.purchase_location)}</div>` : ""}
-        ${c.notes ? `<div style="font-size:12px;color:var(--text-secondary);margin-top:8px;padding:8px 12px;background:var(--bg-secondary);border-radius:8px">💬 ${escapeHtml(c.notes)}</div>` : ""}
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
-          <button onclick="viewComplaint('${c.id}')" class="btn btn-primary" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">👁 عرض</button>
-          ${c.status === "PENDING" ? `<button onclick="updateComplaintStatus('${c.id}','REVIEWING')" class="btn btn-ghost" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">🔍 مراجعة</button>` : ""}
-          ${c.status !== "VERIFIED" && c.status !== "REJECTED" ? `<button onclick="updateComplaintStatus('${c.id}','VERIFIED')" class="btn btn-success" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">✅ تأكيد</button><button onclick="updateComplaintStatus('${c.id}','REJECTED')" class="btn btn-danger" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px">❌ رفض</button>` : ""}
-          <button onclick="deleteComplaint('${c.id}')" class="btn btn-ghost" style="flex:1;min-width:110px;font-size:12px;padding:9px 12px;background:var(--danger-soft);color:var(--danger)">🗑️ حذف</button>
-        </div>
-      </div>`;
-  });
-  container.innerHTML = html;
-}
-
-function exportComplaintsToExcel() {
-  if (!allComplaints || allComplaints.length === 0) { window.toast("لا توجد بيانات", "error"); return; }
-  const statusLabels = { PENDING: "معلقة", REVIEWING: "قيد المراجعة", VERIFIED: "مؤكدة", RESOLVED: "تم الحل", REJECTED: "مرفوضة" };
-  const search = ($("complaintsSearch")?.value || "").toLowerCase().trim();
-  let list = [...allComplaints];
-  if (currentComplaintsFilter === "pending") list = list.filter(c => c.status === "PENDING");
-  else if (currentComplaintsFilter === "reviewing") list = list.filter(c => c.status === "REVIEWING");
-  else if (currentComplaintsFilter === "verified") list = list.filter(c => c.status === "VERIFIED" || c.status === "RESOLVED");
-  else if (currentComplaintsFilter === "rejected") list = list.filter(c => c.status === "REJECTED");
-  if (search) { list = list.filter(c => (c.product_code || "").toLowerCase().includes(search) || (c.customer_name || "").toLowerCase().includes(search) || (c.shop_name || "").toLowerCase().includes(search) || (c.customer_phone || "").toLowerCase().includes(search)); }
-  if (currentComplaintsWilaya) { list = list.filter(c => c.customer_wilaya === currentComplaintsWilaya); }
-  if (currentComplaintsDateRange !== "all") { const days = parseInt(currentComplaintsDateRange, 10); const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000); list = list.filter(c => c.created_at && new Date(c.created_at) >= since); }
-  const rows = list.map(c => ({ "التاريخ": c.created_at ? new Date(c.created_at).toLocaleString("fr-FR") : "", "الحالة": statusLabels[c.status] || c.status, "المحل": c.shop_name || "", "الكود": c.product_code || "", "اسم الزبون": c.customer_name || "", "الهاتف": c.customer_phone || "", "الولاية": c.customer_wilaya || "", "السعر (دج)": c.product_price || 0, "مكان الشراء": c.purchase_location || "", "ملاحظات": c.notes || "", "عدد الصور": c.image_count || 0, "ملاحظات الأدمن": c.admin_notes || "" }));
-  downloadExcel(rows, "شكاوى_المحلات", "الشكاوى");
-  window.toast(`✅ تم تصدير ${rows.length} شكوى`, "success");
-}
-
-window.deleteComplaint = async function(id) {
-  if (!confirm("⚠️ حذف هذه الشكوى نهائيًا؟")) return;
-  try { const { error } = await sb.from("shop_complaints").delete().eq("id", id); if (error) throw error; window.toast("✅ تم الحذف", "success"); loadShopComplaints(); }
-  catch (e) { console.error("deleteComplaint error:", e); window.toast("خطأ: " + e.message, "error"); }
-};
-
-window.viewComplaint = async function(id) {
-  const complaint = allComplaints.find(c => c.id === id);
-  if (!complaint) { window.toast("الشكوى غير موجودة", "error"); return; }
-  const w = window.open("", "_blank");
-  const images = complaint.images || [];
-  const date = complaint.created_at ? new Date(complaint.created_at).toLocaleString("fr-FR") : "—";
-  const imagesHtml = images.map((img, i) => `<div style="margin-bottom:16px;"><div style="font-size:11px;font-weight:800;color:#64748b;margin-bottom:6px;">صورة ${i + 1}</div><img src="${escapeHtml(img)}" style="max-width:100%;border-radius:12px;border:1px solid #e2e8f0;cursor:pointer;" onclick="window.open(this.src,'_blank')"></div>`).join("");
-  w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>شكوى — ${escapeHtml(complaint.product_code || id.slice(0,8))}</title><style>@page { margin: 15mm; } * { box-sizing: border-box; } body { font-family: -apple-system, Arial, sans-serif; padding: 20px; color: #0f172a; max-width: 900px; margin: 0 auto; background: #f8fafc; } .toolbar { background: #0f172a; color: #fff; padding: 12px; text-align: center; border-radius: 8px; margin-bottom: 24px; position: sticky; top: 0; z-index: 10; } .toolbar button { background: #16a34a; color: #fff; border: 0; padding: 10px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; } .card { background: #fff; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); } h1 { font-size: 22px; margin: 0 0 8px; } h2 { font-size: 15px; margin: 0 0 14px; color: #64748b; letter-spacing: 1px; text-transform: uppercase; } .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px; } .info-row:last-child { border-bottom: 0; } .info-row b { color: #64748b; font-weight: 700; } .info-row span { font-weight: 800; } @media print { .toolbar { display: none; } body { background: #fff; padding: 0; } .card { box-shadow: none; } }</style></head><body><div class="toolbar"><button onclick="window.print()">🖨 طباعة</button></div><div class="card"><h1>🚨 شكوى على محل</h1><div style="color:#64748b;font-size:13px;margin-bottom:20px;">${escapeHtml(date)}</div><h2>معلومات المحل</h2><div class="info-row"><b>🏪 المحل:</b><span>${escapeHtml(complaint.shop_name || "—")}</span></div><div class="info-row"><b>📦 الكود:</b><span style="font-family:monospace">${escapeHtml(complaint.product_code || "—")}</span></div><div class="info-row"><b>💰 السعر:</b><span>${complaint.product_price || 0} دج</span></div>${complaint.purchase_location ? `<div class="info-row"><b>📍 مكان الشراء:</b><span>${escapeHtml(complaint.purchase_location)}</span></div>` : ""}</div><div class="card"><h2>معلومات الزبون</h2><div class="info-row"><b>👤 الاسم:</b><span>${escapeHtml(complaint.customer_name || "—")}</span></div><div class="info-row"><b>📱 الهاتف:</b><span>${escapeHtml(complaint.customer_phone || "—")}</span></div><div class="info-row"><b>📍 الولاية:</b><span>${escapeHtml(complaint.customer_wilaya || "—")}</span></div>${complaint.notes ? `<div class="info-row"><b>💬 ملاحظات:</b><span>${escapeHtml(complaint.notes)}</span></div>` : ""}</div><div class="card"><h2>📸 صور المنتج (${images.length})</h2>${imagesHtml || '<p style="color:#94a3b8;text-align:center;">لا توجد صور</p>'}</div></body></html>`);
-  w.document.close();
-};
-
-window.updateComplaintStatus = async function(id, newStatus) {
-  const statusLabels = { REVIEWING: "قيد المراجعة", VERIFIED: "مؤكدة", REJECTED: "مرفوضة", RESOLVED: "تم الحل" };
-  if (!confirm(`تغيير الحالة إلى "${statusLabels[newStatus] || newStatus}"؟`)) return;
-  let adminNotes = null;
-  let deductAmount = 0;
-  if (newStatus === "VERIFIED") {
-    const complaint = allComplaints.find(c => c.id === id);
-    adminNotes = prompt("ملاحظات (اختياري):") || null;
-    if (complaint && complaint.shop_id) {
-      const deductStr = prompt(`💰 خصم من عربون المحل (اختياري)\n\nالسعر المدفوع: ${complaint.product_price || 0} دج\nاقتراح (50%): ${Math.round((complaint.product_price || 0) * 0.5)} دج\n\nأدخل المبلغ أو 0 لعدم الخصم:`, "0");
-      deductAmount = parseFloat(deductStr) || 0;
-    }
-  } else if (newStatus === "REJECTED") { adminNotes = prompt("سبب الرفض (اختياري):") || null; }
-  try {
-    const { data, error } = await sb.rpc("admin_update_complaint", { p_complaint_id: id, p_new_status: newStatus, p_admin_notes: adminNotes, p_deduct_amount: deductAmount });
-    if (error) throw error;
-    if (data.status !== "OK") { window.toast("خطأ: " + (data.message || ""), "error"); return; }
-    window.toast(`✅ تم تحديث الحالة${deductAmount > 0 ? ` + خصم ${deductAmount} دج` : ""}`, "success");
-    loadShopComplaints();
-  } catch (e) { console.error("updateComplaintStatus error:", e); window.toast("خطأ: " + e.message, "error"); }
-};
-
-// ============================================================
-// 🏪 SHOP BATCH
-// ============================================================
-async function loadShopsForSelect() {
-  const sel = $("shopBatchSelect");
-  if (!sel) return;
-  try {
-    const { data, error } = await sb.from("verified_shops").select("id, shop_name, status").eq("status", "ACTIVE").order("shop_name");
-    if (error) throw error;
-    let html = `<option value="">-- اختر المحل --</option>`;
-    (data || []).forEach(s => { html += `<option value="${s.id}">🏪 ${escapeHtml(s.shop_name)}</option>`; });
-    sel.innerHTML = html;
-  } catch (e) { console.warn("loadShopsForSelect error:", e); }
-}
-
-async function checkBatchShopStatus(lot) {
-  try {
-    const { data, error } = await sb.from("qr_codes").select("is_shop_lot, shop_name, product_price").eq("lot", lot).limit(1).single();
-    if (error || !data) return;
-    const toggle = $("shopBatchToggle"); const fields = $("shopBatchFields"); const price = $("shopBatchPrice"); const sel = $("shopBatchSelect");
-    if (!toggle || !fields) return;
-    if (data.is_shop_lot === true) {
-      toggle.checked = true; fields.classList.remove("hidden");
-      if (price) price.value = data.product_price || "";
-      await loadShopsForSelect();
-      if (sel && data.shop_name) { const option = Array.from(sel.options).find(o => o.text.includes(data.shop_name)); if (option) sel.value = option.value; }
-    } else { toggle.checked = false; fields.classList.add("hidden"); if (price) price.value = ""; }
-  } catch (e) { console.warn("checkBatchShopStatus:", e); }
-}
-
-// ============================================================
 // PRINT (Labels + Invoice)
 // ============================================================
 function printLabels(codes, brand, lot, logoUrl) {
@@ -1638,13 +1239,6 @@ if (_lb) _lb.onclick = async () => { await sb.auth.signOut(); location.reload();
 const _rlb = $("refreshLogBtn"); if (_rlb) _rlb.onclick = () => loadLog();
 const _rfb = $("refreshFeedbackBtn"); if (_rfb) _rfb.onclick = () => loadFeedback();
 const _rbb = $("refreshBrandsBtn"); if (_rbb) _rbb.onclick = () => loadBrands();
-const _rsb = $("refreshShopsBtn"); if (_rsb) _rsb.onclick = () => loadShops();
-const _ecb = $("exportComplaintsBtn"); if (_ecb) _ecb.onclick = () => exportComplaintsToExcel();
-const _rcb = $("refreshComplaintsBtn"); if (_rcb) _rcb.onclick = () => loadShopComplaints();
-const _csi = $("complaintsSearch"); if (_csi) { let _cTimer; _csi.addEventListener("input", () => { clearTimeout(_cTimer); _cTimer = setTimeout(renderShopComplaints, 300); }); }
-const _cwb = $("complaintsWilaya"); if (_cwb) _cwb.addEventListener("change", () => { currentComplaintsWilaya = _cwb.value; renderShopComplaints(); });
-const _cdt = $("complaintsDate"); if (_cdt) _cdt.addEventListener("change", () => { currentComplaintsDateRange = _cdt.value; renderShopComplaints(); });
-const _ssi = $("shopsSearch"); if (_ssi) { let _shopTimer; _ssi.addEventListener("input", () => { clearTimeout(_shopTimer); _shopTimer = setTimeout(renderShopsList, 300); }); }
 const _rvb = $("refreshVisitorsBtn"); if (_rvb) _rvb.onclick = () => loadVisitors();
 const _rfb2 = $("refreshFakesBtn"); if (_rfb2) _rfb2.onclick = () => { loadFakes(); loadFakesBadge(); };
 const _rfaq = $("refreshFaqBtn"); if (_rfaq) _rfaq.onclick = () => loadFAQ();
@@ -1662,9 +1256,7 @@ document.querySelectorAll(".tabs .tab").forEach(t => {
     else if (parent.id === "messagesTabs") { currentMessagesFilter = t.dataset.tab; loadMessages(); }
     else if (parent.id === "visitorTabs") { currentVisitorFilter = t.dataset.tab; loadVisitors(); }
     else if (parent.id === "fakesTabs") { currentFakesFilter = t.dataset.tab; loadFakes(); }
-    else if (parent.id === "shopsTabs") { currentShopsTab = t.dataset.tab; renderShopsList(); }
-    else if (parent.id === "complaintsTabs") { currentComplaintsFilter = t.dataset.tab; renderShopComplaints(); }
-  });
+        });
 });
 
 // ============================================================
@@ -1953,9 +1545,6 @@ if (_llb) _llb.onclick = async () => {
     finally { _save.disabled = false; _save.textContent = "💾 حفظ التعديلات"; }
   };
 
-  const shopBox = $("shopBatchBox");
-  if (shopBox) shopBox.classList.remove("hidden");
-  checkBatchShopStatus(lot);
 };
 
 function showBatchStatus(statuses) {
@@ -2017,92 +1606,6 @@ if (_disBtn) _disBtn.onclick = async () => {
     else window.toast("Erreur : " + (result.message || ""), "error");
   } catch (e) { window.toast("Erreur : " + e.message, "error"); }
 };
-
-// 🏪 Shop batch handlers
-const _sbt = $("shopBatchToggle");
-if (_sbt) {
-  _sbt.addEventListener("change", async () => {
-    const fields = $("shopBatchFields");
-    if (!fields) return;
-    if (_sbt.checked) {
-      fields.classList.remove("hidden");
-      await loadShopsForSelect();
-    } else {
-      fields.classList.add("hidden");
-    }
-  });
-}
-
-const _asb = $("applyShopBatchBtn");
-if (_asb) {
-  _asb.onclick = async () => {
-    if (!loadedLot) { window.toast("حمّل دفعة أولًا", "error"); return; }
-    const shopId = $("shopBatchSelect")?.value;
-    const price = parseFloat($("shopBatchPrice")?.value || 0);
-
-    if (!shopId) { window.toast("اختر المحل", "error"); return; }
-    if (!price || price <= 0) { window.toast("أدخل سعرًا صحيحًا", "error"); return; }
-
-    _asb.disabled = true;
-    _asb.textContent = "⏳...";
-
-    try {
-      const { data, error } = await sb.rpc("admin_mark_shop_batch", {
-        p_lot: loadedLot,
-        p_shop_id: shopId,
-        p_product_price: price
-      });
-
-      if (error) throw error;
-      if (data.status !== "OK") {
-        window.toast("خطأ: " + (data.message || ""), "error");
-        return;
-      }
-
-      window.toast(`✅ تم الربط: ${data.updated} كود → ${data.shop_name}`, "success");
-
-      const resBox = $("shopBatchResult");
-      if (resBox) {
-        resBox.className = "result success";
-        resBox.innerHTML = `<h2>✅ تم الربط</h2><p>${data.updated} كود → ${escapeHtml(data.shop_name)}</p><p>السعر: ${formatMoney(data.product_price)}</p>`;
-      }
-    } catch (e) {
-      window.toast("خطأ: " + e.message, "error");
-    } finally {
-      _asb.disabled = false;
-      _asb.textContent = "✅ تطبيق على كل الأكواد";
-    }
-  };
-}
-
-const _rsb2 = $("removeShopBatchBtn");
-if (_rsb2) {
-  _rsb2.onclick = async () => {
-    if (!loadedLot) return;
-    if (!confirm("إلغاء ربط هذه الدفعة بالمحل؟")) return;
-
-    _rsb2.disabled = true;
-    try {
-      const { data, error } = await sb.rpc("admin_unmark_shop_batch", {
-        p_lot: loadedLot
-      });
-
-      if (error) throw error;
-      if (data.status !== "OK") {
-        window.toast("خطأ: " + (data.message || ""), "error");
-        return;
-      }
-
-      window.toast(`✅ أُلغي الربط عن ${data.updated} كود`, "info");
-      if ($("shopBatchToggle")) $("shopBatchToggle").checked = false;
-      if ($("shopBatchFields")) $("shopBatchFields").classList.add("hidden");
-    } catch (e) {
-      window.toast("خطأ: " + e.message, "error");
-    } finally {
-      _rsb2.disabled = false;
-    }
-  };
-}
 
 const _plb = $("printLotBtn");
 if (_plb) _plb.onclick = async () => {
@@ -2218,7 +1721,6 @@ if (_exportAll) _exportAll.onclick = async () => {
       "Lot": r.lot || "",
       "Statut": r.secret_status || "",
       "Prix": r.product_price ?? "",
-      "Boutique": r.shop_name || "",
       "Créé le": r.created_at ? new Date(r.created_at).toLocaleString("fr-DZ") : ""
     }));
 
