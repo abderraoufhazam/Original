@@ -31,6 +31,7 @@ res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   const action = (req.query && req.query.action) || (req.body && req.body.action);
 
   if (action === 'create') return handleCreate(req, res);
+  if (action === 'update-lot') return handleUpdateLot(req, res);
   if (action === 'print')  return handlePrint(req, res);
   if (action === 'export') return handleExportCodes(req, res);
   if (action === 'stats')  return handleWilayaStats(req, res);
@@ -48,6 +49,83 @@ res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 // ============================================================
 // ACTION 1: CREATE â€” Ø¥Ù†Ø´Ø§Ø¡ Ø¯ÙØ¹Ø© Ø¬Ø¯ÙŠØ¯Ø©
 // ============================================================
+
+// ============================================================
+// ACTION: UPDATE-LOT — تعديل معلومات لوط (أدمن أو مالك العلامة)
+// ============================================================
+async function handleUpdateLot(req, res) {
+  try {
+    const {
+      lot, brand, product_name, reference, manufacture_date, expiry_date,
+      description, product_image, logo_url, instagram_url, facebook_url, tiktok_url,
+      access_token
+    } = req.body || {};
+
+    if (!lot || !lot.trim()) return res.status(400).json({ status: 'ERROR', message: 'lot obligatoire' });
+    if (!brand || !brand.trim()) return res.status(400).json({ status: 'ERROR', message: 'brand obligatoire' });
+    if (!access_token) return res.status(401).json({ status: 'ERROR', message: 'غير مصادق عليه' });
+
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      return res.status(500).json({ status: 'ERROR', message: 'Configuration manquante' });
+    }
+
+    const userRes = await fetch(SUPABASE_URL + '/auth/v1/user', {
+      headers: { 'apikey': SUPABASE_SERVICE_ROLE_KEY, 'Authorization': 'Bearer ' + access_token }
+    });
+    if (!userRes.ok) return res.status(401).json({ status: 'ERROR', message: 'Token invalide' });
+
+    const userData = await userRes.json();
+    const userEmail = String(userData.email || '').toLowerCase();
+    const userBrand = String((userData.user_metadata && userData.user_metadata.brand_name) || '').trim().toLowerCase();
+    const isAdmin = ADMIN_EMAILS.includes(userEmail);
+    const isOwner = userBrand !== '' && userBrand === brand.trim().toLowerCase();
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({ status: 'ERROR', message: 'لا تملك صلاحية تعديل هذه الدفعة.' });
+    }
+
+    const fields = {
+      product_name: product_name && product_name.trim ? product_name.trim() || null : null,
+      reference: reference && reference.trim ? reference.trim() || null : null,
+      manufacture_date: manufacture_date || null,
+      expiry_date: expiry_date || null,
+      description: description && description.trim ? description.trim() || null : null,
+      product_image: product_image || null,
+      logo_url: logo_url || null,
+      instagram_url: instagram_url || null,
+      facebook_url: facebook_url || null,
+      tiktok_url: tiktok_url || null
+    };
+
+    const updRes = await fetch(
+      SUPABASE_URL + '/rest/v1/qr_codes?lot=eq.' + encodeURIComponent(lot.trim()) + '&brand=eq.' + encodeURIComponent(brand.trim()),
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_SERVICE_ROLE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_SERVICE_ROLE_KEY,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(fields)
+      }
+    );
+
+    if (!updRes.ok) {
+      const errText = await updRes.text();
+      console.error('update-lot error:', updRes.status, errText.slice(0, 200));
+      return res.status(500).json({ status: 'ERROR', message: 'فشل تحديث الدفعة', detail: errText.slice(0, 200) });
+    }
+
+    return res.status(200).json({ status: 'OK', message: 'تم تحديث معلومات الدفعة.' });
+  } catch (e) {
+    console.error('handleUpdateLot error:', e);
+    return res.status(500).json({ status: 'ERROR', message: String(e).slice(0, 200) });
+  }
+}
+
+
 async function handleCreate(req, res) {
   try {
     const {
