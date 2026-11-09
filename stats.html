@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>إحصائيات — ORDIZ</title>
+  <meta name="description" content="إحصائيات مباشرة لمنصة ORDIZ: عدد التحققات والمنتجات الأصلية والبلاغات حسب الولاية.">
+  <link rel="canonical" href="https://www.ordiz.online/stats">
+  <link rel="icon" type="image/png" href="/icon.png">
+  <link rel="stylesheet" href="/site-layout.css">
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: 'Tajawal', sans-serif; background: var(--bg, #f4f6fb); color: var(--text, #001F52); }
+    .stats-hero { text-align:center; padding:48px 22px 20px; }
+    .stats-hero h1 { font-size: clamp(26px,5vw,42px); font-weight:800; margin:0 0 8px; }
+    .stats-hero p { color: var(--text-muted,#64748b); font-size:15px; margin:0; }
+    .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; max-width:1080px; margin:28px auto 0; padding:0 22px; }
+    .card { background: var(--card,#fff); border:1px solid var(--border,#e2e8f0); border-radius:16px; padding:22px; text-align:center; box-shadow:0 4px 20px -8px rgba(0,31,82,.08); }
+    .card .num { font-size:34px; font-weight:800; color:#0060C0; line-height:1; }
+    .card .lbl { margin-top:8px; font-size:13.5px; color:var(--text-muted,#64748b); font-weight:600; }
+    .rank-wrap { max-width:1080px; margin:32px auto 40px; padding:0 22px; }
+    .rank-wrap h2 { font-size:20px; font-weight:800; margin:0 0 14px; }
+    .rank { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
+    .rank li { display:flex; align-items:center; gap:12px; background:var(--card,#fff); border:1px solid var(--border,#e2e8f0); border-radius:12px; padding:12px 16px; }
+    .rank .pos { width:26px; height:26px; border-radius:50%; background:rgba(0,96,192,.12); color:#0060C0; font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+    .rank .wname { flex:1; font-weight:700; font-size:14.5px; }
+    .rank .bar { height:10px; border-radius:6px; background:linear-gradient(90deg,#0060C0,#1D7BD0); min-width:2px; }
+    .rank .wcnt { flex:0 0 auto; font-weight:800; color:#0060C0; font-size:14px; min-width:48px; text-align:left; }
+    .empty { text-align:center; color:var(--text-muted,#64748b); padding:30px; }
+    html.dark body { background: var(--bg,#0b1a2a); color: var(--text,#e7f0f8); }
+    html.dark .card, html.dark .rank li { background: rgba(20,40,60,.6); border-color: rgba(255,255,255,.08); }
+    .skeleton { animation:pulse 1.4s infinite; }
+    @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+  </style>
+</head>
+<body>
+<div id="site-header"></div>
+<nav class="bcrumbs" aria-label="مسار التنقل"><a href="/">الرئيسية</a><span class="sep">›</span><span class="cur">الإحصائيات</span></nav>
+
+<main>
+  <section class="stats-hero">
+    <h1>📊 إحصائيات المنصة</h1>
+    <p>أرقام حيّة من عمليات التحقق والبلاغات على ORDIZ</p>
+  </section>
+
+  <section class="cards">
+    <div class="card"><div class="num" id="cTotal">—</div><div class="lbl">إجمالي التحققات</div></div>
+    <div class="card"><div class="num" id="cOriginal">—</div><div class="lbl">منتجات أصلية</div></div>
+    <div class="card"><div class="num" id="cFake">—</div><div class="lbl">بلاغات تقليد</div></div>
+    <div class="card"><div class="num" id="cBrands">—</div><div class="lbl">علامات محمية</div></div>
+  </section>
+
+  <section class="rank-wrap">
+    <h2>🏆 الأكثر تحققاً حسب الولاية</h2>
+    <ul class="rank" id="rank"></ul>
+  </section>
+</main>
+
+<div id="site-footer"></div>
+<script src="/supabase-client.js"></script>
+<script src="/site-layout.js"></script>
+<script>
+(function () {
+  function fmt(n) {
+    n = Number(n || 0);
+    if (n >= 1000000) return (n/1000000).toFixed(1).replace(/\.0$/,'') + 'M';
+    if (n >= 1000) return (n/1000).toFixed(1).replace(/\.0$/,'') + 'K';
+    return String(n);
+  }
+  function set(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; }
+
+  async function load() {
+    try {
+      if (typeof window.sb === 'undefined') throw new Error('sb missing');
+      const { data, error } = await window.sb.rpc('get_public_stats');
+      if (error) throw error;
+
+      set('cTotal', fmt(data.total_verifications));
+      set('cOriginal', fmt(data.original));
+      set('cFake', fmt(data.fake_reports));
+      set('cBrands', fmt(data.brands));
+
+      const wilayas = Array.isArray(data.wilayas) ? data.wilayas : [];
+      const rank = document.getElementById('rank');
+      if (!wilayas.length) {
+        rank.innerHTML = '<div class="empty">لا توجد بيانات بعد — عُد قريباً.</div>';
+        return;
+      }
+      const max = wilayas[0].n || 1;
+      rank.innerHTML = wilayas.slice(0, 10).map(function (w, i) {
+        return '<li><span class="pos">' + (i+1) + '</span>' +
+               '<span class="wname">' + (w.wilaya || '—') + '</span>' +
+               '<span class="bar" style="width:' + Math.max(4, Math.round((w.n/max)*100)) + '%"></span>' +
+               '<span class="wcnt">' + fmt(w.n) + '</span></li>';
+      }).join('');
+    } catch (e) {
+      console.warn('stats load error:', e);
+      document.getElementById('rank').innerHTML = '<div class="empty">تعذّر تحميل الإحصائيات حالياً.</div>';
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', load);
+  else load();
+})();
+</script>
+</body>
+</html>

@@ -24,6 +24,7 @@
         { id: "terms",   url: "/terms",   ar: "📜 الشروط",   fr: "📜 Conditions",     en: "📜 Terms" }
       ]
     },
+    { id: "stats",   url: "/stats",        ar: "الإحصائيات", fr: "Statistiques",      en: "Stats" },
     { id: "report",   url: "/report",        ar: "الإبلاغ",    fr: "Signaler",          en: "Report" },
     { id: "contact",  url: "/contact",       ar: "اتصل بنا",   fr: "Contact",           en: "Contact" }
   ];
