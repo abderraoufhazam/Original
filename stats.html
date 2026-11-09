@@ -30,29 +30,27 @@
     .empty { text-align:center; color:var(--text-muted,#64748b); padding:30px; }
     html.dark body { background: var(--bg,#0b1a2a); color: var(--text,#e7f0f8); }
     html.dark .card, html.dark .rank li { background: rgba(20,40,60,.6); border-color: rgba(255,255,255,.08); }
-    .skeleton { animation:pulse 1.4s infinite; }
-    @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
   </style>
 </head>
 <body>
 <div id="site-header"></div>
-<nav class="bcrumbs" aria-label="مسار التنقل"><a href="/">الرئيسية</a><span class="sep">›</span><span class="cur">الإحصائيات</span></nav>
+<nav class="bcrumbs" aria-label="مسار التنقل"><a href="/">الرئيسية</a><span class="sep">›</span><span class="cur" id="crumb">الإحصائيات</span></nav>
 
 <main>
   <section class="stats-hero">
-    <h1>📊 إحصائيات المنصة</h1>
-    <p>أرقام حيّة من عمليات التحقق والبلاغات على ORDIZ</p>
+    <h1 data-i18n="heroTitle">📊 إحصائيات المنصة</h1>
+    <p data-i18n="heroSub">أرقام حيّة من عمليات التحقق والبلاغات على ORDIZ</p>
   </section>
 
   <section class="cards">
-    <div class="card"><div class="num" id="cTotal">—</div><div class="lbl">إجمالي التحققات</div></div>
-    <div class="card"><div class="num" id="cOriginal">—</div><div class="lbl">منتجات أصلية</div></div>
-    <div class="card"><div class="num" id="cFake">—</div><div class="lbl">بلاغات تقليد</div></div>
-    <div class="card"><div class="num" id="cBrands">—</div><div class="lbl">علامات محمية</div></div>
+    <div class="card"><div class="num" id="cTotal">—</div><div class="lbl" data-i18n="total">إجمالي التحققات</div></div>
+    <div class="card"><div class="num" id="cOriginal">—</div><div class="lbl" data-i18n="original">منتجات أصلية</div></div>
+    <div class="card"><div class="num" id="cFake">—</div><div class="lbl" data-i18n="fake">بلاغات تقليد</div></div>
+    <div class="card"><div class="num" id="cBrands">—</div><div class="lbl" data-i18n="brands">علامات محمية</div></div>
   </section>
 
   <section class="rank-wrap">
-    <h2>🏆 الأكثر تحققاً حسب الولاية</h2>
+    <h2 data-i18n="rankTitle">🏆 الأكثر تحققاً حسب الولاية</h2>
     <ul class="rank" id="rank"></ul>
   </section>
 </main>
@@ -62,6 +60,60 @@
 <script src="/site-layout.js"></script>
 <script>
 (function () {
+  var I18N = {
+    ar: {
+      title: "إحصائيات — ORDIZ",
+      crumb: "الإحصائيات",
+      heroTitle: "📊 إحصائيات المنصة",
+      heroSub: "أرقام حيّة من عمليات التحقق والبلاغات على ORDIZ",
+      total: "إجمالي التحققات", original: "منتجات أصلية",
+      fake: "بلاغات تقليد", brands: "علامات محمية",
+      rankTitle: "🏆 الأكثر تحققاً حسب الولاية",
+      empty: "لا توجد بيانات بعد — عُد قريباً.",
+      error: "تعذّر تحميل الإحصائيات حالياً."
+    },
+    fr: {
+      title: "Statistiques — ORDIZ",
+      crumb: "Statistiques",
+      heroTitle: "📊 Statistiques de la plateforme",
+      heroSub: "Chiffres en direct des vérifications et signalements ORDIZ",
+      total: "Vérifications totales", original: "Produits authentiques",
+      fake: "Signalements de contrefaçon", brands: "Marques protégées",
+      rankTitle: "🏆 Les plus vérifiées par wilaya",
+      empty: "Pas encore de données — revenez bientôt.",
+      error: "Impossible de charger les statistiques."
+    },
+    en: {
+      title: "Stats — ORDIZ",
+      crumb: "Stats",
+      heroTitle: "📊 Platform stats",
+      heroSub: "Live numbers from ORDIZ verifications and reports",
+      total: "Total verifications", original: "Genuine products",
+      fake: "Fake reports", brands: "Protected brands",
+      rankTitle: "🏆 Most verified by wilaya",
+      empty: "No data yet — check back soon.",
+      error: "Could not load stats right now."
+    }
+  };
+
+  var lang = localStorage.getItem("lang") || "ar";
+  if (["ar","fr","en"].indexOf(lang) === -1) {
+    var bl = (navigator.language || "ar").toLowerCase().slice(0,2);
+    lang = (bl === "fr" || bl === "en") ? bl : "ar";
+  }
+  var S = I18N[lang] || I18N.ar;
+
+  function t(k) { return S[k] || I18N.ar[k] || k; }
+
+  document.title = S.title;
+  document.documentElement.lang = lang;
+  document.documentElement.dir = (lang === "ar") ? "rtl" : "ltr";
+  var crumb = document.getElementById("crumb"); if (crumb) crumb.textContent = S.crumb;
+  document.querySelectorAll("[data-i18n]").forEach(function (el) {
+    var k = el.getAttribute("data-i18n");
+    if (t(k)) el.textContent = t(k);
+  });
+
   function fmt(n) {
     n = Number(n || 0);
     if (n >= 1000000) return (n/1000000).toFixed(1).replace(/\.0$/,'') + 'M';
@@ -84,7 +136,7 @@
       const wilayas = Array.isArray(data.wilayas) ? data.wilayas : [];
       const rank = document.getElementById('rank');
       if (!wilayas.length) {
-        rank.innerHTML = '<div class="empty">لا توجد بيانات بعد — عُد قريباً.</div>';
+        rank.innerHTML = '<div class="empty">' + t('empty') + '</div>';
         return;
       }
       const max = wilayas[0].n || 1;
@@ -96,7 +148,7 @@
       }).join('');
     } catch (e) {
       console.warn('stats load error:', e);
-      document.getElementById('rank').innerHTML = '<div class="empty">تعذّر تحميل الإحصائيات حالياً.</div>';
+      document.getElementById('rank').innerHTML = '<div class="empty">' + t('error') + '</div>';
     }
   }
 

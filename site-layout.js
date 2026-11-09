@@ -48,7 +48,7 @@
       about: "من نحن", faq: "الأسئلة", report: "الإبلاغ",
       team: "الفريق", "case-studies": "دراسات الحالة",
       privacy: "الخصوصية", terms: "الشروط",
-      legal: "قانوني", contact: "اتصل بنا",
+      legal: "قانوني", contact: "اتصل بنا", stats: "الإحصائيات",
 
       loginBtn: "دخول",
       signupBtn: "تسجيل",
@@ -77,7 +77,7 @@
       about: "À propos", faq: "FAQ", report: "Signaler",
       team: "Équipe", "case-studies": "Cas d'étude",
       privacy: "Confidentialité", terms: "Conditions",
-      legal: "Légal", contact: "Contact",
+      legal: "Légal", contact: "Contact", stats: "Statistiques",
 
       loginBtn: "Connexion",
       signupBtn: "Inscription",
@@ -106,7 +106,7 @@
       about: "About", faq: "FAQ", report: "Report",
       team: "Team", "case-studies": "Case studies",
       privacy: "Privacy", terms: "Terms",
-      legal: "Legal", contact: "Contact",
+      legal: "Legal", contact: "Contact", stats: "Stats",
 
       loginBtn: "Login",
       signupBtn: "Sign up",
