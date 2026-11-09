@@ -1,0 +1,99 @@
+/* ============================================================
+   ORDIZ — Theme V2 (تنسيق عام فاخر لكل الصفحات)
+   يُحمَّل تلقائياً عبر site-layout.js — لا يمسّ المحتوى
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Space+Grotesk:wght@400;600;700&display=swap');
+
+:root{
+  --v2-navy:#000c18; --v2-navy2:#00172d; --v2-blue:#0070e0; --v2-blue2:#40a8ff;
+  --v2-green:#19f095; --v2-green2:#0cb877; --v2-muted:#8ba7c4; --v2-stroke:rgba(255,255,255,.09);
+}
+
+/* ─── الخلفية الداكنة + الهالات ─── */
+body.v2{
+  background:#000c18 !important;
+  color:#eaf4ff !important;
+  font-family:'Tajawal',sans-serif !important;
+}
+body.v2 .page-content, body.v2 main, body.v2 section{
+  position:relative; z-index:1;
+}
+
+/* حاوية الهالات والجسيمات (تحقنها JS) */
+.v2-bg{position:fixed;inset:0;z-index:-3;pointer-events:none;
+  background:
+    radial-gradient(1300px 750px at 80% -10%,#00325f 0%,transparent 55%),
+    radial-gradient(950px 620px at 8% 22%,#01203a 0%,transparent 50%),
+    linear-gradient(160deg,#000c18 0%,#00172d 60%,#000c18 100%)}
+.v2-aurora{position:fixed;inset:0;z-index:-2;overflow:hidden;filter:blur(95px);pointer-events:none}
+.v2-aurora span{position:absolute;border-radius:50%;opacity:.5;animation:v2float 16s ease-in-out infinite}
+.v2-aurora .a1{width:560px;height:560px;background:#0060ff;top:-12%;left:-8%}
+.v2-aurora .a2{width:480px;height:480px;background:#0fff9c;top:32%;right:-14%;animation-delay:-5s}
+.v2-aurora .a3{width:400px;height:400px;background:#0060c0;bottom:-12%;left:28%;animation-delay:-11s}
+@keyframes v2float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(50px,-60px) scale(1.15)}}
+.v2-grid,.v2-particles,.v2-spot{position:fixed;inset:0;z-index:-1;pointer-events:none}
+.v2-grid{opacity:.16}
+.v2-spot{background:radial-gradient(700px 700px at var(--mx,50%) var(--my,50%),rgba(0,120,255,.10),transparent 60%)}
+.v2-progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:99;background:linear-gradient(90deg,var(--v2-green),var(--v2-blue2));box-shadow:0 0 16px var(--v2-green)}
+
+/* ─── العناوين المتدرجة ─── */
+body.v2 h1, body.v2 h2.section-title, body.v2 .section-title{
+  font-family:'Tajawal',sans-serif !important;
+}
+body.v2 .section-title{
+  background:linear-gradient(120deg,var(--v2-green),var(--v2-blue2),var(--v2-green));
+  background-size:200% auto;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:v2grad 6s linear infinite;
+}
+@keyframes v2grad{to{background-position:200% center}}
+
+/* ─── البطاقات زجاجية ─── */
+body.v2 .card, body.v2 .feature-landing, body.v2 .step-landing,
+body.v2 .report-card-landing, body.v2 .faq-item, body.v2 .plan-card,
+body.v2 .feature-card, body.v2 .pricing-card{
+  background:rgba(255,255,255,.05) !important;
+  border:1px solid var(--v2-stroke) !important;
+  backdrop-filter:blur(14px);
+  transition:transform .3s, box-shadow .3s, border-color .3s;
+}
+body.v2 .card:hover, body.v2 .feature-landing:hover, body.v2 .step-landing:hover,
+body.v2 .feature-card:hover, body.v2 .pricing-card:hover{
+  transform:translateY(-6px);
+  border-color:rgba(25,240,149,.4) !important;
+  box-shadow:0 24px 60px -24px rgba(0,0,0,.6);
+}
+
+/* ─── الأزرار ─── */
+body.v2 .site-btn-green, body.v2 .site-btn-primary, body.v2 button[type="submit"],
+body.v2 .btn-primary{
+  position:relative; overflow:hidden;
+  background:linear-gradient(135deg,var(--v2-green),var(--v2-green2)) !important;
+  color:#000c18 !important; border:0 !important;
+  box-shadow:0 10px 36px -8px rgba(25,240,149,.5);
+}
+body.v2 .site-btn-green::after, body.v2 .btn-primary::after{
+  content:"";position:absolute;top:0;left:-90%;width:40%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);
+  transform:skewX(-20deg);animation:v2shine 3.4s infinite;
+}
+@keyframes v2shine{0%{left:-90%}60%,100%{left:130%}}
+
+/* ─── الهيدر والفوتر داكنان زجاجيان ─── */
+body.v2 #site-header, body.v2 #site-footer{
+  background:transparent !important;
+}
+body.v2 .site-header-inner{
+  background:rgba(10,25,42,.55) !important; backdrop-filter:blur(20px);
+  border:1px solid var(--v2-stroke); border-radius:18px;
+}
+
+/* ─── شريط التمرير ─── */
+body.v2::-webkit-scrollbar{width:11px}
+body.v2::-webkit-scrollbar-track{background:#000c18}
+body.v2::-webkit-scrollbar-thumb{background:linear-gradient(var(--v2-green),var(--v2-blue));border-radius:10px}
+
+/* ─── ظهور تدريجي ─── */
+.v2-reveal{opacity:0;transform:translateY(34px);transition:.8s cubic-bezier(.2,.7,.3,1)}
+.v2-reveal.v2-in{opacity:1;transform:none}
+.v2-tilt{transform-style:preserve-3d;transition:transform .15s ease-out}

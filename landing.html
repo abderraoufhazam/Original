@@ -1,1142 +1,453 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <link rel="canonical" href="https://www.ordiz.online/">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>ORDIZ — حماية المنتجات من التقليد</title>
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="ORDIZ">
-<meta property="og:title" content="ORDIZ — حماية المنتجات من التقليد">
-<meta property="og:description" content="نظام جزائري احترافي للتحقق من أصالة المنتجات عبر QR وكود مخفي.">
-<meta property="og:url" content="https://www.ordiz.online/">
-<meta property="og:image" content="https://www.ordiz.online/og-image.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:locale" content="ar_DZ">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="ORDIZ — حماية المنتجات من التقليد">
-<meta name="twitter:description" content="نظام جزائري احترافي للتحقق من أصالة المنتجات عبر QR وكود مخفي.">
-<meta name="twitter:image" content="https://www.ordiz.online/og-image.png">
-
-  <meta name="description" content="نظام جزائري احترافي للتحقق من أصالة المنتجات عبر QR وكود مخفي.">
-  <link rel="icon" type="image/svg+xml" href="/icon.png">
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0060C0">
-
-  <link rel="stylesheet" href="/site-layout.css">
-  <link rel="stylesheet" href="/landing-fx.css">
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-  <script>window.SITE_PAGE = "home";</script>
-
-  <script>
-    (function() {
-      const isDark = localStorage.getItem("theme") === "dark";
-      if (isDark) document.documentElement.classList.add("dark");
-
-      const lang = localStorage.getItem("lang") || "ar";
-      document.documentElement.lang = lang;
-      document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-    })();
-  </script>
-
-  <style>
-    .landing-hero {
-      background: linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-navy-light) 100%);
-      color: #fff;
-      padding: 70px 0 80px;
-      position: relative;
-      overflow: hidden;
-    }
-    .landing-hero::before {
-      content: '';
-      position: absolute;
-      top: -100px; right: -100px;
-      width: 500px; height: 500px;
-      background: radial-gradient(circle, rgba(22, 169, 107, 0.35) 0%, transparent 70%);
-      border-radius: 50%;
-      pointer-events: none;
-    }
-    .landing-hero::after {
-      content: '';
-      position: absolute;
-      bottom: -150px; left: -150px;
-      width: 400px; height: 400px;
-      background: radial-gradient(circle, rgba(0, 96, 192, 0.25) 0%, transparent 70%);
-      border-radius: 50%;
-      pointer-events: none;
-    }
-    .landing-hero-inner {
-      position: relative;
-      z-index: 1;
-      max-width: 860px;
-      margin: 0 auto;
-      text-align: center;
-    }
-    .landing-hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 18px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 100px;
-      font-size: 12.5px;
-      font-weight: 800;
-      margin-bottom: 24px;
-    }
-    .landing-hero h1 {
-      font-size: clamp(32px, 6vw, 58px);
-      font-weight: 900;
-      line-height: 1.1;
-      letter-spacing: -1.5px;
-      margin: 0 0 22px;
-    }
-    .landing-hero h1 .highlight {
-      background: linear-gradient(135deg, #16A96B, #45C98A);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .landing-hero p.lead {
-      font-size: clamp(15px, 2vw, 18px);
-      color: rgba(255, 255, 255, 0.85);
-      line-height: 1.7;
-      margin: 0 auto 36px;
-      max-width: 700px;
-    }
-    .landing-hero-cta {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    .landing-hero-cta .site-btn {
-      padding: 15px 28px;
-      font-size: 15px;
-    }
-
-    .stats-bar {
-      padding: 40px 0;
-      background: var(--bg-alt);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-    .stats-grid-landing {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 20px;
-      text-align: center;
-    }
-    .stat-num {
-      font-size: clamp(28px, 4vw, 40px);
-      font-weight: 900;
-      letter-spacing: -1.5px;
-      background: linear-gradient(135deg, #16A96B, #45C98A);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      line-height: 1;
-      margin-bottom: 8px;
-    }
-    .stat-label-landing {
-      font-size: 11px;
-      font-weight: 800;
-      color: var(--text-muted);
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-    }
-
-    .steps-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
-    }
-    @media (max-width: 900px) { .steps-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 500px) { .steps-grid { grid-template-columns: 1fr; } }
-
-    .step-landing {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 32px 22px;
-      text-align: center;
-      transition: all 250ms ease;
-    }
-    .step-landing:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-md);
-    }
-    .step-num-landing {
-      width: 52px; height: 52px;
-      background: linear-gradient(135deg, #16A96B, #45C98A);
-      color: #fff;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 21px; font-weight: 900;
-      margin: 0 auto 18px;
-    }
-    .step-landing h3 {
-      font-size: 16px; font-weight: 900;
-      color: var(--text);
-      margin: 0 0 10px;
-    }
-    .step-landing p {
-      font-size: 13.5px;
-      color: var(--text-muted);
-      line-height: 1.6;
-      margin: 0;
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 20px;
-    }
-    .feature-landing {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 28px 24px;
-      transition: all 250ms ease;
-    }
-    .feature-landing:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-md);
-      border-color: var(--brand-green);
-    }
-    .feature-icon-landing {
-      width: 52px; height: 52px;
-      background: rgba(22, 169, 107, 0.1);
-      border: 1px solid rgba(22, 169, 107, 0.2);
-      border-radius: 14px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 24px;
-      margin-bottom: 18px;
-    }
-    .feature-landing h4 {
-      font-size: 16px; font-weight: 900;
-      color: var(--text);
-      margin: 0 0 8px;
-    }
-    .feature-landing p {
-      font-size: 13.5px;
-      color: var(--text-muted);
-      line-height: 1.6;
-      margin: 0;
-    }
-
-    .report-cards {
-      grid-template-columns: 1fr !important;
-      max-width: 560px;
-      margin-inline: auto;
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
-      max-width: 900px;
-      margin: 0 auto 40px;
-    }
-    @media (max-width: 640px) { .report-cards { grid-template-columns: 1fr; } }
-
-    .report-card-landing {
-      background: var(--card);
-      border: 2px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 28px 24px;
-      text-decoration: none;
-      color: var(--text);
-      transition: all 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
-      display: block;
-    }
-    .report-card-landing.brand { border-color: var(--brand-navy); }
-    .report-card-landing:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-md);
-    }
-    .report-icon {
-      width: 60px; height: 60px;
-      border-radius: 16px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 28px;
-      margin-bottom: 16px;
-    }
-    .report-card-landing.brand .report-icon {
-      background: linear-gradient(135deg, var(--brand-navy), var(--brand-navy-light));
-    }
-    .report-card-landing h4 {
-      font-size: 17px;
-      font-weight: 900;
-      margin: 0 0 8px;
-      letter-spacing: -0.3px;
-    }
-    .report-card-landing.brand h4 { color: var(--brand-navy); }
-    .report-card-landing p {
-      font-size: 13.5px;
-      color: var(--text-muted);
-      line-height: 1.6;
-      margin: 0 0 16px;
-    }
-    .report-cta {
-      display: flex; align-items: center; gap: 6px;
-      font-weight: 800; font-size: 13px;
-    }
-    .report-card-landing.brand .report-cta { color: var(--brand-navy); }
-
-    .faq-list-landing {
-      max-width: 780px; margin: 0 auto;
-      display: flex; flex-direction: column; gap: 12px;
-    }
-    .faq-item-landing {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-    }
-    .faq-q-landing {
-      width: 100%; padding: 20px 22px;
-      background: transparent; border: 0; cursor: pointer;
-      font-family: inherit; font-size: 15.5px; font-weight: 800;
-      color: var(--text); text-align: start;
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 14px;
-    }
-    .faq-icon-landing {
-      flex-shrink: 0;
-      width: 30px; height: 30px;
-      border-radius: 50%;
-      background: rgba(22, 169, 107, 0.1);
-      color: var(--brand-green);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 15px; font-weight: bold;
-      transition: transform 250ms ease;
-    }
-    .faq-item-landing.open .faq-icon-landing {
-      transform: rotate(45deg);
-      background: var(--brand-green);
-      color: #fff;
-    }
-    .faq-item-landing.open { border-color: var(--brand-green); }
-    .faq-a-landing {
-      max-height: 0; overflow: hidden;
-      transition: max-height 350ms ease;
-    }
-    .faq-a-inner-landing {
-      padding: 0 22px 20px;
-      font-size: 14.5px; line-height: 1.7;
-      color: var(--text-muted);
-      border-top: 1px solid var(--border);
-      padding-top: 16px;
-    }
-
-    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 600ms ease, transform 600ms ease; }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
-/* ============================================================
-   LUXURY EDITION — Landing Page
-   ============================================================ */
-
-/* 1. قسم Hero */
-.landing-hero {
-  background: linear-gradient(135deg, #003080 0%, #001F52 100%) !important;
-  position: relative;
-  overflow: hidden;
+<meta charset="utf-8">
+<meta property="og:title" content="ORDIZ — حماية المنتجات من التقليد"><meta property="og:description" content="نظام جزائري احترافي للتحقق من أصالة المنتجات عبر QR وكود مخفي."><meta property="og:image" content="https://www.ordiz.online/og-image.png"><meta property="og:url" content="https://www.ordiz.online/"><meta property="og:locale" content="ar_DZ"><meta name="description" content="نظام جزائري احترافي للتحقق من أصالة المنتجات عبر QR وكود مخفي."><link rel="canonical" href="https://www.ordiz.online/">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ORDIZ — حماية المنتجات من التقليد</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#000c18; --navy2:#001a33; --blue:#0070e0; --blue2:#40a8ff;
+  --green:#19f095; --green2:#0cb877; --ink:#eaf4ff; --muted:#8ba7c4;
+  --glass:rgba(255,255,255,.05); --stroke:rgba(255,255,255,.09);
 }
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Tajawal',sans-serif;background:var(--navy);color:var(--ink);overflow-x:hidden;line-height:1.7;cursor:default}
+::selection{background:var(--green);color:#000c18}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
 
-.landing-hero::before {
-  content: '';
-  position: absolute;
-  top: -100px; right: -100px;
-  width: 600px; height: 600px;
-  background: radial-gradient(circle, rgba(0, 96, 192, 0.15) 0%, transparent 70%);
-  border-radius: 50%;
-  pointer-events: none;
-}
+/* ─── شريط التقدم ─── */
+#progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:99;background:linear-gradient(90deg,var(--green),var(--blue2));box-shadow:0 0 16px var(--green)}
 
-.landing-hero-inner {
-  position: relative;
-  z-index: 1;
-}
+/* ─── بقعة ضوء تتبع الماوس ─── */
+#spot{position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(700px 700px at var(--mx,50%) var(--my,50%),rgba(0,120,255,.10),transparent 60%)}
 
-/* 2. عنوان Hero بخط فاخر وتدرج ذهبي */
-.landing-hero h1 {
-  font-family: 'Tajawal', sans-serif !important;
-  font-weight: 900 !important;
-  letter-spacing: -0.5px !important;
-}
+/* ─── الخلفية ─── */
+.bg{position:fixed;inset:0;z-index:-3;background:
+  radial-gradient(1300px 750px at 80% -10%,#00325f 0%,transparent 55%),
+  radial-gradient(950px 620px at 8% 22%,#01203a 0%,transparent 50%),
+  linear-gradient(160deg,#000c18 0%,#00172d 60%,#000c18 100%)}
+.aurora{position:fixed;inset:0;z-index:-2;overflow:hidden;filter:blur(95px)}
+.aurora span{position:absolute;border-radius:50%;opacity:.55;animation:float 16s ease-in-out infinite}
+.aurora .a1{width:560px;height:560px;background:#0060ff;top:-12%;left:-8%}
+.aurora .a2{width:480px;height:480px;background:#0fff9c;top:32%;right:-14%;animation-delay:-5s}
+.aurora .a3{width:400px;height:400px;background:#0060c0;bottom:-12%;left:28%;animation-delay:-11s}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(50px,-60px) scale(1.15)}}
+canvas#grid{position:fixed;inset:0;z-index:-2;opacity:.16}
+#particles{position:fixed;inset:0;z-index:-1}
 
-.landing-hero h1 .highlight {
-  background: linear-gradient(135deg, #45C98A 0%, #82DCAB 100%) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-}
+.wrap{max-width:1200px;margin:0 auto;padding:0 28px}
 
-/* 3. نص Lead */
-.landing-hero p.lead {
-  color: rgba(255, 255, 255, 0.7) !important;
-}
+/* ─── الهيدر ─── */
+nav{position:fixed;top:0;left:0;right:0;z-index:50;transition:.3s}
+nav .inner{max-width:1200px;margin:14px auto 0;padding:12px 20px;display:flex;align-items:center;gap:22px;
+  background:rgba(10,25,42,.5);backdrop-filter:blur(20px);border:1px solid var(--stroke);border-radius:18px;transition:.3s}
+nav.scrolled .inner{background:rgba(6,17,30,.88);box-shadow:0 10px 40px -15px rgba(0,0,0,.7)}
+.logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:20px}
+.logo .mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--green));
+  display:grid;place-items:center;font-size:17px;box-shadow:0 0 24px rgba(0,150,255,.6);animation:glowpulse 3s ease-in-out infinite}
+@keyframes glowpulse{50%{box-shadow:0 0 36px rgba(25,240,149,.8)}}
+.links{display:flex;gap:2px;margin-right:auto}
+.links a{padding:8px 14px;border-radius:10px;font-size:14px;font-weight:600;color:var(--muted);transition:.2s;position:relative}
+.links a::after{content:"";position:absolute;bottom:4px;right:14px;width:0;height:2px;background:linear-gradient(90deg,var(--green),var(--blue2));transition:.3s;border-radius:2px}
+.links a:hover{color:#fff}
+.links a:hover::after{width:22px}
+.cta-nav{padding:10px 20px;border-radius:12px;font-weight:800;font-size:14px;color:#000c18;
+  background:linear-gradient(135deg,var(--green),var(--blue2));box-shadow:0 6px 24px -6px rgba(25,240,149,.5);white-space:nowrap;position:relative;overflow:hidden}
+.cta-nav::after{content:"";position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);transform:skewX(-20deg);animation:shine 3s infinite}
+@keyframes shine{0%{left:-80%}60%,100%{left:130%}}
+.burger{display:none;background:none;border:0;color:#fff;font-size:24px;cursor:pointer}
+@media(max-width:860px){.links{display:none}.burger{display:block}}
 
-/* 4. زر "تحقق من منتج" (الذهبي) */
-.landing-hero-cta .site-btn-green {
-  background: linear-gradient(135deg, #0060C0 0%, #1D7BD0 100%) !important;
-  color: #FFFFFF !important;
-  font-weight: 800 !important;
-  box-shadow: 0 8px 30px -6px rgba(0, 96, 192, 0.5) !important;
-  border: none !important;
-}
+/* ─── الهيرو ─── */
+.hero{min-height:100vh;display:flex;align-items:center;padding:150px 0 90px;position:relative}
+.hero-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:60px;align-items:center}
+@media(max-width:900px){.hero-grid{grid-template-columns:1fr;gap:50px}}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;padding:8px 17px;border-radius:99px;
+  background:var(--glass);border:1px solid var(--stroke);font-size:13px;font-weight:700;color:var(--green);margin-bottom:24px;backdrop-filter:blur(10px)}
+.eyebrow .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 14px var(--green);animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.3;transform:scale(.7)}}
+h1{font-size:clamp(40px,6.4vw,74px);line-height:1.1;font-weight:900;letter-spacing:-1px}
+h1 .grad{background:linear-gradient(120deg,var(--green),var(--blue2),var(--green));background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:gradmove 5s linear infinite}
+@keyframes gradmove{to{background-position:200% center}}
+h1 .rot{display:inline-block;min-width:1ch}
+.caret{display:inline-block;width:2px;height:.9em;background:var(--green);margin-right:4px;vertical-align:-.1em;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.hero p{color:var(--muted);font-size:18px;max-width:540px;margin:24px 0 32px}
+.hero-cta{display:flex;gap:14px;flex-wrap:wrap}
+.btn{padding:16px 30px;border-radius:15px;font-weight:800;font-size:15px;transition:transform .25s,box-shadow .25s;display:inline-flex;align-items:center;gap:9px;position:relative;overflow:hidden;border:0;cursor:pointer}
+.btn-primary{background:linear-gradient(135deg,var(--green),var(--green2));color:#000c18;box-shadow:0 10px 36px -8px rgba(25,240,149,.5)}
+.btn-primary::after{content:"";position:absolute;top:0;left:-90%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-20deg);animation:shine 3.4s infinite}
+.btn-ghost{background:var(--glass);border:1px solid var(--stroke);color:#fff;backdrop-filter:blur(10px)}
+.btn-ghost:hover{background:rgba(255,255,255,.1)}
+.btn:hover{transform:translateY(-3px)}
 
-.landing-hero-cta .site-btn-green:hover {
-  transform: translateY(-3px) !important;
-  box-shadow: 0 12px 40px -6px rgba(0, 96, 192, 0.7) !important;
-}
+/* ─── بطاقة الهيرو ─── */
+.phone{position:relative;perspective:1300px}
+.float-chip{position:absolute;padding:9px 16px;border-radius:99px;font-size:12.5px;font-weight:800;z-index:3;
+  background:rgba(8,20,34,.8);border:1px solid var(--stroke);backdrop-filter:blur(12px);box-shadow:0 10px 30px -10px rgba(0,0,0,.6);animation:bob 5s ease-in-out infinite}
+.chip-1{top:-18px;right:-10px;animation-delay:0s}
+.chip-2{bottom:22%;left:-16px;animation-delay:-1.6s}
+.chip-3{bottom:-16px;right:12%;animation-delay:-3.2s}
+@keyframes bob{50%{transform:translateY(-10px)}}
+.demo-card{position:relative;padding:34px;border-radius:28px;background:linear-gradient(160deg,rgba(255,255,255,.1),rgba(255,255,255,.02));
+  border:1px solid var(--stroke);backdrop-filter:blur(22px);box-shadow:0 40px 100px -30px rgba(0,0,0,.7);transition:transform .15s ease-out;transform-style:preserve-3d}
+.demo-card::before{content:"";position:absolute;inset:0;border-radius:28px;padding:1px;
+  background:linear-gradient(140deg,rgba(25,240,149,.5),transparent 30%,transparent 70%,rgba(64,168,255,.5));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.verify-badge{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:99px;font-weight:800;font-size:13px;
+  background:linear-gradient(135deg,rgba(25,240,149,.22),rgba(25,240,149,.05));border:1px solid rgba(25,240,149,.45);color:var(--green)}
+.verify-badge .check{width:20px;height:20px;border-radius:50%;background:var(--green);color:#000c18;display:grid;place-items:center;font-size:12px;font-weight:900;animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
+.demo-label{display:flex;align-items:center;gap:18px;margin:24px 0;padding:18px;border-radius:18px;background:rgba(0,0,0,.28);border:1px solid var(--stroke)}
+.holo{width:66px;height:66px;border-radius:14px;background:linear-gradient(135deg,#0ff,#5af,#f5f,#0ff);background-size:300% 300%;animation:holo 5s linear infinite;position:relative;flex:0 0 auto;box-shadow:0 0 34px rgba(0,255,220,.5)}
+.holo::after{content:"QR";position:absolute;inset:10px;border-radius:8px;background:#000c18;display:grid;place-items:center;font-family:'Space Grotesk',sans-serif;font-weight:700;color:#fff}
+@keyframes holo{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+.demo-label .txt b{font-size:15px}
+.demo-label .txt span{color:var(--muted);font-size:13px}
+.rows{display:flex;flex-direction:column;gap:10px}
+.row{display:flex;justify-content:space-between;padding:12px 16px;border-radius:12px;background:var(--glass);font-size:13px;transition:.25s}
+.row:hover{background:rgba(255,255,255,.09);transform:translateX(-4px)}
+.row b{color:var(--green)}
 
-/* 5. البطاقات (Features & Steps) */
-.feature-landing, .step-landing, .report-card-landing {
-  background: rgba(255,255,255,0.92) !important;
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
-  border: 1px solid rgba(0, 96, 192, 0.2) !important;
-  border-radius: 20px !important;
-  transition: all 0.3s ease !important;
-}
+/* ─── شريط العلامات المتحرك ─── */
+.ticker{padding:26px 0;border-top:1px solid var(--stroke);border-bottom:1px solid var(--stroke);overflow:hidden;position:relative}
+.ticker::before,.ticker::after{content:"";position:absolute;top:0;bottom:0;width:120px;z-index:2;pointer-events:none}
+.ticker::before{right:0;background:linear-gradient(90deg,transparent,#000c18)}
+.ticker::after{left:0;background:linear-gradient(270deg,transparent,#000c18)}
+.ticker-track{display:flex;gap:60px;width:max-content;animation:scroll 26s linear infinite}
+.ticker-track span{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:var(--muted);opacity:.5;white-space:nowrap;letter-spacing:1px}
+.ticker-track span b{color:var(--green)}
+@keyframes scroll{to{transform:translateX(50%)}}
 
-.feature-landing:hover, .step-landing:hover, .report-card-landing:hover {
-  border-color: rgba(0, 96, 192, 0.6) !important;
-  box-shadow: 0 10px 30px -10px rgba(0, 96, 192, 0.2) !important;
-  transform: translateY(-5px) !important;
-}
+/* ─── الثقة ─── */
+.trust .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;text-align:center}
+@media(max-width:700px){.trust .stats{grid-template-columns:repeat(2,1fr)}}
+.stat .num{font-family:'Space Grotesk',sans-serif;font-size:40px;font-weight:700;background:linear-gradient(120deg,var(--green),var(--blue2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat .lbl{color:var(--muted);font-size:13px}
 
-/* 6. عناوين الأقسام */
-.section-title {
-  font-family: 'Tajawal', sans-serif !important;
-  color: var(--text) !important;
-}
+/* ─── الأقسام ─── */
+section{padding:92px 0}
+.sec-head{text-align:center;max-width:640px;margin:0 auto 56px}
+.sec-head .tag{color:var(--green);font-weight:800;font-size:12.5px;letter-spacing:3px;text-transform:uppercase}
+.sec-head h2{font-size:clamp(28px,4vw,46px);font-weight:900;margin:12px 0 14px;line-height:1.2}
+.sec-head p{color:var(--muted);font-size:16px}
 
-/* 7. أيقونات الميزات */
-.feature-icon-landing {
-  background: rgba(0, 96, 192, 0.1) !important;
-  border: 1px solid rgba(0, 96, 192, 0.3) !important;
-  color: #0060C0 !important;
-}
+/* الخطوات */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+@media(max-width:820px){.steps{grid-template-columns:1fr}}
+.step{position:relative;padding:36px 30px;border-radius:24px;background:var(--glass);border:1px solid var(--stroke);transition:.3s;overflow:hidden;transform-style:preserve-3d}
+.step::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(25,240,149,.6),transparent);opacity:0;transition:.3s}
+.step:hover::before{opacity:1}
+.step:hover{transform:translateY(-8px);border-color:rgba(25,240,149,.4);box-shadow:0 24px 60px -24px rgba(0,0,0,.6)}
+.step .n{font-family:'Space Grotesk',sans-serif;font-size:66px;font-weight:700;line-height:1;opacity:.1;position:absolute;top:12px;left:20px}
+.step .ic{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-size:28px;margin-bottom:18px;
+  background:linear-gradient(135deg,rgba(64,168,255,.22),rgba(25,240,149,.16));border:1px solid var(--stroke);transition:.3s}
+.step:hover .ic{transform:scale(1.12) rotate(-6deg)}
+.step h3{font-size:19px;font-weight:800;margin-bottom:10px}
+.step p{color:var(--muted);font-size:14px}
 
-/* 8. زر "ابدأ الآن" في نهاية الصفحة */
-.page-content .site-btn-green {
-  background: linear-gradient(135deg, #0060C0 0%, #1D7BD0 100%) !important;
-  color: #FFFFFF !important;
-  font-weight: 800 !important;
-}
+/* المزايا */
+.feats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+@media(max-width:820px){.feats{grid-template-columns:1fr}}
+.feat{padding:30px;border-radius:22px;background:var(--glass);border:1px solid var(--stroke);transition:.3s;transform-style:preserve-3d;position:relative;overflow:hidden}
+.feat::after{content:"";position:absolute;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(25,240,149,.25),transparent 70%);top:-60px;left:-60px;opacity:0;transition:.4s}
+.feat:hover::after{opacity:1}
+.feat:hover{border-color:rgba(64,168,255,.45);transform:translateY(-6px);box-shadow:0 24px 60px -24px rgba(0,0,0,.55)}
+.feat .ic{font-size:32px;margin-bottom:14px;transition:.3s}
+.feat:hover .ic{transform:scale(1.2)}
+.feat h3{font-size:17px;font-weight:800;margin-bottom:8px}
+.feat p{color:var(--muted);font-size:13.5px}
 
-/* 9. الزر الشفاف (Ghost) */
-.site-btn-ghost {
-  background: transparent !important;
-  border: 1px solid rgba(0, 96, 192, 0.4) !important;
-  color: var(--text) !important;
-}
+/* الملصق */
+.label-sec{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center}
+@media(max-width:820px){.label-sec{grid-template-columns:1fr}}
+.label-visual{display:flex;justify-content:center}
+.holo-big{width:224px;height:286px;border-radius:24px;background:linear-gradient(135deg,#0ff,#5af,#f5f,#0ff);background-size:300% 300%;animation:holo 7s linear infinite;position:relative;box-shadow:0 34px 90px -22px rgba(0,255,220,.45);transition:transform .4s}
+.holo-big:hover{transform:scale(1.04) rotate(-2deg)}
+.holo-big::after{content:"QR CODE\Aكود مخفي";white-space:pre;position:absolute;inset:14px;border-radius:16px;display:grid;place-items:center;text-align:center;color:var(--green);font-weight:800;font-family:'Space Grotesk',sans-serif;background:#000c18}
+.check-list{list-style:none;display:flex;flex-direction:column;gap:14px;margin-top:20px}
+.check-list li{display:flex;gap:12px;align-items:flex-start;font-size:15px}
+.check-list li::before{content:"✓";flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:rgba(25,240,149,.18);color:var(--green);display:grid;place-items:center;font-weight:900;font-size:13px}
 
-.site-btn-ghost:hover {
-  background: rgba(0, 96, 192, 0.1) !important;
-  border-color: #0060C0 !important;
-}
+/* الأسعار */
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:stretch}
+@media(max-width:820px){.plans{grid-template-columns:1fr}}
+.plan{position:relative;padding:36px 30px;border-radius:24px;background:var(--glass);border:1px solid var(--stroke);display:flex;flex-direction:column;transition:.3s;transform-style:preserve-3d}
+.plan:hover{transform:translateY(-8px)}
+.plan.pop{background:linear-gradient(160deg,rgba(25,240,149,.14),rgba(0,112,224,.1));border-color:rgba(25,240,149,.55);box-shadow:0 0 60px -18px rgba(25,240,149,.5)}
+.plan .name{font-weight:800;font-size:16px}
+.plan .price{font-family:'Space Grotesk',sans-serif;font-size:42px;font-weight:700;margin:14px 0 2px;background:linear-gradient(120deg,var(--green),var(--blue2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.plan .desc{color:var(--muted);font-size:13px;margin-bottom:20px}
+.plan ul{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:24px;flex:1}
+.plan ul li{font-size:13.5px;display:flex;gap:10px}
+.plan ul li::before{content:"✓";color:var(--green);font-weight:900}
+.pop-flag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--green),var(--blue2));color:#000c18;padding:5px 18px;border-radius:99px;font-size:12px;font-weight:800;box-shadow:0 6px 20px -4px rgba(25,240,149,.5)}
 
-/* 10. الوضع المظلم */
-html.dark .landing-hero {
-  background: linear-gradient(135deg, #003080 0%, #001F52 100%) !important;
-}
+/* الشهادات */
+.testi{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+@media(max-width:820px){.testi{grid-template-columns:1fr}}
+.t{position:relative;padding:30px;border-radius:22px;background:var(--glass);border:1px solid var(--stroke);transition:.3s;transform-style:preserve-3d}
+.t::before{content:"“";position:absolute;top:6px;right:20px;font-size:70px;line-height:1;color:rgba(25,240,149,.2);font-family:serif}
+.t:hover{border-color:rgba(25,240,149,.4);transform:translateY(-6px)}
+.t p{font-size:14.5px;color:var(--muted);margin-bottom:18px;position:relative;z-index:1}
+.t .who{display:flex;align-items:center;gap:12px}
+.t .av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--green));display:grid;place-items:center;font-weight:900;font-size:17px;box-shadow:0 0 20px rgba(0,150,255,.4)}
+.t .who b{display:block;font-size:14px}
+.t .who span{color:var(--muted);font-size:12px}
 
-html.dark .feature-landing, 
-html.dark .step-landing, 
-html.dark .report-card-landing {
-  background: rgba(20, 20, 20, 0.6) !important;
-  </style>
+/* FAQ */
+.faq{max-width:760px;margin:0 auto}
+.fq{border:1px solid var(--stroke);border-radius:16px;margin-bottom:12px;background:var(--glass);overflow:hidden;transition:.25s}
+.fq:hover{border-color:rgba(64,168,255,.4)}
+.fq button{width:100%;text-align:right;background:none;border:0;color:#fff;padding:18px 22px;font-size:16px;font-weight:700;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-family:inherit}
+.fq button .plus{transition:.35s;font-size:24px;color:var(--green)}
+.fq.open button .plus{transform:rotate(135deg)}
+.fq .a{max-height:0;overflow:hidden;transition:.4s}
+.fq.open .a{max-height:320px}
+.fq .a p{padding:0 22px 20px;color:var(--muted);font-size:14px}
+
+/* CTA */
+.cta{position:relative;text-align:center;padding:84px 28px;border-radius:32px;overflow:hidden;
+  background:linear-gradient(140deg,#00305c,#00172d);border:1px solid var(--stroke)}
+.cta h2{font-size:clamp(28px,4vw,46px);font-weight:900;margin-bottom:14px}
+.cta p{color:var(--muted);max-width:560px;margin:0 auto 32px}
+.cta::before{content:"";position:absolute;inset:0;background:radial-gradient(640px 320px at 50% 0%,rgba(25,240,149,.2),transparent)}
+.cta .btn{position:relative;z-index:1;font-size:16px;padding:18px 38px}
+
+/* الفوتر */
+footer{padding:52px 0 34px;border-top:1px solid var(--stroke)}
+.foot{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:30px}
+@media(max-width:820px){.foot{grid-template-columns:1fr 1fr}}
+.foot h4{font-size:14px;margin-bottom:14px}
+.foot a{display:block;color:var(--muted);font-size:13.5px;padding:4px 0;transition:.2s}
+.foot a:hover{color:#fff;transform:translateX(-4px)}
+.foot .brand{color:var(--muted);font-size:13.5px;max-width:280px;margin-top:12px}
+.copy{border-top:1px solid var(--stroke);margin-top:42px;padding-top:22px;text-align:center;color:var(--muted);font-size:12.5px}
+
+/* الكشف */
+.reveal{opacity:0;transform:translateY(34px);transition:.8s cubic-bezier(.2,.7,.3,1)}
+.reveal.in{opacity:1;transform:none}
+</style>
 </head>
 <body>
 
-<!-- HEADER -->
-<div id="site-header"></div>
+<div id="progress"></div>
+<div id="spot"></div>
+<div class="bg"></div>
+<div class="aurora"><span class="a1"></span><span class="a2"></span><span class="a3"></span></div>
+<canvas id="grid"></canvas>
+<canvas id="particles"></canvas>
 
-<!-- ═══════════ HERO ═══════════ -->
-<section class="landing-hero">
-  
-  <!-- ملصقان تزيينيان -->
-  <img class="fx-hero-label fx-hero-label--r" src="/label-hologram.webp"
-       alt="" aria-hidden="true" loading="lazy" decoding="async">
-  <img class="fx-hero-label fx-hero-label--l" src="/label-hologram-open.webp"
-       alt="" aria-hidden="true" loading="lazy" decoding="async">
-<div class="container">
-    <div class="landing-hero-inner">
-      <div class="landing-hero-badge" data-i18n="heroBadge">
-        🥇 منصة التحقق من الأصالة #1 في الجزائر
+<nav id="nav">
+  <div class="inner">
+    <a href="/" class="logo"><span class="mark">O</span> ORDIZ</a>
+    <div class="links">
+      <a href="#how">كيف يعمل</a><a href="#feats">المزايا</a><a href="#label">الملصق</a>
+      <a href="#stats">إحصائيات</a><a href="#pricing">الأسعار</a><a href="/verify">التحقق</a><a href="/report">الإبلاغ</a><a href="#faq">الأسئلة</a>
+    </div>
+    <a href="/signup" class="cta-nav">ابدأ الآن</a>
+    <button class="burger" onclick="const l=document.querySelector('.links');l.style.display=l.style.display==='flex'?'none':'flex'">☰</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow"><span class="dot"></span> منصة جزائرية لمكافحة التقليد</span>
+      <h1>كل منتج أصلي<br><span class="grad"><span class="rot" id="rot">يستحق</span></span><span class="caret"></span><br>الحماية</h1>
+      <p>امسح رمز QR، اخدش الطبقة، وأدخل الكود المخفي — خلال ثوانٍ تعرف إن كان منتجك أصلياً أم مقلداً، عبر 69 ولاية جزائرية.</p>
+      <div class="hero-cta">
+        <a href="/verify" class="btn btn-primary">تحقق من منتجك ←</a>
+        <a href="/signup" class="btn btn-ghost">احمِ علامتك</a>
       </div>
+    </div>
+    <div class="phone">
+      <span class="float-chip chip-1">🛡️ أصلي</span>
+      <span class="float-chip chip-2">📍 69 ولاية</span>
+      <span class="float-chip chip-3">🤖 تحليل AI</span>
+      <div class="demo-card" id="card">
+        <div class="verify-badge"><span class="check">✓</span> منتج أصلي 100%</div>
+        <div class="demo-label">
+          <div class="holo"></div>
+          <div class="txt"><b>Rutin Cosmetic</b><br><span>سيروم ليزر 30 مل · الدفعة 03</span></div>
+        </div>
+        <div class="rows">
+          <div class="row"><span>الحالة</span><b>أصلي ✓</b></div>
+          <div class="row"><span>مرات الفحص</span><b>1</b></div>
+          <div class="row"><span>تم التحقق عبر</span><b>ORDIZ 🛡️</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
 
-      <h1>
-        <span data-i18n="heroTitle1">احمِ منتجاتك من</span><br>
-        <span class="highlight" data-i18n="heroTitle2">التقليد والمزيف</span>
-      </h1>
+<div class="ticker"><div class="ticker-track" id="tick">
+  <span>RUTIN <b>●</b> MAKE <b>●</b> LINA <b>●</b> NADIA <b>●</b> ZARA <b>●</b> HAYAT <b>●</b> AMINE <b>●</b> DORA <b>●</b> </span>
+  <span>RUTIN <b>●</b> MAKE <b>●</b> LINA <b>●</b> NADIA <b>●</b> ZARA <b>●</b> HAYAT <b>●</b> AMINE <b>●</b> DORA <b>●</b> </span>
+</div></div>
 
-      <p class="lead" data-i18n="heroLead">
-        نظام احترافي للتحقق من أصالة المنتجات عبر QR وكود مخفي.
-        تشفير قوي جداً، كشف فوري للتقليد، وإحصائيات في الوقت الحقيقي.
-      </p>
+<section id="how">
+  <div class="wrap">
+    <div class="sec-head reveal"><div class="tag">آلية العمل</div><h2>ثلاث خطوات تفصل بين الأصلي والمقلّد</h2><p>مصمم ليكون بسيطاً لأي زبون — بدون تطبيق وبدون تعقيد.</p></div>
+    <div class="steps">
+      <div class="step reveal tilt"><span class="n">01</span><div class="ic">📷</div><h3>امسح QR</h3><p>وجّه كاميرا هاتفك على الملصق الهولوغرامي المثبّت على المنتج.</p></div>
+      <div class="step reveal tilt"><span class="n">02</span><div class="ic">🪙</div><h3>اخدش الطبقة</h3><p>اكشط الطبقة الفضية لكشف الكود المخفي المكوّن من 7 أحرف.</p></div>
+      <div class="step reveal tilt"><span class="n">03</span><div class="ic">✓</div><h3>أدخل الكود</h3><p>ستظهر النتيجة فوراً: منتج أصلي، أو تحذير من التقليد.</p></div>
+    </div>
+  </div>
+</section>
 
-      <div class="landing-hero-cta">
-        <a href="/verify" class="site-btn site-btn-green">
-          <span>🔍</span>
-          <span data-i18n="ctaVerify">تحقق من منتج</span>
-        </a>
-        <a href="/downloads/OriginalDz.apk" download="OriginalDz.apk" class="site-btn site-btn-primary">
-          <span>📱</span>
-          <span data-i18n="ctaDownload">حمّل التطبيق</span>
-        </a>
+<section id="feats">
+  <div class="wrap">
+    <div class="sec-head reveal"><div class="tag">لماذا ORDIZ</div><h2>حماية لا مثيل لها لمنتجك</h2></div>
+    <div class="feats">
+      <div class="feat reveal tilt"><div class="ic">🔐</div><h3>تشفير قوي جداً</h3><p>كل كود مخفي محمي بتشفير من الدرجة العسكرية — لا يُقرأ ولا يُزوَّر.</p></div>
+      <div class="feat reveal tilt"><div class="ic">📍</div><h3>تتبّع جغرافي</h3><p>اعرف أين يُفحص منتجك عبر 69 ولاية، ورصد أي نشاط مريب.</p></div>
+      <div class="feat reveal tilt"><div class="ic">🤖</div><h3>تحليل بالذكاء الاصطناعي</h3><p>بلاغات التقليد تُحلَّل تلقائياً ويصل التقرير للعلامة فوراً.</p></div>
+      <div class="feat reveal tilt"><div class="ic">🛡️</div><h3>ملصق وحيد الاستعمال</h3><p>هولوغرام لا يمكن إعادة لصقه — أي محاولة تلاعب تظهر فوراً.</p></div>
+      <div class="feat reveal tilt"><div class="ic">📊</div><h3>لوحة تحكم كاملة</h3><p>إحصائيات حية، دفعات، وطباعة الملصقات من مكان واحد.</p></div>
+      <div class="feat reveal tilt"><div class="ic">⚡</div><h3>يعمل بلا إنترنت</h3><p>صفحة التحقق تعمل حتى بدون اتصال، فيُحفظ الفحص ويُرسل لاحقاً.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="label">
+  <div class="wrap label-sec">
+    <div class="label-visual reveal"><div class="holo-big"></div></div>
+    <div class="reveal">
+      <div class="tag" style="color:var(--green);font-weight:800;letter-spacing:2px">الملصق</div>
+      <h2 style="font-size:clamp(26px,3.6vw,40px);font-weight:900;margin:12px 0 14px;line-height:1.25">ملصق هولوغرامي 1.5 × 2.5 سم</h2>
+      <p style="color:var(--muted);font-size:15px">ملصق واحد بحجم صغير يحمل رمز QR موحّداً وكوداً مخفياً تحت طبقة خدش — يُستعمل مرة واحدة فقط، ومصمم ليلتصق على أصغر العبوات.</p>
+      <ul class="check-list"><li>مقاوم للماء والاحتكاك</li><li>كود مخفي فريد لكل ملصق</li><li>اسم الدفعة مطبوع للتمييز</li><li>أقل كمية 5,000 ملصق</li></ul>
+    </div>
+  </div>
+</section>
+
+<section id="stats">
+  <div class="wrap">
+    <div class="sec-head reveal"><div class="tag">إحصائيات حية</div><h2>ثقة مبنية على أرقام حقيقية</h2></div>
+    <div class="trust reveal" style="border:1px solid var(--stroke);border-radius:24px;padding:36px 20px;background:var(--glass)">
+      <div class="stats">
+        <div class="stat"><div class="num" data-count="124800">0</div><div class="lbl">تحقق ناجح</div></div>
+        <div class="stat"><div class="num" data-count="312">0</div><div class="lbl">علامة محمية</div></div>
+        <div class="stat"><div class="num" data-count="8470">0</div><div class="lbl">بلاغ تقليد</div></div>
+        <div class="stat"><div class="num" data-count="58">0</div><div class="lbl">منتج مقلد أُحبط</div></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ═══════════ STATS ═══════════ -->
-<section class="stats-bar">
-  <div class="container">
-    <div class="stats-grid-landing">
-      <div>
-        <div class="stat-num">4T+</div>
-        <div class="stat-label-landing" data-i18n="stat1">كود محمي</div>
-      </div>
-      <div>
-        <div class="stat-num">100+</div>
-        <div class="stat-label-landing" data-i18n="stat2">علامة تجارية</div>
-      </div>
-      <div>
-        <div class="stat-num">99.9%</div>
-        <div class="stat-label-landing" data-i18n="stat3">دقة التحقق</div>
-      </div>
-      <div>
-        <div class="stat-num">24/7</div>
-        <div class="stat-label-landing" data-i18n="stat4">متاح دائمًا</div>
-      </div>
+<section id="pricing">
+  <div class="wrap">
+    <div class="sec-head reveal"><div class="tag">الأسعار</div><h2>اختر الكمية المناسبة لعلامتك</h2><p>السعر يتغيّر حسب الكمية — كلما زادت، حصلت على سعر أفضل.</p></div>
+    <div class="plans">
+      <div class="plan reveal tilt"><div class="name">البداية</div><div class="price">5,000</div><div class="desc">ملصق — أقل كمية</div><ul><li>كود مخفي + QR موحّد</li><li>لوحة تحكم أساسية</li><li>دعم فني</li></ul><a href="/signup" class="btn btn-ghost">اطلب الآن</a></div>
+      <div class="plan pop reveal tilt"><div class="pop-flag">الأكثر طلباً</div><div class="name">النمو</div><div class="price">50,000</div><div class="desc">ملصق — سعر أفضل</div><ul><li>كل مزايا البداية</li><li>إحصائيات جغرافية</li><li>تحليل AI للبلاغات</li><li>أولوية في الدعم</li></ul><a href="/signup" class="btn btn-primary">اطلب الآن</a></div>
+      <div class="plan reveal tilt"><div class="name">المؤسسات</div><div class="price">100,000+</div><div class="desc">ملصق — أفضل سعر</div><ul><li>كل مزايا النمو</li><li>مدير حساب خاص</li><li>تكامل API</li><li>تقارير مخصصة</li></ul><a href="/contact" class="btn btn-ghost">تواصل معنا</a></div>
     </div>
   </div>
 </section>
 
-<!-- ═══════════ HOW IT WORKS ═══════════ -->
-<section class="page-content" style="background: var(--bg-alt);">
-  <div class="container">
-    <div class="section-head reveal" style="text-align:center;max-width:700px;margin:0 auto 55px;">
-      <div style="display:inline-block;font-size:11px;font-weight:900;letter-spacing:2.5px;color:var(--brand-green);text-transform:uppercase;padding:5px 12px;background:rgba(22, 169, 107,0.1);border-radius:100px;margin-bottom:16px;" data-i18n="howEyebrow">كيف يعمل</div>
-      <h2 class="section-title" data-i18n="howTitle">4 خطوات بسيطة للتحقق</h2>
-      <p class="section-sub" style="margin:0 auto;" data-i18n="howSub">يستغرق التحقق أقل من 10 ثوانٍ.</p>
-    </div>
-
-    <div class="steps-grid">
-      <div class="step-landing reveal">
-        <div class="step-num-landing">1</div>
-        <h3 data-i18n="step1Title">📱 امسح QR</h3>
-        <p data-i18n="step1Text">افتح كاميرا هاتفك وامسح الرمز.</p>
-      </div>
-      <div class="step-landing reveal">
-        <div class="step-num-landing">2</div>
-        <h3 data-i18n="step2Title">✂️ اخدش الطبقة</h3>
-        <p data-i18n="step2Text">اكشف الكود السري تحت الطبقة.</p>
-      </div>
-      <div class="step-landing reveal">
-        <div class="step-num-landing">3</div>
-        <h3 data-i18n="step3Title">🔢 أدخل الكود</h3>
-        <p data-i18n="step3Text">اكتب الكود في صفحة التحقق.</p>
-      </div>
-      <div class="step-landing reveal">
-        <div class="step-num-landing">4</div>
-        <h3 data-i18n="step4Title">✅ النتيجة فورًا</h3>
-        <p data-i18n="step4Text">تعرف في ثانية إذا المنتج أصلي.</p>
-      </div>
+<section id="testi">
+  <div class="wrap">
+    <div class="sec-head reveal"><div class="tag">آراء عملائنا</div><h2>علامات وثقت بنا</h2></div>
+    <div class="testi">
+      <div class="t reveal tilt"><p>"منذ أن وضعنا ملصقات ORDIZ، انخفضت بلاغات التقليد بشكل ملحوظ، والزبائن أصبحوا يفحصون بثقة."</p><div class="who"><div class="av">ر</div><div><b>Rutin Cosmetic</b><span>الجزائر العاصمة</span></div></div></div>
+      <div class="t reveal tilt"><p>"لوحة التحكم سهلة، وأعرف بالضبط أين يُباع منتجي وأين يظهر المقلد."</p><div class="who"><div class="av">م</div><div><b>MAKE Cosmetics</b><span>وهران</span></div></div></div>
+      <div class="t reveal tilt"><p>"أفضل استثمار لحماية علامتنا. الملصق صغير وأنيق ولا يغيّر شكل العبوة."</p><div class="who"><div class="av">ل</div><div><b>Lina Care</b><span>سطيف</span></div></div></div>
     </div>
   </div>
 </section>
 
-<!-- ═══════════ FEATURES ═══════════ -->
-<section class="page-content">
-  <div class="container">
-    <div class="section-head reveal" style="text-align:center;max-width:700px;margin:0 auto 55px;">
-      <div style="display:inline-block;font-size:11px;font-weight:900;letter-spacing:2.5px;color:var(--brand-green);text-transform:uppercase;padding:5px 12px;background:rgba(22, 169, 107,0.1);border-radius:100px;margin-bottom:16px;" data-i18n="featEyebrow">المزايا</div>
-      <h2 class="section-title" data-i18n="featTitle">نظام متكامل، حماية قوية</h2>
-      <p class="section-sub" style="margin:0 auto;" data-i18n="featSub">كل ما تحتاجه لحماية علامتك واكتساب ثقة زبائنك.</p>
-    </div>
-
-    <div class="features-grid">
-      <div class="feature-landing reveal">
-        <div class="feature-icon-landing">🔒</div>
-        <h4 data-i18n="f1Title">تشفير قوي جداً</h4>
-        <p data-i18n="f1Text">جميع الأكواد السرية مشفّرة في قاعدة البيانات.</p>
-      </div>
-      <div class="feature-landing reveal">
-        <div class="feature-icon-landing">🎯</div>
-        <h4 data-i18n="f2Title">QR ثابت موحّد</h4>
-        <p data-i18n="f2Text">نفس QR لكل الملصقات — توفير في الطباعة.</p>
-      </div>
-      <div class="feature-landing reveal">
-        <div class="feature-icon-landing">⚡</div>
-        <h4 data-i18n="f3Title">تحقق فوري</h4>
-        <p data-i18n="f3Text">النتيجة تظهر في أقل من ثانية.</p>
-      </div>
-      <div class="feature-landing reveal">
-        <div class="feature-icon-landing">🌍</div>
-        <h4 data-i18n="f4Title">3 لغات</h4>
-        <p data-i18n="f4Text">عربي، فرنسي، إنجليزي مع دعم RTL.</p>
-      </div>
-      <div class="feature-landing reveal">
-        <div class="feature-icon-landing">📊</div>
-        <h4 data-i18n="f5Title">إحصائيات دقيقة</h4>
-        <p data-i18n="f5Text">تتبّع كل تحقق مع IP والتاريخ والموقع.</p>
-      </div>
-      <div class="feature-landing reveal">
-        <div class="feature-icon-landing">🤖</div>
-        <h4 data-i18n="f6Title">مساعد ذكي</h4>
-        <p data-i18n="f6Text">روبوت دردشة AI للإجابة على الزبائن.</p>
-      </div>
-      <div class="feature-landing reveal">
-        <div class="feature-icon-landing">🗺️</div>
-        <h4 data-i18n="f7Title">خريطة حرارية</h4>
-        <p data-i18n="f7Text">رؤية جغرافية لكل البلاغات (69 ولاية).</p>
-      </div>
-      <div class="feature-landing reveal">
-        <div class="feature-icon-landing">📱</div>
-        <h4 data-i18n="f8Title">PWA + Offline</h4>
-        <p data-i18n="f8Text">يعمل بدون تحميل وبدون إنترنت.</p>
-      </div>
-      <div class="feature-landing reveal">
-        <div class="feature-icon-landing">🛡️</div>
-        <h4 data-i18n="f9Title">كشف البوتات</h4>
-        <p data-i18n="f9Text">حماية تلقائية من السكريبتات.</p>
-      </div>
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head reveal"><div class="tag">الأسئلة الشائعة</div><h2>كل ما تريد معرفته</h2></div>
+    <div class="faq">
+      <div class="fq reveal"><button>كيف يتأكد الزبون من أن المنتج أصلي؟<span class="plus">+</span></button><div class="a"><p>يمسح QR ثم يخدش الطبقة ويكشف الكود المخفي ويدخله — إن تطابق مع قاعدة بياناتنا فالمنتج أصلي.</p></div></div>
+      <div class="fq reveal"><button>ما أقل كمية يمكنني طلبها؟<span class="plus">+</span></button><div class="a"><p>أقل كمية 5,000 ملصق، وتتوفر دفعات 50,000 و100,000 ومليون ملصق بسعر أفضل.</p></div></div>
+      <div class="fq reveal"><button>هل الكود آمن من التزوير؟<span class="plus">+</span></button><div class="a"><p>نعم، الكود محمي بتشفير قوي جداً ويُستعمل مرة واحدة فقط — أي محاولة إعادة استخدام تُكشف فوراً.</p></div></div>
+      <div class="fq reveal"><button>كيف يصلني بلاغ التقليد؟<span class="plus">+</span></button><div class="a"><p>يصل البلاغ إلى شركتك فوراً في لوحة التحكم مع صورة المنتج وموقعه الجغرافي.</p></div></div>
     </div>
   </div>
 </section>
 
-<!-- ═══════════ FOR BRANDS ═══════════ -->
-<section class="page-content" style="background: var(--bg-alt);">
-  <div class="container">
-    <div style="max-width: 900px; margin: 0 auto; text-align: center;">
-      <div class="reveal">
-        <div style="display:inline-block;font-size:11px;font-weight:900;letter-spacing:2.5px;color:var(--brand-green);text-transform:uppercase;padding:5px 12px;background:rgba(22, 169, 107,0.1);border-radius:100px;margin-bottom:16px;" data-i18n="brandsEyebrow">للعلامات التجارية</div>
-        <h2 class="section-title" data-i18n="brandsTitle">احمِ علامتك التجارية</h2>
-        <p class="section-sub" style="margin:0 auto 32px;" data-i18n="brandsText">
-          انضم إلى العلامات التجارية التي تثق بنا. احصل على لوحة تحكم كاملة لإدارة أكوادك ومتابعة بلاغات التقليد.
-        </p>
-      </div>
-
-      <div class="features-grid reveal" style="margin-bottom: 40px;">
-        <div class="feature-landing">
-          <div class="feature-icon-landing">📦</div>
-          <h4 data-i18n="b1">دفعات بأي حجم</h4>
-          <p data-i18n="b1Text">5,000 كود كحد أدنى</p>
-        </div>
-        <div class="feature-landing">
-          <div class="feature-icon-landing">🔐</div>
-          <h4 data-i18n="b2">تشفير كامل</h4>
-          <p data-i18n="b2Text">جميع الأكواد مشفّرة في قاعدة البيانات</p>
-        </div>
-        <div class="feature-landing">
-          <div class="feature-icon-landing">🖨️</div>
-          <h4 data-i18n="b3">طباعة احترافية</h4>
-          <p data-i18n="b3Text">ملصقات مع خط الطي الجاهز</p>
-        </div>
-        <div class="feature-landing">
-          <div class="feature-icon-landing">📈</div>
-          <h4 data-i18n="b4">إحصائيات فورية</h4>
-          <p data-i18n="b4Text">لوحة تحكم خاصة ببياناتك</p>
-        </div>
-      </div>
-
-      <a href="/signup" class="site-btn site-btn-green" style="padding:15px 32px;font-size:15px;">
-        <span>🚀</span>
-        <span data-i18n="ctaStart">ابدأ الآن مجانًا</span>
-      </a>
-    </div>
-  </div>
+<section>
+  <div class="wrap"><div class="cta reveal"><h2>جاهز لحماية علامتك؟</h2><p>انضم لمئات العلامات الجزائرية التي وضعت حداً للتقليد. ابدأ بطلب 5,000 ملصق اليوم.</p><a href="/signup" class="btn btn-primary">اطلب دفعتك الأولى ←</a></div></div>
 </section>
 
-<!-- ═══════════ REPORT SECTION ═══════════ -->
-<section class="page-content">
-  <div class="container">
-    <div class="section-head reveal" style="text-align:center;max-width:700px;margin:0 auto 55px;">
-      <div style="display:inline-block;font-size:11px;font-weight:900;letter-spacing:2.5px;color:#dc2626;text-transform:uppercase;padding:5px 12px;background:rgba(220,38,38,0.1);border-radius:100px;margin-bottom:16px;" data-i18n="reportEyebrow">🛡️ حماية المستهلك</div>
-      <h2 class="section-title" data-i18n="reportTitle">هل وجدت منتجًا مقلدًا؟</h2>
-      <p class="section-sub" style="margin:0 auto;" data-i18n="reportSub">أبلغنا فورًا. اختر نوع الإبلاغ المناسب لحالتك.</p>
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div><a href="/" class="logo"><span class="mark">O</span> ORDIZ</a><p class="brand">منصة جزائرية لحماية المنتجات من التقليد عبر QR والكود المخفي — تغطي 69 ولاية.</p></div>
+      <div><h4>المنتج</h4><a href="#how">كيف يعمل</a><a href="#feats">المزايا</a><a href="#label">الملصق</a><a href="#pricing">الأسعار</a></div>
+      <div><h4>الشركة</h4><a href="/about">من نحن</a><a href="#testi">آراء العملاء</a><a href="/team">الفريق</a><a href="/contact">اتصل بنا</a></div>
+      <div><h4>قانوني</h4><a href="/terms">الشروط</a><a href="/privacy">الخصوصية</a><a href="/report">الإبلاغ عن تقليد</a></div>
     </div>
-
-    <div class="report-cards reveal">
-      <a href="/report?type=brand" class="report-card-landing brand">
-        <div class="report-icon">🏢</div>
-        <h4 data-i18n="reportBrandTitle">منتج مقلد لعلامة تجارية</h4>
-        <p data-i18n="reportBrandText">أبلغ عن منتج يحمل QR ORDIZ لكنه ليس أصليًا.</p>
-        <div class="report-cta">
-          <span data-i18n="reportCta">إبلاغ الآن</span>
-          <span>←</span>
-        </div>
-      </a>
-
-      
-    </div>
+    <div class="copy">© 2026 ORDIZ — جميع الحقوق محفوظة · ordiz.online</div>
   </div>
-</section>
-
-<!-- ═══════════ بعد التحقق ═══════════ -->
-<section class="page-content fx-sec" id="fx-result">
-  <div class="container">
-    <div class="section-head reveal" style="text-align:center;max-width:720px;margin:0 auto 48px;">
-      <div style="display:inline-block;font-size:11px;font-weight:900;letter-spacing:2.5px;color:var(--brand-green,#16A96B);text-transform:uppercase;padding:5px 12px;background:rgba(22,169,107,.1);border-radius:100px;margin-bottom:16px;">بعد التحقق</div>
-      <h2 class="section-title">ماذا يرى الزبون بعد مسح الملصق</h2>
-      <p class="section-sub" style="margin:0 auto;">اسم علامتك · المنتج أصلي · اسم الدفعة · وصفحاتك على مواقع التواصل — دعاية مجانية لك.</p>
-    </div>
-
-    <div class="fx-result-grid">
-      <div class="fx-result reveal">
-        <div class="fx-result-top">
-          <span class="fx-ok">✓</span>
-          <div><b>المنتج أصلي</b><span>نُور للأغذية · علامة موثّقة</span></div>
-        </div>
-        <div class="fx-result-cells">
-          <div class="fx-cell"><span>العلامة التجارية</span><b>نُور للأغذية</b></div>
-          <div class="fx-cell"><span>المنتج</span><b>زيت زيتون بكر · 1 لتر</b></div>
-          <div class="fx-cell"><span>اسم الدفعة</span><b>زيت زيتون · جانفي 2026</b></div>
-          <div class="fx-cell"><span>تاريخ التحقق</span><b>اليوم · 04:12</b></div>
-        </div>
-        <div class="fx-socials">
-          <a href="#">f فيسبوك</a><a href="#">◎ إنستغرام</a><a href="#">♪ تيك توك</a><a href="#">↗ الموقع</a>
-        </div>
-      </div>
-
-      <div class="fx-result-side">
-        <div class="feature-landing reveal">
-          <div class="feature-icon-landing">📣</div>
-          <h4>ترويج مجاني لصفحاتك</h4>
-          <p>كل زبون يتحقق يرى صفحاتك على فيسبوك وإنستغرام وتيك توك والموقع.</p>
-        </div>
-        <div class="feature-landing reveal">
-          <div class="feature-icon-landing">🏷️</div>
-          <h4>اسم الدفعة ظاهر</h4>
-          <p>تعرف كل تحقّق لأي دفعة ينتمي، وتتابع أداء كل إصدار.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════ الرحلة ═══════════ -->
-<section class="page-content fx-sec" style="background:var(--bg-alt,#f8fafc);">
-  <div class="container">
-    <div class="section-head reveal" style="text-align:center;max-width:720px;margin:0 auto 44px;">
-      <div style="display:inline-block;font-size:11px;font-weight:900;letter-spacing:2.5px;color:var(--brand-blue,#0060C0);text-transform:uppercase;padding:5px 12px;background:rgba(0,96,192,.09);border-radius:100px;margin-bottom:16px;">الرحلة</div>
-      <h2 class="section-title">من الطلب إلى «المنتج أصلي»</h2>
-      <p class="section-sub" style="margin:0 auto;">ست خطوات فقط — من طلبك للملصقات إلى لحظة تحقق الزبون.</p>
-    </div>
-
-    <div class="fx-journey">
-      <div class="fx-jstep reveal"><span class="fx-n">01</span><div class="fx-ji">🧾</div><b>اطلب دفعة</b><span>حدّد الكمية</span></div>
-      <div class="fx-jstep reveal"><span class="fx-n">02</span><div class="fx-ji">📦</div><b>اطلب الملصقات</b><span>جاهزة للاستلام</span></div>
-      <div class="fx-jstep reveal"><span class="fx-n">03</span><div class="fx-ji">🏷️</div><b>ضع الملصق</b><span>على كل منتج</span></div>
-      <div class="fx-jstep reveal"><span class="fx-n">04</span><div class="fx-ji">🛒</div><b>بِع المنتج</b><span>إلى الزبائن</span></div>
-      <div class="fx-jstep reveal"><span class="fx-n">05</span><div class="fx-ji">📱</div><b>الزبون يتحقق</b><span>في ثانية</span></div>
-      <div class="fx-jstep reveal"><span class="fx-n">06</span><div class="fx-ji">✅</div><b>النتيجة: أصلي</b><span>مع علامتك</span></div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════ الملصق ═══════════ -->
-<section class="page-content fx-sec">
-  <div class="container">
-    <div class="section-head reveal" style="text-align:center;max-width:720px;margin:0 auto 44px;">
-      <div style="display:inline-block;font-size:11px;font-weight:900;letter-spacing:2.5px;color:var(--brand-blue,#0060C0);text-transform:uppercase;padding:5px 12px;background:rgba(0,96,192,.09);border-radius:100px;margin-bottom:16px;">الملصق</div>
-      <h2 class="section-title">مقاس واحد جاهز للاستعمال</h2>
-      <p class="section-sub" style="margin:0 auto;">مقاس مضبوط يناسب معظم العبوات، بطبقة خدش تُستعمل مرة واحدة.</p>
-    </div>
-
-    <div class="fx-label-wrap reveal">
-      <div class="fx-label-prev">
-        <div class="fx-label-figure">
-          <img src="/label-hologram.webp" alt="ملصق ORDIZ الهولوغرافي" width="420" height="659" loading="lazy" decoding="async">
-          <span class="pin pin-1">1</span>
-          <span class="pin pin-2">2</span>
-          <span class="pin pin-3">3</span>
-        </div>
-        <ul class="fx-label-legend">
-          <li><b>1</b> رمز QR — يفتح صفحة التحقق فوراً</li>
-          <li><b>2</b> كود مخفي — يظهر بعد كشط الطبقة</li>
-          <li><b>3</b> خلفية هولوغرافية — تُستعمل مرة واحدة</li>
-        </ul>
-      </div>
-      <div class="fx-label-specs">
-        <div class="fx-spec"><span>المقاس</span><b>1.5 سم × 2.5 سم</b></div>
-        <div class="fx-spec"><span>النوع</span><b>هولوغرام لاصق مقاوم للماء</b></div>
-        <div class="fx-spec"><span>الاستعمال</span><b>مرة واحدة فقط</b></div>
-        <div class="fx-spec"><span>يحتوي</span><b>QR + كود مخفي + اسم الدفعة</b></div>
-        <div class="fx-spec"><span>الطبقة</span><b>طبقة خدش</b></div>
-        <div class="fx-spec"><span>الحماية</span><b>يُكشف مرة واحدة فقط</b></div>
-        <div class="fx-spec"><span>الموقع</span><b>ordiz.online مطبوع على الملصق</b></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════ التطبيق ═══════════ -->
-<section class="page-content fx-sec" style="background:var(--bg-alt,#f8fafc);">
-  <div class="container">
-    <div class="fx-app reveal">
-      <div>
-        <div style="display:inline-block;font-size:11px;font-weight:900;letter-spacing:2.5px;color:var(--brand-green,#16A96B);text-transform:uppercase;padding:5px 12px;background:rgba(22,169,107,.1);border-radius:100px;margin-bottom:14px;">التطبيق</div>
-        <h2 class="section-title" style="text-align:start;margin-bottom:10px;">حمّل تطبيق ORDIZ</h2>
-        <p class="section-sub" style="margin:0 0 18px;">تحقّق أسرع، وتابع بلاغاتك من هاتفك. يعمل على أندرويد و iPhone، ويُثبّت من المتصفح مباشرة.</p>
-        <div class="fx-stores">
-          <a href="/downloads/OriginalDz.apk" download class="fx-store"><i>▶</i><span><b>Google Play</b><span>تحميل APK</span></span></a>
-          <a href="#" class="fx-store"><i></i><span><b>App Store</b><span>قريباً</span></span></a>
-          <a href="#" class="fx-store"><i>⬇</i><span><b>تثبيت مباشر</b><span>من المتصفح</span></span></a>
-        </div>
-      </div>
-      <div class="fx-app-art">
-        <div class="fx-mini">
-          <div class="fx-mini-scr">
-            <svg viewBox="0 0 29 29" style="width:56px;margin:0 auto 8px;background:#DCEAF6;border-radius:6px;padding:4px;">
-              <rect width="29" height="29" fill="#DCEAF6"/>
-              <g fill="#081422">
-                <rect x="1" y="1" width="7" height="7"/><rect x="21" y="1" width="7" height="7"/><rect x="1" y="21" width="7" height="7"/>
-                <rect x="12" y="10" width="3" height="3"/><rect x="17" y="10" width="2" height="2"/><rect x="11" y="15" width="2" height="2"/>
-                <rect x="19" y="15" width="2" height="2"/><rect x="22" y="18" width="3" height="3"/><rect x="11" y="23" width="2" height="2"/>
-              </g>
-            </svg>
-            <b style="color:#16A96B;font-size:10px;display:block;">✓ أصلي</b>
-            <span style="font-size:8px;opacity:.6;">نُور للأغذية</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════ شهادات ═══════════ -->
-<section class="page-content fx-sec">
-  <div class="container">
-    <div class="section-head reveal" style="text-align:center;max-width:720px;margin:0 auto 44px;">
-      <div style="display:inline-block;font-size:11px;font-weight:900;letter-spacing:2.5px;color:var(--brand-green,#16A96B);text-transform:uppercase;padding:5px 12px;background:rgba(22,169,107,.1);border-radius:100px;margin-bottom:16px;">شهادات</div>
-      <h2 class="section-title">واش قالو اللي جرّبوه</h2>
-    </div>
-    <div class="fx-quotes">
-      <div class="feature-landing reveal">
-        <p>«والله يا خاوتي خدمة نظيفة، الزبون يعرف بلي المنتج أصلي في ثانية، وأنا نرتاح من الأسئلة.»</p>
-        <div class="fx-who"><i>ن</i><div><b>نُور للأغذية</b><span>سطيف · أغذية</span></div></div>
-      </div>
-      <div class="feature-landing reveal">
-        <p>«حاجة مليحة بزّاف، بارك الله فيكم. ولّيت نشوف منين يتفقّد المنتج تاعي بلا حتى مشكلة.»</p>
-        <div class="fx-who"><i>ر</i><div><b>روتين بيو</b><span>الجزائر · تجميل</span></div></div>
-      </div>
-      <div class="feature-landing reveal">
-        <p>«والله خدمة تستاهل، راني نشوف وين تتباع السلعة تاعي ووين كاين التقليد. ربي يوفقكم.»</p>
-        <div class="fx-who"><i>أ</i><div><b>الأصيل</b><span>وهران · زيوت</span></div></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════ FAQ ═══════════ -->
-<section class="page-content" style="background: var(--bg-alt);">
-  <div class="container">
-    <div class="section-head reveal" style="text-align:center;max-width:700px;margin:0 auto 55px;">
-      <div style="display:inline-block;font-size:11px;font-weight:900;letter-spacing:2.5px;color:var(--brand-green);text-transform:uppercase;padding:5px 12px;background:rgba(22, 169, 107,0.1);border-radius:100px;margin-bottom:16px;" data-i18n="faqEyebrow">الأسئلة الشائعة</div>
-      <h2 class="section-title" data-i18n="faqTitle">إجابات فورية لأسئلتك</h2>
-      <p class="section-sub" style="margin:0 auto;" data-i18n="faqSub">كل ما تحتاج معرفته عن النظام.</p>
-    </div>
-
-    <div class="faq-list-landing">
-      <div class="faq-item-landing">
-        <button class="faq-q-landing"><span data-i18n="faq1Q">كيف أتحقق من منتج؟</span><span class="faq-icon-landing">+</span></button>
-        <div class="faq-a-landing"><div class="faq-a-inner-landing" data-i18n="faq1A">امسح QR على الملصق، اخدش الطبقة الفضية، أدخل الكود (7 أحرف) في صفحة التحقق — النتيجة تظهر فورًا.</div></div>
-      </div>
-
-      <div class="faq-item-landing">
-        <button class="faq-q-landing"><span data-i18n="faq3Q">ما الذي يميز ORDIZ؟</span><span class="faq-icon-landing">+</span></button>
-        <div class="faq-a-landing"><div class="faq-a-inner-landing" data-i18n="faq3A">تشفير قوي جداً، QR ثابت موحّد، تحقق فوري، إحصائيات ذكية، ومساعد AI.</div></div>
-      </div>
-
-      <div class="faq-item-landing">
-        <button class="faq-q-landing"><span data-i18n="faq4Q">هل يعمل بدون إنترنت؟</span><span class="faq-icon-landing">+</span></button>
-        <div class="faq-a-landing"><div class="faq-a-inner-landing" data-i18n="faq4A">نعم، التطبيق يعمل كـPWA — يمكن تثبيته على الهاتف والعمل offline بعد الزيارة الأولى.</div></div>
-      </div>
-
-      
-    </div>
-
-    <div style="text-align:center;margin-top:32px;">
-      <a href="/faq" class="site-btn site-btn-ghost" style="padding:12px 24px;font-size:14px;">
-        <span data-i18n="viewAllFaq">عرض كل الأسئلة</span>
-        <span>←</span>
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════ FINAL CTA ═══════════ -->
-<section class="page-content">
-  <div class="container">
-    <div style="background:linear-gradient(135deg,#001F52,#003080);border-radius:24px;padding:60px 30px;text-align:center;color:#fff;position:relative;overflow:hidden;">
-      <div style="position:absolute;top:-100px;right:-100px;width:300px;height:300px;background:radial-gradient(circle,rgba(22, 169, 107,0.3) 0%,transparent 70%);border-radius:50%;"></div>
-      <div style="position:absolute;bottom:-100px;left:-100px;width:250px;height:250px;background:radial-gradient(circle,rgba(0, 96, 192,0.25) 0%,transparent 70%);border-radius:50%;"></div>
-
-      <div style="position:relative;z-index:1;max-width:640px;margin:0 auto;">
-        <h2 style="font-size:clamp(26px,4vw,40px);font-weight:900;letter-spacing:-1.2px;margin:0 0 16px;line-height:1.15;" data-i18n="finalTitle">
-          هل أنت مستعد لحماية منتجاتك؟
-        </h2>
-        <p style="font-size:16px;color:#cbd5e1;margin:0 0 32px;line-height:1.6;" data-i18n="finalText">
-          ابدأ اليوم بحماية علامتك التجارية من التقليد.
-        </p>
-
-        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-          <a href="/signup" class="site-btn site-btn-green" style="padding:14px 28px;font-size:15px;">
-            <span>🚀</span>
-            <span data-i18n="ctaStart2">ابدأ مجانًا</span>
-          </a>
-          <a href="/verify" class="site-btn" style="padding:14px 28px;font-size:15px;background:rgba(255,255,255,0.1);color:#fff;border:1.5px solid rgba(255,255,255,0.2);">
-            <span>🔍</span>
-            <span data-i18n="ctaVerify2">جرّب التحقق</span>
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════ FOOTER ═══════════ -->
-<div id="site-footer"></div>
-
-<!-- ═══════════ SCRIPTS ═══════════ -->
-<script src="/site-layout.js"></script>
+</footer>
 
 <script>
-// ═══════════ i18n — الترجمات ═══════════
-(function() {
-  const TRANSLATIONS = {
-    ar: {
-      heroBadge: "🥇 منصة التحقق من الأصالة #1 في الجزائر",
-      heroTitle1: "احمِ منتجاتك من",
-      heroTitle2: "التقليد والمزيف",
-      heroLead: "نظام احترافي للتحقق من أصالة المنتجات عبر QR وكود مخفي. تشفير قوي جداً، كشف فوري للتقليد، وإحصائيات في الوقت الحقيقي.",
-      ctaVerify: "تحقق من منتج",
-      ctaDownload: "حمّل التطبيق",
-      stat1: "كود محمي", stat2: "علامة تجارية", stat3: "دقة التحقق", stat4: "متاح دائمًا",
-      howEyebrow: "كيف يعمل", howTitle: "3 خطوات بسيطة للتحقق", howSub: "يستغرق التحقق أقل من 10 ثوانٍ.",
-      step1Title: "📱 امسح QR", step1Text: "افتح كاميرا هاتفك وامسح الرمز.",
-      step2Title: "✂️ اخدش الطبقة", step2Text: "اكشف الكود السري تحت الطبقة.",
-      step3Title: "🔢 أدخل الكود", step3Text: "اكتب الكود في صفحة التحقق.",
-      step4Title: "✅ النتيجة فورًا", step4Text: "تعرف في ثانية إذا المنتج أصلي.",
-      featEyebrow: "المزايا", featTitle: "نظام متكامل، حماية قوية", featSub: "كل ما تحتاجه لحماية علامتك واكتساب ثقة زبائنك.",
-      f1Title: "تشفير قوي جداً", f1Text: "جميع الأكواد السرية مشفّرة في قاعدة البيانات.",
-      f2Title: "QR ثابت موحّد", f2Text: "نفس QR لكل الملصقات — توفير في الطباعة.",
-      f3Title: "تحقق فوري", f3Text: "النتيجة تظهر في أقل من ثانية.",
-      f4Title: "3 لغات", f4Text: "عربي، فرنسي، إنجليزي مع دعم RTL.",
-      f5Title: "إحصائيات دقيقة", f5Text: "تتبّع كل تحقق مع IP والتاريخ والموقع.",
-      f6Title: "مساعد ذكي", f6Text: "روبوت دردشة AI للإجابة على الزبائن.",
-      f7Title: "خريطة حرارية", f7Text: "رؤية جغرافية لكل البلاغات (69 ولاية).",
-      f8Title: "PWA + Offline", f8Text: "يعمل بدون تحميل وبدون إنترنت.",
-      f9Title: "كشف البوتات", f9Text: "حماية تلقائية من السكريبتات.",
-      brandsEyebrow: "للعلامات التجارية", brandsTitle: "احمِ علامتك التجارية",
-      brandsText: "انضم إلى العلامات التجارية التي تثق بنا. احصل على لوحة تحكم كاملة لإدارة أكوادك ومتابعة بلاغات التقليد.",
-      b1: "حد أدنى 5,000", b1Text: "5,000 كود كحد أدنى للدفعة",
-      b2: "تشفير كامل", b2Text: "جميع الأكواد مشفّرة في قاعدة البيانات",
-      b3: "طباعة احترافية", b3Text: "ملصقات مع خط الطي الجاهز",
-      b4: "إحصائيات فورية", b4Text: "لوحة تحكم خاصة ببياناتك",
-      ctaStart: "ابدأ الآن مجانًا",
-      reportEyebrow: "🛡️ حماية المستهلك", reportTitle: "هل وجدت منتجًا مقلدًا؟",
-      reportSub: "أبلغنا فورًا. اختر نوع الإبلاغ المناسب لحالتك.",
-      reportBrandTitle: "منتج مقلد لعلامة تجارية",
-      reportBrandText: "أبلغ عن منتج يحمل QR ORDIZ لكنه ليس أصليًا.",
-      reportCta: "إبلاغ الآن",
-      faqEyebrow: "الأسئلة الشائعة", faqTitle: "إجابات فورية لأسئلتك", faqSub: "كل ما تحتاج معرفته عن النظام.",
-      faq1Q: "كيف أتحقق من منتج؟", faq1A: "امسح QR على الملصق، اخدش الطبقة الفضية، أدخل الكود (7 أحرف) في صفحة التحقق — النتيجة تظهر فورًا.",
-      faq2Q: "هل التسجيل مجاني؟", faq2A: "نعم، مجاني 100% للعلامات التجارية — بلا اشتراك ولا رسوم على الأكواد.",
-      faq3Q: "ما الذي يميز ORDIZ؟", faq3A: "تشفير قوي جداً، QR ثابت موحّد، تحقق فوري، إحصائيات ذكية، ومساعد AI.",
-      faq4Q: "هل يعمل بدون إنترنت؟", faq4A: "نعم، التطبيق يعمل كـPWA — يمكن تثبيته على الهاتف والعمل offline بعد الزيارة الأولى.",
-      viewAllFaq: "عرض كل الأسئلة",
-      finalTitle: "هل أنت مستعد لحماية منتجاتك؟",
-      finalText: "ابدأ اليوم بحماية علامتك التجارية من التقليد.",
-      ctaStart2: "ابدأ مجانًا", ctaVerify2: "جرّب التحقق"
-    },
-    fr: {
-      heroBadge: "🥇 Plateforme d'authenticité #1 en Algérie",
-      heroTitle1: "Protégez vos produits de",
-      heroTitle2: "la contrefaçon",
-      heroLead: "Système professionnel de vérification d'authenticité via QR fixe et code secret caché. Chiffrement تشفير قوي, détection instantanée.",
-      ctaVerify: "Vérifier un produit",
-      ctaDownload: "Télécharger l'app",
-      stat1: "Codes protégés", stat2: "Marques", stat3: "Précision", stat4: "Toujours disponible",
-      howEyebrow: "Comment ça marche", howTitle: "4 étapes simples", howSub: "Moins de 10 secondes.",
-      step1Title: "📱 Scannez le QR", step1Text: "Ouvrez l'appareil photo et scannez.",
-      step2Title: "✂️ Grattez la zone", step2Text: "Révélez le code secret.",
-      step3Title: "🔢 Entrez le code", step3Text: "Saisissez le code.",
-      step4Title: "✅ Résultat immédiat", step4Text: "Vous savez en une seconde.",
-      featEyebrow: "Fonctionnalités", featTitle: "Un système complet", featSub: "Tout pour protéger votre marque.",
-      f1Title: "Chiffrement تشفير قوي", f1Text: "Tous les codes secrets sont chiffrés.",
-      f2Title: "QR fixe unique", f2Text: "Même QR pour toutes les étiquettes.",
-      f3Title: "Vérification instantanée", f3Text: "Résultat en moins d'une seconde.",
-      f4Title: "3 langues", f4Text: "Arabe, français et anglais avec RTL.",
-      f5Title: "Statistiques précises", f5Text: "Suivez chaque vérification avec IP et date.",
-      f6Title: "Assistant IA", f6Text: "Chatbot propulsé par l'IA.",
-      f7Title: "Carte thermique", f7Text: "Vue géographique des signalements.",
-      f8Title: "PWA + Offline", f8Text: "Fonctionne hors ligne.",
-      f9Title: "Détection de bots", f9Text: "Protection automatique.",
-      brandsEyebrow: "Pour les marques", brandsTitle: "Protégez votre marque",
-      brandsText: "Rejoignez les marques qui nous font confiance.",
-      b1: "Minimum 5 000", b1Text: "5 000 codes minimum par lot",
-      b2: "Chiffrement complet", b2Text: "Tous les codes chiffrés en base",
-      b3: "Impression pro", b3Text: "Étiquettes avec ligne de pliage",
-      b4: "Statistiques live", b4Text: "Tableau de bord dédié",
-      ctaStart: "Commencer gratuitement",
-      reportEyebrow: "🛡️ Protection consommateur", reportTitle: "Produit contrefait ?",
-      reportSub: "Signalez-le immédiatement. Choisissez le type.",
-      reportBrandTitle: "Produit contrefait (marque)",
-      reportBrandText: "Signalez un produit avec QR ORDIZ non authentique.",
-      reportCta: "Signaler",
-      faqEyebrow: "FAQ", faqTitle: "Réponses instantanées", faqSub: "Tout ce que vous devez savoir.",
-      faq1Q: "Comment vérifier un produit ?", faq1A: "Scannez le QR, grattez la couche, entrez le code (7 caractères) sur la page de vérification.",
-      faq2Q: "L'inscription est gratuite ?", faq2A: "Oui, 100% gratuit pour les marques. Pour les boutiques : dépôt remboursable.",
-      faq3Q: "Qu'est-ce qui distingue ORDIZ ?", faq3A: "Chiffrement تشفير قوي, QR fixe, vérification instantanée, stats, assistant IA.",
-      faq4Q: "Fonctionne hors ligne ?", faq4A: "Oui, en PWA — installable et fonctionne offline après la première visite.",
-      viewAllFaq: "Voir toutes les questions",
-      finalTitle: "Prêt à protéger vos produits ?",
-      finalText: "Protégez votre marque dès aujourd'hui.",
-      ctaStart2: "Commencer", ctaVerify2: "Essayer"
-    },
-    en: {
-      heroBadge: "🥇 #1 Authenticity Platform in Algeria",
-      heroTitle1: "Protect your products from",
-      heroTitle2: "counterfeiting",
-      heroLead: "Professional authentication system with fixed QR code and hidden secret code. تشفير قوي encryption, instant counterfeit detection.",
-      ctaVerify: "Verify a product",
-      ctaDownload: "Download app",
-      stat1: "Protected codes", stat2: "Brands", stat3: "Accuracy", stat4: "Always available",
-      howEyebrow: "How it works", howTitle: "4 simple steps", howSub: "Takes less than 10 seconds.",
-      step1Title: "📱 Scan QR", step1Text: "Open your camera and scan.",
-      step2Title: "✂️ Scratch the area", step2Text: "Reveal the secret code.",
-      step3Title: "🔢 Enter the code", step3Text: "Type the code.",
-      step4Title: "✅ Instant result", step4Text: "Know in a second.",
-      featEyebrow: "Features", featTitle: "A complete system", featSub: "Everything to protect your brand.",
-      f1Title: "تشفير قوي Encryption", f1Text: "All codes are encrypted.",
-      f2Title: "One fixed QR", f2Text: "Same QR for all labels.",
-      f3Title: "Instant verification", f3Text: "Result in less than a second.",
-      f4Title: "3 languages", f4Text: "Arabic, French, English.",
-      f5Title: "Accurate statistics", f5Text: "Track every verification.",
-      f6Title: "AI Assistant", f6Text: "AI-powered chatbot.",
-      f7Title: "Heatmap", f7Text: "Geographic view of reports.",
-      f8Title: "PWA + Offline", f8Text: "Works offline.",
-      f9Title: "Bot detection", f9Text: "Automatic protection.",
-      brandsEyebrow: "For brands", brandsTitle: "Protect your brand",
-      brandsText: "Join the brands that trust us.",
-      b1: "Minimum 5,000", b1Text: "5,000 codes minimum per batch",
-      b2: "Full encryption", b2Text: "All codes encrypted in DB",
-      b3: "Pro printing", b3Text: "Labels with fold line",
-      b4: "Live statistics", b4Text: "Dedicated dashboard",
-      ctaStart: "Start for free",
-      reportEyebrow: "🛡️ Consumer protection", reportTitle: "Found a counterfeit?",
-      reportSub: "Report now. Choose the type.",
-      reportBrandTitle: "Counterfeit (brand)",
-      reportBrandText: "Report a product with a non-authentic QR ORDIZ.",
-      reportCta: "Report",
-      faqEyebrow: "FAQ", faqTitle: "Instant answers", faqSub: "Everything you need to know.",
-      faq1Q: "How to verify a product?", faq1A: "Scan the QR, scratch the layer, enter the code (7 chars) on the verification page.",
-      faq2Q: "Is registration free?", faq2Q: "Is registration free?", faq2A: "Yes, 100% free for brands — no subscription, no fee per code.",
-      faq3Q: "What makes ORDIZ unique?", faq3A: "تشفير قوي, one fixed QR, instant verification, stats, AI assistant.",
-      faq4Q: "Works offline?", faq4A: "Yes, as PWA — installable and works offline after first visit.",
-      viewAllFaq: "View all questions",
-      finalTitle: "Ready to protect your products?",
-      finalText: "Protect your brand today.",
-      ctaStart2: "Get started", ctaVerify2: "Try it"
-    }
-  };
+// شريط التقدم
+addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-innerHeight;document.getElementById('progress').style.width=(scrollY/h*100)+'%'});
 
-  let currentLang = localStorage.getItem("lang") || "ar";
-  if (!localStorage.getItem("lang")) {
-    const bl = (navigator.language || "ar").toLowerCase().slice(0, 2);
-    currentLang = bl === "fr" ? "fr" : bl === "en" ? "en" : "ar";
-  }
+// بقعة ضوء تتبع الماوس
+addEventListener('mousemove',e=>{const s=document.getElementById('spot');s.style.setProperty('--mx',e.clientX+'px');s.style.setProperty('--my',e.clientY+'px')});
 
-  function t(key) {
-    return (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) ||
-           (TRANSLATIONS.ar[key]) || key;
-  }
+// شبكة
+const g=document.getElementById('grid'),gc=g.getContext('2d');
+function size(){g.width=innerWidth;g.height=innerHeight}size();addEventListener('resize',size);
+(function draw(){gc.clearRect(0,0,g.width,g.height);gc.strokeStyle='rgba(120,180,255,.06)';gc.lineWidth=1;const s=46;
+  for(let x=0;x<g.width;x+=s){gc.beginPath();gc.moveTo(x,0);gc.lineTo(x,g.height);gc.stroke()}
+  for(let y=0;y<g.height;y+=s){gc.beginPath();gc.moveTo(0,y);gc.lineTo(g.width,y);gc.stroke()}})();
 
-  function applyTranslations() {
-    document.querySelectorAll("[data-i18n]").forEach(el => {
-      const key = el.dataset.i18n;
-      const val = t(key);
-      if (val) el.textContent = val;
-    });
+// جسيمات
+const p=document.getElementById('particles'),pc=p.getContext('2d');p.width=innerWidth;p.height=innerHeight;
+const ps=Array.from({length:80},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.9+.4,v:Math.random()*.45+.1,o:Math.random()*.5+.3}));
+(function anim(){pc.clearRect(0,0,p.width,p.height);
+  ps.forEach(d=>{d.y-=d.v;if(d.y<0){d.y=p.height;d.x=Math.random()*p.width}
+    pc.beginPath();pc.arc(d.x,d.y,d.r,0,7);pc.fillStyle=`rgba(120,200,255,${d.o})`;pc.fill()});
+  requestAnimationFrame(anim)})();
 
-    document.documentElement.lang = currentLang;
-    document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
+// الهيدر
+addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('scrolled',scrollY>40));
 
-    document.title = currentLang === "ar"
-      ? "ORDIZ — حماية المنتجات من التقليد"
-      : currentLang === "fr"
-        ? "ORDIZ — Protégez vos produits"
-        : "ORDIZ — Protect your products";
-  }
+// كلمات متحركة
+const words=['يستحق','يستحق الحماية','يحكي قصته','يُحمى اليوم'];
+let wi=0,ci=0,del=true;
+(function type(){
+  const el=document.getElementById('rot'),w=words[wi];
+  el.textContent=w.slice(0,ci);
+  if(!del&&ci===w.length){setTimeout(()=>del=true,1400);return setTimeout(type,1400)}
+  if(del&&ci===0){del=false;wi=(wi+1)%words.length;return setTimeout(type,300)}
+  ci+=del?-1:1;setTimeout(type,del?45:95)})();
 
-  applyTranslations();
+// الكشف
+const io=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}}),{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
-  // إعادة تطبيق الترجمة عند تغيير اللغة
-  window.__applyLandingTranslations = applyTranslations;
+// العدادات
+const co=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting){const el=x.target,n=+el.dataset.count;let c=0;const t=setInterval(()=>{c+=Math.ceil(n/65);if(c>=n){c=n;clearInterval(t)}el.textContent=c.toLocaleString('fr-DZ')},22);co.unobserve(el)}}),{threshold:.5});
+document.querySelectorAll('[data-count]').forEach(el=>co.observe(el));
 
-  // مراقبة تغيير اللغة (من site-layout.js)
-  const originalSetItem = localStorage.setItem;
-  const observer = setInterval(() => {
-    const l = localStorage.getItem("lang") || "ar";
-    if (l !== currentLang) {
-      currentLang = l;
-      applyTranslations();
-    }
-  }, 500);
-})();
+// FAQ
+document.querySelectorAll('.fq button').forEach(b=>b.onclick=()=>b.parentElement.classList.toggle('open'));
 
-// ═══════════ FAQ Accordion ═══════════
-document.querySelectorAll('.faq-q-landing').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const item = btn.closest('.faq-item-landing');
-    const answer = item.querySelector('.faq-a-landing');
-    const isOpen = item.classList.contains('open');
+// إمالة ثلاثية الأبعاد عامة
+document.querySelectorAll('.tilt').forEach(el=>{
+  el.addEventListener('mousemove',e=>{const r=el.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+    el.style.transform=`perspective(800px) rotateY(${x*8}deg) rotateX(${-y*8}deg) translateY(-6px)`});
+  el.addEventListener('mouseleave',()=>el.style.transform='')});
 
-    document.querySelectorAll('.faq-item-landing').forEach(other => {
-      if (other !== item) {
-        other.classList.remove('open');
-        const a = other.querySelector('.faq-a-landing');
-        if (a) a.style.maxHeight = null;
-      }
-    });
-
-    if (isOpen) {
-      item.classList.remove('open');
-      answer.style.maxHeight = null;
-    } else {
-      item.classList.add('open');
-      answer.style.maxHeight = answer.scrollHeight + 'px';
-    }
-  });
-});
-
-// ═══════════ Scroll Reveal ═══════════
-(function() {
-  const els = document.querySelectorAll('.reveal');
-  if (!els.length) return;
-
-  if ('IntersectionObserver' in window) {
-    const obs = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          e.target.classList.add('visible');
-          obs.unobserve(e.target);
-        }
-      });
-    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-
-    els.forEach(el => obs.observe(el));
-  } else {
-    els.forEach(el => el.classList.add('visible'));
-  }
-})();
+// إمالة بطاقة الهيرو
+const card=document.getElementById('card');
+addEventListener('mousemove',e=>{const rx=e.clientX/innerWidth-.5,ry=e.clientY/innerHeight-.5;card.style.transform=`rotateY(${rx*12}deg) rotateX(${-ry*10}deg)`});
 </script>
-
-<script src="/bot-guard.js"></script>
-<script src="/landing-fx.js" defer></script>
 </body>
 </html>

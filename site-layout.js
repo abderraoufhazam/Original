@@ -1,7 +1,20 @@
 ﻿// ============================================================
-// ORDIZ — Site Layout System v1.3
+// ORDIZ — Site Layout System v1.4
 // Header + Footer + Dropdown (قانوني) + زر اللغة العائم
 // ============================================================
+
+(function() {
+  if (!document.getElementById('v2-theme-css')) {
+    var l = document.createElement('link');
+    l.id = 'v2-theme-css'; l.rel = 'stylesheet'; l.href = '/theme-v2.css';
+    document.head.appendChild(l);
+  }
+  if (!document.getElementById('v2-theme-js') && !window.__v2Init) {
+    var s = document.createElement('script');
+    s.id = 'v2-theme-js'; s.src = '/theme-v2.js'; s.defer = true;
+    document.head.appendChild(s);
+  }
+})();
 
 (function() {
   // ─── الصفحات ───
