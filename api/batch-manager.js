@@ -75,7 +75,7 @@ async function handleCreate(req, res) {
 
     const qty = Math.min(MAX_BATCH, rawQty);
     if (!access_token) {
-      return res.status(401).json({ status: 'ERROR', message: 'Non authentifiÃ©' });
+      return res.status(401).json({ status: 'ERROR', message: 'غير مصادق عليه' });
     }
 
     const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -250,7 +250,7 @@ async function handlePrint(req, res) {
       return res.status(400).json({ status: 'ERROR', message: 'Lot obligatoire' });
     }
     if (!access_token) {
-      return res.status(401).json({ status: 'ERROR', message: 'Non authentifiÃ©' });
+      return res.status(401).json({ status: 'ERROR', message: 'غير مصادق عليه' });
     }
 
     const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -317,7 +317,7 @@ async function handlePrint(req, res) {
       );
 
       if (!ownRes.ok) {
-        return res.status(500).json({ status: 'ERROR', message: 'Erreur vÃ©rification' });
+        return res.status(500).json({ status: 'ERROR', message: 'خطأ في التحقق' });
       }
 
       const own = await ownRes.json();
@@ -326,7 +326,7 @@ async function handlePrint(req, res) {
       if (!ownerId || ownerId !== userId) {
         return res.status(403).json({
           status: 'ERROR',
-          message: 'AccÃ¨s refusÃ© : cette lot ne vous appartient pas'
+          message: 'رفض الوصول: هذه الدفعة لا تخصّك'
         });
       }
     }
@@ -470,7 +470,7 @@ async function requireAdminToken(req, SUPABASE_URL, SERVICE_KEY) {
   const raw = req.headers.authorization || (req.body && req.body.access_token) || '';
   const token = String(raw).replace(/^Bearer\s+/i, '').trim();
 
-  if (!token) return { ok: false, code: 401, message: 'Non authentifiÃ©' };
+  if (!token) return { ok: false, code: 401, message: 'غير مصادق عليه' };
 
   let user;
   try {
@@ -506,7 +506,7 @@ async function requireAdminToken(req, SUPABASE_URL, SERVICE_KEY) {
   const email = String(user.email || '').toLowerCase().trim();
   if (email && ADMIN_EMAILS.includes(email)) return { ok: true, user };
 
-  return { ok: false, code: 403, message: 'AccÃ¨s refusÃ©' };
+  return { ok: false, code: 403, message: 'رفض الوصول' };
 }
 
 async function handleExportCodes(req, res) {
@@ -639,7 +639,7 @@ async function handleWilayaStats(req, res) {
       .replace(/^Bearer\s+/i, '').trim();
 
     if (!token) {
-      return res.status(401).json({ status: 'ERROR', message: 'Non authentifiÃ©' });
+      return res.status(401).json({ status: 'ERROR', message: 'غير مصادق عليه' });
     }
 
     const now = Date.now();
@@ -663,7 +663,7 @@ async function handleWilayaStats(req, res) {
       const forbidden = r.status === 403 || /access denied/i.test(errText);
       return res.status(forbidden ? 403 : 500).json({
         status: 'ERROR',
-        message: forbidden ? 'AccÃ¨s refusÃ©' : 'Erreur serveur',
+        message: forbidden ? 'رفض الوصول' : 'خطأ في الخادم',
         detail: forbidden ? undefined : errText.slice(0, 200)
       });
     }
@@ -693,7 +693,7 @@ async function handleWilayaReports(req, res) {
     const token = String(req.headers.authorization || body.access_token || '')
       .replace(/^Bearer\s+/i, '').trim();
 
-    if (!token) return res.status(401).json({ status: 'ERROR', message: 'Non authentifiÃ©' });
+    if (!token) return res.status(401).json({ status: 'ERROR', message: 'غير مصادق عليه' });
 
     const code = String(body.code || '').trim();
     if (!/^\d{1,2}$/.test(code)) {
@@ -745,7 +745,7 @@ async function handleWilayaTrend(req, res) {
     const token = String(req.headers.authorization || body.access_token || '')
       .replace(/^Bearer\s+/i, '').trim();
 
-    if (!token) return res.status(401).json({ status: 'ERROR', message: 'Non authentifiÃ©' });
+    if (!token) return res.status(401).json({ status: 'ERROR', message: 'غير مصادق عليه' });
 
     const code = String(body.code || '').trim();
     if (!/^\d{1,2}$/.test(code)) {
@@ -797,7 +797,7 @@ async function handleRekey(req, res) {
     const body = req.body || {};
     const token = String(req.headers.authorization || body.access_token || '')
       .replace(/^Bearer\s+/i, '').trim();
-    if (!token) return res.status(401).json({ status: 'ERROR', message: 'Non authentifiÃ©' });
+    if (!token) return res.status(401).json({ status: 'ERROR', message: 'غير مصادق عليه' });
 
     // Ø§Ù„Ø£Ø¯Ù…Ù† ÙÙ‚Ø·
     const adm = await requireAdminToken(req, SUPABASE_URL, SERVICE_KEY);
