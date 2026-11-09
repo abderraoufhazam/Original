@@ -78,7 +78,7 @@ window.CONTENT_TRANSLATIONS = {
     "brands.s4.title": { ar: "توزيع المنتجات", fr: "Distribuer les produits", en: "Distribute products" },
     "brands.s4.text": { ar: "ضع الملصق على كل منتج. الزبون يمسح، يخدش، يتحقق — أنت تحمي منتجك.", fr: "Placez l'étiquette sur chaque produit. Le client scanne, gratte, vérifie — vous protégez votre produit.", en: "Place the label on each product. Customer scans, scratches, verifies — you protect your product." },
     "brands.s5.title": { ar: "متابعة في الوقت الحقيقي", fr: "Suivi en temps réel", en: "Real-time tracking" },
-    "brands.s5.text": { ar: "لوحة تحكم كاملة: عدد التحققات، المواقع الجغرافية (58 ولاية)، بلاغات التقليد، وإحصائيات فورية.", fr: "Tableau de bord complet : vérifications, géolocalisation (58 wilayas), signalements, stats instantanées.", en: "Complete dashboard: verifications, geolocation (58 wilayas), reports, instant stats." },
+    "brands.s5.text": { ar: "لوحة تحكم كاملة: عدد التحققات، المواقع الجغرافية (69 ولاية)، بلاغات التقليد، وإحصائيات فورية.", fr: "Tableau de bord complet : vérifications, géolocalisation (58 wilayas), signalements, stats instantanées.", en: "Complete dashboard: verifications, geolocation (58 wilayas), reports, instant stats." },
 
     "security.title": { ar: "🔐 لماذا ORDIZ آمن؟", fr: "🔐 Pourquoi ORDIZ est sûr ?", en: "🔐 Why is ORDIZ secure?" },
     "security.encryption.title": { ar: "تشفير AES-256", fr: "Chiffrement AES-256", en: "AES-256 encryption" },
@@ -120,19 +120,6 @@ window.CONTENT_TRANSLATIONS = {
     "brand.f7": { ar: "دعم فني عبر واتساب", fr: "Support via WhatsApp", en: "WhatsApp support" },
     "brand.cta": { ar: "✨ ابدأ الآن مجانًا", fr: "✨ Commencer gratuitement", en: "✨ Start for free" },
 
-    "shop.title": { ar: "للمحلات الموثوقة", fr: "Pour les boutiques", en: "For shops" },
-    "shop.sub": { ar: "إثبات مصداقيتك للزبائن.", fr: "Prouvez votre crédibilité aux clients.", en: "Prove your credibility to customers." },
-    "shop.price": { ar: "عربون", fr: "Dépôt", en: "Deposit" },
-    "shop.priceSub": { ar: "قابل للاسترداد بالكامل", fr: "Entièrement remboursable", en: "Fully refundable" },
-    "shop.f1": { ar: "شارة \"محل موثوق\"", fr: "Badge « Boutique de confiance »", en: "\"Trusted shop\" badge" },
-    "shop.f2": { ar: "تعويض الزبون بـ50%", fr: "Compensation client 50%", en: "50% customer compensation" },
-    "shop.f3": { ar: "لوحة متابعة خاصة", fr: "Tableau de bord dédié", en: "Dedicated dashboard" },
-    "shop.f4": { ar: "إدارة العربون إلكترونيًا", fr: "Gestion électronique du dépôt", en: "Electronic deposit management" },
-    "shop.f5": { ar: "استرداد كامل عند استخدام كل الأكواد", fr: "Remboursement complet après usage de tous les codes", en: "Full refund after using all codes" },
-    "shop.f6": { ar: "دعم فني عبر واتساب", fr: "Support via WhatsApp", en: "WhatsApp support" },
-    "shop.f7": { ar: "شروط قانونية موثّقة", fr: "Conditions juridiques documentées", en: "Documented legal terms" },
-    "shop.cta": { ar: "📞 اطلب عرضًا", fr: "📞 Demander un devis", en: "📞 Request a quote" },
-
     "faq.title": { ar: "❓ أسئلة عن الأسعار", fr: "❓ Questions sur les prix", en: "❓ Pricing questions" },
     "faq.q1": { ar: "💵 كيف يتم دفع العربون؟", fr: "💵 Comment se paie le dépôt ?", en: "💵 How is the deposit paid?" },
     "faq.a1": { ar: "حاليًا: يدويًا (تحويل بنكي، CCP، أو نقدًا). قريبًا: دفع إلكتروني مباشر.", fr: "Actuellement : manuellement (virement, CCP ou espèces). Bientôt : paiement en ligne.", en: "Currently: manually (bank transfer, CCP, or cash). Soon: online payment." },
@@ -153,10 +140,9 @@ window.CONTENT_TRANSLATIONS = {
   faq: {
     "hero.badge": { ar: "❓ الأسئلة الشائعة", fr: "❓ Questions fréquentes", en: "❓ FAQ" },
     "hero.title": { ar: "كل ما تحتاج معرفته", fr: "Tout ce que vous devez savoir", en: "Everything you need to know" },
-    "hero.sub": { ar: "15 سؤالًا وجوابًا — مصنّفة حسب الموضوع.", fr: "15 questions et réponses — classées par thème.", en: "15 questions and answers — categorized." },
+    "hero.sub": { ar: "أسئلة وأجوبة — مصنّفة حسب الموضوع.", fr: "Questions et réponses — classées par thème.", en: "15 questions and answers — categorized." },
 
     "cat.brands": { ar: "🏢 للعلامات التجارية", fr: "🏢 Pour les marques", en: "🏢 For brands" },
-    "cat.shops": { ar: "🏪 للمحلات الموثوقة", fr: "🏪 Pour les boutiques", en: "🏪 For shops" },
     "cat.customers": { ar: "👤 للمستهلكين", fr: "👤 Pour les consommateurs", en: "👤 For customers" },
     "cat.tech": { ar: "🔧 تقنية", fr: "🔧 Technique", en: "🔧 Technical" },
 
@@ -168,17 +154,6 @@ window.CONTENT_TRANSLATIONS = {
     "b.a3": { ar: "من لوحة التحكم → \"Gérer un lot\" → اضغط \"🖨 IMPRIMER\". النظام يولّد PDF جاهز للطباعة بأحجام مختلفة.", fr: "Tableau de bord → « Gérer un lot » → « 🖨 IMPRIMER ». PDF prêt en plusieurs tailles.", en: "Dashboard → \"Gérer un lot\" → \"🖨 IMPRIMER\". Ready PDF in various sizes." },
     "b.q4": { ar: "ما هي مميزات الباقة المجانية؟", fr: "Quels sont les avantages de la formule gratuite ?", en: "What are the free plan features?" },
     "b.a4": { ar: "كل شيء: أكواد لا محدودة، لوحة تحكم كاملة، تقارير، إحصائيات، دعم فني، تشفير AES-256، وتحديثات مجانية.", fr: "Tout : codes illimités, tableau de bord complet, rapports, stats, support, AES-256, mises à jour.", en: "Everything: unlimited codes, full dashboard, reports, stats, support, AES-256, free updates." },
-
-    "s.q1": { ar: "كيف أسجّل محلي؟", fr: "Comment inscrire ma boutique ?", en: "How do I register my shop?" },
-    "s.a1": { ar: "اذهب إلى /signup → اختر \"🏪 محل\" → املأ البيانات → اقبل الشروط. سيتم مراجعة طلبك خلال 24-48 ساعة.", fr: "Allez sur /signup → choisissez « 🏪 Boutique » → remplissez → acceptez les conditions. Vérification en 24-48h.", en: "Go to /signup → choose \"🏪 Shop\" → fill in → accept terms. Reviewed within 24-48h." },
-    "s.q2": { ar: "كيف يتم دفع العربون؟", fr: "Comment se paie le dépôt ?", en: "How is the deposit paid?" },
-    "s.a2": { ar: "حاليًا يدويًا (تحويل بنكي، CCP، أو نقدًا). قريبًا: دفع إلكتروني مباشر من الموقع.", fr: "Actuellement manuellement (virement, CCP, espèces). Bientôt : paiement en ligne.", en: "Currently manually (transfer, CCP, cash). Soon: online payment." },
-    "s.q3": { ar: "متى أسترد العربون؟", fr: "Quand le dépôt est-il remboursé ?", en: "When is the deposit refunded?" },
-    "s.a3": { ar: "عند استخدام كل أكواد الدفعة. مثال: عربون 50,000 دج لـ500 كود — تسترده كاملًا عند استخدام 500/500 كود.", fr: "À l'usage de tous les codes du lot. Ex : dépôt 50 000 DA pour 500 codes — remboursé à 500/500.", en: "When all batch codes are used. Ex: 50,000 DA deposit for 500 codes — refunded at 500/500." },
-    "s.q4": { ar: "ما هي شروط الحظر؟", fr: "Quelles sont les conditions de bannissement ?", en: "What are the ban conditions?" },
-    "s.a4": { ar: "يُحظر المحل عند تحقق أحد الشرطين: 5 بلاغات مؤكدة من الزبائن، أو استهلاك 50% من العربون في التعويضات.", fr: "La boutique est bannie si : 5 signalements confirmés ou 50% du dépôt épuisé en compensations.", en: "The shop is banned if: 5 confirmed reports or 50% of deposit used in compensations." },
-    "s.q5": { ar: "كيف يعمل نظام التعويض؟", fr: "Comment fonctionne le système de compensation ?", en: "How does compensation work?" },
-    "s.a5": { ar: "عند إبلاغ زبون عن منتج مقلد (بعد التحقق من الأدمن)، يُخصم من عربونك 50% من سعر المنتج كتعويض للزبون.", fr: "Si un client signale un contrefait (vérifié par l'admin), 50% du prix est déduit de votre dépôt pour le rembourser.", en: "If a customer reports a counterfeit (verified by admin), 50% of price is deducted from your deposit." },
 
     "c.q1": { ar: "كيف أتحقق من منتج؟", fr: "Comment vérifier un produit ?", en: "How do I verify a product?" },
     "c.a1": { ar: "امسح QR على الملصق → اخدش الطبقة الفضية → أدخل الكود (7 أحرف) في صفحة التحقق → النتيجة تظهر فورًا.", fr: "Scannez le QR → grattez la couche → entrez le code (7 caractères) → résultat immédiat.", en: "Scan QR → scratch layer → enter code (7 chars) → instant result." },
@@ -194,7 +169,7 @@ window.CONTENT_TRANSLATIONS = {
     "t.q2": { ar: "هل يعمل بدون إنترنت؟", fr: "Fonctionne hors ligne ?", en: "Works offline?" },
     "t.a2": { ar: "التطبيق يعمل كـPWA — يمكن تثبيته على الهاتف والوصول لبعض الميزات offline بعد الزيارة الأولى.", fr: "L'appli fonctionne en PWA — installable et fonctionne offline après la première visite.", en: "App works as PWA — installable and works offline after first visit." },
     "t.q3": { ar: "ما هي الدول التي يعمل فيها؟", fr: "Dans quels pays fonctionne-t-il ?", en: "Which countries is it available in?" },
-    "t.a3": { ar: "النظام متاح عالميًا، لكنه مصمّم خصيصًا للسوق الجزائرية (58 ولاية، عملة دج، لغة عربية).", fr: "Disponible mondialement, mais conçu pour le marché algérien (58 wilayas, DA, arabe).", en: "Available worldwide, designed for the Algerian market (58 wilayas, DA, Arabic)." },
+    "t.a3": { ar: "النظام متاح عالميًا، لكنه مصمّم خصيصًا للسوق الجزائرية (69 ولاية، عملة دج، لغة عربية).", fr: "Disponible mondialement, mais conçu pour le marché algérien (58 wilayas, DA, arabe).", en: "Available worldwide, designed for the Algerian market (58 wilayas, DA, Arabic)." },
 
     "final.title": { ar: "لم تجد إجابتك؟", fr: "Pas trouvé votre réponse ?", en: "Didn't find your answer?" },
     "final.sub": { ar: "تواصل معنا وسنجيبك في أقل من ساعة.", fr: "Contactez-nous, réponse en moins d'une heure.", en: "Contact us, answered in less than an hour." },

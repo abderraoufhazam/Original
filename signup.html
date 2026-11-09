@@ -2,6 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8">
+  <link rel="canonical" href="https://www.ordiz.online/signup">
+  <meta name="description" content="سجّل علامتك التجارية في ORDIZ واحمِ منتجاتك من التقليد.">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>إنشاء حساب — ORDIZ</title>
   <link rel="manifest" href="/manifest.json">
@@ -505,10 +507,6 @@
       <button type="button" class="role-tab active" data-role="brand">
         <span class="role-tab-icon">🏢</span>
         <span class="role-tab-label" data-i18n="tabBrand">علامة تجارية</span>
-      </button>
-      <button type="button" class="role-tab" data-role="shop">
-        <span class="role-tab-icon">🏪</span>
-        <span class="role-tab-label" data-i18n="tabShop">محل</span>
       </button>
     </div>
 
@@ -1182,6 +1180,7 @@
     const qrole = params.get("role");
 
     if (qrole === "shop") {
+      return; // نظام المحلات ملغى
       currentRole = "shop";
       document.querySelectorAll(".role-tab").forEach(t => {
         t.classList.toggle("active", t.dataset.role === "shop");

@@ -2,6 +2,8 @@
 <html lang="fr" dir="ltr">
 <head>
   <meta charset="utf-8">
+  <meta name="description" content="لوحة إدارة ORDIZ.">
+  <link rel="canonical" href="https://www.ordiz.online/admin">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>ORDIZ — الإدارة</title>
   <link rel="manifest" href="/admin-manifest.json">
@@ -898,8 +900,8 @@ html.dark .card {
       <div class="nav-group">
         <div class="nav-group-label">Utilisateurs</div>
         <button class="nav-item" data-panel="brands"><span class="nav-icon">🏢</span><span>Marques</span></button>
-        <button class="nav-item" data-panel="shops"><span class="nav-icon">🏪</span><span>المحلات</span><span class="nav-badge hidden" id="shopsBadge">0</span></button>
-        <button class="nav-item" data-panel="shop-complaints"><span class="nav-icon">🚨</span><span>شكاوى المحلات</span><span class="nav-badge hidden" id="complaintsBadge">0</span></button>
+        
+        
         <button class="nav-item" data-panel="messages"><span class="nav-icon">📩</span><span>Messages</span><span class="nav-badge hidden" id="messagesBadge">0</span></button>
         <button class="nav-item" data-panel="feedback"><span class="nav-icon">⭐</span><span>Avis clients</span></button>
       </div>
@@ -1104,31 +1106,7 @@ html.dark .card {
           </div>
 
           <!-- 🏪 Shop Batch Box -->
-          <div id="shopBatchBox" class="hidden" style="margin-top:16px;padding:18px;background:var(--bg-secondary);border:2px solid var(--primary);border-radius:14px;text-align:right;">
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
-              <input type="checkbox" id="shopBatchToggle" style="width:20px;height:20px;accent-color:var(--primary);cursor:pointer;margin:0;">
-              <label for="shopBatchToggle" style="font-size:14px;font-weight:800;color:var(--text);cursor:pointer;margin:0;">
-                🏪 هذه الدفعة لمحل موثوق
-              </label>
-            </div>
-
-            <div id="shopBatchFields" class="hidden">
-              <label style="display:block;font-size:11px;font-weight:800;color:var(--text-secondary);margin-bottom:6px;letter-spacing:1px;">اختر المحل *</label>
-              <select id="shopBatchSelect" style="margin-bottom:12px;width:100%;">
-                <option value="">-- اختر المحل --</option>
-              </select>
-
-              <label style="display:block;font-size:11px;font-weight:800;color:var(--text-secondary);margin-bottom:6px;letter-spacing:1px;">💰 السعر لكل منتج (دج) *</label>
-              <input id="shopBatchPrice" type="number" min="0" step="50" placeholder="مثال: 5000" style="margin-bottom:14px;width:100%;">
-
-              <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                <button id="applyShopBatchBtn" class="btn btn-primary" style="flex:1;min-width:130px;">✅ تطبيق على كل الأكواد</button>
-                <button id="removeShopBatchBtn" class="btn btn-ghost" style="flex:1;min-width:130px;">↺ إلغاء الربط</button>
-              </div>
-
-              <div id="shopBatchResult" class="result hidden" style="margin-top:12px;"></div>
-            </div>
-          </div>
+          
 
           <button id="printLotBtn" class="btn btn-success btn-block hidden" style="margin-top:14px;">🖨 IMPRIMER CE LOT</button>
           <button id="exportLotCodesBtn" class="btn btn-ghost btn-block hidden" style="margin-top:10px;">📊 EXPORTER EN EXCEL</button>
@@ -1284,64 +1262,10 @@ html.dark .card {
       </section>
 
       <!-- SHOPS -->
-      <section class="panel" id="panel-shops">
-        <div class="panel-header">
-          <h1 class="panel-title"><span class="panel-title-icon">🏪</span><span>المحلات</span></h1>
-          <p class="panel-sub">إدارة طلبات المحلات · الموافقة · الرفض · العربون</p>
-        </div>
-
-        <div id="shopsStats" class="stats-grid"></div>
-
-        <div class="tabs" id="shopsTabs" style="margin:22px 0 16px;">
-          <button class="tab active" data-tab="pending">⏳ قيد المراجعة</button>
-          <button class="tab" data-tab="active">✅ النشطة</button>
-          <button class="tab" data-tab="banned">🚫 المحظورة</button>
-        </div>
-
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
-          <button id="refreshShopsBtn" class="btn btn-ghost" style="flex:1;min-width:140px;">🔄 تحديث</button>
-          <input id="shopsSearch" placeholder="🔍 بحث بالاسم أو الهاتف..." style="flex:2;min-width:180px;">
-        </div>
-
-        <div id="shopsList"></div>
-      </section>
+      
 
       <!-- SHOP COMPLAINTS -->
-      <section class="panel" id="panel-shop-complaints">
-        <div class="panel-header">
-          <h1 class="panel-title"><span class="panel-title-icon">🚨</span><span>شكاوى المحلات</span></h1>
-          <p class="panel-sub">بلاغات التقليد على المحلات الموثوقة</p>
-        </div>
-
-        <div id="complaintsStats" class="stats-grid"></div>
-
-        <div class="tabs" id="complaintsTabs" style="margin:22px 0 16px;">
-          <button class="tab active" data-tab="pending">⏳ معلّقة</button>
-          <button class="tab" data-tab="reviewing">🔍 قيد المراجعة</button>
-          <button class="tab" data-tab="verified">✅ مؤكدة</button>
-          <button class="tab" data-tab="rejected">❌ مرفوضة</button>
-        </div>
-
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-          <button id="refreshComplaintsBtn" class="btn btn-ghost" style="flex:1;min-width:120px;">🔄 تحديث</button>
-          <button id="exportComplaintsBtn" class="btn btn-success" style="flex:1;min-width:120px;">📊 Excel</button>
-          <input id="complaintsSearch" placeholder="🔍 بحث..." style="flex:2;min-width:180px;">
-        </div>
-
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
-          <select id="complaintsWilaya" style="flex:1;min-width:180px;">
-            <option value="">📍 كل الولايات</option>
-          </select>
-          <select id="complaintsDate" style="flex:1;min-width:140px;">
-            <option value="all">📅 كل الفترات</option>
-            <option value="7">آخر 7 أيام</option>
-            <option value="30">آخر 30 يومًا</option>
-            <option value="90">آخر 3 أشهر</option>
-          </select>
-        </div>
-
-        <div id="complaintsList"></div>
-      </section>
+      
 
       <!-- VISITORS -->
       <section class="panel" id="panel-visitors">
