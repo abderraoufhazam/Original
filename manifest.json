@@ -1,9 +1,9 @@
 {
   "id": "/",
-  "name": "ORDIZ — Vérification d'authenticité",
+  "name": "ORDIZ — التحقق من الأصالة",
   "short_name": "ORDIZ",
   "description": "Vérifiez l'authenticité d'un produit en scannant le QR code et en saisissant le code de sécurité.",
-  "start_url": "/",
+  "start_url": "/verify",
   "scope": "/",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui", "browser"],

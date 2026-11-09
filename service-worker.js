@@ -1,7 +1,7 @@
 ﻿// service-worker.js
 // ORDIZ — Service Worker v35
 
-const CACHE_VERSION = "v37";
+const CACHE_VERSION = "v38";
 const CACHE_NAME = `original-${CACHE_VERSION}`;
 const OFFLINE_CACHE = `original-offline-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `original-runtime-${CACHE_VERSION}`;
@@ -51,7 +51,16 @@ const CORE_ASSETS = [
   "/icon.png",
   "/instagram.png",
   "/facebook.png",
-  "/tiktok.png"
+  "/tiktok.png",
+  "/landing-fx.css",
+  "/landing-fx.js",
+  "/site-fx.css",
+  "/site-fx.js",
+  "/design-tokens.css",
+  "/ordiz-logo.png",
+  "/og-image.png",
+  "/label-hologram.webp",
+  "/label-hologram-open.webp"
 ];
 
 // ============================================================
@@ -160,7 +169,7 @@ self.addEventListener("push", (event) => {
     data = event.data ? event.data.json() : {};
   } catch (e) {
     data = {
-      title: "Original",
+      title: "ORDIZ",
       body: event.data ? event.data.text() : ""
     };
   }
