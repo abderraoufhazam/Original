@@ -1862,7 +1862,7 @@ if (_llb) _llb.onclick = async () => {
   while (true) {
     const { data, error } = await sb
       .from("qr_codes")
-      .select("id,secret_status,brand,lot,logo_url,product_name,reference,manufacture_date,expiry_date,description")
+      .select("id,secret_status,brand,lot,logo_url,product_name,reference,manufacture_date,expiry_date,description,product_image,instagram_url,facebook_url,tiktok_url")
       .eq("lot", lot)
       .order("id", { ascending: true })
       .range(from, from + PAGE - 1);
@@ -1897,19 +1897,28 @@ if (_llb) _llb.onclick = async () => {
   const plb = $("printLotBtn"); if (plb) plb.classList.remove("hidden");
   const eb = $("exportLotCodesBtn"); if (eb) eb.classList.remove("hidden");
 
-  // ✏️ نموذج تعديل معلومات اللوط
+  // ✏️ نموذج تعديل معلومات اللوط (كل حقول الإنشاء)
   const meta = all[0] || {};
   const mf = (v) => v ? String(v).slice(0, 10) : "";
+  const ev = (v) => v ? String(v).replace(/"/g, "&quot;") : "";
   info.innerHTML += `
     <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border);">
       <h3 style="font-size:14px;font-weight:800;margin:0 0 12px;">✏️ تعديل معلومات اللوط</h3>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div><label style="font-size:11px;font-weight:700;color:var(--text-tertiary);">اسم المنتج</label><input id="editProductName" value="${(meta.product_name||"").replace(/"/g,"&quot;")}" placeholder="مثال: سيروم 30 مل"></div>
-        <div><label style="font-size:11px;font-weight:700;color:var(--text-tertiary);">المرجع</label><input id="editReference" value="${(meta.reference||"").replace(/"/g,"&quot;")}" placeholder="REF-001"></div>
+        <div><label style="font-size:11px;font-weight:700;color:var(--text-tertiary);">اسم المنتج</label><input id="editProductName" value="${ev(meta.product_name)}" placeholder="مثال: سيروم 30 مل"></div>
+        <div><label style="font-size:11px;font-weight:700;color:var(--text-tertiary);">المرجع</label><input id="editReference" value="${ev(meta.reference)}" placeholder="REF-001"></div>
         <div><label style="font-size:11px;font-weight:700;color:var(--text-tertiary);">تاريخ التصنيع</label><input type="date" id="editManufacture" value="${mf(meta.manufacture_date)}"></div>
         <div><label style="font-size:11px;font-weight:700;color:var(--text-tertiary);">تاريخ الانتهاء</label><input type="date" id="editExpiry" value="${mf(meta.expiry_date)}"></div>
+        <div><label style="font-size:11px;font-weight:700;color:var(--text-tertiary);">رابط صورة المنتج</label><input id="editProductImage" value="${ev(meta.product_image)}" placeholder="https://...jpg"></div>
+        <div><label style="font-size:11px;font-weight:700;color:var(--text-tertiary);">رابط الشعار</label><input id="editLogoUrl" value="${ev(meta.logo_url)}" placeholder="https://...png"></div>
       </div>
       <div style="margin-top:10px;"><label style="font-size:11px;font-weight:700;color:var(--text-tertiary);">الوصف</label><textarea id="editDescription" rows="2" placeholder="وصف المنتج...">${(meta.description||"").replace(/</g,"&lt;")}</textarea></div>
+      <h3 style="margin:14px 0 10px;font-size:13px;font-weight:800;color:var(--text);">📱 روابط التواصل (اختياري)</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div><label style="font-size:11px;font-weight:700;color:var(--text-tertiary);">Instagram</label><input id="editInstagram" value="${ev(meta.instagram_url)}" placeholder="https://instagram.com/..."></div>
+        <div><label style="font-size:11px;font-weight:700;color:var(--text-tertiary);">Facebook</label><input id="editFacebook" value="${ev(meta.facebook_url)}" placeholder="https://facebook.com/..."></div>
+        <div style="grid-column:1/-1;"><label style="font-size:11px;font-weight:700;color:var(--text-tertiary);">TikTok</label><input id="editTiktok" value="${ev(meta.tiktok_url)}" placeholder="https://tiktok.com/@..."></div>
+      </div>
       <button id="saveLotBtn" class="btn btn-primary btn-block" style="margin-top:12px;">💾 حفظ التعديلات</button>
     </div>`;
 
@@ -1929,6 +1938,11 @@ if (_llb) _llb.onclick = async () => {
           manufacture_date: $("editManufacture").value,
           expiry_date: $("editExpiry").value,
           description: $("editDescription").value,
+          product_image: $("editProductImage").value,
+          logo_url: $("editLogoUrl").value,
+          instagram_url: $("editInstagram").value,
+          facebook_url: $("editFacebook").value,
+          tiktok_url: $("editTiktok").value,
           access_token: session.access_token
         })
       });
@@ -1938,7 +1952,6 @@ if (_llb) _llb.onclick = async () => {
     } catch (e) { window.toast("خطأ: " + e.message, "error"); }
     finally { _save.disabled = false; _save.textContent = "💾 حفظ التعديلات"; }
   };
-
 
   const shopBox = $("shopBatchBox");
   if (shopBox) shopBox.classList.remove("hidden");
