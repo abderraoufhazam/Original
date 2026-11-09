@@ -1,7 +1,7 @@
 /* ============================================================
-   OriginalDz — Site Layout System v1.3
+   ORDIZ — Site Layout System v1.4
    ============================================================ */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Tajawal:wght@400;500;700;800&display=swap');
 *, *::before, *::after { box-sizing: border-box; }
 
 :root {
@@ -626,7 +626,7 @@ body {
 }
 
 .page-hero h1 {
-  font-family: 'Playfair Display', serif !important;
+  font-family: 'Tajawal', sans-serif !important;
   background: linear-gradient(135deg, #ffffff 30%, #45C98A 100%) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
@@ -645,7 +645,7 @@ body {
 
 /* 3. عناوين الأقسام */
 .section-title {
-  font-family: 'Playfair Display', serif !important;
+  font-family: 'Tajawal', sans-serif !important;
   color: var(--text) !important;
 }
 
