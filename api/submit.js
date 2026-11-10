@@ -4,7 +4,7 @@
 // + إشعار بريد إلكتروني عبر Resend
 
 import { verifyTurnstile, getClientIp } from './_turnstile.js';
-import { hashCode, maskCode } from './_crypto.js';
+import { hashCode, maskCode, encryptCode, decryptCode } from './_crypto.js';
 
 export default async function handler(req, res) {
   // ✅ CORS محمي — قائمة أصول مسموحة
@@ -59,6 +59,7 @@ res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (type === 'brand-register') return handleBrandRegister(req, res);
   if (type === 'brand-login')    return handleBrandLogin(req, res);
 if (type === 'brand-reset-password') return handleBrandResetPassword(req, res);
+if (type === 'brand-get-password') return handleBrandGetPassword(req, res);
   
   return res.status(400).json({
     status: 'ERROR',
@@ -1394,6 +1395,13 @@ async function handleBrandRegister(req, res) {
     const raw = String(body.brand_name || (user.user_metadata && user.user_metadata.brand_name) || "").trim();
     if (raw.length < 2) return res.status(400).json({ status: "ERROR", message: "Nom invalide" });
 
+    // 🔐 تخزين كلمة السر مشفرة (لاسترجاعها لاحقاً من الأدمن)
+    const password = String(body.password || "");
+    let passwordEncrypted = null;
+    if (password) {
+      try { passwordEncrypted = encryptCode(password); } catch (e) { console.warn("encrypt password:", e); }
+    }
+
     const norm = normBrandName(raw);
     const ins = await fetch(`${SUPABASE_URL}/rest/v1/brand_names`, {
       method: "POST",
@@ -1403,7 +1411,7 @@ async function handleBrandRegister(req, res) {
         "Authorization": `Bearer ${KEY}`,
         "Prefer": "return=minimal"
       },
-      body: JSON.stringify([{ brand_name_norm: norm, brand_name: raw, user_id: user.id }])
+      body: JSON.stringify([{ brand_name_norm: norm, brand_name: raw, user_id: user.id, password_encrypted: passwordEncrypted }])
     });
 
     if (ins.status === 409) {
@@ -1668,5 +1676,52 @@ function generateEasyPassword() {
   let out = "";
   for (let i = 0; i < 8; i++) out += pool[Math.floor(Math.random() * pool.length)];
   return out;
+}
+
+
+// ── 5) استرجاع كلمة سر العلامة (أدمن فقط) ──
+async function handleBrandGetPassword(req, res) {
+  try {
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!SUPABASE_URL || !KEY) {
+      return res.status(500).json({ status: "ERROR", message: "Configuration manquante" });
+    }
+
+    // 🔒 أدمن فقط
+    if (!(await requireAdminToken(req))) {
+      return res.status(403).json({ status: "ERROR", message: "رفض الوصول" });
+    }
+
+    const body = req.body || {};
+    const raw = String(body.brand_name || "").trim();
+    if (raw.length < 2) {
+      return res.status(400).json({ status: "ERROR", message: "أدخل اسم العلامة" });
+    }
+
+    const norm = normBrandName(raw);
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/brand_names?brand_name_norm=eq.${encodeURIComponent(norm)}&select=brand_name,password_encrypted&limit=1`,
+      { headers: brandSvc(KEY) }
+    );
+    if (!r.ok) return res.status(500).json({ status: "ERROR", message: "خطأ في القراءة" });
+
+    const rows = await r.json();
+    if (!Array.isArray(rows) || rows.length === 0 || !rows[0].password_encrypted) {
+      return res.status(404).json({ status: "ERROR", message: "لا توجد كلمة سر مخزنة لهذه العلامة" });
+    }
+
+    let plain = null;
+    try {
+      plain = decryptCode(rows[0].password_encrypted);
+    } catch (e) {
+      return res.status(500).json({ status: "ERROR", message: "تعذّر فك تشفير كلمة السر" });
+    }
+
+    return res.status(200).json({ status: "OK", brand_name: rows[0].brand_name, password: plain });
+  } catch (e) {
+    console.error("brand-get-password:", e);
+    return res.status(500).json({ status: "ERROR", message: "خطأ غير متوقع" });
+  }
 }
 
