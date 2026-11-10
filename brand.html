@@ -58,21 +58,28 @@
     }
 
     html.dark {
-      --bg: #001F52;
-      --bg-secondary: #0f1420;
-      --card: #151b2d;
-      --card-hover: #1a2138;
-      --border: #1f2937;
-      --border-light: #1a2333;
-      --text: #f9fafb;
-      --text-secondary: #94a3b8;
-      --text-tertiary: #64748b;
-      --primary: #1D7BD0;
-      --primary-light: #60a5fa;
-      --primary-soft: rgba(29, 123, 208, 0.12);
-      --gold: #0060C0;
-      --gold-light: #1D7BD0;
-      --gold-soft: rgba(0, 96, 192, 0.12);
+      --bg: #060d18;
+      --bg-secondary: #0a1524;
+      --card: #0b1524;
+      --card-hover: #101c30;
+      --border: #1b2838;
+      --border-light: #141f30;
+      --text: #eaf4ff;
+      --text-secondary: #8ba3c2;
+      --text-tertiary: #5f7690;
+      --primary: #1d8cf8;
+      --primary-light: #4fb0ff;
+      --primary-soft: rgba(29, 140, 248, 0.12);
+      --gold: #1d8cf8;
+      --gold-light: #4fb0ff;
+      --gold-soft: rgba(29, 140, 248, 0.12);
+      --success: #1bf09a;
+      --success-soft: rgba(27, 240, 154, 0.12);
+      --warning: #ffb020;
+      --warning-soft: rgba(255, 176, 32, 0.14);
+      --danger: #ff5c6c;
+      --danger-soft: rgba(255, 92, 108, 0.14);
+      --info: #4fb0ff;
     }
 
     html, body {
@@ -1101,6 +1108,20 @@ html.dark .ai-analytics-section {
     .section, .card{transition:transform .18s,box-shadow .18s}
     .reveal{opacity:0;transform:translateY(22px);transition:.6s cubic-bezier(.2,.7,.3,1)}
     .reveal.in{opacity:1;transform:none}
+
+
+    /* ═══ ORDIZ Premium Skin ═══ */
+    body, button, input, textarea, select { font-family:'Tajawal',sans-serif !important; }
+    .sidebar { background:rgba(8,18,32,.7) !important; backdrop-filter:blur(18px); }
+    .nav-item.active { background:linear-gradient(135deg,rgba(27,240,154,.16),rgba(29,140,248,.12)) !important; color:var(--primary) !important; border-right:3px solid var(--primary); }
+    .nav-item { border-radius:11px; margin:2px 8px; border-right:3px solid transparent; }
+    .card, .section, .stat-card { border:1px solid var(--border); border-radius:16px; background:rgba(255,255,255,.03); backdrop-filter:blur(12px); }
+    .stat-card { position:relative; overflow:hidden; transition:transform .18s,box-shadow .18s; }
+    .stat-card::after { content:""; position:absolute; width:130px; height:130px; border-radius:50%; top:-45px; left:-45px; background:radial-gradient(circle,rgba(29,140,248,.15),transparent 70%); }
+    .stat-card:hover { transform:translateY(-4px); box-shadow:0 16px 40px -18px rgba(0,0,0,.7); }
+    .stat-value { font-size:28px !important; font-weight:800; }
+    .btn-primary, .primary-btn { background:linear-gradient(135deg,var(--success),var(--success)) !important; color:#06100a !important; border:0 !important; }
+    .topbar { background:rgba(8,18,32,.6); backdrop-filter:blur(18px); }
 
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
