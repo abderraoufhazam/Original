@@ -92,6 +92,7 @@
 
   // إمالة ثلاثية الأبعاد للبطاقات
   function tilt() {
+    if (/login|signup/.test(location.pathname)) return;  // صفحات الدخول/التسجيل بلا حركة
     document.querySelectorAll('.card, .feature-card, .pricing-card, .feature-landing, .step-landing').forEach(function (el) {
       el.classList.add('v2-tilt');
       el.addEventListener('mousemove', function (e) {
