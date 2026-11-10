@@ -83,23 +83,23 @@ window.alert = function(msg) {
 };
 
 const PANEL_TITLES = {
-  dashboard: "Tableau de bord",
-  create: "Créer un lot",
-  search: "Rechercher un code",
-  "adv-search": "Recherche avancée",
-  manage: "Gérer un lot",
-  orders: "Commandes",
-  debts: "Dettes",
-  inventory: "Stock",
-  log: "Journal",
-  feedback: "Avis clients",
-  messages: "Messages",
-  brands: "Marques",
-  visitors: "Visiteurs",
-  fakes: "Contrefaçons",
-  faq: "FAQ",
-  delete: "Suppression",
-  settings: "Impression"
+  dashboard: "نظرة عامة",
+  create: "إنشاء دفعة",
+  search: "البحث عن كود",
+  "adv-search": "بحث متقدم",
+  manage: "إدارة دفعة",
+  orders: "الطلبات",
+  debts: "الديون",
+  inventory: "المخزون",
+  log: "السجل",
+  feedback: "آراء الزبائن",
+  messages: "الرسائل",
+  brands: "العلامات",
+  visitors: "الزوار",
+  fakes: "التقليد",
+  faq: "الأسئلة",
+  delete: "حذف",
+  settings: "الطباعة"
 };
 
 function showPanel(name) {
