@@ -979,19 +979,19 @@ html.dark .card {
         </div>
 
         <div id="stats" class="stats-grid">
-          <div class="stat-card"><div class="stat-header"><div class="stat-icon success">🟢</div></div><div class="stat-value" id="statUnused">—</div><div class="stat-label">UNUSED</div></div>
-          <div class="stat-card"><div class="stat-header"><div class="stat-icon primary">🔵</div></div><div class="stat-value" id="statUsed">—</div><div class="stat-label">USED</div></div>
-          <div class="stat-card"><div class="stat-header"><div class="stat-icon danger">🔴</div></div><div class="stat-value" id="statDisabled">—</div><div class="stat-label">DISABLED</div></div>
-          <div class="stat-card"><div class="stat-header"><div class="stat-icon warning">⏰</div></div><div class="stat-value" id="statExpired">—</div><div class="stat-label">EXPIRED</div></div>
+          <div class="stat-card"><div class="stat-header"><div class="stat-icon success">🟢</div></div><div class="stat-value" id="statUnused">—</div><div class="stat-label">متاح</div></div>
+          <div class="stat-card"><div class="stat-header"><div class="stat-icon primary">🔵</div></div><div class="stat-value" id="statUsed">—</div><div class="stat-label">مستعمل</div></div>
+          <div class="stat-card"><div class="stat-header"><div class="stat-icon danger">🔴</div></div><div class="stat-value" id="statDisabled">—</div><div class="stat-label">معطّل</div></div>
+          <div class="stat-card"><div class="stat-header"><div class="stat-icon warning">⏰</div></div><div class="stat-value" id="statExpired">—</div><div class="stat-label">منتهي</div></div>
         </div>
 
-        <div class="chart-box"><div class="chart-title">📈 Vérifications — 14 derniers jours</div><canvas id="chartDaily" style="max-height:240px;"></canvas></div>
-        <div class="chart-box"><div class="chart-title">🥧 Répartition des résultats</div><canvas id="chartResults" style="max-height:240px;"></canvas></div>
-        <div class="chart-box"><div class="chart-title">📊 Top 5 lots les plus vérifiés</div><canvas id="chartTopLots" style="max-height:240px;"></canvas></div>
+        <div class="chart-box"><div class="chart-title">📈 التحققات — آخر 14 يوم</div><canvas id="chartDaily" style="max-height:240px;"></canvas></div>
+        <div class="chart-box"><div class="chart-title">🥧 توزيع النتائج</div><canvas id="chartResults" style="max-height:240px;"></canvas></div>
+        <div class="chart-box"><div class="chart-title">📊 أكثر 5 دفعات تحققاً</div><canvas id="chartTopLots" style="max-height:240px;"></canvas></div>
 
         <div class="card" style="margin-top:24px;">
-          <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:12px;">🔗 QR Commun</div>
-          <p class="muted" style="margin:0 0 12px;">Ce QR est identique pour tous les autocollants.</p>
+          <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:12px;">🔗 QR المشترك</div>
+          <p class="muted" style="margin:0 0 12px;">هذا الـQR موحّد لكل الملصقات.</p>
           <p id="publicUrl" class="muted" style="font-family:'SF Mono','Courier New',monospace;font-size:12px;word-break:break-all;padding:10px 14px;background:var(--bg-secondary);border-radius:10px;margin-bottom:16px;"></p>
           <div id="qr" class="qr-box"></div>
         </div>
