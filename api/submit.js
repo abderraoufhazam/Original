@@ -1539,3 +1539,127 @@ async function handleBrandLogin(req, res) {
     return res.status(500).json({ status: "ERROR", message: "Erreur inattendue" });
   }
 }
+
+
+// ── 4) إعادة كلمة السر: اسم العلامة → كلمة سر جديدة للبريد المسجّل ──
+async function handleBrandResetPassword(req, res) {
+  try {
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!SUPABASE_URL || !KEY) {
+      return res.status(500).json({ status: "ERROR", message: "Configuration manquante" });
+    }
+
+    const body = req.body || {};
+    const raw = String(body.brand_name || "").trim();
+    if (raw.length < 2) {
+      return res.status(400).json({ status: "ERROR", message: "أدخل اسم العلامة التجارية" });
+    }
+    const norm = normBrandName(raw);
+
+    // حد محاولات (3 طلبات / 15 دقيقة لكل علامة)
+    try {
+      const rl = await fetch(`${SUPABASE_URL}/rest/v1/rpc/check_rate_limit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...brandSvc(KEY) },
+        body: JSON.stringify({ p_key: "brandreset:" + norm, p_limit: 3, p_window_seconds: 900 })
+      });
+      if (rl.ok) {
+        const allowed = await rl.json();
+        if (allowed === false) {
+          return res.status(429).json({ status: "ERROR", message: "طلبات كثيرة. حاول لاحقاً بعد 15 دقيقة." });
+        }
+      }
+    } catch (e) { /* fail-open */ }
+
+    let userId = null;
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/brand_names?brand_name_norm=eq.${encodeURIComponent(norm)}&select=user_id&limit=1`,
+      { headers: brandSvc(KEY) }
+    );
+    if (r.ok) {
+      const rows = await r.json();
+      if (Array.isArray(rows) && rows.length > 0) userId = rows[0].user_id;
+    }
+
+    if (!userId) {
+      for (let page = 1; page <= 5 && !userId; page++) {
+        const lr = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?per_page=200&page=${page}`, { headers: brandSvc(KEY) });
+        if (!lr.ok) break;
+        const list = await lr.json();
+        const users = (list && list.users) || [];
+        if (users.length === 0) break;
+        const found = users.find(u => {
+          const m = u.user_metadata || {};
+          const role = String(m.role || "brand").toLowerCase();
+          return role === "brand" && normBrandName(m.brand_name) === norm;
+        });
+        if (found) userId = found.id;
+      }
+    }
+
+    if (!userId) {
+      return res.status(404).json({ status: "ERROR", message: "لا توجد علامة تجارية بهذا الاسم" });
+    }
+
+    const uRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${encodeURIComponent(userId)}`, { headers: brandSvc(KEY) });
+    if (!uRes.ok) return res.status(500).json({ status: "ERROR", message: "خطأ في جلب الحساب" });
+    const u = await uRes.json();
+    if (!u || !u.email) return res.status(500).json({ status: "ERROR", message: "الحساب بدون بريد مسجّل" });
+
+    const newPass = generateEasyPassword();
+
+    const upd = await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${encodeURIComponent(userId)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...brandSvc(KEY) },
+      body: JSON.stringify({ password: newPass })
+    });
+    if (!upd.ok) {
+      const txt = await upd.text();
+      console.error("brand-reset upd:", upd.status, txt.slice(0, 150));
+      return res.status(500).json({ status: "ERROR", message: "فشل تحديث كلمة السر" });
+    }
+
+    const EMAILJS_SERVICE_ID = process.env.EMAILJS_SERVICE_ID || "service_42s5mbn";
+    const EMAILJS_PUBLIC_KEY = process.env.EMAILJS_PUBLIC_KEY || "juoh_rOKaec16kxrH";
+    const EMAILJS_TEMPLATE_ID = process.env.EMAILJS_TEMPLATE_RESET || process.env.EMAILJS_TEMPLATE_VERIFY;
+    const emailRes = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        service_id: EMAILJS_SERVICE_ID,
+        template_id: EMAILJS_TEMPLATE_ID,
+        user_id: EMAILJS_PUBLIC_KEY,
+        template_params: {
+          to_email: u.email,
+          brand_name: (u.user_metadata && u.user_metadata.brand_name) || raw,
+          code: newPass
+        }
+      })
+    });
+    if (!emailRes.ok) {
+      const txt = await emailRes.text();
+      console.error("brand-reset email:", emailRes.status, txt.slice(0, 150));
+      return res.status(500).json({ status: "ERROR", message: "تعذّر إرسال البريد" });
+    }
+
+    return res.status(200).json({
+      status: "OK",
+      message: "تم إرسال كلمة مرور جديدة إلى بريدكم المسجّل عند أول تسجيل."
+    });
+  } catch (e) {
+    console.error("brand-reset:", e);
+    return res.status(500).json({ status: "ERROR", message: "خطأ غير متوقع" });
+  }
+}
+
+// كلمة سر من 8 أحرف: حروف صغيرة + أرقام، بدون رموز ملتبسة
+function generateEasyPassword() {
+  const letters = "abcdefghjkmnpqrstuvwxyz";
+  const digits = "23456789";
+  const pool = letters + digits;
+  let out = "";
+  for (let i = 0; i < 8; i++) out += pool[Math.floor(Math.random() * pool.length)];
+  return out;
+}
+
