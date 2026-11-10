@@ -58,6 +58,7 @@ res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (type === 'brand-check')    return handleBrandCheck(req, res);
   if (type === 'brand-register') return handleBrandRegister(req, res);
   if (type === 'brand-login')    return handleBrandLogin(req, res);
+if (type === 'brand-reset-password') return handleBrandResetPassword(req, res);
   
   return res.status(400).json({
     status: 'ERROR',
