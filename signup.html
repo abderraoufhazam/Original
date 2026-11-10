@@ -1068,7 +1068,7 @@
         const chk = await fetch("/api/submit?type=brand-check", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ brand_name: userData.brand_name })
+          body: JSON.stringify({ brand_name: userData.brand_name, password: password })
         });
         const chkData = await chk.json();
 

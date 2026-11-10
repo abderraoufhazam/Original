@@ -1295,6 +1295,15 @@ html.dark .card {
           <h1 class="panel-title"><span class="panel-title-icon">🏢</span><span>العلامات</span></h1>
           <p class="panel-sub">Toutes les marques inscrites et leurs statistiques.</p>
         </div>
+
+        <div style="padding:16px;border:1px solid var(--border);border-radius:12px;margin-bottom:16px;background:var(--card);">
+          <div style="font-size:13px;font-weight:800;margin-bottom:10px;">🔑 استرجاع كلمة سر علامة</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input id="recoverBrandName" placeholder="اسم العلامة التجارية" style="flex:2;min-width:180px;">
+            <button id="recoverBrandBtn" class="btn btn-primary" style="flex:1;min-width:140px;">استرجاع</button>
+          </div>
+          <div id="recoverBrandResult" class="result hidden" style="margin-top:12px"></div>
+        </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
           <button id="refreshBrandsBtn" class="btn btn-ghost" style="flex:1;min-width:140px;">🔄 ACTUALISER</button>
           <button id="exportBrandsBtn" class="btn btn-ghost" style="flex:1;min-width:140px;">📊 EXPORTER EXCEL</button>
