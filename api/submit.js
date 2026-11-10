@@ -1609,20 +1609,15 @@ async function handleBrandResetPassword(req, res) {
 
     const newPass = generateEasyPassword();
 
-    const upd = await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${encodeURIComponent(userId)}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", ...brandSvc(KEY) },
-      body: JSON.stringify({ password: newPass })
-    });
-    if (!upd.ok) {
-      const txt = await upd.text();
-      console.error("brand-reset upd:", upd.status, txt.slice(0, 150));
-      return res.status(500).json({ status: "ERROR", message: "فشل تحديث كلمة السر" });
-    }
-
+    // 1) إرسال البريد أولاً (حتى لا تتغيّر كلمة السر إذا فشل البريد)
     const EMAILJS_SERVICE_ID = process.env.EMAILJS_SERVICE_ID || "service_42s5mbn";
     const EMAILJS_PUBLIC_KEY = process.env.EMAILJS_PUBLIC_KEY || "juoh_rOKaec16kxrH";
     const EMAILJS_TEMPLATE_ID = process.env.EMAILJS_TEMPLATE_RESET || process.env.EMAILJS_TEMPLATE_VERIFY;
+
+    if (!EMAILJS_TEMPLATE_ID) {
+      return res.status(500).json({ status: "ERROR", message: "قالب البريد غير مضبوط (EMAILJS_TEMPLATE_RESET)" });
+    }
+
     const emailRes = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1639,8 +1634,20 @@ async function handleBrandResetPassword(req, res) {
     });
     if (!emailRes.ok) {
       const txt = await emailRes.text();
-      console.error("brand-reset email:", emailRes.status, txt.slice(0, 150));
-      return res.status(500).json({ status: "ERROR", message: "تعذّر إرسال البريد" });
+      console.error("brand-reset email:", emailRes.status, txt.slice(0, 200));
+      return res.status(500).json({ status: "ERROR", message: "تعذّر إرسال البريد: " + txt.slice(0, 160) });
+    }
+
+    // 2) بعد نجاح البريد → حدّث كلمة السر
+    const upd = await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${encodeURIComponent(userId)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...brandSvc(KEY) },
+      body: JSON.stringify({ password: newPass })
+    });
+    if (!upd.ok) {
+      const txt = await upd.text();
+      console.error("brand-reset upd:", upd.status, txt.slice(0, 150));
+      return res.status(500).json({ status: "ERROR", message: "فشل تحديث كلمة السر" });
     }
 
     return res.status(200).json({
