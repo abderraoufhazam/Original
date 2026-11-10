@@ -56,6 +56,18 @@
       <a href="/signup" style="color:#16A96B;font-weight:800">سجّل الآن</a>
     </p>
 
+    <p class="small" style="margin-top:12px">
+      <a href="#" id="forgotLink" style="color:#94a3b8;font-size:13px;">نسيت كلمة السر؟</a>
+    </p>
+
+    <div id="forgotBox" class="hidden" style="margin-top:14px;padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--bg-alt);text-align:right;">
+      <p style="font-size:14px;font-weight:800;margin:0 0 8px;">🔑 استعادة كلمة السر</p>
+      <p style="font-size:12px;color:var(--text-muted);margin:0 0 12px;line-height:1.7;">أدخل اسم علامتك التجارية، وسنرسل كلمة مرور جديدة إلى البريد الذي سجّلت به عند أول مرة.</p>
+      <input id="forgotBrand" type="text" placeholder="اسم العلامة التجارية" maxlength="80" style="width:100%;margin-bottom:10px;">
+      <button id="forgotBtn" type="button" style="width:100%;padding:11px;border:0;border-radius:100px;background:#16A96B;color:#fff;font:inherit;font-size:14px;font-weight:800;cursor:pointer;">طلب كلمة مرور جديدة</button>
+      <div id="forgotMsg" class="result hidden" style="margin-top:12px"></div>
+    </div>
+
     <p class="small" style="margin-top:10px;font-size:11px;color:#94a3b8">
       <a href="/" style="color:inherit">← العودة للرئيسية</a>
     </p>
@@ -242,6 +254,51 @@ $("loginForm").addEventListener("submit", async (e) => {
 
   await finishLogin(data.session.access_token, btn);
 });
+
+// ── استعادة كلمة السر (اسم العلامة → بريد مسجّل) ──
+const forgotLink = $("forgotLink");
+const forgotBox = $("forgotBox");
+if (forgotLink && forgotBox) {
+  forgotLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    forgotBox.classList.toggle("hidden");
+  });
+
+  $("forgotBtn").addEventListener("click", async () => {
+    const brandName = $("forgotBrand").value.trim();
+    const msg = $("forgotMsg");
+
+    if (!brandName) {
+      msg.className = "result danger";
+      msg.innerHTML = '<p style="margin:0">الرجاء إدخال اسم العلامة التجارية.</p>';
+      msg.classList.remove("hidden");
+      return;
+    }
+
+    const btn = $("forgotBtn");
+    btn.disabled = true;
+    btn.textContent = "جارٍ الإرسال...";
+
+    try {
+      const res = await fetch("/api/submit?type=brand-reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ brand_name: brandName })
+      });
+      const data = await res.json();
+      msg.className = "result " + (data.status === "OK" ? "success" : "danger");
+      msg.innerHTML = '<p style="margin:0">' + (data.message || "حدث خطأ.") + '</p>';
+      msg.classList.remove("hidden");
+    } catch (err) {
+      msg.className = "result danger";
+      msg.innerHTML = '<p style="margin:0">تعذّر الاتصال بالخادم.</p>';
+      msg.classList.remove("hidden");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "طلب كلمة مرور جديدة";
+    }
+  });
+}
 
 // Dark mode
 const darkToggle = $("darkToggle");
