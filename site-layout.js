@@ -199,6 +199,7 @@
       <div class="site-header-inner">
         <a href="/" class="site-logo" aria-label="ORDIZ">
           <img src="/ordiz-logo.png" alt="ORDIZ" style="height:38px;width:auto;max-width:180px;object-fit:contain;">
+          <img src="/label-hologram.webp" alt="ملصق ORDIZ" style="height:34px;width:auto;border-radius:6px;margin-inline-start:10px;box-shadow:0 2px 10px -2px rgba(0,150,255,.5);">
         </a>
 
         <nav class="site-nav">
@@ -269,6 +270,7 @@
         <div class="site-footer-grid">
           <div class="site-footer-brand">
             <img src="/ordiz-logo.png" alt="ORDIZ" style="height:44px;width:auto;max-width:200px;object-fit:contain;background:#fff;padding:6px 10px;border-radius:8px;">
+            <img src="/label-hologram.webp" alt="ملصق ORDIZ" style="height:40px;width:auto;border-radius:6px;margin-top:8px;box-shadow:0 2px 10px -2px rgba(0,150,255,.5);">
             <p>${t("footerDesc")}</p>
             <div class="site-footer-social">
               <a href="https://wa.me/213556339415" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>
