@@ -21,28 +21,28 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #f5f7fb;
-      --bg-secondary: #eef2f7;
+      --bg: #eef1f6;
+      --bg-secondary: #e7ecf3;
       --card: #ffffff;
-      --card-hover: #fafbfc;
-      --border: #e5e9f0;
-      --border-light: #eef2f7;
-      --text: #001F52;
-      --text-secondary: #64748b;
-      --text-tertiary: #94a3b8;
-      --primary: #1e40af;
-      --primary-light: #1D7BD0;
-      --primary-soft: rgba(30, 64, 175, 0.08);
-      --gold: #0060C0;
-      --gold-light: #1D7BD0;
-      --gold-soft: rgba(0, 96, 192, 0.1);
-      --success: #10b981;
-      --success-soft: rgba(16, 185, 129, 0.1);
-      --warning: #f59e0b;
-      --warning-soft: rgba(245, 158, 11, 0.1);
-      --danger: #ef4444;
-      --danger-soft: rgba(239, 68, 68, 0.1);
-      --info: #0ea5e9;
+      --card-hover: #fafbfd;
+      --border: #e3e8ef;
+      --border-light: #edf1f6;
+      --text: #0f1c30;
+      --text-secondary: #6b7a94;
+      --text-tertiary: #93a1b6;
+      --primary: #0a5fd0;
+      --primary-light: #1d78e0;
+      --primary-soft: rgba(10, 95, 208, 0.08);
+      --gold: #0a5fd0;
+      --gold-light: #1d78e0;
+      --gold-soft: rgba(10, 95, 208, 0.1);
+      --success: #0ea96b;
+      --success-soft: rgba(14, 169, 107, 0.1);
+      --warning: #e28a0c;
+      --warning-soft: rgba(226, 138, 12, 0.12);
+      --danger: #e04a4f;
+      --danger-soft: rgba(224, 74, 79, 0.12);
+      --info: #1d8cf8;
       --radius-sm: 10px;
       --radius: 14px;
       --radius-lg: 20px;
@@ -833,6 +833,20 @@ html.dark .card {
   backdrop-filter: blur(10px) !important;
   -webkit-backdrop-filter: blur(10px) !important;
 }  
+
+    /* ═══ ORDIZ Owner Skin — تلميع بصري ═══ */
+    .nav-item{border-radius:10px;margin:2px 8px;padding:10px 14px;border-right:3px solid transparent;transition:.15s}
+    .nav-item:hover{background:var(--card-hover)}
+    .nav-item.active{background:linear-gradient(135deg,var(--primary-soft),rgba(14,169,107,.07));color:var(--primary);border-right:3px solid var(--primary);font-weight:700}
+    .card{box-shadow:var(--shadow-sm);transition:transform .16s,box-shadow .16s,border-color .16s}
+    .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+    .btn-primary,#createBtn,#newOrderBtn{background:linear-gradient(135deg,var(--primary),var(--primary-light));border:0;box-shadow:0 4px 14px -4px rgba(10,95,208,.5)}
+    .btn-primary:hover,#createBtn:hover{box-shadow:0 8px 22px -6px rgba(10,95,208,.6)}
+    .panel-title{background:linear-gradient(120deg,var(--primary),var(--success));-webkit-background-clip:text;background-clip:text;color:transparent}
+    .stats-grid .stat-card,.stats-grid > div{border-radius:14px;box-shadow:var(--shadow-sm);transition:.16s}
+    .stats-grid .stat-card:hover,.stats-grid > div:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+    .sidebar-logo,.login-brand{filter:none}
+
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
 </head>
