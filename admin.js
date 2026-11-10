@@ -2438,30 +2438,4 @@ if (_efkb) _efkb.onclick = async () => {
 // ============================================================
 
 
-// ═══ استرجاع كلمة سر علامة (أدمن) ═══
-const _rcvBtn = $("recoverBrandBtn");
-if (_rcvBtn) _rcvBtn.onclick = async () => {
-  const name = ($("recoverBrandName").value || "").trim();
-  const box = $("recoverBrandResult");
-  if (!name) { box.className = "result danger"; box.innerHTML = "<p>أدخل اسم العلامة</p>"; box.classList.remove("hidden"); return; }
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) { box.className = "result danger"; box.innerHTML = "<p>سجّل الدخول كأدمن أولاً</p>"; box.classList.remove("hidden"); return; }
-  _rcvBtn.disabled = true; _rcvBtn.textContent = "جارٍ...";
-  try {
-    const res = await fetch("/api/submit?type=brand-get-password", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ brand_name: name, access_token: session.access_token })
-    });
-    const data = await res.json();
-    if (data.status === "OK") {
-      box.className = "result success";
-      box.innerHTML = "<p>كلمة سر <b>" + (data.brand_name || name) + "</b>: <b style='letter-spacing:2px'>" + data.password + "</b></p>";
-    } else {
-      box.className = "result danger";
-      box.innerHTML = "<p>" + (data.message || "خطأ") + "</p>";
-    }
-    box.classList.remove("hidden");
-  } catch (e) { box.className = "result danger"; box.innerHTML = "<p>تعذّر الاتصال</p>"; box.classList.remove("hidden"); }
-  finally { _rcvBtn.disabled = false; _rcvBtn.textContent = "استرجاع"; }
-};
 
