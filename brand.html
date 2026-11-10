@@ -1093,7 +1093,16 @@ html.dark .ai-analytics-section {
   overflow-y: auto;
   flex: 1;
 }
-  </style>
+  
+    /* ═══ بطاقات وحركات فاخرة ═══ */
+    .stat-card{position:relative;overflow:hidden;transition:transform .18s,box-shadow .18s;border-radius:16px}
+    .stat-card::after{content:"";position:absolute;width:120px;height:120px;border-radius:50%;top:-40px;left:-40px;background:radial-gradient(circle,rgba(29,140,248,.14),transparent 70%)}
+    .stat-card:hover{transform:translateY(-4px)}
+    .section, .card{transition:transform .18s,box-shadow .18s}
+    .reveal{opacity:0;transform:translateY(22px);transition:.6s cubic-bezier(.2,.7,.3,1)}
+    .reveal.in{opacity:1;transform:none}
+
+</style>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -1126,14 +1135,14 @@ html.dark .ai-analytics-section {
 
     <nav class="sidebar-nav">
       <div class="nav-group">
-        <div class="nav-group-label">Vue d'ensemble</div>
+        <div class="nav-group-label">نظرة عامة</div>
         <button class="nav-item active" data-scroll="section-overview">
           <span class="nav-icon">📊</span>
-          <span>Tableau de bord</span>
+          <span>لوحة التحكم</span>
         </button>
         <button class="nav-item" data-scroll="section-activity">
           <span class="nav-icon">📈</span>
-          <span>Activité</span>
+          <span>النشاط</span>
         </button>
         <button class="nav-item" data-scroll="section-map">
           <span class="nav-icon">🗺️</span>
@@ -1142,27 +1151,27 @@ html.dark .ai-analytics-section {
       </div>
 
       <div class="nav-group">
-        <div class="nav-group-label">Mon compte</div>
+        <div class="nav-group-label">حسابي</div>
         <button class="nav-item" data-scroll="section-orders">
           <span class="nav-icon">📋</span>
-          <span>Commandes</span>
+          <span>الطلبات</span>
           <span class="nav-badge hidden" id="ordersBadge">0</span>
         </button>
         <button class="nav-item" data-scroll="section-lots-stats">
           <span class="nav-icon">🏷️</span>
-          <span>Mes lots</span>
+          <span>دفعاتي</span>
         </button>
       </div>
 
       <div class="nav-group">
-        <div class="nav-group-label">Aide</div>
+        <div class="nav-group-label">المساعدة</div>
         <a href="/contact" class="nav-item">
           <span class="nav-icon">💬</span>
-          <span>Contact</span>
+          <span>تواصل</span>
         </a>
         <a href="/verify" class="nav-item">
           <span class="nav-icon">🔍</span>
-          <span>Page de vérification</span>
+          <span>صفحة التحقق</span>
         </a>
       </div>
     </nav>
@@ -1202,7 +1211,7 @@ html.dark .ai-analytics-section {
         </svg>
       </button>
 
-      <div class="topbar-title">Tableau de bord</div>
+      <div class="topbar-title">لوحة التحكم</div>
 
       <div class="topbar-spacer"></div>
 
@@ -1228,8 +1237,8 @@ html.dark .ai-analytics-section {
       <section class="hero" id="section-overview">
         <div class="hero-inner">
           <div class="hero-text">
-            <h1>Bonjour <span id="heroName">Marque</span> 👋</h1>
-            <p>Voici un aperçu de votre activité aujourd'hui</p>
+            <h1>مرحباً <span id="heroName">علامة</span> 👋</h1>
+            <p>إليك ملخص نشاطك اليوم</p>
           </div>
           <div class="hero-badge">
             <span class="hero-badge-dot"></span>
@@ -1246,7 +1255,7 @@ html.dark .ai-analytics-section {
             <div class="stat-trend neutral">Actifs</div>
           </div>
           <div class="stat-value" id="sUnused">—</div>
-          <div class="stat-label">Codes actifs</div>
+          <div class="stat-label">أكواد نشطة</div>
         </div>
 
         <div class="stat-card">
@@ -1255,7 +1264,7 @@ html.dark .ai-analytics-section {
             <div class="stat-trend neutral">Utilisés</div>
           </div>
           <div class="stat-value" id="sUsed">—</div>
-          <div class="stat-label">Codes utilisés</div>
+          <div class="stat-label">أكواد مستعملة</div>
         </div>
 
         <div class="stat-card">
@@ -1264,7 +1273,7 @@ html.dark .ai-analytics-section {
             <div class="stat-trend neutral">En attente</div>
           </div>
           <div class="stat-value" id="sPending">—</div>
-          <div class="stat-label">En attente</div>
+          <div class="stat-label">قيد الانتظار</div>
         </div>
 
         <div class="stat-card">
@@ -1273,7 +1282,7 @@ html.dark .ai-analytics-section {
             <div class="stat-trend neutral">Désactivés</div>
           </div>
           <div class="stat-value" id="sDisabled">—</div>
-          <div class="stat-label">Désactivés</div>
+          <div class="stat-label">معطّلة</div>
         </div>
       </section>
 
@@ -1320,14 +1329,14 @@ html.dark .ai-analytics-section {
         <div class="section-head">
           <div class="section-title">
             <span class="section-title-icon">🏷️</span>
-            <span>Mes lots (إحصائيات)</span>
+            <span>دفعاتي (إحصائيات)</span>
           </div>
         </div>
         <div id="lotsStatsList" class="card-list">
           <div class="empty-state">
             <div class="empty-state-icon">🏷️</div>
             <div class="empty-state-title">Chargement...</div>
-            <div class="empty-state-text">Récupération de vos lots</div>
+            <div class="empty-state-text">جاري تحميل دفعاتك</div>
           </div>
         </div>
       </section>
@@ -1336,14 +1345,14 @@ html.dark .ai-analytics-section {
         <div class="section-head">
           <div class="section-title">
             <span class="section-title-icon">📋</span>
-            <span>Mes commandes</span>
+            <span>طلباتي</span>
           </div>
         </div>
         <div id="ordersList" class="card-list">
           <div class="empty-state">
             <div class="empty-state-icon">📋</div>
             <div class="empty-state-title">Chargement...</div>
-            <div class="empty-state-text">Récupération de vos commandes</div>
+            <div class="empty-state-text">جاري تحميل طلباتك</div>
           </div>
         </div>
       </section>
@@ -1367,14 +1376,14 @@ html.dark .ai-analytics-section {
         <div class="section-head">
           <div class="section-title">
             <span class="section-title-icon">🚨</span>
-            <span>Signalements de contrefaçon</span>
+            <span>بلاغات التقليد</span>
           </div>
         </div>
         <div id="reportsList">
           <div class="empty-state">
             <div class="empty-state-icon">🔍</div>
             <div class="empty-state-title">Chargement...</div>
-            <div class="empty-state-text">Vérification des signalements</div>
+            <div class="empty-state-text">جاري التحقق من البلاغات</div>
           </div>
         </div>
       </section>
@@ -2467,5 +2476,25 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 <script src="/bot-guard.js"></script>
+
+<script>
+(function(){
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(x){ if(x.isIntersecting){ x.target.classList.add('in'); io.unobserve(x.target); } });
+  },{threshold:.08});
+  document.querySelectorAll('.section, .stat-card, .card').forEach(function(el){
+    if(!el.classList.contains('reveal')) el.classList.add('reveal');
+    io.observe(el);
+  });
+  document.querySelectorAll('.stat-card').forEach(function(el){
+    el.addEventListener('mousemove', function(e){
+      var r=el.getBoundingClientRect(), x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
+      el.style.transform='perspective(700px) rotateY('+(x*6)+'deg) rotateX('+(-y*6)+'deg)';
+    });
+    el.addEventListener('mouseleave', function(){ el.style.transform=''; });
+  });
+})();
+</script>
+
 </body>
 </html>
