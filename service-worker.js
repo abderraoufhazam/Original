@@ -1,7 +1,7 @@
 ﻿// service-worker.js
 // ORDIZ — Service Worker v35
 
-const CACHE_VERSION = "v41";
+const CACHE_VERSION = "v42";
 const CACHE_NAME = `original-${CACHE_VERSION}`;
 const OFFLINE_CACHE = `original-offline-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `original-runtime-${CACHE_VERSION}`;
