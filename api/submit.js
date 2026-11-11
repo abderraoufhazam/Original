@@ -1392,6 +1392,9 @@ async function handleBrandRegister(req, res) {
     const user = await uRes2.json();
     const raw = String(body.brand_name || (user.user_metadata && user.user_metadata.brand_name) || "").trim();
     if (raw.length < 2) return res.status(400).json({ status: "ERROR", message: "Nom invalide" });
+    if (/[\u0600-\u06FF]/.test(raw)) {
+      return res.status(400).json({ status: "ERROR", message: "اسم العلامة التجارية يجب أن يكون بالفرنسية (أحرف لاتينية)" });
+    }
 
     const norm = normBrandName(raw);
     const ins = await fetch(`${SUPABASE_URL}/rest/v1/brand_names`, {
