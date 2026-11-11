@@ -2438,4 +2438,41 @@ if (_efkb) _efkb.onclick = async () => {
 // ============================================================
 
 
+// ═══ قائمة اللوتات + حذف اختياري ═══
+const _lll = $("loadLotsListBtn");
+if (_lll) _lll.onclick = async () => {
+  const box = $("lotsList");
+  if (!box) return;
+  box.innerHTML = "<p style='color:var(--text-tertiary)'>جارٍ التحميل...</p>";
+  let data = null, error = null;
+  try {
+    const res = await sb.rpc("admin_list_lots");
+    data = res.data; error = res.error;
+  } catch (e) { error = e; }
+
+  if (error) { box.innerHTML = "<p class='danger'>تعذّر التحميل: " + escapeHtml(error.message || error) + "</p>"; return; }
+  if (!data || !data.length) { box.innerHTML = "<p style='color:var(--text-tertiary)'>لا توجد لوتات.</p>"; return; }
+
+  box.innerHTML = data.map(r => `
+    <div style="display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid var(--border);border-radius:10px;">
+      <span style="font-size:16px;">📦</span>
+      <b style="font-size:14px;">${escapeHtml(r.lot)}</b>
+      <span style="color:var(--text-secondary);font-size:12.5px;">${escapeHtml(r.brand || "")}</span>
+      <span class="num" style="color:var(--text-tertiary);font-size:12px;margin-right:auto;">${Number(r.total).toLocaleString("fr-DZ")} كود</span>
+      <button class="btn btn-danger" style="padding:6px 14px;font-size:12.5px;" data-lot="${escapeHtml(r.lot)}">🗑️ حذف</button>
+    </div>
+  `).join("");
+
+  box.querySelectorAll("button[data-lot]").forEach(b => {
+    b.onclick = async () => {
+      const lot = b.dataset.lot;
+      if (!confirm("⚠️ حذف اللوط «" + lot + "» نهائياً؟ لا يمكن التراجع.")) return;
+      b.disabled = true; b.textContent = "جارٍ...";
+      const { error: delErr } = await sb.from("qr_codes").delete().eq("lot", lot);
+      if (delErr) { window.toast("خطأ: " + delErr.message, "error"); b.disabled = false; b.textContent = "🗑️ حذف"; return; }
+      window.toast("✓ حُذف اللوط «" + lot + "»", "success");
+      _lll.click();
+    };
+  });
+};
 
