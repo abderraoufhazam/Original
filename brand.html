@@ -2097,7 +2097,10 @@ async function loadReports() {
     try {
       const res = await fetch("/api/ai?mode=analytics", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + session.access_token
+        },
         body: JSON.stringify({
           brand_name: brandName,
           days: 30
