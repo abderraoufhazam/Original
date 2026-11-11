@@ -1026,6 +1026,10 @@
     if (currentRole === "brand") {
       const brandName = brandInput.value.trim();
       if (!brandName || brandName.length < 2) return showMsg(t("errName"), "error");
+      // شرط: اسم العلامة بالفرنسية (أحرف لاتينية) — لا يسمح بالعربية
+      if (/[\u0600-\u06FF]/.test(brandName)) {
+        return showMsg("اسم العلامة التجارية يجب أن يكون بالفرنسية (أحرف لاتينية)", "error");
+      }
     } else {
       const shopName = shopInput.value.trim();
       if (!shopName || shopName.length < 2) return showMsg(t("errName"), "error");
