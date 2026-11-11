@@ -138,15 +138,14 @@ async function handleCreate(req, res) {
     if (!brand || typeof brand !== 'string' || brand.trim() === '') {
       return res.status(400).json({ status: 'ERROR', message: 'Marque obligatoire' });
     }
-    // الحد الأدنى للدفعة: 5,000 كود — مفروض على السيرفر
-    const MIN_BATCH = 5000;
+    const MIN_BATCH = 1;
     const MAX_BATCH = 200000;
     const rawQty = parseInt(quantity, 10) || 0;
 
     if (!rawQty || rawQty < MIN_BATCH) {
       return res.status(400).json({
         status: 'ERROR',
-        message: 'الحد الأدنى للدفعة هو 5,000 كود (Minimum par lot : 5 000 codes)',
+        message: 'أدخل كمية صحيحة أكبر من صفر',
         minimum: MIN_BATCH
       });
     }
