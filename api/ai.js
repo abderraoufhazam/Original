@@ -723,10 +723,9 @@ async function handleAnalytics(req, res) {
     // 1) OpenRouter — نموذج نصي مجاني مع مهلة 25 ثانية
     if (process.env.OPENROUTER_API_KEY) {
       try {
-        const models = await pickOpenRouterTextModels(process.env.OPENROUTER_API_KEY);
-        const model = (models && models[0]) || "meta-llama/llama-3.2-3b-instruct:free";
+        const model = process.env.OPENROUTER_MODEL || "meta-llama/llama-3.2-3b-instruct:free";
         const ctrl = new AbortController();
-        const tid = setTimeout(function () { ctrl.abort(); }, 25000);
+        const tid = setTimeout(function () { ctrl.abort(); }, 20000);
         const or = await fetch("https://openrouter.ai/api/v1/chat/completions", {
           method: "POST",
           headers: {
@@ -755,20 +754,24 @@ async function handleAnalytics(req, res) {
       }
     }
 
-    // 2) Gemini (احتياط)
+    // 2) Gemini (احتياط) — مهلة 15 ثانية
     if (!text && GEMINI_API_KEY) {
       try {
+        const gctrl = new AbortController();
+        const gtid = setTimeout(function () { gctrl.abort(); }, 15000);
         const aiRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${(await pickFlashModels(GEMINI_API_KEY))[0]}:generateContent?key=${GEMINI_API_KEY}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${GEMINI_API_KEY}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               contents: [{ parts: [{ text: dataBlock }] }],
               generationConfig: { temperature: 0.2, maxOutputTokens: 2048 }
-            })
+            }),
+            signal: gctrl.signal
           }
         );
+        clearTimeout(gtid);
         if (aiRes.ok) {
           const aiData = await aiRes.json();
           text = (aiData.candidates?.[0]?.content?.parts || []).map(function (x) { return x.text || ''; }).join('');
@@ -780,9 +783,30 @@ async function handleAnalytics(req, res) {
       }
     }
 
+    // تحليل محلي احتياطي (يعمل دائماً حتى لو تعذّر كل المزوّدين)
     if (!text) {
-      console.error('analytics: no provider returned text:', lastErr.slice(0, 200));
-      return res.status(500).json({ status: 'ERROR', message: "تعذّر التحليل حالياً. حاول لاحقاً.", detail: lastErr.slice(0, 160) });
+      console.error('analytics: no provider, using local heuristic. err:', lastErr.slice(0, 160));
+      const wcount = {};
+      (reports || []).forEach(function (r) {
+        const w = r.wilaya || 'غير محدد';
+        wcount[w] = (wcount[w] || 0) + 1;
+      });
+      const sorted = Object.keys(wcount).map(function (k) { return [k, wcount[k]]; }).sort(function (a, b) { return b[1] - a[1]; });
+      const n = reports.length;
+      return res.status(200).json({
+        status: "OK",
+        report_count: n,
+        analysis: {
+          summary: "تم رصد " + n + " بلاغ تقليد، الأكثر في " + (sorted[0] ? sorted[0][0] : "عدة ولايات") + ".",
+          patterns: sorted.slice(0, 5).map(function (x) { return x[0] + ": " + x[1] + " بلاغ"; }),
+          recommendations: [
+            "تحقق من نقاط البيع في الولايات الأكثر بلاغات",
+            "عزّز التمييز البصري لملصقاتك",
+            "فعّل تنبيهاً فورياً عند ورود بلاغ جديد"
+          ],
+          risk_level: n >= 100 ? "HIGH" : (n >= 30 ? "MEDIUM" : "LOW")
+        }
+      });
     }
 
     let analysis = null;
