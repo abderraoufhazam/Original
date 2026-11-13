@@ -200,6 +200,27 @@ async function pickOpenRouterModels(key) {
 }
 
 // ── نماذج Groq التي تدعم الصور ──
+
+// ── نماذج OpenRouter النصية المجانية (للتحليل، بلا رؤية) ──
+async function pickOpenRouterTextModels(key) {
+  try {
+    const r = await fetch("https://openrouter.ai/api/v1/models", {
+      headers: { Authorization: "Bearer " + key }
+    });
+    if (!r.ok) return [];
+    const j = await r.json();
+    const list = (j.data || []).filter(function (m) {
+      const pr = m.pricing || {};
+      const free = String(pr.prompt) === "0" && String(pr.completion) === "0";
+      const mods = (m.architecture && m.architecture.input_modalities) || [];
+      return free && mods.indexOf("text") !== -1 && mods.indexOf("image") === -1;
+    }).map(function (m) { return m.id; });
+    return list.slice(0, 6);
+  } catch (e) {
+    return [];
+  }
+}
+
 async function pickGroqModels(key) {
   try {
     const r = await fetch("https://api.groq.com/openai/v1/models", {
@@ -694,15 +715,17 @@ async function handleAnalytics(req, res) {
 
     const prompt = `Tu es un analyste expert pour la marque "${brand_name}". Voici ${reports.length} signalements. Analyse-les et réponds en JSON: {"summary": "en arabe", "patterns": ["en arabe"], "recommendations": ["en arabe"], "risk_level": "LOW|MEDIUM|HIGH|CRITICAL"}`;
     
-    const dataBlock = prompt + "\n\nData: " + JSON.stringify(reports.slice(0, 30));
+    const dataBlock = prompt + "\n\nData: " + JSON.stringify(reports.slice(0, 12));
     let text = null;
     let lastErr = "";
 
-    // 1) OpenRouter (نماذج مجانية — يعمل عندما تكون حصة Gemini منتهية)
+    // 1) OpenRouter — نموذج نصي مجاني مع مهلة 25 ثانية
     if (process.env.OPENROUTER_API_KEY) {
       try {
-        const models = await pickOpenRouterModels(process.env.OPENROUTER_API_KEY);
-        const model = (models && models[0]) || "nvidia/nemotron-3.5-super-vl:free";
+        const models = await pickOpenRouterTextModels(process.env.OPENROUTER_API_KEY);
+        const model = (models && models[0]) || "meta-llama/llama-3.2-3b-instruct:free";
+        const ctrl = new AbortController();
+        const tid = setTimeout(function () { ctrl.abort(); }, 25000);
         const or = await fetch("https://openrouter.ai/api/v1/chat/completions", {
           method: "POST",
           headers: {
@@ -714,9 +737,12 @@ async function handleAnalytics(req, res) {
           body: JSON.stringify({
             model: model,
             messages: [{ role: "user", content: dataBlock }],
-            temperature: 0.2
-          })
+            temperature: 0.2,
+            max_tokens: 700
+          }),
+          signal: ctrl.signal
         });
+        clearTimeout(tid);
         if (or.ok) {
           const od = await or.json();
           text = (od.choices && od.choices[0] && od.choices[0].message && od.choices[0].message.content) || "";
