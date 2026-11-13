@@ -88,6 +88,7 @@ const PANEL_TITLES = {
   search: "البحث عن كود",
   "adv-search": "بحث متقدم",
   manage: "إدارة دفعة",
+  addcodes: "إضافة أكواد",
   orders: "الطلبات",
   debts: "الديون",
   inventory: "المخزون",
@@ -2474,5 +2475,41 @@ if (_lll) _lll.onclick = async () => {
       _lll.click();
     };
   });
+};
+
+// ═══ إضافة أكواد إلى لوت موجود ═══
+const _acb = $("addCodesBtn");
+if (_acb) _acb.onclick = async () => {
+  const lot = ($("addLot").value || "").trim();
+  const qty = parseInt($("addQuantity").value, 10) || 0;
+  const statusEl = document.querySelector('input[name="add_status"]:checked');
+  const status = statusEl ? statusEl.value : "UNUSED";
+  const box = $("addCodesResult");
+  if (!lot) { box.className = "result danger"; box.innerHTML = "<p>أدخل رقم اللوت</p>"; box.classList.remove("hidden"); return; }
+  if (!qty || qty < 1) { box.className = "result danger"; box.innerHTML = "<p>أدخل عدداً صحيحاً أكبر من صفر</p>"; box.classList.remove("hidden"); return; }
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { box.className = "result danger"; box.innerHTML = "<p>سجّل الدخول كأدمن أولاً</p>"; box.classList.remove("hidden"); return; }
+  _acb.disabled = true; _acb.textContent = "جارٍ الإضافة...";
+  try {
+    const res = await fetch("/api/batch-manager?action=add-codes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.access_token },
+      body: JSON.stringify({ lot: lot, quantity: qty, access_token: session.access_token, initial_status: status })
+    });
+    const data = await res.json();
+    if (data.status === "OK") {
+      box.className = "result success";
+      box.innerHTML = "<h2>✓ تمت الإضافة</h2><p>أُضيف <b>" + data.added + "</b> كود إلى اللوت «" + escapeHtml(data.lot || lot) + "» (" + escapeHtml(data.brand || "") + ") — الحالة: " + (data.initial_status === "PENDING" ? "قيد الانتظار" : "مفعّلة") + "</p>";
+      if (typeof loadStats === "function") loadStats();
+    } else {
+      box.className = "result danger";
+      box.innerHTML = "<h2>⚠️ خطأ</h2><p>" + escapeHtml(data.message || "خطأ غير معروف") + "</p>";
+    }
+    box.classList.remove("hidden");
+  } catch (e) {
+    box.className = "result danger"; box.innerHTML = "<p>تعذّر الاتصال بالخادم</p>"; box.classList.remove("hidden");
+  } finally {
+    _acb.disabled = false; _acb.textContent = "➕ إضافة الأكواد";
+  }
 };
 
