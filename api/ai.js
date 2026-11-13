@@ -694,32 +694,68 @@ async function handleAnalytics(req, res) {
 
     const prompt = `Tu es un analyste expert pour la marque "${brand_name}". Voici ${reports.length} signalements. Analyse-les et réponds en JSON: {"summary": "en arabe", "patterns": ["en arabe"], "recommendations": ["en arabe"], "risk_level": "LOW|MEDIUM|HIGH|CRITICAL"}`;
     
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    const dataBlock = prompt + "\n\nData: " + JSON.stringify(reports.slice(0, 30));
+    let text = null;
+    let lastErr = "";
 
-    const aiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${(await pickFlashModels(GEMINI_API_KEY))[0]}:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt + "\n\nData: " + JSON.stringify(reports.slice(0, 30)) }] }],
-          generationConfig: { temperature: 0.2, maxOutputTokens: 2048 }
-        })
+    // 1) OpenRouter (نماذج مجانية — يعمل عندما تكون حصة Gemini منتهية)
+    if (process.env.OPENROUTER_API_KEY) {
+      try {
+        const models = await pickOpenRouterModels(process.env.OPENROUTER_API_KEY);
+        const model = (models && models[0]) || "nvidia/nemotron-3.5-super-vl:free";
+        const or = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + process.env.OPENROUTER_API_KEY,
+            "HTTP-Referer": "https://ordiz.online",
+            "X-Title": "ORDIZ"
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: [{ role: "user", content: dataBlock }],
+            temperature: 0.2
+          })
+        });
+        if (or.ok) {
+          const od = await or.json();
+          text = (od.choices && od.choices[0] && od.choices[0].message && od.choices[0].message.content) || "";
+        } else {
+          lastErr = await or.text();
+        }
+      } catch (e) {
+        lastErr = String(e).slice(0, 120);
       }
-    );
-
-    if (!aiRes.ok) {
-      const errorText = await aiRes.text();
-      console.error('Gemini analytics error:', errorText);
-      return res.status(500).json({ status: 'ERROR', message: "Erreur d'analyse", detail: errorText.slice(0, 200) });
     }
 
-    const aiData = await aiRes.json();
-    const text = (aiData.candidates?.[0]?.content?.parts || []).map(function (x) { return x.text || ''; }).join('');
+    // 2) Gemini (احتياط)
+    if (!text && GEMINI_API_KEY) {
+      try {
+        const aiRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${(await pickFlashModels(GEMINI_API_KEY))[0]}:generateContent?key=${GEMINI_API_KEY}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: dataBlock }] }],
+              generationConfig: { temperature: 0.2, maxOutputTokens: 2048 }
+            })
+          }
+        );
+        if (aiRes.ok) {
+          const aiData = await aiRes.json();
+          text = (aiData.candidates?.[0]?.content?.parts || []).map(function (x) { return x.text || ''; }).join('');
+        } else {
+          lastErr = await aiRes.text();
+        }
+      } catch (e) {
+        lastErr = String(e).slice(0, 120);
+      }
+    }
 
     if (!text) {
-      return res.status(500).json({ status: 'ERROR', message: 'Réponse vide du service' });
+      console.error('analytics: no provider returned text:', lastErr.slice(0, 200));
+      return res.status(500).json({ status: 'ERROR', message: "تعذّر التحليل حالياً. حاول لاحقاً.", detail: lastErr.slice(0, 160) });
     }
 
     let analysis = null;
