@@ -713,7 +713,8 @@ async function handleAnalytics(req, res) {
       });
     }
 
-    const prompt = `Tu es un analyste expert pour la marque "${brand_name}". Voici ${reports.length} signalements. Analyse-les et réponds en JSON: {"summary": "en arabe", "patterns": ["en arabe"], "recommendations": ["en arabe"], "risk_level": "LOW|MEDIUM|HIGH|CRITICAL"}`;
+    const prompt = `Tu es un analyste anti-contrefaçon. Analyse ces ${reports.length} signalements de la marque "${brand_name}". Réponds UNIQUEMENT par un objet JSON valide, sans aucun texte avant ni après, sans markdown et sans commentaires. Format exact :
+{"summary":"résumé concis en arabe","patterns":["tendance en arabe"],"recommendations":["recommandation en arabe"],"risk_level":"LOW ou MEDIUM ou HIGH ou CRITICAL"}`;
     
     const dataBlock = prompt + "\n\nData: " + JSON.stringify(reports.slice(0, 12));
     let text = null;
@@ -786,24 +787,23 @@ async function handleAnalytics(req, res) {
 
     let analysis = null;
     try {
-      let cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
-      const start = cleaned.indexOf('{');
-      if (start !== -1) {
-        let depth = 0, end = -1;
-        for (let i = start; i < cleaned.length; i++) {
-          if (cleaned[i] === '{') depth++;
-          else if (cleaned[i] === '}') { depth--; if (depth === 0) { end = i + 1; break; } }
-        }
-        if (end !== -1) cleaned = cleaned.substring(start, end);
+      let cleaned = String(text).replace(/```json/gi, '').replace(/```/g, '').trim();
+      const s = cleaned.indexOf('{');
+      const e = cleaned.lastIndexOf('}');
+      if (s !== -1 && e > s) {
+        analysis = JSON.parse(cleaned.slice(s, e + 1));
+      } else {
+        analysis = JSON.parse(cleaned);
       }
-      analysis = JSON.parse(cleaned);
     } catch (e) {
-      console.warn('Failed to parse AI response:', text);
-      analysis = { 
-        summary: "تم استلام البلاغات لكن تعذّر تحليلها.", 
-        patterns: [], 
-        recommendations: [], 
-        risk_level: 'MEDIUM' 
+      // استخراج جزئي من النص عند فشل JSON
+      const rk = /risk_level["']?\s*[:=]\s*["']?(LOW|MEDIUM|HIGH|CRITICAL)/i.exec(String(text));
+      const sm = /summary["']?\s*[:=]\s*["']([^"']+)/i.exec(String(text));
+      analysis = {
+        summary: sm ? sm[1] : "تم استلام البلاغات وتعذّر التحليل الكامل.",
+        patterns: [],
+        recommendations: [],
+        risk_level: rk ? rk[1].toUpperCase() : 'MEDIUM'
       };
     }
 
