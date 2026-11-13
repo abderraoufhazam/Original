@@ -39,6 +39,7 @@ res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (action === 'rekey-status') return handleRekeyStatus(req, res);
   if (action === 'reports') return handleWilayaReports(req, res);
   if (action === 'trend')   return handleWilayaTrend(req, res);
+  if (action === 'add-codes') return handleAddCodes(req, res);
 
   return res.status(400).json({
     status: 'ERROR',
@@ -313,6 +314,121 @@ async function handleCreate(req, res) {
       message: 'Erreur inattendue',
       detail: String(error).slice(0, 300)
     });
+  }
+}
+
+
+// ============================================================
+// ACTION: ADD-CODES — إضافة أكواد إلى لوت موجود (دون تغيير القديم)
+// ============================================================
+async function handleAddCodes(req, res) {
+  try {
+    const { lot, quantity, access_token, initial_status } = req.body || {};
+    const lotTrim = String(lot || '').trim();
+    const qty = Math.min(200000, parseInt(quantity, 10) || 0);
+
+    if (!lotTrim) return res.status(400).json({ status: 'ERROR', message: 'رقم اللوت مطلوب' });
+    if (!qty || qty < 1) return res.status(400).json({ status: 'ERROR', message: 'أدخل كمية صحيحة أكبر من صفر' });
+    if (!access_token) return res.status(401).json({ status: 'ERROR', message: 'غير مصادق عليه' });
+
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      return res.status(500).json({ status: 'ERROR', message: 'Configuration manquante' });
+    }
+
+    // 1) مصادقة المستخدم
+    const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: { 'apikey': SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${access_token}` }
+    });
+    if (!userRes.ok) return res.status(401).json({ status: 'ERROR', message: 'Token invalide' });
+    const userData = await userRes.json();
+    const userEmail = String(userData.email || '').toLowerCase();
+    const userBrand = String((userData.user_metadata && userData.user_metadata.brand_name) || '').trim().toLowerCase();
+
+    // 2) جلب بيانات اللوت الحالي
+    const lotRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/qr_codes?lot=eq.${encodeURIComponent(lotTrim)}&select=brand,product_name,reference,manufacture_date,expiry_date,product_image,logo_url,instagram_url,facebook_url,tiktok_url,description,user_id&limit=1`,
+      { headers: { 'apikey': SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+    );
+    if (!lotRes.ok) return res.status(500).json({ status: 'ERROR', message: 'تعذّر قراءة اللوت' });
+    const lotRows = await lotRes.json();
+    if (!Array.isArray(lotRows) || lotRows.length === 0) {
+      return res.status(404).json({ status: 'ERROR', message: `اللوت "${lotTrim}" غير موجود` });
+    }
+    const meta = lotRows[0];
+    const metaBrand = String(meta.brand || '').trim().toLowerCase();
+
+    // 3) صلاحية: أدمن أو مالك العلامة
+    const isAdmin = ADMIN_EMAILS.includes(userEmail);
+    const isOwner = userBrand !== '' && userBrand === metaBrand;
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({ status: 'ERROR', message: 'لا تملك صلاحية الإضافة لهذه العلامة' });
+    }
+
+    // 4) توليد الأكواد الجديدة (بنفس بيانات اللوت)
+    const status = (initial_status === 'PENDING') ? 'PENDING' : 'UNUSED';
+    const rows = [];
+    const codes = [];
+    for (let i = 0; i < qty; i++) {
+      const code = generateSecretCode();
+      codes.push(code);
+      rows.push({
+        secret_code: code,
+        secret_code_hash: hashCode(code),
+        secret_code_encrypted: encryptCode(code),
+        secret_status: status,
+        brand: meta.brand || null,
+        user_id: meta.user_id || null,
+        product_name: meta.product_name || null,
+        reference: meta.reference || null,
+        lot: lotTrim,
+        manufacture_date: meta.manufacture_date || null,
+        expiry_date: meta.expiry_date || null,
+        product_image: meta.product_image || null,
+        logo_url: meta.logo_url || null,
+        instagram_url: meta.instagram_url || null,
+        facebook_url: meta.facebook_url || null,
+        tiktok_url: meta.tiktok_url || null,
+        description: meta.description || null
+      });
+    }
+
+    // 5) إدراج على دفعات
+    const chunkSize = 500;
+    let inserted = 0;
+    for (let i = 0; i < rows.length; i += chunkSize) {
+      const chunk = rows.slice(i, i + chunkSize);
+      const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/qr_codes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_SERVICE_ROLE_KEY,
+          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(chunk)
+      });
+      if (!insertRes.ok) {
+        const err = await insertRes.text();
+        console.error('add-codes insert error:', err);
+        return res.status(500).json({ status: 'ERROR', message: 'خطأ في الإدراج', detail: err.slice(0, 300), inserted });
+      }
+      inserted += chunk.length;
+    }
+
+    return res.status(200).json({
+      status: 'OK',
+      inserted,
+      added: inserted,
+      codes,
+      lot: lotTrim,
+      brand: meta.brand || null,
+      initial_status: status
+    });
+  } catch (error) {
+    console.error('handleAddCodes error:', error);
+    return res.status(500).json({ status: 'ERROR', message: 'خطأ غير متوقع', detail: String(error).slice(0, 300) });
   }
 }
 
