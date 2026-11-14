@@ -53,6 +53,7 @@ res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (type === 'report')      return handleReport(req, res);
   if (type === 'message')     return handleMessage(req, res);
   if (type === 'signup')      return handleSignup(req, res);
+  if (type === 'label-order') return handleLabelOrder(req, res);
       
   // ── أسماء العلامات: فحص التوفر / الحجز / الدخول بالاسم ──
   if (type === 'brand-check')    return handleBrandCheck(req, res);
@@ -423,6 +424,76 @@ async function handleReport(req, res) {
 // ============================================================
 // TYPE 3: MESSAGE — رسائل الماركات + Turnstile
 // ============================================================
+
+// ============================================================
+// TYPE: LABEL-ORDER — طلب ملصقات (حفظ + إشعار واتساب)
+// ============================================================
+async function handleLabelOrder(req, res) {
+  try {
+    const { full_name, brand_name, sector, phone, email, wilaya, commune, quantity, notes } = req.body || {};
+
+    if (!full_name || !brand_name || !phone || !email || !wilaya || !commune || !quantity) {
+      return res.status(400).json({ status: 'ERROR', message: 'الرجاء ملء جميع الحقول الإلزامية' });
+    }
+
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    let saved = false;
+    if (SUPABASE_URL && KEY) {
+      try {
+        const ins = await fetch(`${SUPABASE_URL}/rest/v1/label_orders`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': KEY,
+            'Authorization': `Bearer ${KEY}`,
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({
+            full_name: String(full_name).slice(0, 120),
+            brand_name: String(brand_name).slice(0, 100),
+            sector: String(sector || '').slice(0, 120),
+            phone: String(phone).slice(0, 30),
+            email: String(email).slice(0, 120),
+            wilaya: String(wilaya).slice(0, 60),
+            commune: String(commune).slice(0, 80),
+            quantity: String(quantity).slice(0, 40),
+            notes: notes ? String(notes).slice(0, 600) : null
+          })
+        });
+        saved = ins.ok;
+      } catch (e) {
+        console.warn('label_orders insert:', String(e).slice(0, 120));
+      }
+    }
+
+    const lines = [
+      "🖨️ *طلب ملصقات جديد*",
+      "",
+      "👤 *الاسم:* " + full_name,
+      "🏷️ *العلامة:* " + brand_name,
+      "📦 *المجال:* " + (sector || "—"),
+      "📞 *الهاتف:* " + phone,
+      "📧 *الإيميل:* " + email,
+      "📍 *الولاية:* " + wilaya,
+      "🏘️ *البلدية:* " + commune,
+      "🔢 *الكمية:* " + quantity
+    ];
+    if (notes) lines.push("📝 *ملاحظات:* " + notes);
+    const wa = await sendWhatsApp(lines.join("\n"));
+
+    return res.status(200).json({
+      status: 'OK',
+      message: 'تم استلام طلبك بنجاح',
+      saved,
+      whatsapp_debug: wa
+    });
+  } catch (error) {
+    console.error('handleLabelOrder error:', error);
+    return res.status(500).json({ status: 'ERROR', message: String(error).slice(0, 200) });
+  }
+}
+
 async function handleMessage(req, res) {
   try {
     const { brand_name, email, phone, subject, message, turnstile_token } = req.body || {};
