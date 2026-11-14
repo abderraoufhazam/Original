@@ -1,7 +1,7 @@
 ﻿// service-worker.js
 // ORDIZ — Service Worker v35
 
-const CACHE_VERSION = "v42";
+const CACHE_VERSION = "v43";
 const CACHE_NAME = `original-${CACHE_VERSION}`;
 const OFFLINE_CACHE = `original-offline-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `original-runtime-${CACHE_VERSION}`;
@@ -142,7 +142,24 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Static → Cache First
+  // JS / CSS → Network First (يضمن أحدث نسخة دائماً — ينهي "لم تتغير")
+  if (url.pathname.endsWith(".js") || url.pathname.endsWith(".css")) {
+    event.respondWith(
+      fetch(event.request).then((response) => {
+        if (response && response.status === 200) {
+          const clone = response.clone();
+          caches.open(RUNTIME_CACHE).then(cache => cache.put(event.request, clone));
+        }
+        return response;
+      }).catch(async () => {
+        const cached = await caches.match(event.request);
+        return cached || new Response("", { status: 503 });
+      })
+    );
+    return;
+  }
+
+  // صور / خطوط / أيقونات → Cache First (نادراً ما تتغير)
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;
