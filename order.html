@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="اطلب ملصقات ORDIZ — المنصة مجانية، تدفع فقط ثمن الملصقات.">
+  <link rel="canonical" href="https://www.ordiz.online/order">
+  <title>طلب ملصقات — ORDIZ</title>
+  <link rel="icon" type="image/svg+xml" href="/icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0060C0">
+  <link rel="stylesheet" href="/site-layout.css">
+  <link rel="stylesheet" href="/site-fx.css">
+  <script>window.SITE_PAGE = "order";</script>
+  <script>
+    (function() {
+      const isDark = localStorage.getItem("theme") === "dark";
+      if (isDark) document.documentElement.classList.add("dark");
+    })();
+  </script>
+  <style>
+    .order-wrap { max-width: 640px; margin: 0 auto; }
+    .order-card { padding: 30px 26px; }
+    .field { margin-bottom: 18px; }
+    .field label { display: block; font-size: 13px; font-weight: 800; margin-bottom: 8px; color: var(--text); }
+    .field label .req { color: #ef4444; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 13px 14px; border-radius: 12px;
+      border: 1px solid var(--border); background: var(--bg-secondary);
+      color: var(--text); font-size: 14px; font-family: inherit;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      outline: none; border-color: #16A96B; box-shadow: 0 0 0 3px rgba(22,169,107,.15);
+    }
+    .field textarea { resize: vertical; min-height: 90px; }
+    .field .hint { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+    .submit-btn {
+      width: 100%; padding: 15px; border: none; border-radius: 12px;
+      background: linear-gradient(135deg, #16A96B, #0ea96b); color: #fff;
+      font-size: 16px; font-weight: 800; cursor: pointer; font-family: inherit;
+    }
+    .submit-btn:disabled { opacity: .6; cursor: not-allowed; }
+    .result { display: none; margin-top: 18px; padding: 16px; border-radius: 12px; font-size: 14px; line-height: 1.7; }
+    .result.success { display: block; background: rgba(22,169,107,.12); border: 1px solid rgba(22,169,107,.35); color: #16A96B; }
+    .result.danger { display: block; background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.35); color: #ef4444; }
+  </style>
+</head>
+<body>
+
+<div id="site-header"></div>
+<nav class="bcrumbs" aria-label="مسار التنقل"><a href="/">الرئيسية</a><span class="sep">›</span><span class="cur">طلب ملصقات</span></nav>
+
+<section class="page-hero">
+  <div class="container page-hero-inner">
+    <div class="page-hero-badge">🖨️ طلب ملصقات</div>
+    <h1>اطلب ملصقاتك الآن</h1>
+    <p>المنصة مجانية بالكامل — تدفع فقط ثمن الملصقات التي تطلبها. أقل كمية 5,000 ملصق.</p>
+  </div>
+</section>
+
+<main class="page-content">
+  <div class="container">
+    <div class="order-wrap">
+      <div class="card order-card">
+        <form id="orderForm" novalidate>
+
+          <div class="field">
+            <label>الاسم واللقب <span class="req">*</span></label>
+            <input id="full_name" type="text" placeholder="مثال: أحمد بن يوسف" autocomplete="name">
+          </div>
+
+          <div class="field">
+            <label>اسم العلامة التجارية (بالفرنسية) <span class="req">*</span></label>
+            <input id="brand_name" type="text" placeholder="Ex : Rutin Cosmetic" dir="ltr" style="text-align:left;">
+          </div>
+
+          <div class="field">
+            <label>مجال العلامة التجارية <span class="req">*</span></label>
+            <input id="sector" type="text" placeholder="مثال: مواد تجميل، مواد غذائية، أدوية...">
+          </div>
+
+          <div class="field">
+            <label>رقم الهاتف <span class="req">*</span></label>
+            <input id="phone" type="tel" placeholder="05XX XX XX XX" dir="ltr" style="text-align:left;" autocomplete="tel">
+          </div>
+
+          <div class="field">
+            <label>الإيميل <span class="req">*</span></label>
+            <input id="email" type="email" placeholder="email@example.com" dir="ltr" style="text-align:left;" autocomplete="email">
+          </div>
+
+          <div class="field">
+            <label>الولاية <span class="req">*</span></label>
+            <select id="wilaya"><option value="">— اختر الولاية —</option></select>
+          </div>
+
+          <div class="field">
+            <label>البلدية <span class="req">*</span></label>
+            <select id="commune" disabled><option value="">— اختر الولاية أولاً —</option></select>
+          </div>
+
+          <div class="field">
+            <label>الكمية <span class="req">*</span></label>
+            <select id="quantity">
+              <option value="">— اختر الكمية —</option>
+              <option value="5,000 ملصق">5,000 ملصق</option>
+              <option value="10,000 ملصق">10,000 ملصق</option>
+              <option value="50,000 ملصق">50,000 ملصق</option>
+              <option value="100,000 ملصق">100,000 ملصق</option>
+              <option value="أكثر من 100,000">أكثر من 100,000</option>
+            </select>
+            <div class="hint">أقل كمية 5,000 ملصق — كلما زادت الكمية كان سعر الملصق أفضل.</div>
+          </div>
+
+          <div class="field">
+            <label>ملاحظات إضافية <span style="color:var(--muted);font-weight:500;">(اختياري)</span></label>
+            <textarea id="notes" placeholder="أي تفاصيل إضافية..."></textarea>
+          </div>
+
+          <button type="submit" id="submitBtn" class="submit-btn">🖨️ إرسال الطلب</button>
+        </form>
+
+        <div id="result" class="result"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="site-footer"></div>
+
+<script src="/algeria-geo.js"></script>
+<script src="/site-layout.js"></script>
+<script src="/bot-guard.js"></script>
+<script src="/site-fx.js" defer></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+
+  // تعبئة الولايات
+  const wilayaSel = $("wilaya");
+  const communeSel = $("commune");
+  const W = window.ALGERIA_WILAYAS || [];
+  const C = window.ALGERIA_COMMUNES || {};
+
+  W.forEach(w => {
+    const o = document.createElement("option");
+    o.value = w.code;
+    o.textContent = w.name;
+    wilayaSel.appendChild(o);
+  });
+
+  wilayaSel.addEventListener("change", () => {
+    const code = wilayaSel.value;
+    communeSel.innerHTML = "";
+    if (!code) {
+      communeSel.disabled = true;
+      const o = document.createElement("option");
+      o.value = ""; o.textContent = "— اختر الولاية أولاً —";
+      communeSel.appendChild(o);
+      return;
+    }
+    const list = C[code] || [];
+    const first = document.createElement("option");
+    first.value = ""; first.textContent = "— اختر البلدية —";
+    communeSel.appendChild(first);
+    list.forEach(name => {
+      const o = document.createElement("option");
+      o.value = name; o.textContent = name;
+      communeSel.appendChild(o);
+    });
+    communeSel.disabled = false;
+  });
+
+  $("orderForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = $("submitBtn");
+    const res = $("result");
+    res.className = "result";
+
+    const data = {
+      full_name: $("full_name").value.trim(),
+      brand_name: $("brand_name").value.trim(),
+      sector: $("sector").value.trim(),
+      phone: $("phone").value.trim(),
+      email: $("email").value.trim(),
+      wilaya: wilayaSel.options[wilayaSel.selectedIndex]?.text || "",
+      commune: communeSel.options[communeSel.selectedIndex]?.text || "",
+      quantity: $("quantity").value,
+      notes: $("notes").value.trim()
+    };
+
+    // تحقق
+    if (!data.full_name || !data.brand_name || !data.sector || !data.phone || !data.email || !data.wilaya || !data.commune || !data.quantity) {
+      res.className = "result danger";
+      res.textContent = "الرجاء ملء جميع الحقول الإلزامية.";
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+      res.className = "result danger";
+      res.textContent = "الرجاء إدخال بريد إلكتروني صحيح.";
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "جارٍ الإرسال...";
+
+    try {
+      const r = await fetch("/api/submit?type=label-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      const j = await r.json();
+      if (j.status === "OK") {
+        res.className = "result success";
+        res.textContent = "✅ تم استلام طلبك بنجاح! سنتواصل معك قريباً لتأكيد التفاصيل.";
+        $("orderForm").reset();
+        communeSel.innerHTML = '<option value="">— اختر الولاية أولاً —</option>';
+        communeSel.disabled = true;
+      } else {
+        res.className = "result danger";
+        res.textContent = j.message || "تعذّر الإرسال، حاول مجدداً.";
+      }
+    } catch (err) {
+      res.className = "result danger";
+      res.textContent = "تعذّر الاتصال بالخادم. حاول لاحقاً.";
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "🖨️ إرسال الطلب";
+    }
+  });
+})();
+</script>
+</body>
+</html>

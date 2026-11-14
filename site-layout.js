@@ -23,6 +23,7 @@
     { id: "verify",   url: "/verify",        ar: "التحقق",     fr: "Vérifier",          en: "Verify" },
     { id: "how",      url: "/how-it-works",  ar: "كيف يعمل",   fr: "Comment ça marche", en: "How it works" },
     { id: "pricing",  url: "/pricing",       ar: "الأسعار",    fr: "Tarifs",            en: "Pricing" },
+    { id: "order",    url: "/order",         ar: "طلب ملصقات", fr: "Commander",         en: "Order labels" },
     { id: "about",    url: "/about",         ar: "من نحن",     fr: "À propos",          en: "About" },
     { id: "faq",      url: "/faq",           ar: "الأسئلة",    fr: "FAQ",               en: "FAQ" },
     { id: "team",     url: "/team",          ar: "الفريق",     fr: "Équipe",            en: "Team" },
@@ -57,7 +58,7 @@
   // ─── الترجمات ───
   const T = {
     ar: {
-      home: "الرئيسية", how: "كيف يعمل", pricing: "الأسعار",
+      home: "الرئيسية", how: "كيف يعمل", pricing: "الأسعار", order: "طلب ملصقات",
       about: "من نحن", faq: "الأسئلة", report: "الإبلاغ",
       team: "الفريق", "case-studies": "دراسات الحالة",
       privacy: "الخصوصية", terms: "الشروط",
@@ -86,7 +87,7 @@
       rights: "جميع الحقوق محفوظة"
     },
     fr: {
-      home: "Accueil", how: "Comment ça marche", pricing: "Tarifs",
+      home: "Accueil", how: "Comment ça marche", pricing: "Tarifs", order: "Commander",
       about: "À propos", faq: "FAQ", report: "Signaler",
       team: "Équipe", "case-studies": "Cas d'étude",
       privacy: "Confidentialité", terms: "Conditions",
@@ -115,7 +116,7 @@
       rights: "Tous droits réservés"
     },
     en: {
-      home: "Home", how: "How it works", pricing: "Pricing",
+      home: "Home", how: "How it works", pricing: "Pricing", order: "Order labels",
       about: "About", faq: "FAQ", report: "Report",
       team: "Team", "case-studies": "Case studies",
       privacy: "Privacy", terms: "Terms",
