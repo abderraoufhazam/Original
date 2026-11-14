@@ -37,8 +37,10 @@
   // جسيمات
   var pc = part.getContext('2d');
   var ps = [];
-  for (var i = 0; i < 60; i++) ps.push({ x: Math.random() * innerWidth, y: Math.random() * innerHeight, r: Math.random() * 1.8 + .4, v: Math.random() * .4 + .1, o: Math.random() * .5 + .3 });
-  (function anim() {
+  for (var i = 0; i < 16; i++) ps.push({ x: Math.random() * innerWidth, y: Math.random() * innerHeight, r: Math.random() * 1.6 + .4, v: Math.random() * .35 + .08, o: Math.random() * .4 + .25 });
+  var running = true;
+  function anim() {
+    if (!running) return;
     pc.clearRect(0, 0, part.width, part.height);
     ps.forEach(function (d) {
       d.y -= d.v; if (d.y < 0) { d.y = part.height; d.x = Math.random() * part.width; }
@@ -46,7 +48,12 @@
       pc.fillStyle = 'rgba(120,200,255,' + d.o + ')'; pc.fill();
     });
     requestAnimationFrame(anim);
-  })();
+  }
+  anim();
+  document.addEventListener('visibilitychange', function () {
+    running = !document.hidden;
+    if (running) requestAnimationFrame(anim);
+  });
 
   // بقعة الضوء + شريط التقدم
   addEventListener('mousemove', function (e) {
