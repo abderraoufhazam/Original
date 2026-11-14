@@ -57,7 +57,7 @@ window.CONTENT_TRANSLATIONS = {
     "customer.s3.text": { ar: "اكتب الكود المكوّن من 7 أحرف، اضغط \"تحقق\" — والنتيجة تظهر فورًا.", fr: "Tapez le code de 7 caractères, cliquez sur « Vérifier » — le résultat s'affiche immédiatement.", en: "Type the 7-character code, click \"Verify\" — result appears instantly." },
 
     "results.title": { ar: "🎯 النتائج الممكنة", fr: "🎯 Résultats possibles", en: "🎯 Possible results" },
-    "results.sub": { ar: "5 نتائج محتملة — كل واحدة تعني شيئًا مختلفًا.", fr: "5 résultats possibles — chacun a une signification.", en: "5 possible results — each means something different." },
+    "results.sub": { ar: "4 نتائج محتملة — كل واحدة تعني شيئًا مختلفًا.", fr: "4 résultats possibles — chacun a une signification.", en: "4 possible results — each means something different." },
     "results.original.title": { ar: "✅ منتج أصلي", fr: "✅ Produit authentique", en: "✅ Original product" },
     "results.original.text": { ar: "الكود صحيح، ولم يُستخدم من قبل. المنتج أصلي ويحق لك الثقة به.", fr: "Le code est valide et n'a jamais été utilisé. Le produit est authentique.", en: "The code is valid and has never been used. The product is authentic." },
     "results.used.title": { ar: "⚠️ كود مستعمل", fr: "⚠️ Code déjà utilisé", en: "⚠️ Code already used" },
@@ -121,10 +121,10 @@ window.CONTENT_TRANSLATIONS = {
     "brand.cta": { ar: "✨ ابدأ الآن مجانًا", fr: "✨ Commencer gratuitement", en: "✨ Start for free" },
 
     "faq.title": { ar: "❓ أسئلة عن الأسعار", fr: "❓ Questions sur les prix", en: "❓ Pricing questions" },
-    "faq.q1": { ar: "💵 كيف يتم دفع العربون؟", fr: "💵 Comment se paie le dépôt ?", en: "💵 How is the deposit paid?" },
-    "faq.a1": { ar: "حاليًا: يدويًا (تحويل بنكي، CCP، أو نقدًا). قريبًا: دفع إلكتروني مباشر.", fr: "Actuellement : manuellement (virement, CCP ou espèces). Bientôt : paiement en ligne.", en: "Currently: manually (bank transfer, CCP, or cash). Soon: online payment." },
-    "faq.q2": { ar: "🔄 متى يُسترد العربون؟", fr: "🔄 Quand le dépôt est-il remboursé ?", en: "🔄 When is the deposit refunded?" },
-    "faq.a2": { ar: "عند استخدام كل أكواد الدفعة. مثال: 500 كود = استرداد كامل عند استخدام 500/500.", fr: "Quand tous les codes du lot sont utilisés. Ex : 500 codes = remboursement complet à 500/500.", en: "When all batch codes are used. Ex: 500 codes = full refund at 500/500." },
+    "faq.q1": { ar: "💵 كم تكلفة المنصة؟", fr: "💵 Combien coûte la plateforme ?", en: "💵 How much does the platform cost?" },
+    "faq.a1": { ar: "مجانية بالكامل. لا رسوم على الأكواد أو لوحة التحكم — تدفع فقط ثمن الملصقات المطبوعة التي تطلبها.", fr: "Totalement gratuite. Aucun frais sur les codes ou le tableau de bord — vous ne payez que les étiquettes imprimées commandées.", en: "Completely free. No fees for codes or dashboard — you only pay for the printed labels you order." },
+    "faq.q2": { ar: "💡 ماذا أدفع بالضبط؟", fr: "💡 Que paie-je exactement ?", en: "💡 What exactly do I pay?" },
+    "faq.a2": { ar: "فقط ثمن الملصقات المطبوعة — حسب الكمية التي تطلبها. كلما زادت الكمية، كان سعر الملصق الواحد أفضل.", fr: "Uniquement le prix des étiquettes imprimées — selon la quantité. Plus vous commandez, meilleur est le prix unitaire.", en: "Only the printed labels — based on quantity. The more you order, the better the per-label price." },
     "faq.q3": { ar: "📈 هل هناك رسوم شهرية؟", fr: "📈 Y a-t-il des frais mensuels ?", en: "📈 Are there monthly fees?" },
     "faq.a3": { ar: "لا. لا اشتراك شهري، لا رسوم خفية. تدفع فقط عند الطلب.", fr: "Non. Pas d'abonnement, pas de frais cachés. Vous payez uniquement à la commande.", en: "No. No subscription, no hidden fees. You pay only when ordering." },
     "faq.q4": { ar: "💳 ما هي طرق الدفع؟", fr: "💳 Quels sont les modes de paiement ?", en: "💳 Payment methods?" },
@@ -147,7 +147,7 @@ window.CONTENT_TRANSLATIONS = {
     "cat.tech": { ar: "🔧 تقنية", fr: "🔧 Technique", en: "🔧 Technical" },
 
     "b.q1": { ar: "هل التسجيل مجاني حقًا؟", fr: "L'inscription est-elle vraiment gratuite ?", en: "Is registration really free?" },
-    "b.a1": { ar: "نعم، مجاني 100% للعلامات التجارية. لا اشتراك شهري، ولا رسوم إنشاء أكواد. تدفع فقط إذا كنت محلًا (عربون قابل للاسترداد).", fr: "Oui, 100% gratuit pour les marques. Pas d'abonnement, pas de frais de génération. Payant uniquement pour les boutiques (dépôt remboursable).", en: "Yes, 100% free for brands. No subscription, no code generation fees. Only shops pay (refundable deposit)." },
+    "b.a1": { ar: "نعم، مجاني 100%. لا اشتراك شهري، لا رسوم أكواد. تدفع فقط ثمن الملصقات المطبوعة التي تطلبها.", fr: "Oui, 100% gratuit. Pas d'abonnement, pas de frais de codes. Vous ne payez que les étiquettes imprimées commandées.", en: "Yes, 100% free. No subscription, no code fees. You only pay for the printed labels you order." },
     "b.q2": { ar: "كم عدد الأكواد التي يمكنني إنشاؤها؟", fr: "Combien de codes puis-je créer ?", en: "How many codes can I create?" },
     "b.a2": { ar: "لا محدود. يمكنك إنشاء دفعة بـ100، 1000، 10,000، أو حتى مليون كود. كل دفعة لها رقم لوت خاص.", fr: "Illimité. Vous pouvez créer des lots de 100, 1000, 10 000, ou même un million. Chaque lot a son numéro unique.", en: "Unlimited. Create batches of 100, 1000, 10,000, or even a million. Each batch has its own lot number." },
     "b.q3": { ar: "كيف أطبع الملصقات؟", fr: "Comment imprimer les étiquettes ?", en: "How do I print labels?" },
@@ -238,7 +238,7 @@ window.CONTENT_TRANSLATIONS = {
     "case3.stat1": { ar: "مبيعات جديدة", fr: "Nouvelles ventes", en: "New sales" },
     "case3.stat2": { ar: "بلاغات مؤكدة", fr: "Signalements confirmés", en: "Confirmed reports" },
     "case3.stat3": { ar: "تحقق شهريًا", fr: "Vérifications/mois", en: "Verifications/month" },
-    "case3.text": { ar: "المحل يبيع منتجات أصلية لكن الزبائن يشكّون بسبب وجود مقلدات في محلات أخرى. الحل: تسجيل المحل، والحصول على شارة \"محل موثوق\" على كل منتجاته. النتيجة: زيادة الثقة، ارتفاع المبيعات بـ60%، وعربون كامل مسترد بعد استخدام كل الأكواد.", fr: "La boutique vend des produits authentiques mais les clients doutent à cause des contrefaçons ailleurs. Solution : inscription, badge « boutique de confiance ». Résultat : +60% de ventes, dépôt entièrement remboursé.", en: "Shop sells authentic products but customers doubt due to counterfeits elsewhere. Solution: registration, \"trusted shop\" badge. Result: +60% sales, full deposit refunded." },
+    "case3.text": { ar: "المحل يبيع منتجات أصلية لكن الزبائن يشكّون بسبب وجود مقلدات في محلات أخرى. الحل: وضع ملصقات ORDIZ على كل منتجاته ليتمكن الزبائن من التحقق فورًا. النتيجة: زيادة الثقة وارتفاع المبيعات بـ60% — والمنصة مجانية بالكامل.", fr: "La boutique vend des produits authentiques mais les clients doutent à cause des contrefaçons ailleurs. Solution : étiquettes ORDIZ sur chaque produit pour une vérification immédiate. Résultat : +60% de ventes — et la plateforme est entièrement gratuite.", en: "Shop sells authentic products but customers doubt due to counterfeits elsewhere. Solution: ORDIZ labels on every product for instant verification. Result: +60% sales — and the platform is completely free." },
 
     "cta.title": { ar: "تريد تحقيق نتائج مشابهة؟", fr: "Vous voulez des résultats similaires ?", en: "Want similar results?" },
     "cta.sub": { ar: "انضم إلى قائمة عملائنا الناجحين.", fr: "Rejoignez notre liste de clients à succès.", en: "Join our successful clients list." },
