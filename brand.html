@@ -1949,21 +1949,24 @@ function renderReports() {
   html += `</div>`;
   container.innerHTML = html;
 
-  // إضافة نافذة منبثقة (Modal) في أسفل الصفحة إذا لم تكن موجودة
-  if (!document.getElementById('wilayaReportsModal')) {
-    const modalHtml = `
-      <div id="wilayaReportsModal" class="hidden" style="position: fixed; inset: 0; background: rgba(10, 26, 44, 0.75); backdrop-filter: blur(6px); z-index: 10000; padding: 20px;">
-        <div style="background: var(--card); width: 100%; max-width: 600px; max-height: 80vh; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--border);">
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border);">
-            <h3 id="wilayaModalTitle" style="margin: 0; font-size: 16px; font-weight: 900;">تفاصيل البلاغات</h3>
-            <button onclick="closeWilayaModal()" style="background: var(--bg-secondary); border: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: var(--text);">✕</button>
-          </div>
-          <div id="wilayaModalBody" style="padding: 16px 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 10px;"></div>
+}
+
+// إنشاء النافذة عند الحاجة فقط (لا توجد في DOM افتراضياً)
+function ensureWilayaModal() {
+  let m = document.getElementById('wilayaReportsModal');
+  if (m) return m;
+  document.body.insertAdjacentHTML('beforeend', `
+    <div id="wilayaReportsModal" style="position: fixed; inset: 0; background: rgba(10, 26, 44, 0.75); backdrop-filter: blur(6px); z-index: 10000; padding: 20px;">
+      <div style="background: var(--card); width: 100%; max-width: 600px; max-height: 80vh; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--border);">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border);">
+          <h3 id="wilayaModalTitle" style="margin: 0; font-size: 16px; font-weight: 900;">تفاصيل البلاغات</h3>
+          <button onclick="closeWilayaModal()" style="background: var(--bg-secondary); border: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: var(--text);">✕</button>
         </div>
+        <div id="wilayaModalBody" style="padding: 16px 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 10px;"></div>
       </div>
-    `;
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-  }
+    </div>
+  `);
+  return document.getElementById('wilayaReportsModal');
 }
 
 // دوال فتح وإغلاق النافذة
@@ -1971,7 +1974,7 @@ window.openWilayaReports = function(wilayaName) {
   if (!allReports) return;
   const reports = allReports.filter(r => (r.wilaya || "غير محدد") === wilayaName);
 
-  const modal = document.getElementById('wilayaReportsModal');
+  const modal = ensureWilayaModal();
   const title = document.getElementById('wilayaModalTitle');
   const body = document.getElementById('wilayaModalBody');
 
@@ -2114,7 +2117,7 @@ init();
 // ============================================================
 window.closeWilayaModal = function() {
   const modal = document.getElementById('wilayaReportsModal');
-  if (modal) modal.classList.remove('open');
+  if (modal) { modal.classList.remove('open'); modal.style.display = 'none'; }
 };
 // إغلاق النافذة عند النقر على الخلفية
 document.addEventListener('click', (e) => {
@@ -2373,6 +2376,8 @@ window.showReportDetails = function(reportId) {
 // ✅ استدعاء loadReports مباشرة عند تحميل الصفحة
 document.addEventListener("DOMContentLoaded", () => {
   console.log("🔍 DOM loaded, calling loadReports...");
+  const m = document.getElementById('wilayaReportsModal');
+  if (m) { m.classList.remove('open'); m.style.display = 'none'; }
   loadReports();
 });
 
