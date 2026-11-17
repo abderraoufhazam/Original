@@ -1065,6 +1065,8 @@
     .reveal { opacity: 0; transform: translateY(22px); transition: 0.6s cubic-bezier(0.2, 0.7, 0.3, 1); }
     .reveal.in { opacity: 1; transform: none; }
     .hidden { display: none !important; }
+    #wilayaReportsModal { display: none !important; }
+    #wilayaReportsModal.open { display: flex !important; align-items: center; justify-content: center; }
 
     /* ============================================================
        RESPONSIVE
@@ -1950,7 +1952,7 @@ function renderReports() {
   // إضافة نافذة منبثقة (Modal) في أسفل الصفحة إذا لم تكن موجودة
   if (!document.getElementById('wilayaReportsModal')) {
     const modalHtml = `
-      <div id="wilayaReportsModal" class="hidden" style="position: fixed; inset: 0; background: rgba(10, 26, 44, 0.75); backdrop-filter: blur(6px); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;">
+      <div id="wilayaReportsModal" class="hidden" style="position: fixed; inset: 0; background: rgba(10, 26, 44, 0.75); backdrop-filter: blur(6px); z-index: 10000; padding: 20px;">
         <div style="background: var(--card); width: 100%; max-width: 600px; max-height: 80vh; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--border);">
           <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border);">
             <h3 id="wilayaModalTitle" style="margin: 0; font-size: 16px; font-weight: 900;">تفاصيل البلاغات</h3>
@@ -2012,7 +2014,7 @@ window.openWilayaReports = function(wilayaName) {
   });
 
   body.innerHTML = html;
-  modal.classList.remove('hidden');
+  modal.classList.add('open');
 };
 
 async function loadReports() {
@@ -2112,13 +2114,13 @@ init();
 // ============================================================
 window.closeWilayaModal = function() {
   const modal = document.getElementById('wilayaReportsModal');
-  if (modal) modal.classList.add('hidden');
+  if (modal) modal.classList.remove('open');
 };
 // إغلاق النافذة عند النقر على الخلفية
 document.addEventListener('click', (e) => {
   const modal = document.getElementById('wilayaReportsModal');
   if (modal && e.target === modal) {
-    modal.classList.add('hidden');
+    modal.classList.remove('open');
   }
 });
 // ============================================================
