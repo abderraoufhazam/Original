@@ -19,7 +19,6 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
     /* ============================================================
        ORDIZ — LUXURY BRAND PORTAL (Dark Premium)
        ============================================================ */
@@ -1143,49 +1142,49 @@
       </div>
       <div class="sidebar-brand">
         <div class="sidebar-title">ORDIZ</div>
-        <div class="sidebar-sub">ESPACE MARQUE</div>
+        <div class="sidebar-sub" data-i18n="space_marque">ESPACE MARQUE</div>
       </div>
     </div>
 
     <nav class="sidebar-nav">
       <div class="nav-group">
-        <div class="nav-group-label">الرئيسية</div>
+        <div class="nav-group-label" data-i18n="nav_main">الرئيسية</div>
         <button class="nav-item active" data-scroll="section-overview">
           <span class="nav-icon">📊</span>
-          <span>نظرة عامة</span>
+          <span data-i18n="nav_overview">نظرة عامة</span>
         </button>
         <button class="nav-item" data-scroll="section-activity">
           <span class="nav-icon">📈</span>
-          <span>النشاط</span>
+          <span data-i18n="nav_activity">النشاط</span>
         </button>
         <button class="nav-item" data-scroll="section-map">
           <span class="nav-icon">🗺️</span>
-          <span>خريطة منتجاتي</span>
+          <span data-i18n="nav_map">خريطة منتجاتي</span>
         </button>
       </div>
 
       <div class="nav-group">
-        <div class="nav-group-label">حسابي</div>
+        <div class="nav-group-label" data-i18n="nav_account">حسابي</div>
         <button class="nav-item" data-scroll="section-orders">
           <span class="nav-icon">📋</span>
-          <span>الطلبات</span>
+          <span data-i18n="nav_orders">الطلبات</span>
           <span class="nav-badge hidden" id="ordersBadge">0</span>
         </button>
         <button class="nav-item" data-scroll="section-lots-stats">
           <span class="nav-icon">🏷️</span>
-          <span>دفعاتي</span>
+          <span data-i18n="nav_lots">دفعاتي</span>
         </button>
       </div>
 
       <div class="nav-group">
-        <div class="nav-group-label">المساعدة</div>
+        <div class="nav-group-label" data-i18n="nav_help">المساعدة</div>
         <a href="/contact" class="nav-item">
           <span class="nav-icon">💬</span>
-          <span>تواصل</span>
+          <span data-i18n="nav_contact">تواصل</span>
         </a>
         <a href="/verify" class="nav-item">
           <span class="nav-icon">🔍</span>
-          <span>صفحة التحقق</span>
+          <span data-i18n="nav_verify">صفحة التحقق</span>
         </a>
       </div>
     </nav>
@@ -1197,7 +1196,7 @@
         </div>
         <div class="user-info">
           <div class="user-name" id="brandName">Marque</div>
-          <div class="user-role">Compte marque</div>
+          <div class="user-role" data-i18n="compte_marque">Compte marque</div>
         </div>
         <button class="logout-mini" id="logoutBtn" title="Déconnexion">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1225,7 +1224,7 @@
         </svg>
       </button>
 
-      <div class="topbar-title">لوحة التحكم</div>
+      <div class="topbar-title" data-i18n="topbar_title">لوحة التحكم</div>
 
       <div class="topbar-spacer"></div>
 
@@ -1236,6 +1235,11 @@
             <path d="m21 21-4.35-4.35"></path>
           </svg>
         </a>
+        <div class="lang-switch" style="display:flex;gap:4px;align-items:center;margin-right:10px;">
+          <button type="button" class="lang-btn" data-lang="ar" onclick="applyBrandLang('ar')">ع</button>
+          <button type="button" class="lang-btn" data-lang="fr" onclick="applyBrandLang('fr')">FR</button>
+          <button type="button" class="lang-btn" data-lang="en" onclick="applyBrandLang('en')">EN</button>
+        </div>
         <button class="icon-btn" id="darkToggle" title="Mode sombre">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="darkIcon">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
@@ -1251,12 +1255,12 @@
       <section class="hero" id="section-overview">
         <div class="hero-inner">
           <div class="hero-text">
-            <h1>مرحباً <span id="heroName">علامة</span> 👋</h1>
-            <p>إليك أداء علامتك في الوقت الفعلي — ملخص نشاطك اليوم</p>
+            <h1><span data-i18n="hero_hi">مرحباً</span> <span id="heroName">علامة</span> 👋</h1>
+            <p data-i18n="hero_sub">إليك أداء علامتك في الوقت الفعلي — ملخص نشاطك اليوم</p>
           </div>
           <div class="hero-badge">
             <span class="hero-badge-dot"></span>
-            <span>Compte actif</span>
+            <span data-i18n="compte_actif">Compte actif</span>
           </div>
         </div>
       </section>
@@ -1266,40 +1270,40 @@
         <div class="stat-card">
           <div class="stat-header">
             <div class="stat-icon success">🟢</div>
-            <div class="stat-trend neutral">Actifs</div>
+            <div class="stat-trend neutral" data-i18n="actifs">Actifs</div>
           </div>
           <div class="stat-value num" id="sUnused">—</div>
-          <div class="stat-label">أكواد نشطة</div>
+          <div class="stat-label" data-i18n="active_codes">أكواد نشطة</div>
           <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none"><path d="M0 26 L15 24 L30 20 L45 22 L60 13 L75 15 L100 5" fill="none" stroke="#1bf09a" stroke-width="2.5" stroke-linecap="round"/></svg>
         </div>
 
         <div class="stat-card">
           <div class="stat-header">
             <div class="stat-icon primary">🔵</div>
-            <div class="stat-trend neutral">Utilisés</div>
+            <div class="stat-trend neutral" data-i18n="utilises">Utilisés</div>
           </div>
           <div class="stat-value num" id="sUsed">—</div>
-          <div class="stat-label">أكواد مستعملة</div>
+          <div class="stat-label" data-i18n="used_codes">أكواد مستعملة</div>
           <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none"><path d="M0 25 L20 22 L40 24 L60 15 L80 17 L100 7" fill="none" stroke="#1d8cf8" stroke-width="2.5" stroke-linecap="round"/></svg>
         </div>
 
         <div class="stat-card">
           <div class="stat-header">
             <div class="stat-icon warning">🟡</div>
-            <div class="stat-trend neutral">En attente</div>
+            <div class="stat-trend neutral" data-i18n="en_attente">En attente</div>
           </div>
           <div class="stat-value num" id="sPending">—</div>
-          <div class="stat-label">قيد الانتظار</div>
+          <div class="stat-label" data-i18n="pending_codes">قيد الانتظار</div>
           <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none"><path d="M0 24 L20 23 L40 25 L60 17 L80 18 L100 8" fill="none" stroke="#ffb020" stroke-width="2.5" stroke-linecap="round"/></svg>
         </div>
 
         <div class="stat-card">
           <div class="stat-header">
             <div class="stat-icon danger">🔴</div>
-            <div class="stat-trend neutral">Désactivés</div>
+            <div class="stat-trend neutral" data-i18n="desactives">Désactivés</div>
           </div>
           <div class="stat-value num" id="sDisabled">—</div>
-          <div class="stat-label">معطّلة</div>
+          <div class="stat-label" data-i18n="disabled_codes">معطّلة</div>
           <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none"><path d="M0 12 L20 10 L40 14 L60 8 L80 12 L100 6" fill="none" stroke="#ff5c6c" stroke-width="2.5" stroke-linecap="round"/></svg>
         </div>
       </section>
@@ -1309,14 +1313,14 @@
         <div class="section-head">
           <div class="section-title">
             <span class="section-title-icon">📈</span>
-            <span>النشاط</span>
+            <span data-i18n="sec_activity">النشاط</span>
           </div>
         </div>
 
         <div class="charts-grid">
           <div class="chart-card">
             <div class="chart-card-title">
-              <span>Vérifications — 30 derniers jours</span>
+              <span data-i18n="chart_30days">Vérifications — 30 derniers jours</span>
             </div>
             <div class="chart-canvas-wrap">
               <canvas id="chartDaily"></canvas>
@@ -1324,7 +1328,7 @@
           </div>
           <div class="chart-card">
             <div class="chart-card-title">
-              <span>Répartition</span>
+              <span data-i18n="chart_repartition">Répartition</span>
             </div>
             <div class="chart-canvas-wrap">
               <canvas id="chartStatus"></canvas>
@@ -1334,7 +1338,7 @@
 
         <div class="chart-card">
           <div class="chart-card-title">
-            <span>Top wilayas signalées</span>
+            <span data-i18n="chart_top_wilayas">Top wilayas signalées</span>
           </div>
           <div class="chart-canvas-wrap" style="min-height: 220px;">
             <canvas id="chartWilayas"></canvas>
@@ -1347,14 +1351,14 @@
         <div class="section-head">
           <div class="section-title">
             <span class="section-title-icon">🏷️</span>
-            <span>دفعاتي (إحصائيات)</span>
+            <span data-i18n="sec_lots">دفعاتي (إحصائيات)</span>
           </div>
         </div>
         <div id="lotsStatsList" class="card-list">
           <div class="empty-state">
             <div class="empty-state-icon">🏷️</div>
-            <div class="empty-state-title">Chargement...</div>
-            <div class="empty-state-text">جاري تحميل دفعاتك</div>
+            <div class="empty-state-title" data-i18n="loading">Chargement...</div>
+            <div class="empty-state-text" data-i18n="loading_lots">جاري تحميل دفعاتك</div>
           </div>
         </div>
       </section>
@@ -1364,14 +1368,14 @@
         <div class="section-head">
           <div class="section-title">
             <span class="section-title-icon">📋</span>
-            <span>طلباتي</span>
+            <span data-i18n="sec_orders">طلباتي</span>
           </div>
         </div>
         <div id="ordersList" class="card-list">
           <div class="empty-state">
             <div class="empty-state-icon">📋</div>
-            <div class="empty-state-title">Chargement...</div>
-            <div class="empty-state-text">جاري تحميل طلباتك</div>
+            <div class="empty-state-title" data-i18n="loading">Chargement...</div>
+            <div class="empty-state-text" data-i18n="loading_orders">جاري تحميل طلباتك</div>
           </div>
         </div>
       </section>
@@ -1395,14 +1399,14 @@
         <div class="section-head">
           <div class="section-title">
             <span class="section-title-icon">🚨</span>
-            <span>بلاغات التقليد</span>
+            <span data-i18n="sec_reports">بلاغات التقليد</span>
           </div>
         </div>
         <div id="reportsList">
           <div class="empty-state">
             <div class="empty-state-icon">🔍</div>
-            <div class="empty-state-title">Chargement...</div>
-            <div class="empty-state-text">جاري التحقق من البلاغات</div>
+            <div class="empty-state-title" data-i18n="loading">Chargement...</div>
+            <div class="empty-state-text" data-i18n="loading_reports">جاري التحقق من البلاغات</div>
           </div>
         </div>
       </section>
@@ -1412,12 +1416,12 @@
         <div class="section-head">
           <div class="section-title">
             <span class="section-title-icon">📍</span>
-            <span>أين تُباع منتجاتي</span>
+            <span data-i18n="sec_wilaya">أين تُباع منتجاتي</span>
           </div>
         </div>
         <div class="chart-card" style="min-height: 400px;">
           <div class="chart-card-title">
-            <span>توزيع التحققات حسب الولاية</span>
+            <span data-i18n="wilaya_dist">توزيع التحققات حسب الولاية</span>
           </div>
           <div class="chart-canvas-wrap">
             <canvas id="chartWilayaBrand"></canvas>
@@ -1432,7 +1436,7 @@
         <div class="section-head">
           <div class="section-title">
             <span class="section-title-icon">📊</span>
-            <span>Résumé</span>
+            <span data-i18n="resume">Résumé</span>
           </div>
         </div>
         <div class="stats-grid">
@@ -1441,28 +1445,28 @@
               <div class="stat-icon primary">📦</div>
             </div>
             <div class="stat-value num" id="sBatches">—</div>
-            <div class="stat-label">Total lots</div>
+            <div class="stat-label" data-i18n="total_lots">Total lots</div>
           </div>
           <div class="stat-card">
             <div class="stat-header">
               <div class="stat-icon gold">🎯</div>
             </div>
             <div class="stat-value num" id="sTotal">—</div>
-            <div class="stat-label">Total codes</div>
+            <div class="stat-label" data-i18n="total_codes">Total codes</div>
           </div>
           <div class="stat-card">
             <div class="stat-header">
               <div class="stat-icon danger">🚨</div>
             </div>
             <div class="stat-value num" id="sReports">—</div>
-            <div class="stat-label">Rapports</div>
+            <div class="stat-label" data-i18n="rapports">Rapports</div>
           </div>
           <div class="stat-card">
             <div class="stat-header">
               <div class="stat-icon warning">⭐</div>
             </div>
             <div class="stat-value num" id="sRatings">—</div>
-            <div class="stat-label">Avis clients</div>
+            <div class="stat-label" data-i18n="avis_clients">Avis clients</div>
           </div>
         </div>
       </section>
@@ -1472,6 +1476,11 @@
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
+<script src="/brand-i18n.js"></script>
+<style>
+.lang-btn{padding:6px 11px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text);border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;}
+.lang-btn.lang-active{background:#1D7BD0;color:#fff;border-color:#1D7BD0;}
+</style>
 <script>
 const $ = id => document.getElementById(id);
 
@@ -1662,7 +1671,7 @@ function renderStatusChart(stats) {
   chartStatus = new Chart(ctx, {
     type: "doughnut",
     data: {
-      labels: ["Actifs", "Utilisés", "En attente", "Désactivés"],
+      labels: [t("actifs"), t("utilises"), t("en_attente"), t("desactives")],
       datasets: [{
         data: [stats.unused || 0, stats.used || 0, stats.pending || 0, stats.disabled || 0],
         backgroundColor: ["#10b981", "#1D7BD0", "#f59e0b", "#ef4444"],
@@ -1794,8 +1803,8 @@ async function loadBrandOrders() {
       container.innerHTML = `
         <div class="empty-state">
           <div class="empty-state-icon">📋</div>
-          <div class="empty-state-title">Aucune commande</div>
-          <div class="empty-state-text">Vos commandes apparaîtront ici une fois créées</div>
+          <div class="empty-state-title">${t("no_orders")}</div>
+          <div class="empty-state-text">${t("no_orders_sub")}</div>
         </div>`;
       return;
     }
@@ -1855,8 +1864,8 @@ async function loadBatches() {
       container.innerHTML = `
         <div class="empty-state">
           <div class="empty-state-icon">📦</div>
-          <div class="empty-state-title">Aucun lot</div>
-          <div class="empty-state-text">Vos lots apparaîtront ici</div>
+          <div class="empty-state-title">${t("no_lots")}</div>
+          <div class="empty-state-text">${t("no_lots_sub")}</div>
         </div>`;
       return;
     }
@@ -2087,6 +2096,7 @@ async function init() {
     animateNumber("sReports", data.total_reports ?? 0);
     animateNumber("sRatings", data.total_ratings ?? 0);
 
+    window.__brandStats = data;
     renderStatusChart(data);
     loadDailyChart();
     loadBrandOrders();
@@ -2099,6 +2109,15 @@ async function init() {
     toast("Erreur de chargement: " + err.message, "error");
   }
 }
+
+window.reRenderBrand = function () {
+  if (typeof loadBrandOrders === "function") loadBrandOrders();
+  if (typeof loadBrandCodes === "function") loadBrandCodes();
+  if (typeof renderReports === "function") renderReports();
+  if (typeof renderWilayaChart === "function") renderWilayaChart();
+  if (typeof loadDailyChart === "function") loadDailyChart();
+  if (window.__brandStats && typeof renderStatusChart === "function") renderStatusChart(window.__brandStats);
+};
 
 $("logoutBtn").onclick = async () => {
   if (!confirm("Voulez-vous vous déconnecter ?")) return;
@@ -2372,6 +2391,7 @@ window.showReportDetails = function(reportId) {
 // ✅ استدعاء loadReports مباشرة عند تحميل الصفحة
 document.addEventListener("DOMContentLoaded", () => {
   console.log("🔍 DOM loaded, calling loadReports...");
+  if (typeof applyBrandLang === "function") applyBrandLang(window.BRAND_LANG || "ar");
   loadReports();
 });
 
