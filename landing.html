@@ -257,6 +257,29 @@ footer{padding:52px 0 34px;border-top:1px solid var(--stroke)}
   </div>
 </nav>
 
+<div class="verify-strip">
+  <div class="wrap verify-strip-inner">
+    <span class="vs-label">🛡️ تحقق من منتجك</span>
+    <form id="homeVerify" onsubmit="return goVerify(event)">
+      <input id="homeCode" type="text" placeholder="أدخل الكود المخفي — 7 أحرف" maxlength="14" autocomplete="off" autocapitalize="characters" spellcheck="false">
+      <button type="submit">تحقق الآن</button>
+    </form>
+  </div>
+  <style>
+    .verify-strip{background:linear-gradient(120deg,rgba(22,169,107,.12),rgba(29,140,248,.12));border-bottom:1px solid var(--stroke);padding:14px 0}
+    .verify-strip-inner{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center}
+    .vs-label{font-weight:800;font-size:14px;color:var(--green,#16A96B);white-space:nowrap}
+    .verify-strip form{display:flex;gap:8px;flex:1;min-width:260px;max-width:520px}
+    .verify-strip input{flex:1;padding:12px 16px;border-radius:12px;border:1.5px solid var(--stroke);background:var(--glass);color:#fff;font-size:15px;font-family:inherit;letter-spacing:2px;text-transform:uppercase}
+    .verify-strip input::placeholder{letter-spacing:0;text-transform:none;color:#8b9bb0}
+    .verify-strip button{padding:12px 22px;border-radius:12px;border:0;background:linear-gradient(135deg,#16A96B,#0ea96b);color:#fff;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit;white-space:nowrap}
+    .verify-strip button:hover{filter:brightness(1.08)}
+  </style>
+</div>
+<script>
+function goVerify(e){e.preventDefault();var c=document.getElementById('homeCode').value.trim().toUpperCase();if(c){location.href='/verify?code='+encodeURIComponent(c);}return false;}
+</script>
+
 <header class="hero">
   <div class="wrap hero-grid">
     <div>

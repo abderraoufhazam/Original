@@ -440,9 +440,9 @@ function renderResult(data) {
 
     show("success", `
       <div class="product-card" id="${productCardId}">
-        <div class="card-badge"><span class="card-badge-icon">✓</span><span>${escapeHtml(t("originalTitle"))}</span></div>
+        <div class="card-badge" style="background:linear-gradient(135deg,#16a34a,#22c55e);border:none;"><span class="card-badge-icon">✓</span><span>${escapeHtml(t("originalTitle"))} 100%</span></div>
         ${p.product_image ? `<div class="card-image-wrap"><img class="card-image" src="${escapeHtml(p.product_image)}" alt=""></div>` : `<div class="card-image-wrap card-image-placeholder"><img src="/icon.png" alt=""></div>`}
-        <div class="card-header">${p.brand ? `<h2 class="card-brand">${escapeHtml(p.brand)}</h2>` : ""}${p.product_name ? `<p class="card-product">${escapeHtml(p.product_name)}</p>` : ""}</div>
+        <div class="card-header">${p.brand ? `<h2 class="card-brand">${escapeHtml(p.brand)}</h2>` : ""}${p.product_name ? `<p class="card-product">${escapeHtml(p.product_name)}</p>` : ""}<div style="font-size:12px;color:#16a34a;font-weight:700;margin-top:6px;">🛡️ ${escapeHtml(t("verifiedBy"))}</div></div>
         <div class="card-details">
           ${p.reference ? `<div class="card-detail-row"><span class="card-detail-icon">🔖</span><span class="card-detail-label">${escapeHtml(t("referenceLabel"))}</span><span class="card-detail-value">${escapeHtml(p.reference)}</span></div>` : ""}
           ${p.lot ? `<div class="card-detail-row"><span class="card-detail-icon">📦</span><span class="card-detail-label">${escapeHtml(t("lotLabel"))}</span><span class="card-detail-value">${escapeHtml(p.lot)}</span></div>` : ""}
@@ -451,8 +451,8 @@ function renderResult(data) {
         </div>
         ${p.description ? `<div class="card-description">${escapeHtml(p.description)}</div>` : ""}
         <div class="card-actions">
-          <button type="button" class="card-action-btn" id="saveCardBtn-${productCardId}"><span>💾</span><span>حفظ البطاقة</span></button>
-          <button type="button" class="card-action-btn primary" id="shareCardBtn-${productCardId}"><span>📤</span><span>مشاركة</span></button>
+          <button type="button" class="card-action-btn" id="saveCardBtn-${productCardId}"><span>💾</span><span>${escapeHtml(t("saveCardBtn"))}</span></button>
+          <button type="button" class="card-action-btn primary" id="shareCardBtn-${productCardId}"><span>📤</span><span>${escapeHtml(t("shareBtn"))}</span></button>
         </div>
       </div>
       ${(p.instagram_url || p.facebook_url || p.tiktok_url) ? `
@@ -562,6 +562,18 @@ form.addEventListener("submit", async (e) => {
   } finally { btn.disabled = false; btn.textContent = t("verifyBtn"); }
 });
 
+// ── تعبئة الكود تلقائياً من الرابط (مثال: /verify?code=ABC1234) ──
+(function autoVerifyFromUrl() {
+  try {
+    const p = new URLSearchParams(location.search);
+    const q = (p.get("code") || "").trim().toUpperCase();
+    if (q && form && codeInput) {
+      codeInput.value = q;
+      form.dispatchEvent(new Event("submit", { cancelable: true }));
+    }
+  } catch (e) {}
+})();
+
 if (typeof applyTranslations === "function") { applyTranslations(); }
 
 // ============================================================
@@ -670,10 +682,10 @@ async function saveProductCard(p) {
 
 async function shareProductCard(p) {
   const brand = p.brand || "", productName = p.product_name || "";
-  const text = ["✅ منتج أصلي", "", brand ? `🏢 ${brand}` : "", productName ? `📦 ${productName}` : "", "", "تحققت من أصالته على ORDIZ 🇩🇿"].filter(Boolean).join("\n");
+  const text = [t("shareTitle"), "", brand ? `🏢 ${brand}` : "", productName ? `📦 ${productName}` : "", "", t("shareVerified")].filter(Boolean).join("\n");
   const url = location.origin;
   if (navigator.share) {
-    try { await navigator.share({ title: "منتج أصلي — ORDIZ", text: text, url: url }); if (typeof vibrate === "function") vibrate(30); return; }
+    try { await navigator.share({ title: t("shareTitle"), text: text, url: url }); if (typeof vibrate === "function") vibrate(30); return; }
     catch (e) { if (e.name === "AbortError") return; }
   }
   try { await navigator.clipboard.writeText(text + "\n" + url); toast("تم نسخ النص — الصقه في أي مكان", "success", "✓ تم"); if (typeof vibrate === "function") vibrate(30); }
