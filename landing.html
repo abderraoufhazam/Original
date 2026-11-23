@@ -33,7 +33,7 @@ img{max-width:100%;display:block}
   radial-gradient(1300px 750px at 80% -10%,#00325f 0%,transparent 55%),
   radial-gradient(950px 620px at 8% 22%,#01203a 0%,transparent 50%),
   linear-gradient(160deg,#000c18 0%,#00172d 60%,#000c18 100%)}
-.aurora{position:fixed;inset:0;z-index:-2;overflow:hidden;filter:blur(95px)}
+.aurora{position:fixed;inset:0;z-index:-2;overflow:hidden;filter:blur(40px)}
 .aurora span{position:absolute;border-radius:50%;opacity:.55;animation:float 16s ease-in-out infinite}
 .aurora .a1{width:560px;height:560px;background:#0060ff;top:-12%;left:-8%}
 .aurora .a2{width:480px;height:480px;background:#0fff9c;top:32%;right:-14%;animation-delay:-5s}
@@ -47,7 +47,7 @@ canvas#grid{position:fixed;inset:0;z-index:-2;opacity:.16}
 /* ─── الهيدر ─── */
 nav{position:fixed;top:0;left:0;right:0;z-index:50;transition:.3s}
 nav .inner{max-width:1200px;margin:14px auto 0;padding:12px 20px;display:flex;align-items:center;gap:22px;
-  background:rgba(10,25,42,.5);backdrop-filter:blur(20px);border:1px solid var(--stroke);border-radius:18px;transition:.3s}
+  background:rgba(10,25,42,.5);backdrop-filter:blur(8px);border:1px solid var(--stroke);border-radius:18px;transition:.3s}
 nav.scrolled .inner{background:rgba(6,17,30,.88);box-shadow:0 10px 40px -15px rgba(0,0,0,.7)}
 .logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:20px}
 .logo .mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--green));
@@ -70,7 +70,7 @@ nav.scrolled .inner{background:rgba(6,17,30,.88);box-shadow:0 10px 40px -15px rg
 .hero-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:60px;align-items:center}
 @media(max-width:900px){.hero-grid{grid-template-columns:1fr;gap:50px}}
 .eyebrow{display:inline-flex;align-items:center;gap:9px;padding:8px 17px;border-radius:99px;
-  background:var(--glass);border:1px solid var(--stroke);font-size:13px;font-weight:700;color:var(--green);margin-bottom:24px;backdrop-filter:blur(10px)}
+  background:var(--glass);border:1px solid var(--stroke);font-size:13px;font-weight:700;color:var(--green);margin-bottom:24px;backdrop-filter:blur(6px)}
 .eyebrow .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 14px var(--green);animation:pulse 2s infinite}
 @keyframes pulse{50%{opacity:.3;transform:scale(.7)}}
 h1{font-size:clamp(40px,6.4vw,74px);line-height:1.1;font-weight:900;letter-spacing:-1px}
@@ -91,13 +91,13 @@ h1 .rot{display:inline-block;min-width:1ch}
 /* ─── بطاقة الهيرو ─── */
 .phone{position:relative;perspective:1300px}
 .float-chip{position:absolute;padding:9px 16px;border-radius:99px;font-size:12.5px;font-weight:800;z-index:3;
-  background:rgba(8,20,34,.8);border:1px solid var(--stroke);backdrop-filter:blur(12px);box-shadow:0 10px 30px -10px rgba(0,0,0,.6);animation:bob 5s ease-in-out infinite}
+  background:rgba(8,20,34,.8);border:1px solid var(--stroke);backdrop-filter:blur(6px);box-shadow:0 10px 30px -10px rgba(0,0,0,.6);animation:bob 5s ease-in-out infinite}
 .chip-1{top:-18px;right:-10px;animation-delay:0s}
 .chip-2{bottom:22%;left:-16px;animation-delay:-1.6s}
 .chip-3{bottom:-16px;right:12%;animation-delay:-3.2s}
 @keyframes bob{50%{transform:translateY(-10px)}}
 .demo-card{position:relative;padding:34px;border-radius:28px;background:linear-gradient(160deg,rgba(255,255,255,.1),rgba(255,255,255,.02));
-  border:1px solid var(--stroke);backdrop-filter:blur(22px);box-shadow:0 40px 100px -30px rgba(0,0,0,.7);transition:transform .15s ease-out;transform-style:preserve-3d}
+  border:1px solid var(--stroke);backdrop-filter:blur(10px);box-shadow:0 40px 100px -30px rgba(0,0,0,.7);transition:transform .15s ease-out;transform-style:preserve-3d}
 .demo-card::before{content:"";position:absolute;inset:0;border-radius:28px;padding:1px;
   background:linear-gradient(140deg,rgba(25,240,149,.5),transparent 30%,transparent 70%,rgba(64,168,255,.5));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
 .verify-badge{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:99px;font-weight:800;font-size:13px;
@@ -267,9 +267,9 @@ footer{padding:52px 0 34px;border-top:1px solid var(--stroke)}
   </div>
   <style>
     .verify-strip{background:linear-gradient(120deg,rgba(22,169,107,.12),rgba(29,140,248,.12));border-bottom:1px solid var(--stroke);padding:14px 0}
-    .verify-strip-inner{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center}
+    .verify-strip-inner{display:flex;flex-direction:column;align-items:center;gap:10px}
     .vs-label{font-weight:800;font-size:14px;color:var(--green,#16A96B);white-space:nowrap}
-    .verify-strip form{display:flex;gap:8px;flex:1;min-width:260px;max-width:520px}
+    .verify-strip form{display:flex;gap:8px;width:100%;max-width:460px;justify-content:center}
     .verify-strip input{flex:1;padding:12px 16px;border-radius:12px;border:1.5px solid var(--stroke);background:var(--glass);color:#fff;font-size:15px;font-family:inherit;letter-spacing:2px;text-transform:uppercase}
     .verify-strip input::placeholder{letter-spacing:0;text-transform:none;color:#8b9bb0}
     .verify-strip button{padding:12px 22px;border-radius:12px;border:0;background:linear-gradient(135deg,#16A96B,#0ea96b);color:#fff;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit;white-space:nowrap}
@@ -440,11 +440,14 @@ function size(){g.width=innerWidth;g.height=innerHeight}size();addEventListener(
 
 // جسيمات
 const p=document.getElementById('particles'),pc=p.getContext('2d');p.width=innerWidth;p.height=innerHeight;
-const ps=Array.from({length:80},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.9+.4,v:Math.random()*.45+.1,o:Math.random()*.5+.3}));
-(function anim(){pc.clearRect(0,0,p.width,p.height);
+const ps=Array.from({length:18},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.9+.4,v:Math.random()*.45+.1,o:Math.random()*.5+.3}));
+let pRunning=true;
+function anim(){if(!pRunning)return;pc.clearRect(0,0,p.width,p.height);
   ps.forEach(d=>{d.y-=d.v;if(d.y<0){d.y=p.height;d.x=Math.random()*p.width}
     pc.beginPath();pc.arc(d.x,d.y,d.r,0,7);pc.fillStyle=`rgba(120,200,255,${d.o})`;pc.fill()});
-  requestAnimationFrame(anim)})();
+  requestAnimationFrame(anim)}
+anim();
+addEventListener('visibilitychange',()=>{pRunning=!document.hidden;if(pRunning)requestAnimationFrame(anim)});
 
 // الهيدر
 addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('scrolled',scrollY>40));
@@ -470,15 +473,7 @@ document.querySelectorAll('[data-count]').forEach(el=>co.observe(el));
 // FAQ
 document.querySelectorAll('.fq button').forEach(b=>b.onclick=()=>b.parentElement.classList.toggle('open'));
 
-// إمالة ثلاثية الأبعاد عامة
-document.querySelectorAll('.tilt').forEach(el=>{
-  el.addEventListener('mousemove',e=>{const r=el.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
-    el.style.transform=`perspective(800px) rotateY(${x*8}deg) rotateX(${-y*8}deg) translateY(-6px)`});
-  el.addEventListener('mouseleave',()=>el.style.transform='')});
-
-// إمالة بطاقة الهيرو
-const card=document.getElementById('card');
-addEventListener('mousemove',e=>{const rx=e.clientX/innerWidth-.5,ry=e.clientY/innerHeight-.5;card.style.transform=`rotateY(${rx*12}deg) rotateX(${-ry*10}deg)`});
+// (أُزيلت الإمالات ثلاثية الأبعاد لتخفيف الموقع)
 </script>
 </body>
 </html>
